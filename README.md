@@ -1,7 +1,7 @@
-# Do More Computational Resources Translate into Greater Scholarly Recognition?
-Evidence from 13,921 NLP Conference Papers
+# Do More Computational Resources Translate into Greater Scholarly Recognition? Evidence from 13,921 NLP Conference Papers
 
-![Project overview](./assets/project-overview.png)
+
+![Project overview](./assets/framework.png)
 
 This repository accompanies the paper **"Do More Computational Resources Translate into Greater Scholarly Recognition? Evidence from 13,921 NLP Conference Papers."** It contains the released analysis data, figure-generation scripts, and processing code used in the study.
 
