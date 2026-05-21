@@ -2,23 +2,23 @@
 
 ## Method
 
-This analysis uses a paper-level panel, not full-count organization-paper rows. The main outcome is `log10(paper_max_row_compute_capability_gfimp_lb1 / 1e12)`, interpreted as lower-bound imputed max-row GPU compute in TFLOP/s.
+This analysis uses a paper-level panel, not full-count organization-paper rows. The regression outcome is `log10(paper_max_row_compute_capability / 1e12)`, interpreted as strict raw max-row GPU compute in TFLOP/s.
 
 The main table estimates five one-focal-variable-at-a-time OLS models with HC3 robust standard errors. Each model controls year fixed effects, topic fixed effects, and venue fixed effects. The separated specification is intentional because company participation, industry-academia collaboration, cross-sector collaboration, international collaboration, and organization count overlap conceptually and empirically.
 
-Main sample: `is_lb1_gfimp == 1`; paper-level rows: 6,895; main-model observations: 6,895-6,895; fixed effects: 6 years, 29 topics, 3 venues.
+Regression sample: `is_strict == 1`; paper-level rows: 6,895; strict-valid papers: 5,357; main-model observations: 5,357-5,357; fixed effects: 6 years, 29 topics, 3 venues.
 
 ## Main Models
 
 | model   | term_label             |   nobs |   coef |   std_err | p_value   | percent_change   |   r_squared |
 |:--------|:-----------------------|-------:|-------:|----------:|:----------|:-----------------|------------:|
-| M1      | Company                |   6895 |  0.269 |     0.016 | <0.001    | 85.6%            |       0.269 |
-| M2      | Industry-academia      |   6895 |  0.195 |     0.016 | <0.001    | 56.7%            |       0.252 |
-| M3      | Cross-sector           |   6895 |  0.164 |     0.015 | <0.001    | 45.8%            |       0.249 |
-| M4      | International          |   6895 |  0.025 |     0.016 | 0.108     | 6.0%             |       0.236 |
-| M5      | log(1+n organizations) |   6895 |  0.137 |     0.021 | <0.001    | 37.0%            |       0.241 |
+| M1      | Company                |   5357 |  0.267 |     0.016 | <0.001    | 84.8%            |       0.191 |
+| M2      | Industry-academia      |   5357 |  0.195 |     0.017 | <0.001    | 56.8%            |       0.17  |
+| M3      | Cross-sector           |   5357 |  0.16  |     0.015 | <0.001    | 44.6%            |       0.164 |
+| M4      | International          |   5357 |  0.03  |     0.016 | 0.068     | 7.0%             |       0.148 |
+| M5      | log(1+n organizations) |   5357 |  0.149 |     0.022 | <0.001    | 41.0%            |       0.155 |
 
-Coefficient interpretation is on a log10 outcome scale. The `percent_change` column reports `(10^coef - 1) * 100`. The largest absolute main-model coefficient is Company: coef=0.269, corresponding to 85.6% difference in max-row compute under the one-focal FE specification.
+Coefficient interpretation is on a log10 outcome scale. The `percent_change` column reports `(10^coef - 1) * 100`. The largest absolute main-model coefficient is Company: coef=0.267, corresponding to 84.8% difference in max-row compute under the one-focal FE specification.
 
 ## Appendix: Full Conditional Model
 
@@ -26,15 +26,15 @@ The full model includes all five institutional terms simultaneously and should b
 
 | model   | term_label             |   nobs |   coef |   std_err | p_value   | percent_change   |   r_squared |
 |:--------|:-----------------------|-------:|-------:|----------:|:----------|:-----------------|------------:|
-| A1      | Company                |   6895 |  0.48  |     0.041 | <0.001    | 202.0%           |       0.276 |
-| A1      | Industry-academia      |   6895 | -0.312 |     0.045 | <0.001    | -51.3%           |       0.276 |
-| A1      | Cross-sector           |   6895 |  0.076 |     0.023 | <0.001    | 19.2%            |       0.276 |
-| A1      | International          |   6895 | -0.021 |     0.018 | 0.257     | -4.7%            |       0.276 |
-| A1      | log(1+n organizations) |   6895 |  0.058 |     0.03  | 0.050     | 14.3%            |       0.276 |
+| A1      | Company                |   5357 |  0.474 |     0.042 | <0.001    | 197.8%           |       0.201 |
+| A1      | Industry-academia      |   5357 | -0.299 |     0.047 | <0.001    | -49.8%           |       0.201 |
+| A1      | Cross-sector           |   5357 |  0.057 |     0.023 | 0.015     | 13.9%            |       0.201 |
+| A1      | International          |   5357 | -0.023 |     0.019 | 0.222     | -5.2%            |       0.201 |
+| A1      | log(1+n organizations) |   5357 |  0.085 |     0.031 | 0.006     | 21.6%            |       0.201 |
 
-## Robustness: Strict Raw Max-Row Compute
+## Strict Single-Focal Compatibility Table
 
-The strict robustness table reruns the five main specifications with `log10(paper_max_row_compute_capability / 1e12)` and restricts the sample to `is_strict == 1`. This checks whether the main lower-bound imputed result depends on the imputed sample.
+This table preserves the previous strict-output file shape. It uses the same strict raw outcome and `is_strict == 1` sample as the main regression table.
 
 | model   | term_label             |   nobs |   coef |   std_err | p_value   | percent_change   |   r_squared |
 |:--------|:-----------------------|-------:|-------:|----------:|:----------|:-----------------|------------:|
@@ -91,4 +91,4 @@ Access regimes are mutually exclusive paper-level categories: academic-only, ind
 
 ## Review Risks
 
-These models are descriptive fixed-effects associations, not causal estimates. The main lower-bound imputed outcome maximizes GPU-only coverage, while the strict robustness table is narrower and reflects papers with raw strict max-row compute available.
+These models are descriptive fixed-effects associations, not causal estimates. All regression tables are now estimated on the stricter raw-compute sample, so coverage is narrower than the lower-bound imputed descriptive summaries.

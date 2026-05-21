@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 from pathlib import Path
 from typing import Iterable
 import warnings
@@ -16,7 +15,6 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 import statsmodels.formula.api as smf
-from statsmodels.stats.multitest import multipletests
 
 
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -60,7 +58,6 @@ def find_analysis_root(start: Path) -> Path:
 
 ROOT = find_analysis_root(Path(__file__).resolve())
 BUNDLE = Path(__file__).resolve().parents[1]
-AMPLIFIER_BUNDLE = Path(__file__).resolve().parents[2] / "Amplifier interaction modeling"
 
 
 def ensure_output_dirs(output_dir: Path | None = None) -> dict[str, Path]:
@@ -282,488 +279,6 @@ def make_analysis_sample(
     for col in ["primary_topic", "team_size_group", "n_organizations_group"]:
         out[col] = out[col].astype("object")
     return out.replace([np.inf, -np.inf], np.nan)
-
-
-AMPLIFIER_TOPIC_SPECS = [
-    (
-        "is_language_modeling",
-        "Language Modeling",
-        ["Language Modeling"],
-    ),
-    (
-        "is_efficient_methods",
-        "Efficient Methods for NLP",
-        ["Efficient Methods for NLP"],
-    ),
-    (
-        "is_multimodality",
-        "Multimodality and Language Grounding",
-        ["Multimodality and Language Grounding to Vision, Robotics and Beyond"],
-    ),
-    (
-        "is_generation",
-        "Generation",
-        ["Generation"],
-    ),
-    (
-        "is_dialogue_interactive",
-        "Dialogue and Interactive Systems",
-        ["Dialogue and Interactive Systems"],
-    ),
-    (
-        "is_llm_agents",
-        "LLM agents",
-        ["LLM agents"],
-    ),
-    (
-        "is_information_extraction",
-        "Information Extraction",
-        ["Information Extraction"],
-    ),
-    (
-        "is_machine_translation",
-        "Machine Translation",
-        ["Machine Translation"],
-    ),
-]
-
-
-AMPLIFIER_MODERATOR_SPECS = [
-    *[
-        {
-            "moderator": col,
-            "label": label,
-            "absorbed": True,
-            "org_control": True,
-        }
-        for col, label, _topics in AMPLIFIER_TOPIC_SPECS
-    ],
-    {
-        "moderator": "has_company",
-        "label": "Company participation",
-        "absorbed": False,
-        "org_control": True,
-    },
-    {
-        "moderator": "has_industry_academia",
-        "label": "Industry-academia collaboration",
-        "absorbed": False,
-        "org_control": True,
-    },
-    {
-        "moderator": "is_cross_sector",
-        "label": "Cross-sector collaboration",
-        "absorbed": False,
-        "org_control": True,
-    },
-    {
-        "moderator": "is_multi_institution",
-        "label": "Multi-institution collaboration",
-        "absorbed": False,
-        "org_control": True,
-    },
-    {
-        "moderator": "is_international_collab",
-        "label": "International collaboration",
-        "absorbed": False,
-        "org_control": True,
-    },
-    {
-        "moderator": "has_frontier_gpu",
-        "label": "A100/H100-class GPU",
-        "absorbed": False,
-        "org_control": True,
-    },
-    {
-        "moderator": "has_high_generation_hardware",
-        "label": "High-generation hardware",
-        "absorbed": False,
-        "org_control": True,
-    },
-]
-
-
-def add_amplifier_variables(df: pd.DataFrame) -> pd.DataFrame:
-    out = df.copy()
-    out["log10_max_compute_c"] = (
-        out["log10_max_compute"] - out["log10_max_compute"].mean(skipna=True)
-    )
-    if "log10_compute" in out.columns:
-        out["log10_compute_c"] = out["log10_compute"] - out["log10_compute"].mean(skipna=True)
-
-    for col in [
-        "has_company",
-        "has_industry_academia",
-        "has_cross_sector",
-        "has_multi_organization",
-        "has_international_collab",
-        "n_organizations",
-        "n_org_countries",
-    ]:
-        if col in out.columns:
-            out[col] = safe_numeric(out[col]).fillna(0)
-        else:
-            out[col] = 0
-
-    topics = out["primary_topic"].fillna("Unknown").astype(str)
-    for col, _label, topic_values in AMPLIFIER_TOPIC_SPECS:
-        out[col] = topics.isin(topic_values).astype(int)
-
-    out["is_multi_institution"] = (
-        (out["n_organizations"].fillna(0) >= 2)
-        | (out["has_multi_organization"].fillna(0).eq(1))
-    ).astype(int)
-    out["is_international_collab"] = (
-        (out["n_org_countries"].fillna(0) >= 2)
-        | (out["has_international_collab"].fillna(0).eq(1))
-    ).astype(int)
-    out["is_cross_sector"] = out["has_cross_sector"].fillna(0).astype(int)
-
-    gpu_names = out.get(
-        "paper_main_gpu_name",
-        pd.Series("", index=out.index, dtype=object),
-    ).astype(str)
-    frontier_gpu_pattern = r"\b(?:A100|H100|H200|A800|H800|B100|B200|GB200)\b"
-    high_generation_pattern = (
-        r"\b(?:A100|H100|H200|A800|H800|B100|B200|GB200|RTX\s*4090|L40|L40S)\b"
-    )
-    out["has_frontier_gpu"] = gpu_names.str.contains(
-        frontier_gpu_pattern, case=False, na=False
-    ).astype(int)
-    out["has_high_generation_hardware"] = gpu_names.str.contains(
-        high_generation_pattern, case=False, na=False
-    ).astype(int)
-    return out.replace([np.inf, -np.inf], np.nan)
-
-
-def amplifier_control_terms(
-    include_org_count_control: bool = True,
-    team_control: str = "group",
-) -> tuple[list[str], list[str]]:
-    if team_control == "group":
-        team_term = "C(team_size_group)"
-        team_required = "team_size_group"
-    elif team_control == "continuous":
-        team_term = "log1p_team_size"
-        team_required = "log1p_team_size"
-    else:
-        raise ValueError("team_control must be 'group' or 'continuous'")
-
-    controls = ["C(year_venue)", "C(primary_topic)", team_term]
-    required = ["year_venue", "primary_topic", team_required]
-    if include_org_count_control:
-        controls.append("C(n_organizations_group)")
-        required.append("n_organizations_group")
-    return controls, required
-
-
-def make_amplifier_formula(
-    outcome: str,
-    moderator: str,
-    compute_var: str = "log10_max_compute_c",
-    moderator_main_absorbed: bool = False,
-    include_org_count_control: bool = True,
-    include_company_controls: bool = True,
-    team_control: str = "group",
-) -> tuple[str, list[str]]:
-    controls, required = amplifier_control_terms(include_org_count_control, team_control)
-    if include_company_controls:
-        if moderator != "has_company":
-            controls.append("has_company")
-            required.append("has_company")
-        if moderator != "has_industry_academia":
-            controls.append("has_industry_academia")
-            required.append("has_industry_academia")
-
-    rhs = (
-        [compute_var, f"{compute_var}:{moderator}"]
-        if moderator_main_absorbed
-        else [f"{compute_var}*{moderator}"]
-    )
-    rhs = [*rhs, *controls]
-    required = sorted(set([outcome, compute_var, moderator, *required]))
-    return model_formula(outcome, rhs), required
-
-
-def scalar_from_test(value) -> float:
-    return float(np.asarray(value).ravel()[0])
-
-
-def fit_amplifier_model(
-    df: pd.DataFrame,
-    outcome: str,
-    moderator: str,
-    sample_label: str = "",
-    model_family: str = "ols",
-    compute_var: str = "log10_max_compute_c",
-    moderator_main_absorbed: bool = False,
-    include_org_count_control: bool = True,
-    include_company_controls: bool = True,
-    team_control: str = "group",
-    cov_type: str = "HC3",
-    min_n: int = 50,
-) -> tuple[dict, object, pd.DataFrame]:
-    formula, required = make_amplifier_formula(
-        outcome=outcome,
-        moderator=moderator,
-        compute_var=compute_var,
-        moderator_main_absorbed=moderator_main_absorbed,
-        include_org_count_control=include_org_count_control,
-        include_company_controls=include_company_controls,
-        team_control=team_control,
-    )
-    model_df = df.dropna(subset=required).copy()
-    if len(model_df) < min_n or model_df[moderator].nunique(dropna=True) < 2:
-        raise ValueError(
-            f"Insufficient sample or moderator variation for {moderator}: "
-            f"n={len(model_df)}, levels={model_df[moderator].nunique(dropna=True)}"
-        )
-
-    fit_cov_type = "HC0" if model_family == "poisson" and cov_type == "HC3" else cov_type
-    model = fit_formula(formula, model_df, family=model_family, cov_type=fit_cov_type)
-    inter_candidates = [f"{compute_var}:{moderator}", f"{moderator}:{compute_var}"]
-    inter_name = next((name for name in inter_candidates if name in model.params.index), None)
-    if inter_name is None:
-        matches = [
-            name for name in model.params.index if compute_var in name and moderator in name
-        ]
-        if len(matches) != 1:
-            raise ValueError(f"Cannot find interaction term for {moderator}: {matches}")
-        inter_name = matches[0]
-
-    params = list(model.params.index)
-    linear_constraint = np.zeros(len(params))
-    if compute_var in params:
-        linear_constraint[params.index(compute_var)] = 1
-    linear_constraint[params.index(inter_name)] += 1
-    z1_test = model.t_test(linear_constraint)
-
-    ci = model.conf_int()
-    ci_base = ci.loc[compute_var].tolist() if compute_var in model.params.index else [np.nan, np.nan]
-    ci_inter = ci.loc[inter_name].tolist()
-    ci_z1 = np.asarray(z1_test.conf_int()).ravel().tolist()
-    binary_moderator = set(model_df[moderator].dropna().unique()).issubset({0, 1})
-    row = {
-        "sample": sample_label,
-        "outcome": outcome,
-        "family": model_family,
-        "moderator": moderator,
-        "nobs": int(model.nobs),
-        "n_Z1": int(model_df[moderator].sum()) if binary_moderator else np.nan,
-        "share_Z1": float(model_df[moderator].mean()) if binary_moderator else np.nan,
-        "formula": formula,
-        "slope_Z0_beta1": float(model.params.get(compute_var, np.nan)),
-        "se_slope_Z0": float(model.bse.get(compute_var, np.nan)),
-        "p_slope_Z0": float(model.pvalues.get(compute_var, np.nan)),
-        "ci_low_slope_Z0": float(ci_base[0]),
-        "ci_high_slope_Z0": float(ci_base[1]),
-        "beta3_interaction": float(model.params[inter_name]),
-        "se_beta3": float(model.bse[inter_name]),
-        "p_beta3": float(model.pvalues[inter_name]),
-        "ci_low_beta3": float(ci_inter[0]),
-        "ci_high_beta3": float(ci_inter[1]),
-        "slope_Z1_beta1_plus_beta3": scalar_from_test(z1_test.effect),
-        "se_slope_Z1": scalar_from_test(z1_test.sd),
-        "p_slope_Z1": scalar_from_test(z1_test.pvalue),
-        "ci_low_slope_Z1": float(ci_z1[0]),
-        "ci_high_slope_Z1": float(ci_z1[1]),
-        "r2": float(getattr(model, "rsquared", np.nan)),
-        "interaction_term": inter_name,
-    }
-    if outcome == "log1p_cites":
-        row["beta3_pct_extra_return"] = float(np.exp(row["beta3_interaction"]) - 1)
-        row["slope_Z1_pct_return"] = float(np.exp(row["slope_Z1_beta1_plus_beta3"]) - 1)
-    if outcome in {"is_highly_cited_all_yv", "is_award"}:
-        row["beta3_percentage_points"] = row["beta3_interaction"] * 100
-        row["slope_Z1_percentage_points"] = row["slope_Z1_beta1_plus_beta3"] * 100
-    return row, model, model_df
-
-
-def run_amplifier_suite(
-    df: pd.DataFrame,
-    sample_label: str,
-    outcome: str = "log1p_cites",
-    family: str | None = None,
-    specs: list[dict] | None = None,
-) -> tuple[pd.DataFrame, dict[str, object], dict[str, pd.DataFrame]]:
-    family = family or ("lpm" if outcome in {"is_highly_cited_all_yv", "is_award"} else "ols")
-    rows = []
-    models = {}
-    samples = {}
-    for spec in specs or AMPLIFIER_MODERATOR_SPECS:
-        moderator = spec["moderator"]
-        try:
-            row, model, model_df = fit_amplifier_model(
-                df,
-                outcome=outcome,
-                moderator=moderator,
-                sample_label=sample_label,
-                model_family=family,
-                moderator_main_absorbed=spec["absorbed"],
-                include_org_count_control=spec["org_control"],
-                cov_type="HC3",
-            )
-            row["moderator_label"] = spec["label"]
-            row["moderator_main_absorbed_by_FE"] = spec["absorbed"]
-            rows.append(row)
-            models[moderator] = model
-            samples[moderator] = model_df
-        except Exception as exc:
-            rows.append(
-                {
-                    "sample": sample_label,
-                    "outcome": outcome,
-                    "family": family,
-                    "moderator": moderator,
-                    "moderator_label": spec["label"],
-                    "moderator_main_absorbed_by_FE": spec["absorbed"],
-                    "error": repr(exc),
-                }
-            )
-
-    table = pd.DataFrame(rows)
-    if "p_beta3" in table.columns:
-        mask = table["p_beta3"].notna()
-        if mask.any():
-            table.loc[mask, "q_beta3_fdr_bh"] = multipletests(
-                table.loc[mask, "p_beta3"],
-                method="fdr_bh",
-            )[1]
-    if "beta3_interaction" in table.columns:
-        return table.sort_values("beta3_interaction", ascending=False), models, samples
-    return table, models, samples
-
-
-def make_topic_dummies(
-    df: pd.DataFrame,
-    topic_col: str = "primary_topic",
-    min_n: int = 50,
-) -> tuple[pd.DataFrame, list[dict]]:
-    out = df.copy()
-    specs = []
-    for topic_name, n_topic in out[topic_col].value_counts(dropna=False).items():
-        if topic_name == "Unknown" or pd.isna(topic_name) or n_topic < min_n:
-            continue
-        safe = re.sub(r"[^0-9A-Za-z_]+", "_", str(topic_name)).strip("_").lower()
-        col = f"topic__{safe[:70]}"
-        base = col
-        suffix = 1
-        while col in out.columns:
-            col = f"{base}_{suffix}"
-            suffix += 1
-        out[col] = out[topic_col].eq(topic_name).astype(int)
-        specs.append(
-            {
-                "moderator": col,
-                "label": str(topic_name),
-                "absorbed": True,
-                "org_control": True,
-                "topic": str(topic_name),
-                "n_topic_raw": int(n_topic),
-            }
-        )
-    return out, specs
-
-
-def run_topic_amplifier_suite(
-    df: pd.DataFrame,
-    sample_label: str,
-    outcome: str = "log1p_cites",
-    min_n: int = 50,
-) -> pd.DataFrame:
-    df2, specs = make_topic_dummies(df, min_n=min_n)
-    table, _models, _samples = run_amplifier_suite(
-        df2,
-        sample_label=sample_label,
-        outcome=outcome,
-        specs=specs,
-    )
-    if table.empty:
-        return table
-    topic_lookup = {spec["moderator"]: spec for spec in specs}
-    table["topic"] = table["moderator"].map(
-        lambda moderator: topic_lookup.get(moderator, {}).get("topic", np.nan)
-    )
-    table["n_topic_raw"] = table["moderator"].map(
-        lambda moderator: topic_lookup.get(moderator, {}).get("n_topic_raw", np.nan)
-    )
-    return table
-
-
-def fit_combined_amplifier_model(
-    df: pd.DataFrame,
-    sample_label: str,
-    outcome: str = "log1p_cites",
-    compute_var: str = "log10_max_compute_c",
-) -> tuple[pd.DataFrame, object]:
-    absorbed_mods = [spec["moderator"] for spec in AMPLIFIER_MODERATOR_SPECS if spec["absorbed"]]
-    explicit_mods = [
-        "has_company",
-        "has_industry_academia",
-        "is_cross_sector",
-        "is_multi_institution",
-        "is_international_collab",
-        "has_frontier_gpu",
-    ]
-    interactions = [f"{compute_var}:{moderator}" for moderator in absorbed_mods + explicit_mods]
-    rhs = [
-        compute_var,
-        *explicit_mods,
-        *interactions,
-        "C(year_venue)",
-        "C(primary_topic)",
-        "C(team_size_group)",
-        "C(n_organizations_group)",
-    ]
-    required = sorted(
-        set(
-            [
-                outcome,
-                compute_var,
-                *absorbed_mods,
-                *explicit_mods,
-                "year_venue",
-                "primary_topic",
-                "team_size_group",
-                "n_organizations_group",
-            ]
-        )
-    )
-    model_df = df.dropna(subset=required).copy()
-    family = "lpm" if outcome in {"is_highly_cited_all_yv", "is_award"} else "ols"
-    model = fit_formula(model_formula(outcome, rhs), model_df, family=family, cov_type="HC3")
-    label_lookup = {
-        spec["moderator"]: spec["label"] for spec in AMPLIFIER_MODERATOR_SPECS
-    }
-    rows = []
-    for moderator in absorbed_mods + explicit_mods:
-        inter_name = f"{compute_var}:{moderator}"
-        if inter_name not in model.params.index:
-            inter_name = f"{moderator}:{compute_var}"
-        if inter_name not in model.params.index:
-            continue
-        ci_low, ci_high = model.conf_int().loc[inter_name].tolist()
-        rows.append(
-            {
-                "sample": sample_label,
-                "outcome": outcome,
-                "family": family,
-                "moderator": moderator,
-                "moderator_label": label_lookup.get(moderator, moderator),
-                "nobs": int(model.nobs),
-                "beta3_interaction": float(model.params[inter_name]),
-                "se_beta3": float(model.bse[inter_name]),
-                "p_beta3": float(model.pvalues[inter_name]),
-                "ci_low_beta3": float(ci_low),
-                "ci_high_beta3": float(ci_high),
-                "interaction_term": inter_name,
-                "formula": model_formula(outcome, rhs),
-            }
-        )
-    table = pd.DataFrame(rows)
-    if not table.empty:
-        table["q_beta3_fdr_bh"] = multipletests(table["p_beta3"], method="fdr_bh")[1]
-    return table, model
 
 
 def build_specs(compute_var: str = "log10_max_compute", team_control: str = "group") -> dict[int, dict]:
@@ -1362,7 +877,7 @@ def fit_institution_history_models(
 ) -> pd.DataFrame:
     org_history = build_org_history_controls(paper_org_long, org_year_panel)
     master_org = master.merge(org_history, on="paper_id", how="left", validate="one_to_one")
-    sample = make_analysis_sample(master_org, sample="gpu_lb1", year_min=2020, year_max=2023)
+    sample = make_analysis_sample(master_org, sample="strict_raw", year_min=2020, year_max=2023)
     institution_controls = [
         "log1p_max_prior_org_papers",
         "log1p_mean_prior_org_papers",
@@ -1387,7 +902,7 @@ def fit_institution_history_models(
     return pd.DataFrame(
         [
             {
-                "model": "baseline on institution-control sample",
+                "model": "strict baseline on institution-control sample",
                 "nobs": int(base_model.nobs),
                 "coef": base_model.params["log10_max_compute"],
                 "se": base_model.bse["log10_max_compute"],
@@ -1395,7 +910,7 @@ def fit_institution_history_models(
                 "r2": base_model.rsquared,
             },
             {
-                "model": "plus prior org history/collab controls",
+                "model": "strict plus prior org history/collab controls",
                 "nobs": int(ext_model.nobs),
                 "coef": ext_model.params["log10_max_compute"],
                 "se": ext_model.bse["log10_max_compute"],
@@ -1411,48 +926,6 @@ def save_pub_figure(fig: plt.Figure, stem: Path, dpi: int = 600) -> dict[str, st
     path = stem.with_suffix(".png")
     fig.savefig(path, dpi=dpi, bbox_inches="tight")
     paths["png"] = str(path)
-    return paths
-
-
-def plot_amplifier_forest(
-    table: pd.DataFrame,
-    fig_dir: Path,
-    stem: str,
-    label_col: str = "moderator_label",
-) -> dict[str, str]:
-    plot_df = table.dropna(
-        subset=["beta3_interaction", "ci_low_beta3", "ci_high_beta3"]
-    ).copy()
-    plot_df = plot_df.sort_values("beta3_interaction")
-
-    fig_height = max(3.6, 0.28 * max(len(plot_df), 1) + 1.1)
-    fig, ax = plt.subplots(figsize=(7.2, fig_height))
-    if plot_df.empty:
-        ax.text(0.5, 0.5, "No estimable amplifier interactions", ha="center", va="center")
-        ax.set_axis_off()
-    else:
-        y_pos = np.arange(len(plot_df))
-        ax.errorbar(
-            plot_df["beta3_interaction"],
-            y_pos,
-            xerr=[
-                plot_df["beta3_interaction"] - plot_df["ci_low_beta3"],
-                plot_df["ci_high_beta3"] - plot_df["beta3_interaction"],
-            ],
-            fmt="o",
-            capsize=2.5,
-            color="#2F6DA3",
-            ecolor="#777777",
-            markersize=3.5,
-        )
-        ax.axvline(0, linestyle="--", linewidth=0.8, color="#555555")
-        ax.set_yticks(y_pos)
-        ax.set_yticklabels(plot_df[label_col].astype(str))
-        ax.set_xlabel("beta3: extra slope per 10x GPU compute")
-        ax.grid(axis="x", color="#E8E8E8", linewidth=0.45)
-    plt.tight_layout()
-    paths = save_pub_figure(fig, fig_dir / stem)
-    plt.close(fig)
     return paths
 
 
@@ -1738,7 +1211,7 @@ def write_report(
     robustness_table = _robustness_markdown_tables(robustness_tables)
     report = f"""# RQ3 GPU-only citation modeling
 
-This report re-runs the citation-impact modeling workflow on the GPU-only input bundle.
+This report re-runs the citation-impact modeling workflow on the GPU-only input bundle. All regression models use the strict raw-compute sample.
 
 ## Sample audit
 
@@ -1746,6 +1219,7 @@ This report re-runs the citation-impact modeling workflow on the GPU-only input 
 - 2020-2023 LB1/GFIMP GPU sample papers: {audit['gpu_2020_2023_rows']}
 - 2020-2023 strict raw GPU sample papers: {audit['strict_2020_2023_rows']}
 - 2020-2025 LB1/GFIMP GPU sample papers: {audit['gpu_2020_2025_rows']}
+- 2020-2025 strict raw GPU sample papers: {audit['strict_2020_2025_rows']}
 
 ## Main results
 
@@ -1763,7 +1237,8 @@ This report re-runs the citation-impact modeling workflow on the GPU-only input 
 
 RQ3 uses year-by-venue fixed effects, primary-topic fixed effects, team-size group,
 and organization-count group controls. It intentionally excludes `contribution_type`
-and all contribution-label proxy controls.
+and all contribution-label proxy controls. The compute regressor is strict raw
+`log10_max_compute`, derived from `paper_max_row_compute_capability`.
 
 ## Notes
 
@@ -1780,54 +1255,6 @@ and all contribution-label proxy controls.
 - Robustness-analysis tables are exported as CSV files in the same `data`
   directory using the section names shown above.
 
-Amplifier interaction models are exported separately under `4.4/Amplifier interaction modeling`.
-"""
-    report_path.write_text(report, encoding="utf-8")
-
-
-def write_amplifier_report(
-    report_path: Path,
-    amplifier_results: pd.DataFrame,
-    audit: dict[str, int],
-) -> None:
-    amplifier_cols = [
-        "sample",
-        "outcome",
-        "moderator_label",
-        "nobs",
-        "n_Z1",
-        "beta3_interaction",
-        "p_beta3",
-        "q_beta3_fdr_bh",
-        "ci_low_beta3",
-        "ci_high_beta3",
-    ]
-    amplifier_csv = amplifier_results[
-        [col for col in amplifier_cols if col in amplifier_results.columns]
-    ].to_csv(index=False)
-    report = f"""# RQ3 GPU-only amplifier interaction modeling
-
-This report contains the GPU-only amplifier analysis separated from the main
-`Citation modeling` outputs.
-
-## Sample audit
-
-- GPU-only master papers: {audit['master_rows']}
-- 2020-2023 LB1/GFIMP GPU sample papers: {audit['gpu_2020_2023_rows']}
-- 2020-2023 strict raw GPU sample papers: {audit['strict_2020_2023_rows']}
-- 2020-2025 LB1/GFIMP GPU sample papers: {audit['gpu_2020_2025_rows']}
-
-## Amplifier interaction models
-
-The GPU-only amplifier analysis estimates interaction models where the slope on
-`log10_max_compute` varies by topic, organization, and hardware moderators. The
-core parameter is the interaction coefficient beta3: positive beta3 values indicate
-higher marginal citation returns to a 10x GPU-compute increase when the moderator is
-present. These are descriptive associations, not causal estimates.
-
-```csv
-{amplifier_csv.strip()}
-```
 """
     report_path.write_text(report, encoding="utf-8")
 
@@ -1835,9 +1262,6 @@ present. These are descriptive associations, not causal estimates.
 def run_analysis(output_dir: Path | str | None = None, quiet: bool = False) -> dict:
     output_base = Path(output_dir) if output_dir is not None else None
     dirs = ensure_output_dirs(output_base)
-    amplifier_dirs = ensure_output_dirs(
-        (output_base / "Amplifier interaction modeling") if output_base is not None else AMPLIFIER_BUNDLE
-    )
     inputs = load_inputs()
     master = build_master_panel(
         inputs["compute"],
@@ -1851,11 +1275,8 @@ def run_analysis(output_dir: Path | str | None = None, quiet: bool = False) -> d
     strict_2020_2023 = make_analysis_sample(master, sample="strict_raw", year_min=2020, year_max=2023)
     gpu_2020_2025 = make_analysis_sample(master, sample="gpu_lb1", year_min=2020, year_max=2025)
     strict_2020_2025 = make_analysis_sample(master, sample="strict_raw", year_min=2020, year_max=2025)
-
-    gpu_2020_2023_amp = add_amplifier_variables(gpu_2020_2023)
-    strict_2020_2023_amp = add_amplifier_variables(strict_2020_2023)
-    gpu_2020_2025_amp = add_amplifier_variables(gpu_2020_2025)
-    strict_2020_2025_amp = add_amplifier_variables(strict_2020_2025)
+    regression_2020_2023 = strict_2020_2023
+    regression_2020_2025 = strict_2020_2025
 
     selection_check = pd.DataFrame(
         [
@@ -1878,43 +1299,36 @@ def run_analysis(output_dir: Path | str | None = None, quiet: bool = False) -> d
         ]
     )
 
-    gpu_ols_log = fit_model_grid(
-        gpu_2020_2023,
+    strict_ols_log = fit_model_grid(
+        regression_2020_2023,
         outcome="log1p_cites",
         family="ols",
         max_spec=7,
         cov_type="HC3",
     )
-    strict_raw_ols_log = fit_model_grid(
-        strict_2020_2023,
-        outcome="log1p_cites",
-        family="ols",
-        max_spec=7,
-        cov_type="HC3",
-    )
-    gpu_ppml = fit_model_grid(
-        gpu_2020_2023,
+    strict_ppml = fit_model_grid(
+        regression_2020_2023,
         outcome="cited_by_count",
         family="poisson",
         max_spec=7,
         cov_type="HC0",
     )
-    gpu_ols_norm = fit_model_grid(
-        gpu_2020_2023,
+    strict_ols_norm = fit_model_grid(
+        regression_2020_2023,
         outcome="citation_normalized_percentile",
         family="ols",
         max_spec=7,
         cov_type="HC3",
     )
-    gpu_lpm_high = fit_model_grid(
-        gpu_2020_2023,
+    strict_lpm_high = fit_model_grid(
+        regression_2020_2023,
         outcome="is_highly_cited_all_yv",
         family="lpm",
         max_spec=7,
         cov_type="HC3",
     )
-    gpu_lpm_award = fit_model_grid(
-        gpu_2020_2025,
+    strict_lpm_award = fit_model_grid(
+        regression_2020_2025,
         outcome="is_award",
         family="lpm",
         max_spec=7,
@@ -1923,95 +1337,40 @@ def run_analysis(output_dir: Path | str | None = None, quiet: bool = False) -> d
 
     main_results = pd.DataFrame(
         [
-            pick_result(gpu_ols_log, "GPU-only OLS: log1p citations", 7, "approx pct change in 1+cites per 10x GPU compute"),
             pick_result(
-                strict_raw_ols_log,
+                strict_ols_log,
                 "Strict raw GPU OLS: log1p citations",
                 7,
                 "approx pct change in 1+cites per 10x GPU compute",
             ),
-            pick_result(gpu_ppml, "GPU-only PPML: citation count", 7, "pct change in expected citations per 10x GPU compute"),
+            pick_result(strict_ppml, "Strict raw GPU PPML: citation count", 7, "pct change in expected citations per 10x GPU compute"),
             pick_result(
-                gpu_ols_norm,
-                "GPU-only OLS: normalized citation percentile",
+                strict_ols_norm,
+                "Strict raw GPU OLS: normalized citation percentile",
                 7,
                 "percentile-point scale, 0-1",
             ),
-            pick_result(gpu_lpm_high, "GPU-only LPM: high cited all-yv top10", 7, "percentage points"),
-            pick_result(gpu_lpm_award, "GPU-only LPM: award", 7, "percentage points"),
+            pick_result(strict_lpm_high, "Strict raw GPU LPM: high cited all-yv top10", 7, "percentage points"),
+            pick_result(strict_lpm_award, "Strict raw GPU LPM: award", 7, "percentage points"),
         ]
     )
 
     all_effect_tables = pd.concat(
         [
-            compact_effect_table(gpu_ols_log, "GPU-only OLS: log1p citations"),
-            compact_effect_table(strict_raw_ols_log, "Strict raw GPU OLS: log1p citations"),
-            compact_effect_table(gpu_ppml, "GPU-only PPML: citation count"),
-            compact_effect_table(gpu_ols_norm, "GPU-only OLS: normalized citation percentile"),
-            compact_effect_table(gpu_lpm_high, "GPU-only LPM: high cited all-yv top10"),
-            compact_effect_table(gpu_lpm_award, "GPU-only LPM: award"),
+            compact_effect_table(strict_ols_log, "Strict raw GPU OLS: log1p citations"),
+            compact_effect_table(strict_ppml, "Strict raw GPU PPML: citation count"),
+            compact_effect_table(strict_ols_norm, "Strict raw GPU OLS: normalized citation percentile"),
+            compact_effect_table(strict_lpm_high, "Strict raw GPU LPM: high cited all-yv top10"),
+            compact_effect_table(strict_lpm_award, "Strict raw GPU LPM: award"),
         ],
         ignore_index=True,
-    )
-
-    gpu_amp_log, _gpu_amp_log_models, _gpu_amp_log_samples = run_amplifier_suite(
-        gpu_2020_2023_amp,
-        sample_label="gpu_lb1_2020_2023",
-        outcome="log1p_cites",
-    )
-    strict_amp_log, _strict_amp_log_models, _strict_amp_log_samples = run_amplifier_suite(
-        strict_2020_2023_amp,
-        sample_label="strict_raw_2020_2023",
-        outcome="log1p_cites",
-    )
-    gpu_amp_high, _gpu_amp_high_models, _gpu_amp_high_samples = run_amplifier_suite(
-        gpu_2020_2023_amp,
-        sample_label="gpu_lb1_2020_2023",
-        outcome="is_highly_cited_all_yv",
-    )
-    gpu_amp_norm, _gpu_amp_norm_models, _gpu_amp_norm_samples = run_amplifier_suite(
-        gpu_2020_2023_amp,
-        sample_label="gpu_lb1_2020_2023",
-        outcome="citation_normalized_percentile",
-    )
-    gpu_amp_award, _gpu_amp_award_models, _gpu_amp_award_samples = run_amplifier_suite(
-        gpu_2020_2025_amp,
-        sample_label="gpu_lb1_2020_2025",
-        outcome="is_award",
-    )
-    strict_amp_award, _strict_amp_award_models, _strict_amp_award_samples = run_amplifier_suite(
-        strict_2020_2025_amp,
-        sample_label="strict_raw_2020_2025",
-        outcome="is_award",
-    )
-    all_amplifier_results = pd.concat(
-        [
-            gpu_amp_log,
-            gpu_amp_high,
-            gpu_amp_norm,
-            gpu_amp_award,
-            strict_amp_log,
-            strict_amp_award,
-        ],
-        ignore_index=True,
-    )
-    gpu_topic_amp_log = run_topic_amplifier_suite(
-        gpu_2020_2023_amp,
-        sample_label="gpu_lb1_2020_2023",
-        outcome="log1p_cites",
-        min_n=50,
-    )
-    gpu_combined_amp_log, _gpu_combined_amp_model = fit_combined_amplifier_model(
-        gpu_2020_2023_amp,
-        sample_label="gpu_lb1_2020_2023",
-        outcome="log1p_cites",
     )
 
     robust_rows = []
     for compute_var in ["log10_max_compute", "log10_compute"]:
         for team_control in ["group", "continuous"]:
             result = fit_model_grid(
-                gpu_2020_2023,
+                regression_2020_2023,
                 outcome="log1p_cites",
                 family="ols",
                 compute_var=compute_var,
@@ -2041,7 +1400,7 @@ def run_analysis(output_dir: Path | str | None = None, quiet: bool = False) -> d
         "drop both top 1%": {"drop_cite_top1": True, "drop_compute_top1": True},
     }.items():
         result = fit_model_grid(
-            outlier_filtered(gpu_2020_2023, **kwargs),
+            outlier_filtered(regression_2020_2023, **kwargs),
             outcome="log1p_cites",
             family="ols",
             specs=[7],
@@ -2063,7 +1422,7 @@ def run_analysis(output_dir: Path | str | None = None, quiet: bool = False) -> d
     cluster_rows = []
     for cluster_var in ["year_venue", "primary_topic", "year_str"]:
         result = fit_model_grid(
-            gpu_2020_2023,
+            regression_2020_2023,
             outcome="log1p_cites",
             family="ols",
             specs=[7],
@@ -2084,9 +1443,9 @@ def run_analysis(output_dir: Path | str | None = None, quiet: bool = False) -> d
     cluster_table = pd.DataFrame(cluster_rows)
 
     loo_rows = []
-    for year in sorted(gpu_2020_2023["year"].dropna().unique()):
+    for year in sorted(regression_2020_2023["year"].dropna().unique()):
         result = fit_model_grid(
-            gpu_2020_2023.loc[gpu_2020_2023["year"] != year].copy(),
+            regression_2020_2023.loc[regression_2020_2023["year"] != year].copy(),
             outcome="log1p_cites",
             family="ols",
             specs=[7],
@@ -2103,9 +1462,9 @@ def run_analysis(output_dir: Path | str | None = None, quiet: bool = False) -> d
                 "p": row["p"],
             }
         )
-    for venue in sorted(gpu_2020_2023["venue"].dropna().unique()):
+    for venue in sorted(regression_2020_2023["venue"].dropna().unique()):
         result = fit_model_grid(
-            gpu_2020_2023.loc[gpu_2020_2023["venue"] != venue].copy(),
+            regression_2020_2023.loc[regression_2020_2023["venue"] != venue].copy(),
             outcome="log1p_cites",
             family="ols",
             specs=[7],
@@ -2128,8 +1487,8 @@ def run_analysis(output_dir: Path | str | None = None, quiet: bool = False) -> d
         master, inputs["org_long"], inputs["org_year_panel"]
     )
 
-    award_sample = gpu_lpm_award["common_df"]
-    award_model_7 = gpu_lpm_award["models"].get("lpm_7")
+    award_sample = strict_lpm_award["common_df"]
+    award_model_7 = strict_lpm_award["models"].get("lpm_7")
     award_sparse_diag = pd.DataFrame(
         {
             "metric": [
@@ -2155,8 +1514,8 @@ def run_analysis(output_dir: Path | str | None = None, quiet: bool = False) -> d
         }
     )
 
-    strength_table = pd.DataFrame([effect_strength_ols(gpu_ols_log, spec=7)])
-    delta_r2_table = pd.DataFrame([delta_r2_for_spec(gpu_2020_2023, "log1p_cites", spec_id=7)])
+    strength_table = pd.DataFrame([effect_strength_ols(strict_ols_log, spec=7)])
+    delta_r2_table = pd.DataFrame([delta_r2_for_spec(regression_2020_2023, "log1p_cites", spec_id=7)])
     top_compute_concentration_source = build_top_compute_concentration_data(gpu_2020_2023)
     high_compute_impact_matrix_source = build_high_compute_impact_matrix_data(gpu_2020_2023)
 
@@ -2175,14 +1534,6 @@ def run_analysis(output_dir: Path | str | None = None, quiet: bool = False) -> d
         "rq3_top20_compute_concentration": dirs["data"] / "rq3_top20_compute_concentration.csv",
         "rq3_high_compute_high_impact_matrix": dirs["data"]
         / "rq3_high_compute_high_impact_matrix.csv",
-        "gpu_lb1_amplifier_log1p_cites": amplifier_dirs["data"] / "gpu_lb1_amplifier_log1p_cites.csv",
-        "strict_raw_amplifier_log1p_cites": amplifier_dirs["data"] / "strict_raw_amplifier_log1p_cites.csv",
-        "gpu_only_all_amplifier_interaction_results": amplifier_dirs["data"]
-        / "gpu_only_all_amplifier_interaction_results.csv",
-        "gpu_lb1_topic_amplifier_log1p_cites": amplifier_dirs["data"]
-        / "gpu_lb1_topic_amplifier_log1p_cites.csv",
-        "gpu_lb1_combined_interaction_log1p_cites": amplifier_dirs["data"]
-        / "gpu_lb1_combined_interaction_log1p_cites.csv",
     }
     table_frames = {
         "main_results_summary": main_results,
@@ -2198,11 +1549,6 @@ def run_analysis(output_dir: Path | str | None = None, quiet: bool = False) -> d
         "delta_r2": delta_r2_table,
         "rq3_top20_compute_concentration": top_compute_concentration_source,
         "rq3_high_compute_high_impact_matrix": high_compute_impact_matrix_source,
-        "gpu_lb1_amplifier_log1p_cites": gpu_amp_log,
-        "strict_raw_amplifier_log1p_cites": strict_amp_log,
-        "gpu_only_all_amplifier_interaction_results": all_amplifier_results,
-        "gpu_lb1_topic_amplifier_log1p_cites": gpu_topic_amp_log,
-        "gpu_lb1_combined_interaction_log1p_cites": gpu_combined_amp_log,
     }
     for key, frame in table_frames.items():
         frame.to_csv(tables[key], index=False)
@@ -2216,17 +1562,6 @@ def run_analysis(output_dir: Path | str | None = None, quiet: bool = False) -> d
             high_compute_impact_matrix_source,
             dirs["fig"],
         ),
-        "gpu_lb1_amplifier_beta3_forest": plot_amplifier_forest(
-            gpu_amp_log,
-            amplifier_dirs["fig"],
-            "gpu_lb1_amplifier_beta3_forest",
-        ),
-        "gpu_lb1_topic_amplifier_beta3_forest": plot_amplifier_forest(
-            gpu_topic_amp_log,
-            amplifier_dirs["fig"],
-            "gpu_lb1_topic_amplifier_beta3_forest",
-            label_col="topic",
-        ),
     }
 
     outputs = {
@@ -2235,10 +1570,7 @@ def run_analysis(output_dir: Path | str | None = None, quiet: bool = False) -> d
         "reports": {
             "rq3_gpu_only_citation_modeling": str(
                 dirs["report"] / "rq3_gpu_only_citation_modeling.md"
-            ),
-            "rq3_gpu_only_amplifier_interactions": str(
-                amplifier_dirs["report"] / "rq3_gpu_only_amplifier_interactions.md"
-            ),
+            )
         },
     }
     audit = {
@@ -2246,6 +1578,7 @@ def run_analysis(output_dir: Path | str | None = None, quiet: bool = False) -> d
         "gpu_2020_2023_rows": len(gpu_2020_2023),
         "strict_2020_2023_rows": len(strict_2020_2023),
         "gpu_2020_2025_rows": len(gpu_2020_2025),
+        "strict_2020_2025_rows": len(strict_2020_2025),
     }
     robustness_tables = {
         "selection_check": selection_check,
@@ -2265,11 +1598,6 @@ def run_analysis(output_dir: Path | str | None = None, quiet: bool = False) -> d
         robustness_tables,
         audit,
     )
-    write_amplifier_report(
-        Path(outputs["reports"]["rq3_gpu_only_amplifier_interactions"]),
-        gpu_amp_log,
-        audit,
-    )
 
     if not quiet:
         print(json.dumps(outputs, indent=2))
@@ -2287,6 +1615,7 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
 
 
 

@@ -57,8 +57,9 @@ OUT_FIG = BUNDLE / "fig"
 OUT_REPORT = BUNDLE / "report"
 
 FE_TERMS = "C(year_fe) + C(topic_fe) + C(venue_fe)"
-MAIN_OUTCOME = "log10_max_tflops_lb1"
 STRICT_OUTCOME = "log10_max_tflops_raw"
+MAIN_OUTCOME = STRICT_OUTCOME
+REGRESSION_SAMPLE = "strict_raw_max_row"
 TOP_COMPUTE_QUANTILE = 0.80
 CORE_TERMS = [
     "Company_i",
@@ -394,7 +395,7 @@ def fit_main_models(df: pd.DataFrame) -> pd.DataFrame:
                 model_family="main_one_focal_fe",
                 outcome=MAIN_OUTCOME,
                 terms=[spec.formula_term],
-                sample="lb1_gfimp_max_row",
+                sample=REGRESSION_SAMPLE,
                 labels={spec.formula_term: spec.label},
             )
         )
@@ -409,7 +410,7 @@ def fit_full_model(df: pd.DataFrame) -> pd.DataFrame:
         model_family="appendix_full_model",
         outcome=MAIN_OUTCOME,
         terms=[spec.formula_term for spec in FOCAL_SPECS],
-        sample="lb1_gfimp_max_row",
+        sample=REGRESSION_SAMPLE,
         labels=labels,
     )
 
@@ -853,11 +854,11 @@ def write_report(
 
 ## Method
 
-This analysis uses a paper-level panel, not full-count organization-paper rows. The main outcome is `log10(paper_max_row_compute_capability_gfimp_lb1 / 1e12)`, interpreted as lower-bound imputed max-row GPU compute in TFLOP/s.
+This analysis uses a paper-level panel, not full-count organization-paper rows. The regression outcome is `log10(paper_max_row_compute_capability / 1e12)`, interpreted as strict raw max-row GPU compute in TFLOP/s.
 
 The main table estimates five one-focal-variable-at-a-time OLS models with HC3 robust standard errors. Each model controls year fixed effects, topic fixed effects, and venue fixed effects. The separated specification is intentional because company participation, industry-academia collaboration, cross-sector collaboration, international collaboration, and organization count overlap conceptually and empirically.
 
-Main sample: `is_lb1_gfimp == 1`; paper-level rows: {audit["paper_level_panel_rows"]:,}; main-model observations: {audit["main_model_nobs_min"]:,}-{audit["main_model_nobs_max"]:,}; fixed effects: {audit["n_year_fe"]} years, {audit["n_topic_fe"]} topics, {audit["n_venue_fe"]} venues.
+Regression sample: `is_strict == 1`; paper-level rows: {audit["paper_level_panel_rows"]:,}; strict-valid papers: {audit["strict_valid_papers"]:,}; main-model observations: {audit["main_model_nobs_min"]:,}-{audit["main_model_nobs_max"]:,}; fixed effects: {audit["n_year_fe"]} years, {audit["n_topic_fe"]} topics, {audit["n_venue_fe"]} venues.
 
 ## Main Models
 
@@ -871,9 +872,9 @@ The full model includes all five institutional terms simultaneously and should b
 
 {_results_markdown(full)}
 
-## Robustness: Strict Raw Max-Row Compute
+## Strict Single-Focal Compatibility Table
 
-The strict robustness table reruns the five main specifications with `log10(paper_max_row_compute_capability / 1e12)` and restricts the sample to `is_strict == 1`. This checks whether the main lower-bound imputed result depends on the imputed sample.
+This table preserves the previous strict-output file shape. It uses the same strict raw outcome and `is_strict == 1` sample as the main regression table.
 
 {_results_markdown(strict)}
 
@@ -902,7 +903,7 @@ Access regimes are mutually exclusive paper-level categories: academic-only, ind
 
 ## Review Risks
 
-These models are descriptive fixed-effects associations, not causal estimates. The main lower-bound imputed outcome maximizes GPU-only coverage, while the strict robustness table is narrower and reflects papers with raw strict max-row compute available.
+These models are descriptive fixed-effects associations, not causal estimates. All regression tables are now estimated on the stricter raw-compute sample, so coverage is narrower than the lower-bound imputed descriptive summaries.
 """
     (OUT_REPORT / "institution_fe_models.md").write_text(report, encoding="utf-8")
 

@@ -48,9 +48,14 @@ def add_adjusted_citations(
     topic_col: str = "primary_topic",
     team_size_col: str = "log1p_team_size",
     output_col: str = "adjusted_citations",
+    strict_col: str | None = "is_strict",
 ):
     required_cols = [outcome_col, year_col, venue_col, topic_col, team_size_col]
-    result = df.dropna(subset=required_cols).copy()
+    if strict_col and strict_col in df.columns:
+        source = df.loc[pd.to_numeric(df[strict_col], errors="coerce").eq(1)].copy()
+    else:
+        source = df.copy()
+    result = source.dropna(subset=required_cols).copy()
     result["year_venue"] = result[year_col].astype(str) + "_" + result[venue_col].astype(str)
 
     formula = " ~ ".join(
