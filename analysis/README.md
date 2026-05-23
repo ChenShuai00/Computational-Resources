@@ -11,7 +11,7 @@ This directory contains the released datasets, scripts, figures, and report note
 - `4.1/`: compute-resource reporting patterns over time and across venues.
 - `4.2/`: GPU count, GPU model, GPU generation, memory, and reported peak TFLOPS analyses.
 - `4.3/`: country-, institution-, and NLP-topic-level compute-resource analyses.
-- `4.4/`: citation modeling and amplifier interaction analyses.
+- `4.4/`: citation modeling analyses.
 
 Most analysis modules keep their inputs, outputs, and notes together:
 
