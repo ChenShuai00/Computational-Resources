@@ -9,8 +9,9 @@ This repository accompanies the paper **"Do More Computational Resources Transla
 
 - `analysis/`: paper-level datasets, analysis scripts, figures, and report notes.
 - `code/`: metadata, PDF parsing, affiliation extraction, and compute-resource extraction pipeline. See `code/README.md` for details.
+- `data/`: released extracted data for compute-resource mentions, classified research topics, and paper affiliation institutions. See `data/README.md` for details.
 - `assets/`: README and repository media.
 
 ## Reproduction
 
-Use `analysis/data/` as the main released dataset. Manuscript analyses are organized by section under `analysis/`, with scripts and outputs kept together in each subfolder. For raw PDF/metadata processing and GPU extraction workflows, see `code/README.md`.
+Use `analysis/data/` for the analysis-ready paper-level datasets and `data/` for the released extraction outputs. Manuscript analyses are organized by section under `analysis/`, with scripts and outputs kept together in each subfolder. For raw PDF/metadata processing and GPU extraction workflows, see `code/README.md`.

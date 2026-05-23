@@ -1,0 +1,162 @@
+{
+  "paper_id": "2025.acl-long.1028",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.1028::sections::3",
+      "paper_id": "2025.acl-long.1028",
+      "section_number": "3",
+      "section_title": "methods",
+      "normalized_section_title": "methods",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1028::sections::4",
+      "paper_id": "2025.acl-long.1028",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1028::sections::acknowledgments",
+      "paper_id": "2025.acl-long.1028",
+      "section_number": "",
+      "section_title": "acknowledgments",
+      "normalized_section_title": "acknowledgments",
+      "window_text": "We sincerely appreciate Prof. John Canny for constructive comments and guidance. We also thank Prof. Emma Pierson and Dr. Sehoon Kim for valuable discussions as well as Woosuk Kwon for his support with vLLM. J.S. and S.M. would like to acknowledge the support from the Korea Foundation for Advanced Studies (KFAS). S.M. is supported by BAIR-Google Commons and M.K. is supported by the Apple Ph.D. Fellowship in Integrated Systems. We gratefully acknowledge the generous support from Strong Compute for providing fully managed GPU for fine tuning through the Strong Compute Instant Super Computer system, including support from Adam Peaston.",
+      "rule_tier": "hard_skip_override",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1028::appendix::B",
+      "paper_id": "2025.acl-long.1028",
+      "section_number": "B",
+      "section_title": "experiment details",
+      "normalized_section_title": "experiment details",
+      "window_text": "We conduct our experiments using Nvidia A100 GPUs with 80GB VRAM. Hyperparameter tuning is performed over learning rates $\\{5\\mathrm{e} - 5,1\\mathrm{e} - 4,2\\mathrm{e} - 4\\}$ and batch sizes $\\{64,128,256\\}$ . After evaluating possible combinations, we select a (learning rate, batch size) $= (2\\mathrm{e} - 4,256)$ for Llama-2-7B, (learning rate, batch size) $= (2\\mathrm{e} - 4,256)$ for Mistral-7B-v0.1, and (learning rate, batch size) $= (1\\mathrm{e} - 4,256)$ for Llama-2-13B when utilizing the full training dataset. For Llama-3-70B, we have not done hyperparame\n\nter search but heuristically used (learning rate, batch size) $= (2\\mathrm{e} - 5$ , 256). For sub-sampled training data (Figure 5), we use the following configurations:\n\n- (lr, bs) = (2e-4, 256) for $75\\%$ of the training data   \n- (lr, bs) = (1e-4, 128) for $50\\%$ of the training data   \n- (lr, bs) = (1e-4, 128) for $25\\%$ of the training data\n\nAll training is performed using LoRA (Hu et al., 2021), with LoRA parameters initialized from a normal distribution with $\\sigma = 0.02$ . We set the LoRA rank to 8, alpha to 32, and apply a dropout rate of 0.05. LoRA weights are applied to the query and value matrices. The AdamW (Loshchilov, 2017) optimizer is used with a weight decay of 0.\n\nWe use offline batched inference of vLLM (version 0.7.2) (Kwon et al., 2023) for inference and measuring response probability distribution of all methods.\n\nChoice of the Training Objective. In this section, we explore both forward KL-divergence and Wasserstein Distance (WD) as training objectives. The forward KL-divergence is defined as\n\n$$\nD _ {\\mathrm {K L}} (p _ {H} \\| p _ {\\theta}) = \\sum_ {a \\in \\mathcal {A} _ {q}} p _ {H} (a) \\log \\frac {p _ {H} (a)}{p _ {\\theta} (a)},\n$$\n\nwhere $p_H(a)\\equiv p_H(a\\mid q,g)$ and $p_{\\theta}(a)\\equiv p_{\\theta}(a\\mid q,g)$ Similarly, WD is given by\n\n$$\n\\mathcal {W D} (p _ {H}, p _ {\\theta}) = \\min  _ {\\gamma \\in \\Pi (p _ {H}, p _ {\\theta})} \\sum_ {a, a ^ {\\prime} \\in \\mathcal {A} _ {q}} \\gamma (a, a ^ {\\prime}) d (a, a ^ {\\prime}),\n$$\n\nwith $\\Pi(p_H, p_\\theta)$ denoting the set of all couplings between $p_H$ and $p_\\theta$ , and $d(a, a')$ the L1 distance between choices. Since survey responses are inherently one-dimensional and ordinal, we can simplify the computation of WD using cumulative distribution functions (CDFs). In the 1-D case, WD is computed as\n\n$$\n\\begin{array}{l} \\mathcal {W D} (p _ {H}, p _ {\\theta}) = \\int_ {- \\infty} ^ {+ \\infty} | F _ {p _ {H}} (x) - F _ {p _ {\\theta}} (x) | d x, \\\\ = \\sum_ {i = 1} ^ {n} \\left| F _ {p _ {H}} (i) - F _ {p _ {\\theta}} (i) \\right| \\\\ \\end{array}\n$$\n\nwhere $F_{p_H}$ and $F_{p_\\theta}$ are the CDFs corresponding to $p_H$ and $p_\\theta$ , respectively. We use this discrete formulation as the WD loss in our training.\n\nWhile training with WD resulted in a higher KL-divergence on the validation set, the validation\n\n![](images/2cd1ce49fda12aba25f41c3d3b7ae9a497d5d0f3075c292677b2c7b5e9be78c1.jpg)\n\n![](images/6806687d7ee890d9f8db04d02ac16f91f73cc30ef6258663c79d774d0254a2c3.jpg)\n\n![](images/402c1ec4ab9f2b837a78be2bfda7bd28f83887307dc0d618f8e96f1229942ad1.jpg)  \nFigure 9: Train loss curve (left) and validation loss curve (right) for Llama-2-7B fine-tuned on $90\\%$ of OpinionQA, with the remaining $10\\%$ used for validation. Light and dark blue lines represent KL-divergence (KL) and Wasserstein distance (WD) when used KL as a training objective, while light and dark red lines represent KL and WD when used WD as a training objective. The two training objectives yield similar results in terms of WD, the primary measure of opinion distribution matching in our work.\n\nWD converged to similar levels regardless of the objective (see Figure 9). We attribute this to KL-divergence penalizing low-probability assignments without significantly altering the overall distribution geometry. Given the KL divergence's broader applicability—without requiring ordinal information—we primarily used KL-divergence in our experiments.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1028::appendix::C",
+      "paper_id": "2025.acl-long.1028",
+      "section_number": "C",
+      "section_title": "additional experiments",
+      "normalized_section_title": "additional experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.1028::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A100 80GB",
+      "count": null,
+      "count_text": "",
+      "evidence": "We conduct our experiments using Nvidia A100 GPUs with 80GB VRAM. Hyperparameter tuning is performed over learning rates $\\{5\\mathrm{e} - 5,1\\mathrm{e} - 4,2\\mathrm{e} - 4\\}$ and batch sizes $\\{64,128,256\\}$ . After evaluating possible combinations, we select a (learning rate, batch size) $= (2\\mathrm{e} - 4,256)$ for Llama-2-7B, (learning rate, batch size) $= (2\\mathrm{e} - 4,256)$ for Mistral-7B-v0.1, and (learning rate, batch size) $= (1\\mathrm{e} - 4,256)$ for Llama-2-13B when utilizing the full training dataset. For Llama-3-70B, we have not done hyperparame\n\nter search but heuristically used (learning rate, batch size) $= (2\\mathrm{e} - 5$ , 256). For sub-sampled training data (Figure 5), we use the following configurations:\n\n- (lr, bs) = (2e-4, 256) for $75\\%$ of the training data   \n- (lr, bs) = (1e-4, 128) for $50\\%$ of the training data   \n- (lr, bs) = (1e-4, 128) for $25\\%$ of the training data\n\nAll training is performed using LoRA (Hu et al., 2021), with LoRA parameters initialized from a normal distribution with $\\sigma = 0.02$ . We set the LoRA rank to 8, alpha to 32, and apply a dropout rate of 0.05. LoRA weights are applied to the query and value matrices. The AdamW (Loshchilov, 2017) optimizer is used with a weight decay of 0.\n\nWe use offline batched inference of vLLM (version 0.7.2) (Kwon et al., 2023) for inference and measuring response probability distribution of all methods.\n\nChoice of the Training Objective. In this section, we explore both forward KL-divergence and Wasserstein Distance (WD) as training objectives. The forward KL-divergence is defined as\n\n$$\nD _ {\\mathrm {K L}} (p _ {H} \\| p _ {\\theta}) = \\sum_ {a \\in \\mathcal {A} _ {q}} p _ {H} (a) \\log \\frac {p _ {H} (a)}{p _ {\\theta} (a)},\n$$\n\nwhere $p_H(a)\\equiv p_H(a\\mid q,g)$ and $p_{\\theta}(a)\\equiv p_{\\theta}(a\\mid q,g)$ Similarly, WD is given by\n\n$$\n\\mathcal {W D} (p _ {H}, p _ {\\theta}) = \\min  _ {\\gamma \\in \\Pi (p _ {H}, p _ {\\theta})} \\sum_ {a, a ^ {\\prime} \\in \\mathcal {A} _ {q}} \\gamma (a, a ^ {\\prime}) d (a, a ^ {\\prime}),\n$$\n\nwith $\\Pi(p_H, p_\\theta)$ denoting the set of all couplings between $p_H$ and $p_\\theta$ , and $d(a, a')$ the L1 distance between choices. Since survey responses are inherently one-dimensional and ordinal, we can simplify the computation of WD using cumulative distribution functions (CDFs). In the 1-D case, WD is computed as\n\n$$\n\\begin{array}{l} \\mathcal {W D} (p _ {H}, p _ {\\theta}) = \\int_ {- \\infty} ^ {+ \\infty} | F _ {p _ {H}} (x) - F _ {p _ {\\theta}} (x) | d x, \\\\ = \\sum_ {i = 1} ^ {n} \\left| F _ {p _ {H}} (i) - F _ {p _ {\\theta}} (i) \\right| \\\\ \\end{array}\n$$\n\nwhere $F_{p_H}$ and $F_{p_\\theta}$ are the CDFs corresponding to $p_H$ and $p_\\theta$ , respectively. We use this discrete formulation as the WD loss in our training.\n\nWhile training with WD resulted in a higher KL-divergence on the validation set, the validation\n\n![](images/2cd1ce49fda12aba25f41c3d3b7ae9a497d5d0f3075c292677b2c7b5e9be78c1.jpg)\n\n![](images/6806687d7ee890d9f8db04d02ac16f91f73cc30ef6258663c79d774d0254a2c3.jpg)\n\n![](images/402c1ec4ab9f2b837a78be2bfda7bd28f83887307dc0d618f8e96f1229942ad1.jpg)  \nFigure 9: Train loss curve (left) and validation loss curve (right) for Llama-2-7B fine-tuned on $90\\%$ of OpinionQA, with the remaining $10\\%$ used for validation. Light and dark blue lines represent KL-divergence (KL) and Wasserstein distance (WD) when used KL as a training objective, while light and dark red lines represent KL and WD when used WD as a training objective. The two training objectives yield similar results in terms of WD, the primary measure of opinion distribution matching in our work.\n\nWD converged to similar levels regardless of the objective (see Figure 9). We attribute this to KL-divergence penalizing low-probability assignments without significantly altering the overall distribution geometry. Given the KL divergence's broader applicability—without requiring ordinal information—we primarily used KL-divergence in our experiments.",
+      "section_number": "B",
+      "section_title": "experiment details",
+      "normalized_section_title": "experiment details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.1028::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A100 80GB",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": null,
+      "count_text": "",
+      "section_number": "B",
+      "section_title": "experiment details",
+      "normalized_section_title": "experiment details",
+      "evidence": "We conduct our experiments using Nvidia A100 GPUs with 80GB VRAM. Hyperparameter tuning is performed over learning rates $\\{5\\mathrm{e} - 5,1\\mathrm{e} - 4,2\\mathrm{e} - 4\\}$ and batch sizes $\\{64,128,256\\}$ . After evaluating possible combinations, we select a (learning rate, batch size) $= (2\\mathrm{e} - 4,256)$ for Llama-2-7B, (learning rate, batch size) $= (2\\mathrm{e} - 4,256)$ for Mistral-7B-v0.1, and (learning rate, batch size) $= (1\\mathrm{e} - 4,256)$ for Llama-2-13B when utilizing the full training dataset. For Llama-3-70B, we have not done hyperparame\n\nter search but heuristically used (learning rate, batch size) $= (2\\mathrm{e} - 5$ , 256). For sub-sampled training data (Figure 5), we use the following configurations:\n\n- (lr, bs) = (2e-4, 256) for $75\\%$ of the training data   \n- (lr, bs) = (1e-4, 128) for $50\\%$ of the training data   \n- (lr, bs) = (1e-4, 128) for $25\\%$ of the training data\n\nAll training is performed using LoRA (Hu et al., 2021), with LoRA parameters initialized from a normal distribution with $\\sigma = 0.02$ . We set the LoRA rank to 8, alpha to 32, and apply a dropout rate of 0.05. LoRA weights are applied to the query and value matrices. The AdamW (Loshchilov, 2017) optimizer is used with a weight decay of 0.\n\nWe use offline batched inference of vLLM (version 0.7.2) (Kwon et al., 2023) for inference and measuring response probability distribution of all methods.\n\nChoice of the Training Objective. In this section, we explore both forward KL-divergence and Wasserstein Distance (WD) as training objectives. The forward KL-divergence is defined as\n\n$$\nD _ {\\mathrm {K L}} (p _ {H} \\| p _ {\\theta}) = \\sum_ {a \\in \\mathcal {A} _ {q}} p _ {H} (a) \\log \\frac {p _ {H} (a)}{p _ {\\theta} (a)},\n$$\n\nwhere $p_H(a)\\equiv p_H(a\\mid q,g)$ and $p_{\\theta}(a)\\equiv p_{\\theta}(a\\mid q,g)$ Similarly, WD is given by\n\n$$\n\\mathcal {W D} (p _ {H}, p _ {\\theta}) = \\min  _ {\\gamma \\in \\Pi (p _ {H}, p _ {\\theta})} \\sum_ {a, a ^ {\\prime} \\in \\mathcal {A} _ {q}} \\gamma (a, a ^ {\\prime}) d (a, a ^ {\\prime}),\n$$\n\nwith $\\Pi(p_H, p_\\theta)$ denoting the set of all couplings between $p_H$ and $p_\\theta$ , and $d(a, a')$ the L1 distance between choices. Since survey responses are inherently one-dimensional and ordinal, we can simplify the computation of WD using cumulative distribution functions (CDFs). In the 1-D case, WD is computed as\n\n$$\n\\begin{array}{l} \\mathcal {W D} (p _ {H}, p _ {\\theta}) = \\int_ {- \\infty} ^ {+ \\infty} | F _ {p _ {H}} (x) - F _ {p _ {\\theta}} (x) | d x, \\\\ = \\sum_ {i = 1} ^ {n} \\left| F _ {p _ {H}} (i) - F _ {p _ {\\theta}} (i) \\right| \\\\ \\end{array}\n$$\n\nwhere $F_{p_H}$ and $F_{p_\\theta}$ are the CDFs corresponding to $p_H$ and $p_\\theta$ , respectively. We use this discrete formulation as the WD loss in our training.\n\nWhile training with WD resulted in a higher KL-divergence on the validation set, the validation\n\n![](images/2cd1ce49fda12aba25f41c3d3b7ae9a497d5d0f3075c292677b2c7b5e9be78c1.jpg)\n\n![](images/6806687d7ee890d9f8db04d02ac16f91f73cc30ef6258663c79d774d0254a2c3.jpg)\n\n![](images/402c1ec4ab9f2b837a78be2bfda7bd28f83887307dc0d618f8e96f1229942ad1.jpg)  \nFigure 9: Train loss curve (left) and validation loss curve (right) for Llama-2-7B fine-tuned on $90\\%$ of OpinionQA, with the remaining $10\\%$ used for validation. Light and dark blue lines represent KL-divergence (KL) and Wasserstein distance (WD) when used KL as a training objective, while light and dark red lines represent KL and WD when used WD as a training objective. The two training objectives yield similar results in terms of WD, the primary measure of opinion distribution matching in our work.\n\nWD converged to similar levels regardless of the objective (see Figure 9). We attribute this to KL-divergence penalizing low-probability assignments without significantly altering the overall distribution geometry. Given the KL divergence's broader applicability—without requiring ordinal information—we primarily used KL-divergence in our experiments.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.1028::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methods",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.1028::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.1028::sections::acknowledgments",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "",
+      "section_title": "acknowledgments",
+      "evidence": "We sincerely appreciate Prof. John Canny for constructive comments and guidance. We also thank Prof. Emma Pierson and Dr. Sehoon Kim for valuable discussions as well as Woosuk Kwon for his support with vLLM. J.S. and S.M. would like to acknowledge the support from the Korea Foundation for Advanced Studies (KFAS). S.M. is supported by BAIR-Google Commons and M.K. is supported by the Apple Ph.D. Fellowship in Integrated Systems. We gratefully acknowledge the generous support from Strong Compute for providing fully managed GPU for fine tuning through the Strong Compute Instant Super Computer system, including support from Adam Peaston."
+    },
+    {
+      "source_window_id": "2025.acl-long.1028::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "additional experiments",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": null
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.1028\\auto\\full.md",
+    "source_md_sha256": "10b0bff58e7b72aaf4ee6017d66e14c6855106899431b6b4a56eb1665a9c4001",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

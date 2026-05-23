@@ -1,0 +1,183 @@
+{
+  "paper_id": "2024.acl-long.622",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.622::sections::3",
+      "paper_id": "2024.acl-long.622",
+      "section_number": "3",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "The overall approach to SPRP with LLM is simple: probe a LLM to generate sequences of meaning-preserving sentences from a single complex sentence. We explored two main variants for the task.\n\nWe first fine-tuned pretrained LLMs on pairs of complex and split sentences. The objective in this scenario is twofold: (i) measure the performance of bare LLMs on the SPRP task, and (ii) evaluate LLM accuracy with varying number of parameters. For these models, we also evaluate different approaches to prompting, comparing soft and man\n\nTable 1: DeSSE and BiSECT English corpora statistics   \n\n<table><tr><td>Corpus</td><td>Version</td><td>Train</td><td>Dev</td><td>Test</td></tr><tr><td>DeSSE</td><td>Original</td><td>13,199</td><td>42</td><td>790</td></tr><tr><td>DeSSE</td><td>Selected</td><td>6,432</td><td>2,000</td><td>504</td></tr><tr><td>BiSECT</td><td>Original</td><td>928,440</td><td>9,079</td><td>583</td></tr><tr><td>BiSECT</td><td>Selected</td><td>6,432</td><td>2,000</td><td>580</td></tr></table>\n\nually crafted prompts.\n\nAdditionally, we evaluate scenarios where we directly prompt LLMs that have been previously tuned on instruction datasets. The goal in this case is to measure the ability of this type of readily-trained models to perform the two tasks at hand, with or without positive examples. Under this scenario, we explore both zero-shot and in-context few-shot task completion, by directly prompting the model for completion in the first case, and providing a limited number of examples within the prompt in the latter case.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.622::sections::4",
+      "paper_id": "2024.acl-long.622",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.622::sections::4.2",
+      "paper_id": "2024.acl-long.622",
+      "section_number": "4.2",
+      "section_title": "models",
+      "normalized_section_title": "models",
+      "window_text": "Pretrained language models. As pretrained LLMs, we used the Pythia suite (Biderman et al., 2023), a collection of Transformer-based decoder-only autoregressive generative language models available in different parameter sizes and trained on the Pile dataset (Gao et al., 2020). We selected the following variants for our experiments, in terms of number of model parameters: 410M, 1B, 1.4B, 2.8B, 6.9B and 12B.\n\nInstruction-tuned language models. As LLMs readily tuned for instruction-based prompting, we selected Dolly $2.0,^{2}$ with 7B parameters, which is based on the 6.9B Pythia language model and was tuned on 15K instructions. This model allowed for a direct comparison between the fine-tuned LLM and the instruction-based derived model. Additionally, we selected the Alpaca-Lora model with 7B parameters, based on LLaMA (Touvron et al., 2023) and fined-tuned on the Alpaca instruction dataset, representative of a model derived from a different LLM and set of instructions.\n\nPrompting. We used different prompting strategies, depending on the model variant. For bare LLMs, we first compare the use of a simple hand-crafted prompt, namely:\n\nINSTRUCTION: Split the sentence below into separate sentences.\n\nINPUT: $\\alpha$\n\nRESPONSE: $\\beta$\n\n, where $\\alpha$ and $\\beta$ are provided at training time and the model is tasked to complete $\\beta$ at inference time. For this prompting approach, we fine-tuned the Pythia models with LoRA (Hu et al., 2022), using default parameters (see Appendix A).\n\nAdditionally, we experimented with soft-prompting methods, which have been shown to improve LLM performance on several tasks, addressing the limitations of manual prompt design.\n\nWe selected two such approaches, namely prompt-tuning (Lester et al., 2021) and P-tuning (Liu et al., 2023). In both cases, trainable prompt embeddings are added to a frozen base model, with P-tuning also involving a dedicated encoder.\n\nFor zero-shot probing, we used the hand-crafted prompt described above, leaving the response empty for the model to complete. For in-context learning, we used a few-shot approach based on $n$ examples prepended to the prompt. Thus, each query is composed of $n$ concatenated prompts that follow the previously described pattern, along with the last prompt where the response is left empty. For our experiments, we selected the first 5 examples from the development set as examples, although other variants are of course possible.\n\nPreliminary experiments with alternative zero-shot prompt variants led to little variation in results across metrics, with our selected prompt achieving more balanced results across metrics. For few-shot sampling, larger sets of 10 examples provided minor improvements on some metrics, but degradation in terms of compliance. Results with alternative zero-shot and few-shot prompting are provided in Appendix C.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.622::sections::4.3",
+      "paper_id": "2024.acl-long.622",
+      "section_number": "4.3",
+      "section_title": "evaluation",
+      "normalized_section_title": "evaluation",
+      "window_text": "Following Kim et al. (2021), we used three separate metrics to evaluate our models. SARI (Xu et al., 2016), the standard simplification metric as computed by the EASSE toolkit (Alva-Manchego et al., 2019), which provides the proportion of n-grams that are added (add in what follows), kept (keep) or deleted (del). As a second metric, we used the normalised BertScore (hereafter, BESC) (Zhang et al., 2020b), which has proved successful to measure meaning preservation. BLEU scores, computed with sacreBLEU (Post, 2018), are reported as well, as a precision measure of n-gram overlap between hypotheses and references.\n\nWe also included an additional metric for the task to indicate output compliance (CPL), i.e. the percentage of output sequences that include at least two separate sentences, to directly identify unsplit output. This metric was computed with a simple approximation, counting the number of end of sentence punctuation marks in the output sentence period, question and exclamation marks.\n\nWe compare our results with those obtained using the BiSECT and ABCD approaches of Kim\n\nTable 2: Results for Prompt-tuning (PRT), P-Tuning (PTG) and LoRA adaptation with the Pythia-6.9B model trained on DeSSE (-DE) or BiSECT (-BI) data.   \n\n<table><tr><td>Model</td><td>Test</td><td>BESC</td><td>SARI</td><td>CPL</td></tr><tr><td>PRT-DE</td><td rowspan=\"3\">DeSSE</td><td>86.81</td><td>61.02</td><td>71.03</td></tr><tr><td>PTG-DE</td><td>87.67</td><td>63.29</td><td>72.82</td></tr><tr><td>LoRA-DE</td><td>88.78</td><td>69.47</td><td>94.64</td></tr><tr><td>PRT-DE</td><td rowspan=\"3\">BiSECT</td><td>73.42</td><td>27.03</td><td>63.10</td></tr><tr><td>PTG-DE</td><td>73.77</td><td>28.62</td><td>76.55</td></tr><tr><td>LoRA-DE</td><td>72.79</td><td>30.85</td><td>93.45</td></tr><tr><td>PRT-BI</td><td rowspan=\"3\">DeSSE</td><td>81.95</td><td>37.42</td><td>6.55</td></tr><tr><td>PTG-BI</td><td>82.00</td><td>40.20</td><td>15.67</td></tr><tr><td>LoRA-BI</td><td>80.54</td><td>48.80</td><td>71.43</td></tr><tr><td>PRT-BI</td><td rowspan=\"3\">BiSECT</td><td>37.00</td><td>1.55</td><td>8.79</td></tr><tr><td>PTG-BI</td><td>74.71</td><td>25.32</td><td>22.07</td></tr><tr><td>LoRA-BI</td><td>76.12</td><td>38.93</td><td>81.55</td></tr></table>\n\net al. (2021) and Gao et al. (2021), respectively, the state of the art for the selected corpora. For Bi-SECT, we used their publicly shared output directly, filtering the sentences that were excluded from the Selected test set described in Section 4.1, to maintain strict comparability with the other tested methods. For ABCD, the output was computed with the publicly shared models and code, on the Selected test subset, for a fair comparison.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.622::sections::10",
+      "paper_id": "2024.acl-long.622",
+      "section_number": "10",
+      "section_title": "ethical considerations",
+      "normalized_section_title": "ethical considerations",
+      "window_text": "Our approach involves the use of large language models, whose computational performance is typically higher when deployed in more powerful en\n\nvironments with GPUs, for either training or inference. Under such usage, electric consumption and associated carbon footprint are likely to increase and users of our method under these conditions should be aware of this type of impact. Our approach mitigates these costs via the use of pretrained language models of relatively limited size, and an efficient tuning method such as LoRA (Hu et al., 2022) which minimises training time and computational resources.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.622::appendix::A",
+      "paper_id": "2024.acl-long.622",
+      "section_number": "A",
+      "section_title": "llm training and inference",
+      "normalized_section_title": "llm training and inference",
+      "window_text": "Fine-tuning was performed with LoRA (Hu et al., 2022) using the following default parameters: $r = 8$ , alpha=16, dropout=0.05; targeted modules were: Query, Key and Value. We also used default generation parameters, namely: temperature=0.1; top_p=0.75; top_k=40; num_beams=4; max_new_tokens=128.\n\nEach training sample was provided in the following format, where $\\alpha$ is a complex sentence and $\\beta$ its corresponding split sentences, sampled from the DeSSE and BiSECT training sets:\n\nINSTRUCTION: Split the sentence below into separate sentences.\n\nINPUT: $\\alpha$\n\nRESPONSE: $\\beta$\n\nThe following text was prepended to each sample prompt: \"Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.\"\n\nEach training process was performed on 1 A40 GPU with 48GB of RAM. As reference times, fine-tuning took 06:07:59 hours for the Pythia-6.9B model on the BiSECT 6K training dataset and 48 hours over the larger 64K dataset. Fine-tuning the Pythia 12B model took 06:07:59 hours and the smaller 410M model took 00:37:51 hours, on the 6K BiSECT dataset.\n\nFor soft-prompting methods, we used the following default settings: num_virtual_tokens=20, prompt_tuning_init=\"Split the sentence below into separate sentences.\" for Prompt-tuning and num_virtual_tokens=20, encoder Hidden_size=128 for P-tuning.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.622::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A40 48GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Fine-tuning was performed with LoRA (Hu et al., 2022) using the following default parameters: $r = 8$ , alpha=16, dropout=0.05; targeted modules were: Query, Key and Value. We also used default generation parameters, namely: temperature=0.1; top_p=0.75; top_k=40; num_beams=4; max_new_tokens=128.\n\nEach training sample was provided in the following format, where $\\alpha$ is a complex sentence and $\\beta$ its corresponding split sentences, sampled from the DeSSE and BiSECT training sets:\n\nINSTRUCTION: Split the sentence below into separate sentences.\n\nINPUT: $\\alpha$\n\nRESPONSE: $\\beta$\n\nThe following text was prepended to each sample prompt: \"Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.\"\n\nEach training process was performed on 1 A40 GPU with 48GB of RAM. As reference times, fine-tuning took 06:07:59 hours for the Pythia-6.9B model on the BiSECT 6K training dataset and 48 hours over the larger 64K dataset. Fine-tuning the Pythia 12B model took 06:07:59 hours and the smaller 410M model took 00:37:51 hours, on the 6K BiSECT dataset.\n\nFor soft-prompting methods, we used the following default settings: num_virtual_tokens=20, prompt_tuning_init=\"Split the sentence below into separate sentences.\" for Prompt-tuning and num_virtual_tokens=20, encoder Hidden_size=128 for P-tuning.",
+      "section_number": "A",
+      "section_title": "llm training and inference",
+      "normalized_section_title": "llm training and inference"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.622::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A40 48GB",
+      "cleaned_hardware_name": "a40 48gb",
+      "normalized_hardware_name": "NVIDIA A40 PCIe",
+      "benchmark_hardware_name": "NVIDIA A40 PCIe",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A",
+      "section_title": "llm training and inference",
+      "normalized_section_title": "llm training and inference",
+      "evidence": "Fine-tuning was performed with LoRA (Hu et al., 2022) using the following default parameters: $r = 8$ , alpha=16, dropout=0.05; targeted modules were: Query, Key and Value. We also used default generation parameters, namely: temperature=0.1; top_p=0.75; top_k=40; num_beams=4; max_new_tokens=128.\n\nEach training sample was provided in the following format, where $\\alpha$ is a complex sentence and $\\beta$ its corresponding split sentences, sampled from the DeSSE and BiSECT training sets:\n\nINSTRUCTION: Split the sentence below into separate sentences.\n\nINPUT: $\\alpha$\n\nRESPONSE: $\\beta$\n\nThe following text was prepended to each sample prompt: \"Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.\"\n\nEach training process was performed on 1 A40 GPU with 48GB of RAM. As reference times, fine-tuning took 06:07:59 hours for the Pythia-6.9B model on the BiSECT 6K training dataset and 48 hours over the larger 64K dataset. Fine-tuning the Pythia 12B model took 06:07:59 hours and the smaller 410M model took 00:37:51 hours, on the 6K BiSECT dataset.\n\nFor soft-prompting methods, we used the following default settings: num_virtual_tokens=20, prompt_tuning_init=\"Split the sentence below into separate sentences.\" for Prompt-tuning and num_virtual_tokens=20, encoder Hidden_size=128 for P-tuning.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.acl-long.622::sections::3",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methodology",
+      "evidence": "The overall approach to SPRP with LLM is simple: probe a LLM to generate sequences of meaning-preserving sentences from a single complex sentence. We explored two main variants for the task.\n\nWe first fine-tuned pretrained LLMs on pairs of complex and split sentences. The objective in this scenario is twofold: (i) measure the performance of bare LLMs on the SPRP task, and (ii) evaluate LLM accuracy with varying number of parameters. For these models, we also evaluate different approaches to prompting, comparing soft and man\n\nTable 1: DeSSE and BiSECT English corpora statistics   \n\n<table><tr><td>Corpus</td><td>Version</td><td>Train</td><td>Dev</td><td>Test</td></tr><tr><td>DeSSE</td><td>Original</td><td>13,199</td><td>42</td><td>790</td></tr><tr><td>DeSSE</td><td>Selected</td><td>6,432</td><td>2,000</td><td>504</td></tr><tr><td>BiSECT</td><td>Original</td><td>928,440</td><td>9,079</td><td>583</td></tr><tr><td>BiSECT</td><td>Selected</td><td>6,432</td><td>2,000</td><td>580</td></tr></table>\n\nually crafted prompts.\n\nAdditionally, we evaluate scenarios where we directly prompt LLMs that have been previously tuned on instruction datasets. The goal in this case is to measure the ability of this type of readily-trained models to perform the two tasks at hand, with or without positive examples. Under this scenario, we explore both zero-shot and in-context few-shot task completion, by directly prompting the model for completion in the first case, and providing a limited number of examples within the prompt in the latter case."
+    },
+    {
+      "source_window_id": "2024.acl-long.622::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.acl-long.622::sections::4.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2",
+      "section_title": "models",
+      "evidence": "Pretrained language models. As pretrained LLMs, we used the Pythia suite (Biderman et al., 2023), a collection of Transformer-based decoder-only autoregressive generative language models available in different parameter sizes and trained on the Pile dataset (Gao et al., 2020). We selected the following variants for our experiments, in terms of number of model parameters: 410M, 1B, 1.4B, 2.8B, 6.9B and 12B.\n\nInstruction-tuned language models. As LLMs readily tuned for instruction-based prompting, we selected Dolly $2.0,^{2}$ with 7B parameters, which is based on the 6.9B Pythia language model and was tuned on 15K instructions. This model allowed for a direct comparison between the fine-tuned LLM and the instruction-based derived model. Additionally, we selected the Alpaca-Lora model with 7B parameters, based on LLaMA (Touvron et al., 2023) and fined-tuned on the Alpaca instruction dataset, representative of a model derived from a different LLM and set of instructions.\n\nPrompting. We used different prompting strategies, depending on the model variant. For bare LLMs, we first compare the use of a simple hand-crafted prompt, namely:\n\nINSTRUCTION: Split the sentence below into separate sentences.\n\nINPUT: $\\alpha$\n\nRESPONSE: $\\beta$\n\n, where $\\alpha$ and $\\beta$ are provided at training time and the model is tasked to complete $\\beta$ at inference time. For this prompting approach, we fine-tuned the Pythia models with LoRA (Hu et al., 2022), using default parameters (see Appendix A).\n\nAdditionally, we experimented with soft-prompting methods, which have been shown to improve LLM performance on several tasks, addressing the limitations of manual prompt design.\n\nWe selected two such approaches, namely prompt-tuning (Lester et al., 2021) and P-tuning (Liu et al., 2023). In both cases, trainable prompt embeddings are added to a frozen base model, with P-tuning also involving a dedicated encoder.\n\nFor zero-shot probing, we used the hand-crafted prompt described above, leaving the response empty for the model to complete. For in-context learning, we used a few-shot approach based on $n$ examples prepended to the prompt. Thus, each query is composed of $n$ concatenated prompts that follow the previously described pattern, along with the last prompt where the response is left empty. For our experiments, we selected the first 5 examples from the development set as examples, although other variants are of course possible.\n\nPreliminary experiments with alternative zero-shot prompt variants led to little variation in results across metrics, with our selected prompt achieving more balanced results across metrics. For few-shot sampling, larger sets of 10 examples provided minor improvements on some metrics, but degradation in terms of compliance. Results with alternative zero-shot and few-shot prompting are provided in Appendix C."
+    },
+    {
+      "source_window_id": "2024.acl-long.622::sections::4.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.3",
+      "section_title": "evaluation",
+      "evidence": "Following Kim et al. (2021), we used three separate metrics to evaluate our models. SARI (Xu et al., 2016), the standard simplification metric as computed by the EASSE toolkit (Alva-Manchego et al., 2019), which provides the proportion of n-grams that are added (add in what follows), kept (keep) or deleted (del). As a second metric, we used the normalised BertScore (hereafter, BESC) (Zhang et al., 2020b), which has proved successful to measure meaning preservation. BLEU scores, computed with sacreBLEU (Post, 2018), are reported as well, as a precision measure of n-gram overlap between hypotheses and references.\n\nWe also included an additional metric for the task to indicate output compliance (CPL), i.e. the percentage of output sequences that include at least two separate sentences, to directly identify unsplit output. This metric was computed with a simple approximation, counting the number of end of sentence punctuation marks in the output sentence period, question and exclamation marks.\n\nWe compare our results with those obtained using the BiSECT and ABCD approaches of Kim\n\nTable 2: Results for Prompt-tuning (PRT), P-Tuning (PTG) and LoRA adaptation with the Pythia-6.9B model trained on DeSSE (-DE) or BiSECT (-BI) data.   \n\n<table><tr><td>Model</td><td>Test</td><td>BESC</td><td>SARI</td><td>CPL</td></tr><tr><td>PRT-DE</td><td rowspan=\"3\">DeSSE</td><td>86.81</td><td>61.02</td><td>71.03</td></tr><tr><td>PTG-DE</td><td>87.67</td><td>63.29</td><td>72.82</td></tr><tr><td>LoRA-DE</td><td>88.78</td><td>69.47</td><td>94.64</td></tr><tr><td>PRT-DE</td><td rowspan=\"3\">BiSECT</td><td>73.42</td><td>27.03</td><td>63.10</td></tr><tr><td>PTG-DE</td><td>73.77</td><td>28.62</td><td>76.55</td></tr><tr><td>LoRA-DE</td><td>72.79</td><td>30.85</td><td>93.45</td></tr><tr><td>PRT-BI</td><td rowspan=\"3\">DeSSE</td><td>81.95</td><td>37.42</td><td>6.55</td></tr><tr><td>PTG-BI</td><td>82.00</td><td>40.20</td><td>15.67</td></tr><tr><td>LoRA-BI</td><td>80.54</td><td>48.80</td><td>71.43</td></tr><tr><td>PRT-BI</td><td rowspan=\"3\">BiSECT</td><td>37.00</td><td>1.55</td><td>8.79</td></tr><tr><td>PTG-BI</td><td>74.71</td><td>25.32</td><td>22.07</td></tr><tr><td>LoRA-BI</td><td>76.12</td><td>38.93</td><td>81.55</td></tr></table>\n\net al. (2021) and Gao et al. (2021), respectively, the state of the art for the selected corpora. For Bi-SECT, we used their publicly shared output directly, filtering the sentences that were excluded from the Selected test set described in Section 4.1, to maintain strict comparability with the other tested methods. For ABCD, the output was computed with the publicly shared models and code, on the Selected test subset, for a fair comparison."
+    },
+    {
+      "source_window_id": "2024.acl-long.622::sections::10",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "10",
+      "section_title": "ethical considerations",
+      "evidence": "Our approach involves the use of large language models, whose computational performance is typically higher when deployed in more powerful en\n\nvironments with GPUs, for either training or inference. Under such usage, electric consumption and associated carbon footprint are likely to increase and users of our method under these conditions should be aware of this type of impact. Our approach mitigates these costs via the use of pretrained language models of relatively limited size, and an efficient tuning method such as LoRA (Hu et al., 2022) which minimises training time and computational resources."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A40 PCIe",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2024\\2024.acl-long.622\\auto\\full.md",
+    "source_md_sha256": "fbbf0dc1180ef78c7d989e5b12e64f5863759862996adba99e4876f8195316ba",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "ad96f3b6ca003898756db958dd17467668c845886fa3f1f835d26a866c8af3f0"
+  }
+}

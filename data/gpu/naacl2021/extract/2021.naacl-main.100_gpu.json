@@ -1,0 +1,96 @@
+{
+  "paper_id": "2021.naacl-main.100",
+  "candidate_windows": [
+    {
+      "window_id": "2021.naacl-main.100::sections::5",
+      "paper_id": "2021.naacl-main.100",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "Datasets We use four benchmark open-domain QA datasets following Lee et al. (2019):\n\nNatural Questions (NQ) contains real user questions asked on Google searches; we consider questions with short answers up to 5 tokens.\n\nTRIVIAQA (Joshi et al., 2017) consists of questions collected from trivia and quiz-league websites; we take questions in an unfiltered setting and discard the provided web snippets.\n\nWebQuestions (WEBQ) (Berant et al., 2013) is a collection of questions extracted from the Google Suggest API, with answers being Freebase entities.\n\nCuratedTREC (Baudiš and Šedivý, 2015) contains curated questions from TREC QA track.\n\nTable 2: End-to-end QA test-set (Exact Match) accuracy. Models in the lower half use dense passage retrieval from Karpukhin et al. (2020). RECONSIDER outperforms previous methods under both base and large versions. Table layout and baselines are borrowed from Karpukhin et al. (2020) (published extractive SOTA). Dataset stats and dev set results are in Appendix, and baseline descriptions can be found in Karpukhin et al. (2020). $\\dagger$ : numbers from our own experiments.   \n\n<table><tr><td>Model</td><td>NQ</td><td>TRIVIAQA</td><td>WEBQ</td><td>TREC</td></tr><tr><td>BM25+BERT (Lee et al., 2019)</td><td>26.5</td><td>47.1</td><td>17.7</td><td>21.3</td></tr><tr><td>ORQA (Lee et al., 2019)</td><td>33.3</td><td>45.0</td><td>36.4</td><td>30.1</td></tr><tr><td>HardEM (Min et al., 2019a)</td><td>28.1</td><td>50.9</td><td>-</td><td>-</td></tr><tr><td>GraphRetriever (Min et al., 2019b)</td><td>34.5</td><td>56.0</td><td>36.4</td><td>-</td></tr><tr><td>PathRetriever (Asai et al., 2020)</td><td>32.6</td><td>-</td><td>-</td><td>-</td></tr><tr><td>REALM (Guu et al., 2020)</td><td>39.2</td><td>-</td><td>40.2</td><td>46.8</td></tr><tr><td>REALMNews (Guu et al., 2020)</td><td>40.4</td><td>-</td><td>40.7</td><td>42.9</td></tr><tr><td colspan=\"5\">Models that use DPRmulti (Karpukhin et al., 2020)</td></tr><tr><td>DPR-BERTbase (Karpukhin et al., 2020)</td><td>41.5</td><td>56.8</td><td>42.4</td><td>49.4</td></tr><tr><td>RECONSIDERbase (Ours)</td><td>43.1</td><td>59.3</td><td>44.4</td><td>49.3</td></tr><tr><td>DPR-BERTlarge (Karpukhin et al., 2020)</td><td>44.6</td><td>60.9</td><td>44.8</td><td>53.5</td></tr><tr><td>RAGlarge (Lewis et al., 2020)</td><td>44.5</td><td>56.1</td><td>45.5</td><td>52.2</td></tr><tr><td>RECONSIDERlarge (Ours)</td><td>45.5</td><td>61.7</td><td>45.9</td><td>55.3</td></tr></table>\n\nImplementation details For all datasets, we use the retrieval model (without retraining) and setup from Karpukhin et al. (2020), retrieving 100-token passages from a Wikipedia corpus (from 2018-12-20). We also use their MRC model with their best performing hyperparameters as model $\\mathcal{M}$ . For model $\\mathcal{R}$ , we experiment with both $\\mathrm{BERT}_{\\mathrm{base}}$ and $\\mathrm{BERT}_{\\mathrm{large}}$ , use top-100 predictions from model $\\mathcal{M}$ during training (top-5 for testing), and use $M = 30$ . We use a batch size of 16 on NQ and TRIVIAQA and 4 otherwise. For WEBQ and TREC, we start training from our trained NQ model.\n\nResults Table 2 presents end-to-end test-set exact match accuracies for these datasets, compared with previous models. The BERTbase version of RECONSIDER outperforms the previous state-ofthe-art DPR model of Karpukhin et al. (2020) (our model $\\mathcal{M}$ ) by $1.6\\%$ on NQ and $\\sim 2\\%$ on TRIVIAQA and WEBQ. For training on the smaller WEBQ and TREC datasets, we initialize models using the corresponding NQ model. Table 2 demonstrates the effectiveness of a coarse-to-fine approach for selecting negative passages, with dense retrieval based negatives (DPR) outperforming BM25, and in turn, improved upon by our reranking approach. We obtain gains despite $\\mathcal{R}$ being not only very similar in architecture to the MRC reader $\\mathcal{M}$ , but also trained on the same QA pairs, owing to (i) training using harder false-positive\n\nstyle negatives, and (ii) answer-span annotations that allow a re-allocation of modeling capacity from modeling all spans to reasoning about specific spans with respect to the question and the passage. Re-ranking performance suffers without these crucial methods. For example, replacing answer-span annotations with answer concatenation reduces accuracy by $\\sim 1\\%$ on the dev set of NQ.\n\nWe train a large variant of RECONSIDER using $\\mathrm{BERT}_{\\mathrm{large}}$ for model $\\mathcal{R}$ , trained on predictions from a $\\mathrm{BERT}_{\\mathrm{large}}$ model $\\mathcal{M}$ . For a fair comparison, we re-evaluate DPR using $\\mathrm{BERT}_{\\mathrm{large}}$ . RECONSIDER outperforms it by $\\sim 1\\%$ on all datasets $(+ \\sim 2\\%$ on TREC). This model is also comparable in size to RAG (Lewis et al., 2020) (which uses $\\mathrm{BART}_{\\mathrm{large}}$ ) but outperforms it on all tasks $(+1$ on NQ, $+5.5$ on TRIVIAQA, $+3$ on TREC), demonstrating that retrieve-extract architectures can perform better than answer generation models.\n\nWe find $K = 5$ (testing) to be best for all datasets, and increasing $K$ has little effect on accuracy, despite training on top-100 predictions. Although in contrast with our expectations based on Table 1, this is anticipated since very low-ranked predictions are less likely to be reranked highly, but this also presents an opportunity for future work.\n\nIn Table 3, we present examples from the validation set of NQ, of cases where 1) DPR-BERTbase\n\nTable 3: Top passage with answer span (in bold) for example questions from the validation set of NQ, both with and without re-ranking using RECONSIDER. For the first two examples, RECONSIDER re-ranks to obtain the correct answer, while in the last example, re-ranking eliminates the already correct top answer.   \n\n<table><tr><td>Model</td><td>Prediction</td></tr><tr><td>Question DPR-BERTbase</td><td rowspan=\"2\">Where are zebra mussels found in the United States? \n... on the genetic algorithm for rule - set production (garp), a group of researchers predicted that the southeastern united states is moderately to highly likely to be inhabited by zebra mussels ... \n... of zebra mussel in the great lakes alone exceeds $500 million a year.</td></tr><tr><td>+RECONSIDER</td></tr><tr><td>Question DPR-BERTbase</td><td>Where do you find neurons in the brain? \n... there is strong evidence for generation of substantial numbers of new neurons in two brain areas, the hippocampus and olfactory bulb. A neuron is a specialized type of cell found in the bodies ...</td></tr><tr><td>+RECONSIDER</td><td>The brain is the most complex organ in a vertebrate&#x27;s body. In a human, the cerebral cortex contains approximately 14-16 billion neurons.</td></tr><tr><td>Question DPR-BERTbase</td><td>Who said if I have seen further it is by standing on the shoulders of giants? \nStanding on the shoulders of giants ... this concept has been traced to the 12th century, attributed to Bernard of Chartres. Its most familiar expression in English is by Isaac Newton in 1675: &quot;If I have seen further it is by standing on the shoulders of giants ...</td></tr><tr><td>+RECONSIDER</td><td>Standing on the shoulders of giants ... this concept has been traced to the 12th century, attributed to Bernard of Chartres. Its most familiar expression in English is by Isaac Newton in 1675: &quot;If I have seen further it is by standing on the shoulders of giants ...</td></tr></table>\n\nproduces an incorrect top answer, which is corrected after re-ranking with RECONSIDER (top 2 examples), and 2) DPR-BERT $_{\\text{base}}$ ’s answer is correct but is ranked lower after re-ranking. Of the $15.4\\%$ validation examples that were amenable for correction by re-ranking the top-5 candidates from DPR-BERT $_{\\text{base}}$ , RECONSIDER was able to fix $6.1\\%$ . However, in this process, $4.3\\%$ of answers that were originally correct (top-ranked), lost their top-rank after RECONSIDER, and this presents an opportunity for further improving re-ranking.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.naacl-main.100::appendix::A",
+      "paper_id": "2021.naacl-main.100",
+      "section_number": "A",
+      "section_title": "computing infrastructure used",
+      "normalized_section_title": "computing infrastructure used",
+      "window_text": "All experiments were run on a machine with 2 chips of Intel(R) Xeon(R) CPU E5-2698 v4 @ 2.20GHz with 20 cores (40 threads) each, equipped with 8 NVIDIA TESLA V100 GPUs, each with 32 GB of memory.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.naacl-main.100::appendix::D",
+      "paper_id": "2021.naacl-main.100",
+      "section_number": "D",
+      "section_title": "hyperparameters",
+      "normalized_section_title": "hyperparameters",
+      "window_text": "For training RECONSIDER, we use top-100 predictions of the baseline MRC model. This was chosen based on validation set accuracy, and other values that were experimented with were 50 and 75. For training RECONSIDER we use 1 positive and $M - 1$ negatives during each iteration. We tried values of $M$ between 5 and 40 in increments of 5 and chose $M = 30$ based on validation set accuracy (see Table 6). Similarly, we re-rank $K = 5$ candidates\n\n<table><tr><td>K</td><td>Accuracy (%)</td></tr><tr><td>3</td><td>41.54</td></tr><tr><td>5</td><td>42.50</td></tr><tr><td>10</td><td>42.26</td></tr><tr><td>15</td><td>42.03</td></tr><tr><td>20</td><td>41.91</td></tr></table>\n\nTable 5: Hyper-parameter tuning for $K$ at inference time on the validation set of NQ.\n\n<table><tr><td>Train-M</td><td>Accuracy (%)</td></tr><tr><td>25</td><td>42.34</td></tr><tr><td>30</td><td>42.48</td></tr><tr><td>40</td><td>41.25</td></tr></table>\n\nTable 6: Hyper-parameter tuning for the number of negative passages i.e. train- $M$ ,on the validation set of NQ.\n\nduring inference, and this value was chosen by exper-. imenting with values 2,3,4 and values between 5 and 20, in increments of 5 (see Table 5).\n\n<table><tr><td>Dataset</td><td>Train</td><td>Dev</td><td>Test</td></tr><tr><td>NQ</td><td>67,098</td><td>8,757</td><td>3,610</td></tr><tr><td>TRIVIAQA</td><td>67,975</td><td>8,837</td><td>11,313</td></tr><tr><td>WEBQ</td><td>2,898</td><td>361</td><td>2,032</td></tr><tr><td>TREC</td><td>1,240</td><td>133</td><td>694</td></tr></table>\n\nTable 7: Training, validation and testing set sizes for the four open-domain QA tasks evaluated in our paper.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2021.naacl-main.100::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA TESLA V100 32GB",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "All experiments were run on a machine with 2 chips of Intel(R) Xeon(R) CPU E5-2698 v4 @ 2.20GHz with 20 cores (40 threads) each, equipped with 8 NVIDIA TESLA V100 GPUs, each with 32 GB of memory.",
+      "section_number": "A",
+      "section_title": "computing infrastructure used",
+      "normalized_section_title": "computing infrastructure used"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2021.naacl-main.100::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA TESLA V100 32GB",
+      "cleaned_hardware_name": "nvidia tesla v100 32gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "A",
+      "section_title": "computing infrastructure used",
+      "normalized_section_title": "computing infrastructure used",
+      "evidence": "All experiments were run on a machine with 2 chips of Intel(R) Xeon(R) CPU E5-2698 v4 @ 2.20GHz with 20 cores (40 threads) each, equipped with 8 NVIDIA TESLA V100 GPUs, each with 32 GB of memory.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 32 GB",
+        "num": 8
+      }
+    ]
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "paper_id": "2025.acl-long.1095",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.1095::sections::1",
+      "paper_id": "2025.acl-long.1095",
+      "section_number": "1",
+      "section_title": "introduction",
+      "normalized_section_title": "introduction",
+      "window_text": "Recent advancements in Natural Language Processing (NLP) have been largely driven by Transformer-based architectures (Vaswani et al., 2017), with Large Language Models (LLMs) demonstrating exceptional capabilities in addressing a wide range of complex tasks (Brown et al., 2020; Achiam et al., 2023; Bai et al., 2023; Touvron et al., 2023a; Yang et al., 2024a; AI@Meta, 2024; Jiang et al., 2023; Almazrouei et al., 2023; Bi et al., 2024). As the parameter size continues to grow, in accordance with scaling laws (Kaplan et al., 2020), the computational resources required to train LLMs from\n\nscratch have become increasingly prohibitive, demanding millions of GPU hours and significant energy consumption. This immense resource demand largely arises from the need to randomly reinitialize model parameters, preventing the transfer of ability from existing LLMs.\n\nTo address this limitation, a common approach is model scaling-up, which leverages the parameters of smaller models to construct larger ones, either for immediate deployment or as a better initial checkpoint for more effective further continual pretraining. Existing model scaling-up methods can be divided into width scaling-up and depth scaling-up. Width scaling-up (Chen et al., 2015, 2021a; Wang et al., 2023; Samragh et al., 2024) primarily involves expanding matrix dimensions, rather than increasing the number of layers. In contrast, depth scaling-up involves repurposing trained Transformer blocks from a smaller model to build a larger one with additional layers (Wu et al., 2024; Kim et al., 2023; Gong et al., 2019; Pan et al., 2024; Agarwal et al., 2024; Parmar et al., 2024). This strategy is widely applicable to modern LLMs based on the Transformer architecture, preserving the internal structure, such as matrix sizes. It is also compatible with existing parallel training frameworks, better preserving the model's knowledge, contributing to its increasing popularity in recent model scaling-up approaches.\n\nHowever, current depth scaling-up methods rely on heuristic rules, typically duplicating one or more blocks before integrating them into the model. These approaches overlook parameter change patterns between layers, limiting the model's ability to specialize each layer effectively. As a result, newly upscaled layers replicate the previous ones, neglecting layer-specific specialization (Voita et al., 2019b,a). This not only leads to suboptimal model initialization performance but also prevents the\n\n![](images/86039a0bc0f9c6c7ca512ce19ba52ddceb2d85512d703a136d62723ca39fd4ca.jpg)  \nFigure 1: Existing depth scaling-up methods can be categorized into two types: \"Interpolation\" and \"Stack\". LLaMA Pro and SOLAR can be seen as specific examples of these two types. Layers with the same color represent identical parameters, and the dashed boxes indicate those obtained through duplication.\n\nmodel from fully utilizing its expanded capacity. By treating all layers equally, these methods fail to capture the nuanced relationships between layers, causing slower convergence during training and yielding less effective models.\n\nIn this paper, we propose a novel approach for depth scaling-up called LESA (LEarnable LLM Layer ScAling-Up). We are the first to observe that by concatenating the parameters of each Transformer block and applying Singular Value Decomposition (SVD), patterns such as continuity can be identified between layers. Based on this observation, it is hypothesized that latent patterns exist between Transformer layers in a well-trained LLM, suggesting that model parameters can be learned across layers. To predict these parameters, we propose training a neural network. Once trained, the network can generate intermediate layers between adjacent layers, insert them into the model for depth scaling-up, and serve as a better initialization checkpoint, enabling faster convergence during continual pre-training. Our key contributions are summarized as:\n\n- We first observe, through SVD, latent patterns such as continuity between Transformer layers, suggesting that inter-layer parameters can potentially be learned.   \n- We introduce LESA, which predicts intermediate layer parameters from adjacent layers for depth scaling-up. Experiments show that LESA outperforms existing baselines, with better model initialization and faster convergence during continual pre-training.\n\n- Extensive experiments confirm that LESA works across various model sizes and families, including domain-specific tasks like code-related tasks. We also perform ablation studies to explore different method configurations.",
+      "rule_tier": "soft_skip",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1095::sections::4.1",
+      "paper_id": "2025.acl-long.1095",
+      "section_number": "4.1",
+      "section_title": "settings",
+      "normalized_section_title": "settings",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1095::sections::4.1.2",
+      "paper_id": "2025.acl-long.1095",
+      "section_number": "4.1.2",
+      "section_title": "continual training",
+      "normalized_section_title": "continual training",
+      "window_text": "For the models expanded using LESA and baseline methods, we continue pre-training with Wikipedia data from November 2024, which is released after the training of Llama3-8B and has not been used in its original training. We use the LlamaFactory (Zheng et al., 2024) training framework, with a cutoff length of 4096, a warmup ratio of 0.1, and a cosine learning rate scheduler. The optimizer is AdamW with a learning rate of 5e-5. The batch size per GPU is 2, with 4 gradient accumulation steps. For LESA and LLaMA Pro, we only train the newly expanded layers, freezing the other layers. Following the original setting, we perform full parameter fine-tuning for SOLAR.\n\nFor the Supervised Fine-Tuning (SFT) stage, we use Alpaca-GPT4 (Peng et al., 2023) for training, following SOLAR. The hyper-parameters are the same as those in the continual pre-training, except that we perform full parameter fine-tuning without freezing any layers for all models. All experiments are conducted on a server with 8 Nvidia A100 80GB GPUs.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.acl-long.1095::appendix::A",
+      "paper_id": "2025.acl-long.1095",
+      "section_number": "A",
+      "section_title": "more experiments",
+      "normalized_section_title": "more experiments",
+      "window_text": "In this section, we provide additional experiments and analyses on hyperparameter settings, loss design, and the effectiveness on the MoE model.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.1095::sections::4.1.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A100 80GB",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "For the models expanded using LESA and baseline methods, we continue pre-training with Wikipedia data from November 2024, which is released after the training of Llama3-8B and has not been used in its original training. We use the LlamaFactory (Zheng et al., 2024) training framework, with a cutoff length of 4096, a warmup ratio of 0.1, and a cosine learning rate scheduler. The optimizer is AdamW with a learning rate of 5e-5. The batch size per GPU is 2, with 4 gradient accumulation steps. For LESA and LLaMA Pro, we only train the newly expanded layers, freezing the other layers. Following the original setting, we perform full parameter fine-tuning for SOLAR.\n\nFor the Supervised Fine-Tuning (SFT) stage, we use Alpaca-GPT4 (Peng et al., 2023) for training, following SOLAR. The hyper-parameters are the same as those in the continual pre-training, except that we perform full parameter fine-tuning without freezing any layers for all models. All experiments are conducted on a server with 8 Nvidia A100 80GB GPUs.",
+      "section_number": "4.1.2",
+      "section_title": "continual training",
+      "normalized_section_title": "continual training"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.1095::sections::4.1.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A100 80GB",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "4.1.2",
+      "section_title": "continual training",
+      "normalized_section_title": "continual training",
+      "evidence": "For the models expanded using LESA and baseline methods, we continue pre-training with Wikipedia data from November 2024, which is released after the training of Llama3-8B and has not been used in its original training. We use the LlamaFactory (Zheng et al., 2024) training framework, with a cutoff length of 4096, a warmup ratio of 0.1, and a cosine learning rate scheduler. The optimizer is AdamW with a learning rate of 5e-5. The batch size per GPU is 2, with 4 gradient accumulation steps. For LESA and LLaMA Pro, we only train the newly expanded layers, freezing the other layers. Following the original setting, we perform full parameter fine-tuning for SOLAR.\n\nFor the Supervised Fine-Tuning (SFT) stage, we use Alpaca-GPT4 (Peng et al., 2023) for training, following SOLAR. The hyper-parameters are the same as those in the continual pre-training, except that we perform full parameter fine-tuning without freezing any layers for all models. All experiments are conducted on a server with 8 Nvidia A100 80GB GPUs.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.1095::sections::1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "1",
+      "section_title": "introduction",
+      "evidence": "Recent advancements in Natural Language Processing (NLP) have been largely driven by Transformer-based architectures (Vaswani et al., 2017), with Large Language Models (LLMs) demonstrating exceptional capabilities in addressing a wide range of complex tasks (Brown et al., 2020; Achiam et al., 2023; Bai et al., 2023; Touvron et al., 2023a; Yang et al., 2024a; AI@Meta, 2024; Jiang et al., 2023; Almazrouei et al., 2023; Bi et al., 2024). As the parameter size continues to grow, in accordance with scaling laws (Kaplan et al., 2020), the computational resources required to train LLMs from\n\nscratch have become increasingly prohibitive, demanding millions of GPU hours and significant energy consumption. This immense resource demand largely arises from the need to randomly reinitialize model parameters, preventing the transfer of ability from existing LLMs.\n\nTo address this limitation, a common approach is model scaling-up, which leverages the parameters of smaller models to construct larger ones, either for immediate deployment or as a better initial checkpoint for more effective further continual pretraining. Existing model scaling-up methods can be divided into width scaling-up and depth scaling-up. Width scaling-up (Chen et al., 2015, 2021a; Wang et al., 2023; Samragh et al., 2024) primarily involves expanding matrix dimensions, rather than increasing the number of layers. In contrast, depth scaling-up involves repurposing trained Transformer blocks from a smaller model to build a larger one with additional layers (Wu et al., 2024; Kim et al., 2023; Gong et al., 2019; Pan et al., 2024; Agarwal et al., 2024; Parmar et al., 2024). This strategy is widely applicable to modern LLMs based on the Transformer architecture, preserving the internal structure, such as matrix sizes. It is also compatible with existing parallel training frameworks, better preserving the model's knowledge, contributing to its increasing popularity in recent model scaling-up approaches.\n\nHowever, current depth scaling-up methods rely on heuristic rules, typically duplicating one or more blocks before integrating them into the model. These approaches overlook parameter change patterns between layers, limiting the model's ability to specialize each layer effectively. As a result, newly upscaled layers replicate the previous ones, neglecting layer-specific specialization (Voita et al., 2019b,a). This not only leads to suboptimal model initialization performance but also prevents the\n\n![](images/86039a0bc0f9c6c7ca512ce19ba52ddceb2d85512d703a136d62723ca39fd4ca.jpg)  \nFigure 1: Existing depth scaling-up methods can be categorized into two types: \"Interpolation\" and \"Stack\". LLaMA Pro and SOLAR can be seen as specific examples of these two types. Layers with the same color represent identical parameters, and the dashed boxes indicate those obtained through duplication.\n\nmodel from fully utilizing its expanded capacity. By treating all layers equally, these methods fail to capture the nuanced relationships between layers, causing slower convergence during training and yielding less effective models.\n\nIn this paper, we propose a novel approach for depth scaling-up called LESA (LEarnable LLM Layer ScAling-Up). We are the first to observe that by concatenating the parameters of each Transformer block and applying Singular Value Decomposition (SVD), patterns such as continuity can be identified between layers. Based on this observation, it is hypothesized that latent patterns exist between Transformer layers in a well-trained LLM, suggesting that model parameters can be learned across layers. To predict these parameters, we propose training a neural network. Once trained, the network can generate intermediate layers between adjacent layers, insert them into the model for depth scaling-up, and serve as a better initialization checkpoint, enabling faster convergence during continual pre-training. Our key contributions are summarized as:\n\n- We first observe, through SVD, latent patterns such as continuity between Transformer layers, suggesting that inter-layer parameters can potentially be learned.   \n- We introduce LESA, which predicts intermediate layer parameters from adjacent layers for depth scaling-up. Experiments show that LESA outperforms existing baselines, with better model initialization and faster convergence during continual pre-training.\n\n- Extensive experiments confirm that LESA works across various model sizes and families, including domain-specific tasks like code-related tasks. We also perform ablation studies to explore different method configurations."
+    },
+    {
+      "source_window_id": "2025.acl-long.1095::sections::4.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "settings",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.1095::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "more experiments",
+      "evidence": "In this section, we provide additional experiments and analyses on hyperparameter settings, loss design, and the effectiveness on the MoE model."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.1.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.1095\\auto\\full.md",
+    "source_md_sha256": "2bbddb38e342a80bfc4447a7008bde64a7e08410dc12a19baebd1c3e513c521a",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

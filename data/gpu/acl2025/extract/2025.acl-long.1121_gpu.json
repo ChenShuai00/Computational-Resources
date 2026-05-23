@@ -1,0 +1,185 @@
+{
+  "paper_id": "2025.acl-long.1121",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.1121::sections::4",
+      "paper_id": "2025.acl-long.1121",
+      "section_number": "4",
+      "section_title": "experiment",
+      "normalized_section_title": "experiment",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1121::sections::4.2",
+      "paper_id": "2025.acl-long.1121",
+      "section_number": "4.2",
+      "section_title": "models setup",
+      "normalized_section_title": "models setup",
+      "window_text": "The models were trained in FP16 with a maximum sequence length of 4096 and a global batch size of 128 for 4 epochs. We used a linear decay learning rate, peaking at 5e-6, with a $3\\%$ warm-up phase. The first-stage training took about 20 hours on $8 \\times$ V100 GPUs, utilizing the DeepSpeed library and ZeRO optimizer stage 3. The first-stage model was trained once, while each target language model in the second stage took around 4 hours. For inference, we utilized greedy decoding to ensure deterministic outputs. The training prompt setting is shown in Appendix A.\n\nFor $\\mathrm{X - CIT}_{+spl}$ , the only difference is that the warm-up step involves learning from all data in the batch without sample selection, set to $8\\%$ of the total steps. The training time was similar to X-CIT, with the only added step being the comparison and optimization of selected losses.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1121::appendix::A",
+      "paper_id": "2025.acl-long.1121",
+      "section_number": "A",
+      "section_title": "training prompts",
+      "normalized_section_title": "training prompts",
+      "window_text": "During instruction tuning, the prompts for monolingual and chat-instruction data are shown in Figure 1 of main body. The prompts for monolingual instruction differ between the first and second stages: in the first stage, the model is explicitly instructed to respond in English, while the second stage does not specify a target language, allowing the model to self-identify during training and avoid label bias.\n\nFor Llama-2-7B, we structure the monolingual training example as follows:\n\n```txt\n<|system|>System Prompt <|user|>Instruction  \n<|assistant|>Response \n```\n\nFollowing standard approaches Touvron et al. (2023) and PLUG (Zhang et al., 2024), we only compute the loss on tokens after $<\\text{assistant}>$ .\n\nThe training example of chat-instruction data is:\n\n```typescript\n<|system>|System Prompt 1 <|user>|Instruction  \n<|assistant|>Response 1  \n<|user|>Prompt 2  \n<|assistant|>Response 2 \n```\n\nWe compute the loss for chat-instruction data on tokens after two $<$ assistant $>$ , i.e. \"Response 1\" in English and \"Response 2\" in target languages.\n\nThe PLUG (Zhang et al., 2024) dataset uses English as a pivot language, requiring the model to understand target language instructions in English and generate bilingual responses. Specifically, the dataset consists of the following:\n\n```txt\n<|system>|Please interpret the instruction in [pivot] and respond both in [pivot] and in [target]. <|user>|Instruction  \n<|assistant>|[pivot] Instruction: ...  \n[pivot] Response: ...  \n[target] Response: ... \n```",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1121::appendix::D",
+      "paper_id": "2025.acl-long.1121",
+      "section_number": "D",
+      "section_title": "ablation of the spl training strategy",
+      "normalized_section_title": "ablation of the spl training strategy",
+      "window_text": "Ablation experiment about Heuristic designs for Algorithm 1 The heuristic design about automatic initialization of $\\lambda$ and $k$ address the challenge of difficult parameter adjustment of SPL. The parameters of the method without heuristic design are $\\lambda = 0.4$ and $k = 1.3$ . The results of $\\mathrm{X - CIT}_{+spl}$ with or without heuristic design are shown in Table 8. This indicates that heuristic design is important, especially for the low-resource Korean and Arabic.\n\n![](images/dbcfe4c2c4728831e9904498d7ae2508618fe742f25be940173fef9d46c72c93.jpg)\n\n![](images/0f92685126ca56fb60ac253454730c0493496bc2848d1b47875c3b9f15189227.jpg)\n\n![](images/5c37145cca9c2e9ebdca7bbbd359f5b95e92fc20d37e103886e9ac7b91c53ddc.jpg)\n\n![](images/21bd657eec45f59c220732577281dcc4a7efbddae1bae7020e98ca980aa14ecc.jpg)\n\n![](images/32b2a065e8a5c0997923e7ea37ec320d691386b454bd7901953a033e95f583fd.jpg)\n\n![](images/98066bcd771eea910ba31c42e50136200f421c58a47bf3d3fd4cdb2334d8c4fb.jpg)\n\n![](images/551ee58c7b2cd6eb2e0155583a9d6ad6b1d9effac725423fd51f5797b5adfecb.jpg)\n\n![](images/d392007e88459f0a0d865cd79434ac592d5641e957a2c45f524423ae99779afd.jpg)\n\n![](images/5e2114a12629863ee07c1296155c2eb656e8c618e51dd5b2fdfe99990f5b02a6.jpg)\n\n![](images/9f937c594958f7e1a2f33f1d9b5419a508587c52c4ee9e2760b113880ca71823.jpg)\n\n![](images/6cdd8a66a53f3897140fb7c1fb37b228ef882625155d6d72d95bc876a23c73db.jpg)\n\n![](images/92f080edeaf36d51067fd5e031a3111a5d148aab7b3fafc75ffff51ae1a39e66.jpg)\n\n![](images/5b43e2a64c1932df5849161e6e2bd66b5d7c622ce447f6272aea00fb56cfc61e.jpg)\n\n![](images/c795e133fbe8f3a2c1eaa3370bc7e824cd0f4618c21d3083e851690d4a33e552.jpg)\n\n![](images/046ee100f7c64748ea001e6896f93e6865728a070c7bd527acb7ee60f3c5838d.jpg)\n\n![](images/f68d0ac4b07fddf2f475c1e13aaec905ecf32a25382a23b7f953dd3dce3a14d1.jpg)\n\n![](images/4a03f7837baa87d74e5725679324f569e6e57de7ffe1255e9c67ec498ab96e1a.jpg)\n\n![](images/e4dd9db96db0daf9ca6412ce69bc3388e397c1619f18a4d16f1412924a6e8792.jpg)\n\n![](images/64d186c1455ae63cea5b2f4776482501a120aaa9fb6092dec4c136c28cdf409f.jpg)\n\n![](images/f5d0ea22fd5fef8c28aeac59207058d474bba564d5013b24b4294115d92921e4.jpg)\n\nFigure 7: Performance trend graph of model score in five languages AlpacaEval task with varying data volumes.   \nTable 9: Ablation results of setting for low loss standard deviation $\\theta$ in Korean and Arabic.   \n\n<table><tr><td>Languages</td><td>Methods</td><td>MRC</td><td>xGeo</td><td>xPeo</td><td>Flores-200 x -&gt; en</td><td>Flores-200 en -&gt; x</td><td>AVG.</td></tr><tr><td rowspan=\"2\">Korean</td><td rowspan=\"2\">X-CIT+spl w/o</td><td>75.48±1.04</td><td>11.17±0.85</td><td>28.70±0.69</td><td>22.12±0.49</td><td>13.94±0.11</td><td>30.28±0.29</td></tr><tr><td>76.81±1.18</td><td>9.83±0.62</td><td>27.59±2.24</td><td>21.0±0.6</td><td>13.97±0.15</td><td>29.84±0.72</td></tr><tr><td rowspan=\"2\">Arabic</td><td rowspan=\"2\">X-CIT+spl w/o</td><td>43.61±0.05</td><td>11.67±0.62</td><td>2.41±0.69</td><td>15.06±3.03</td><td>10.15±0.75</td><td>16.58±0.70</td></tr><tr><td>43.95±0.43</td><td>11.67±0.62</td><td>2.41±0.26</td><td>10.4±0.53</td><td>9.82±0.42</td><td>15.65±0.33</td></tr></table>\n\nThe setting for low loss standard deviation $\\theta$ is designed primarily for low-resource languages like Korean and Arabic, as they are quite challenging for Llama2-7B, generally resulting in higher losses and thus smaller loss variance. In such cases, we increase the initial threshold of SPL and slow down its iterative increase. This ablation results of setting for low loss standard deviation $\\theta$ , in Korean and Arabic, are shown in Table 9. The results show that the setting may lead to some degradation in MRC, but it shows improvements in other tasks, especially in translation. The overall improvement in average performance also indicates that our heuristic design of the SPL algorithm is necessary.\n\nDirectly integrating continued fine-tuning with SPL does not improve performance. We also have an ablation experiment to show that simple continuous fine-tuning with SPL (i.e. CL_SFT+SPL) does not achieve better results. The results in Arabic are shown in Table 10. Moreover, using cross-lingual data, such as PLUG or our chat-instruction data, SPL enhances performance. Our chat-instruction data, which simulates a second-language acquisition through two-turn chats, achieves better results.\n\nTable 10: The results of simple continuous fine-tuning with SPL and the PLUG data-form with SPL.   \n\n<table><tr><td>Arabic</td><td>MRC</td><td>Flores-200 x -&gt; en</td><td>Flores-200 en -&gt; x</td><td>xGeo</td><td>xPeo</td><td>AVG.</td></tr><tr><td>CL_SFT</td><td>41.19±0.9</td><td>18.41±0.77</td><td>5.7±0.1</td><td>9.33±1.43</td><td>1.3±0.52</td><td>15.19±0.12</td></tr><tr><td>CL_SFT+SPL</td><td>40.22±0.51</td><td>14.56±0.43</td><td>7.8±0.46</td><td>8.83±0.47</td><td>0.93±0.26</td><td>14.72±0.66</td></tr><tr><td>X-CIT w/ PLUG</td><td>40.89±1.26</td><td>12.11±0.79</td><td>8.00±0.66</td><td>8.33±0.62</td><td>1.11±0.45</td><td>14.09±0.49</td></tr><tr><td>X-CIT+SPL w/ PLUG</td><td>38.94±0.41</td><td>14.62±1.14</td><td>7.48±0.47</td><td>9±0.41</td><td>1.11±0.45</td><td>14.63±0.48</td></tr><tr><td>X-CIT</td><td>43.14±0.31</td><td>15.27±1.19</td><td>10.08±0.2</td><td>9.83±0.47</td><td>2.78±0.45</td><td>16.22±0.20</td></tr><tr><td>X-CIT+SPL</td><td>43.61±0.05</td><td>15.06±3.03</td><td>10.15±0.75</td><td>11.67±0.62</td><td>2.41±0.69</td><td>16.58±0.70</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1121::appendix::E",
+      "paper_id": "2025.acl-long.1121",
+      "section_number": "E",
+      "section_title": "detailed results of generalization experiments",
+      "normalized_section_title": "detailed results of generalization experiments",
+      "window_text": "The detailed results of Generalization experiments are shown in Table 11. On the Llama3 series models, our method $\\mathrm{X - CIT}_{+spl}$ achieved improvement by $5.15\\%$ and $8.21\\%$ in Arabic compared with 8B and 3B base models, respectively. On Qwen2.5, which has undergone multilingual fine-tuning, our method still yielded a slight performance improvement, although the gain decreased as the model size increased.\n\nTable 11: The results in vary scaling LLMs for Arabic and Korean.   \n\n<table><tr><td rowspan=\"2\">Methods</td><td colspan=\"2\">Llama-3.1-8B</td><td colspan=\"2\">Llama-3.2-3B</td><td colspan=\"2\">Qwen2.5-7B</td><td>Qwen2.5-1.5B</td><td>Qwen2.5-14B</td></tr><tr><td>ar</td><td>ko</td><td>ar</td><td>ko</td><td>ar</td><td>ko</td><td>ar</td><td>ar</td></tr><tr><td>base</td><td>40.95</td><td>38.68</td><td>29.13</td><td>29.65</td><td>39.38</td><td>38.67</td><td>24.75</td><td>45.94</td></tr><tr><td>CL_IT</td><td>39.86±2.33</td><td>40.69±0.07</td><td>35.38±0.22</td><td>30.51±0.25</td><td>38.31±0.98</td><td>37.10±0.39</td><td>24.89±0.54</td><td>44.10±0.25</td></tr><tr><td>X-CIT w/ PLUG</td><td>44.03±0.65</td><td>42.17±0.71</td><td>31.94±2.19</td><td>33.93±0.66</td><td>38.20±1.30</td><td>37.60±0.48</td><td>24.87±0.24</td><td>43.60±0.95</td></tr><tr><td>X-CIT</td><td>45.64±0.83</td><td>43.52±0.69</td><td>36.63±0.35</td><td>35.07±0.29</td><td>40.36±0.59</td><td>38.86±0.35</td><td>26.29±0.13</td><td>45.71±0.87</td></tr><tr><td>X-CIT+spl</td><td>46.10±0.32</td><td>44.31±0.28</td><td>37.34±0.50</td><td>36.10±0.29</td><td>40.52±0.32</td><td>39.69±0.41</td><td>26.60±0.44</td><td>46.20±0.33</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1121::appendix::G",
+      "paper_id": "2025.acl-long.1121",
+      "section_number": "G",
+      "section_title": "data ratio in each experiments",
+      "normalized_section_title": "data ratio in each experiments",
+      "window_text": "All data ratios (10% or 1%) refer to the proportion of data randomly sampled from the full translation dataset (i.e., 5.2k or 520 samples). The remaining data is not used in the experiments, rather than being replaced with alternative datasets. The comparison table outlining the composition of the training data (using 10% as an example) in Table 15.\n\nYou are evaluating a response that has been submitted for a particular task, using a specific set of standards. Below is the data:  \n[BEGIN DATA]  \n***  \n[Task]: {TASK}  \n***  \n[Submission]: {MODEL RESPONSE}  \n***  \n[Aspects to evaluate and their criteria]:  \nLanguage:  \n1 star means the Submission language is different from the Task language.  \n2 stars means Submission language is the same as the Task language but with occasional code-switching.  \n3 starts means Submission language is the same as the Task language.  \nFluency:  \n1 star means Many grammar errors.  \n2 stars means Generally fluent but with some grammar errors or presence of non-existing words.  \n3 stars means Language is fluent and in accordance with human conventions.  \nHelpfulness:  \n1 star means Lack of necessary information or off-topic response.  \n2 stars means Insufficient information to provide a complete answer.  \n3 stars means Information is correct and sufficient. Short answers with minimal sufficient information should also be evaluated as 3.  \nAccuracy:  \n1 star means A lot of factual errors or inconsistencies with the context.  \n2 stars means Some amount of factual errors, or inconsistencies with the context.  \n3 stars means Completely correct, without factual errors or inconsistencies with the context.  \nLogical coherence:  \n1 star means Confused and full of logical flaws. 2 stars means Some logical issues present.  \n3 stars means Logically sound.  \nHarmlessness:  \n1 star means Violates ethics or is objectionable.  \n2 stars means Mostly compliant but with a few flaws.  \n3 stars means Fully compliant with public morality. ***  \n[END DATA]  \nOutput a json dictionary with scores for 6 specified criteria.\n\nTable 14: Evaluation prompt when using GPT-4 as the evaluator on AlpacaEval from Chirkova and Nikoulina (2024).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.1121::sections::4.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "The models were trained in FP16 with a maximum sequence length of 4096 and a global batch size of 128 for 4 epochs. We used a linear decay learning rate, peaking at 5e-6, with a $3\\%$ warm-up phase. The first-stage training took about 20 hours on $8 \\times$ V100 GPUs, utilizing the DeepSpeed library and ZeRO optimizer stage 3. The first-stage model was trained once, while each target language model in the second stage took around 4 hours. For inference, we utilized greedy decoding to ensure deterministic outputs. The training prompt setting is shown in Appendix A.\n\nFor $\\mathrm{X - CIT}_{+spl}$ , the only difference is that the warm-up step involves learning from all data in the batch without sample selection, set to $8\\%$ of the total steps. The training time was similar to X-CIT, with the only added step being the comparison and optimization of selected losses.",
+      "section_number": "4.2",
+      "section_title": "models setup",
+      "normalized_section_title": "models setup"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.1121::sections::4.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "cleaned_hardware_name": "v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "4.2",
+      "section_title": "models setup",
+      "normalized_section_title": "models setup",
+      "evidence": "The models were trained in FP16 with a maximum sequence length of 4096 and a global batch size of 128 for 4 epochs. We used a linear decay learning rate, peaking at 5e-6, with a $3\\%$ warm-up phase. The first-stage training took about 20 hours on $8 \\times$ V100 GPUs, utilizing the DeepSpeed library and ZeRO optimizer stage 3. The first-stage model was trained once, while each target language model in the second stage took around 4 hours. For inference, we utilized greedy decoding to ensure deterministic outputs. The training prompt setting is shown in Appendix A.\n\nFor $\\mathrm{X - CIT}_{+spl}$ , the only difference is that the warm-up step involves learning from all data in the batch without sample selection, set to $8\\%$ of the total steps. The training time was similar to X-CIT, with the only added step being the comparison and optimization of selected losses.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.1121::appendix::G",
+      "audit_reason": "model_output_parse_failed",
+      "audit_method": "model_output_audit",
+      "section_number": "G",
+      "section_title": "data ratio in each experiments",
+      "evidence": "All data ratios (10% or 1%) refer to the proportion of data randomly sampled from the full translation dataset (i.e., 5.2k or 520 samples). The remaining data is not used in the experiments, rather than being replaced with alternative datasets. The comparison table outlining the composition of the training data (using 10% as an example) in Table 15.\n\nYou are evaluating a response that has been submitted for a particular task, using a specific set of standards. Below is the data:  \n[BEGIN DATA]  \n***  \n[Task]: {TASK}  \n***  \n[Submission]: {MODEL RESPONSE}  \n***  \n[Aspects to evaluate and their criteria]:  \nLanguage:  \n1 star means the Submission language is different from the Task language.  \n2 stars means Submission language is the same as the Task language but with occasional code-switching.  \n3 starts means Submission language is the same as the Task language.  \nFluency:  \n1 star means Many grammar errors.  \n2 stars means Generally fluent but with some grammar errors or presence of non-existing words.  \n3 stars means Language is fluent and in accordance with human conventions.  \nHelpfulness:  \n1 star means Lack of necessary information or off-topic response.  \n2 stars means Insufficient information to provide a complete answer.  \n3 stars means Information is correct and sufficient. Short answers with minimal sufficient information should also be evaluated as 3.  \nAccuracy:  \n1 star means A lot of factual errors or inconsistencies with the context.  \n2 stars means Some amount of factual errors, or inconsistencies with the context.  \n3 stars means Completely correct, without factual errors or inconsistencies with the context.  \nLogical coherence:  \n1 star means Confused and full of logical flaws. 2 stars means Some logical issues present.  \n3 stars means Logically sound.  \nHarmlessness:  \n1 star means Violates ethics or is objectionable.  \n2 stars means Mostly compliant but with a few flaws.  \n3 stars means Fully compliant with public morality. ***  \n[END DATA]  \nOutput a json dictionary with scores for 6 specified criteria.\n\nTable 14: Evaluation prompt when using GPT-4 as the evaluator on AlpacaEval from Chirkova and Nikoulina (2024).",
+      "parse_error": "model_output_not_list",
+      "chunk_index": 1
+    },
+    {
+      "source_window_id": "2025.acl-long.1121::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiment",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.1121::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "training prompts",
+      "evidence": "During instruction tuning, the prompts for monolingual and chat-instruction data are shown in Figure 1 of main body. The prompts for monolingual instruction differ between the first and second stages: in the first stage, the model is explicitly instructed to respond in English, while the second stage does not specify a target language, allowing the model to self-identify during training and avoid label bias.\n\nFor Llama-2-7B, we structure the monolingual training example as follows:\n\n```txt\n<|system|>System Prompt <|user|>Instruction  \n<|assistant|>Response \n```\n\nFollowing standard approaches Touvron et al. (2023) and PLUG (Zhang et al., 2024), we only compute the loss on tokens after $<\\text{assistant}>$ .\n\nThe training example of chat-instruction data is:\n\n```typescript\n<|system>|System Prompt 1 <|user>|Instruction  \n<|assistant|>Response 1  \n<|user|>Prompt 2  \n<|assistant|>Response 2 \n```\n\nWe compute the loss for chat-instruction data on tokens after two $<$ assistant $>$ , i.e. \"Response 1\" in English and \"Response 2\" in target languages.\n\nThe PLUG (Zhang et al., 2024) dataset uses English as a pivot language, requiring the model to understand target language instructions in English and generate bilingual responses. Specifically, the dataset consists of the following:\n\n```txt\n<|system>|Please interpret the instruction in [pivot] and respond both in [pivot] and in [target]. <|user>|Instruction  \n<|assistant>|[pivot] Instruction: ...  \n[pivot] Response: ...  \n[target] Response: ... \n```"
+    },
+    {
+      "source_window_id": "2025.acl-long.1121::appendix::D",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D",
+      "section_title": "ablation of the spl training strategy",
+      "evidence": "Ablation experiment about Heuristic designs for Algorithm 1 The heuristic design about automatic initialization of $\\lambda$ and $k$ address the challenge of difficult parameter adjustment of SPL. The parameters of the method without heuristic design are $\\lambda = 0.4$ and $k = 1.3$ . The results of $\\mathrm{X - CIT}_{+spl}$ with or without heuristic design are shown in Table 8. This indicates that heuristic design is important, especially for the low-resource Korean and Arabic.\n\n![](images/dbcfe4c2c4728831e9904498d7ae2508618fe742f25be940173fef9d46c72c93.jpg)\n\n![](images/0f92685126ca56fb60ac253454730c0493496bc2848d1b47875c3b9f15189227.jpg)\n\n![](images/5c37145cca9c2e9ebdca7bbbd359f5b95e92fc20d37e103886e9ac7b91c53ddc.jpg)\n\n![](images/21bd657eec45f59c220732577281dcc4a7efbddae1bae7020e98ca980aa14ecc.jpg)\n\n![](images/32b2a065e8a5c0997923e7ea37ec320d691386b454bd7901953a033e95f583fd.jpg)\n\n![](images/98066bcd771eea910ba31c42e50136200f421c58a47bf3d3fd4cdb2334d8c4fb.jpg)\n\n![](images/551ee58c7b2cd6eb2e0155583a9d6ad6b1d9effac725423fd51f5797b5adfecb.jpg)\n\n![](images/d392007e88459f0a0d865cd79434ac592d5641e957a2c45f524423ae99779afd.jpg)\n\n![](images/5e2114a12629863ee07c1296155c2eb656e8c618e51dd5b2fdfe99990f5b02a6.jpg)\n\n![](images/9f937c594958f7e1a2f33f1d9b5419a508587c52c4ee9e2760b113880ca71823.jpg)\n\n![](images/6cdd8a66a53f3897140fb7c1fb37b228ef882625155d6d72d95bc876a23c73db.jpg)\n\n![](images/92f080edeaf36d51067fd5e031a3111a5d148aab7b3fafc75ffff51ae1a39e66.jpg)\n\n![](images/5b43e2a64c1932df5849161e6e2bd66b5d7c622ce447f6272aea00fb56cfc61e.jpg)\n\n![](images/c795e133fbe8f3a2c1eaa3370bc7e824cd0f4618c21d3083e851690d4a33e552.jpg)\n\n![](images/046ee100f7c64748ea001e6896f93e6865728a070c7bd527acb7ee60f3c5838d.jpg)\n\n![](images/f68d0ac4b07fddf2f475c1e13aaec905ecf32a25382a23b7f953dd3dce3a14d1.jpg)\n\n![](images/4a03f7837baa87d74e5725679324f569e6e57de7ffe1255e9c67ec498ab96e1a.jpg)\n\n![](images/e4dd9db96db0daf9ca6412ce69bc3388e397c1619f18a4d16f1412924a6e8792.jpg)\n\n![](images/64d186c1455ae63cea5b2f4776482501a120aaa9fb6092dec4c136c28cdf409f.jpg)\n\n![](images/f5d0ea22fd5fef8c28aeac59207058d474bba564d5013b24b4294115d92921e4.jpg)\n\nFigure 7: Performance trend graph of model score in five languages AlpacaEval task with varying data volumes.   \nTable 9: Ablation results of setting for low loss standard deviation $\\theta$ in Korean and Arabic.   \n\n<table><tr><td>Languages</td><td>Methods</td><td>MRC</td><td>xGeo</td><td>xPeo</td><td>Flores-200 x -&gt; en</td><td>Flores-200 en -&gt; x</td><td>AVG.</td></tr><tr><td rowspan=\"2\">Korean</td><td rowspan=\"2\">X-CIT+spl w/o</td><td>75.48±1.04</td><td>11.17±0.85</td><td>28.70±0.69</td><td>22.12±0.49</td><td>13.94±0.11</td><td>30.28±0.29</td></tr><tr><td>76.81±1.18</td><td>9.83±0.62</td><td>27.59±2.24</td><td>21.0±0.6</td><td>13.97±0.15</td><td>29.84±0.72</td></tr><tr><td rowspan=\"2\">Arabic</td><td rowspan=\"2\">X-CIT+spl w/o</td><td>43.61±0.05</td><td>11.67±0.62</td><td>2.41±0.69</td><td>15.06±3.03</td><td>10.15±0.75</td><td>16.58±0.70</td></tr><tr><td>43.95±0.43</td><td>11.67±0.62</td><td>2.41±0.26</td><td>10.4±0.53</td><td>9.82±0.42</td><td>15.65±0.33</td></tr></table>\n\nThe setting for low loss standard deviation $\\theta$ is designed primarily for low-resource languages like Korean and Arabic, as they are quite challenging for Llama2-7B, generally resulting in higher losses and thus smaller loss variance. In such cases, we increase the initial threshold of SPL and slow down its iterative increase. This ablation results of setting for low loss standard deviation $\\theta$ , in Korean and Arabic, are shown in Table 9. The results show that the setting may lead to some degradation in MRC, but it shows improvements in other tasks, especially in translation. The overall improvement in average performance also indicates that our heuristic design of the SPL algorithm is necessary.\n\nDirectly integrating continued fine-tuning with SPL does not improve performance. We also have an ablation experiment to show that simple continuous fine-tuning with SPL (i.e. CL_SFT+SPL) does not achieve better results. The results in Arabic are shown in Table 10. Moreover, using cross-lingual data, such as PLUG or our chat-instruction data, SPL enhances performance. Our chat-instruction data, which simulates a second-language acquisition through two-turn chats, achieves better results.\n\nTable 10: The results of simple continuous fine-tuning with SPL and the PLUG data-form with SPL.   \n\n<table><tr><td>Arabic</td><td>MRC</td><td>Flores-200 x -&gt; en</td><td>Flores-200 en -&gt; x</td><td>xGeo</td><td>xPeo</td><td>AVG.</td></tr><tr><td>CL_SFT</td><td>41.19±0.9</td><td>18.41±0.77</td><td>5.7±0.1</td><td>9.33±1.43</td><td>1.3±0.52</td><td>15.19±0.12</td></tr><tr><td>CL_SFT+SPL</td><td>40.22±0.51</td><td>14.56±0.43</td><td>7.8±0.46</td><td>8.83±0.47</td><td>0.93±0.26</td><td>14.72±0.66</td></tr><tr><td>X-CIT w/ PLUG</td><td>40.89±1.26</td><td>12.11±0.79</td><td>8.00±0.66</td><td>8.33±0.62</td><td>1.11±0.45</td><td>14.09±0.49</td></tr><tr><td>X-CIT+SPL w/ PLUG</td><td>38.94±0.41</td><td>14.62±1.14</td><td>7.48±0.47</td><td>9±0.41</td><td>1.11±0.45</td><td>14.63±0.48</td></tr><tr><td>X-CIT</td><td>43.14±0.31</td><td>15.27±1.19</td><td>10.08±0.2</td><td>9.83±0.47</td><td>2.78±0.45</td><td>16.22±0.20</td></tr><tr><td>X-CIT+SPL</td><td>43.61±0.05</td><td>15.06±3.03</td><td>10.15±0.75</td><td>11.67±0.62</td><td>2.41±0.69</td><td>16.58±0.70</td></tr></table>"
+    },
+    {
+      "source_window_id": "2025.acl-long.1121::appendix::E",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "E",
+      "section_title": "detailed results of generalization experiments",
+      "evidence": "The detailed results of Generalization experiments are shown in Table 11. On the Llama3 series models, our method $\\mathrm{X - CIT}_{+spl}$ achieved improvement by $5.15\\%$ and $8.21\\%$ in Arabic compared with 8B and 3B base models, respectively. On Qwen2.5, which has undergone multilingual fine-tuning, our method still yielded a slight performance improvement, although the gain decreased as the model size increased.\n\nTable 11: The results in vary scaling LLMs for Arabic and Korean.   \n\n<table><tr><td rowspan=\"2\">Methods</td><td colspan=\"2\">Llama-3.1-8B</td><td colspan=\"2\">Llama-3.2-3B</td><td colspan=\"2\">Qwen2.5-7B</td><td>Qwen2.5-1.5B</td><td>Qwen2.5-14B</td></tr><tr><td>ar</td><td>ko</td><td>ar</td><td>ko</td><td>ar</td><td>ko</td><td>ar</td><td>ar</td></tr><tr><td>base</td><td>40.95</td><td>38.68</td><td>29.13</td><td>29.65</td><td>39.38</td><td>38.67</td><td>24.75</td><td>45.94</td></tr><tr><td>CL_IT</td><td>39.86±2.33</td><td>40.69±0.07</td><td>35.38±0.22</td><td>30.51±0.25</td><td>38.31±0.98</td><td>37.10±0.39</td><td>24.89±0.54</td><td>44.10±0.25</td></tr><tr><td>X-CIT w/ PLUG</td><td>44.03±0.65</td><td>42.17±0.71</td><td>31.94±2.19</td><td>33.93±0.66</td><td>38.20±1.30</td><td>37.60±0.48</td><td>24.87±0.24</td><td>43.60±0.95</td></tr><tr><td>X-CIT</td><td>45.64±0.83</td><td>43.52±0.69</td><td>36.63±0.35</td><td>35.07±0.29</td><td>40.36±0.59</td><td>38.86±0.35</td><td>26.29±0.13</td><td>45.71±0.87</td></tr><tr><td>X-CIT+spl</td><td>46.10±0.32</td><td>44.31±0.28</td><td>37.34±0.50</td><td>36.10±0.29</td><td>40.52±0.32</td><td>39.69±0.41</td><td>26.60±0.44</td><td>46.20±0.33</td></tr></table>"
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.1121\\auto\\full.md",
+    "source_md_sha256": "5ec0a1fba10231093bae6c179a56d9ac93d975e42c7576d2a6e9bda772224868",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

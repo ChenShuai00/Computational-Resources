@@ -1,0 +1,96 @@
+{
+  "paper_id": "2024.acl-long.491",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.491::sections::2",
+      "paper_id": "2024.acl-long.491",
+      "section_number": "2",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "We first give some notations for this task. Let $D_{s} = \\{c_{1},\\ldots ,c_{l_{s}}\\}$ denote the contexts of products, with $l_{s}$ utterances in the source domain, where $c_{i} = \\{x_{i,1},\\dots,x_{i,l_{s_{i}}}\\}$ is the $i$ -th context with $l_{s_i}$ words. We use the special symbol $\\langle sep\\rangle$ to separate contexts. The gold answer contains an objective part $Y_{s}^{obj} = \\{y_{1},\\dots,y_{l_{o}}\\}$ and a subjective part $Y_{s}^{subj} = \\{y_{1},\\dots,y_{l_{s}}\\}$ . Based on the target contexts $D_{t} = \\{c_{1},\\dots,c_{l_{t}}\\}$ , our goal is to yield this inductive answer with correct $Y_{t}^{obj}$ and $Y_{t}^{subj}$ with low labeled resource. Next, we illustrate the adaptive model for low-resource $SUBJPQA$ in Figure 2, which includes knowledge retrieval and representations, disentangled learning, and target model adaption.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.491::sections::3.4",
+      "paper_id": "2024.acl-long.491",
+      "section_number": "3.4",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "window_text": "To analyze the contribution of each component in our model, we conducted ablation studies by removing four key modules from our framework one by one, including (1) DisM that dropped the disentangled learning module and solely relied on BART encoders; (2) ConL discarded the contrastive loss objective in Eq.(9); (3) RecM that removed back\n\ntracked and cross-domain reconstruction strategies; (4) $DomD$ that threw away a domain discriminator.\n\nAs shown in Figure 3, removing the disentangled module caused the most significant performance drop, indicating it played a crucial role in transferring knowledge across domains. Besides, excluding other three modules also led to noticeable degradation. These results verified all components in our model were beneficial for obtaining key factors to build a robust model. More evaluations on the disentangled module and case study were illustrated in Appendix 3.5, 3.6, respectively.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.491::appendix::B",
+      "paper_id": "2024.acl-long.491",
+      "section_number": "B",
+      "section_title": "additional implementation details",
+      "normalized_section_title": "additional implementation details",
+      "window_text": "For evaluation, we reimplemented each baseline with default settings. For fair comparisons, we conducted five runs and showed the average results.\n\nOurs: We implemented our experiments on two Nvidia RTX 3090 GPUs with PyTorch. We initialized our model with the pre-trained $BART_{base}$ provided by Hugging Face (Wolf et al., 2020). The training batch size was 4, and we used the Adam optimizer with a learning rate of 3e-5 for $BART_{base}$ related modules and 1e-3 for the contextual representation module. During the adaptation step, we used a learning rate of 3e-6 for MLE training, 3e-7 for RL training, and 3e-4 for the discriminators. Our disentangled and reconstruction modules were built by multi-layer perceptron and activator. We utilized the grid search to tune the hyper-parameters according to the validation performance. The trade-off parameters $\\alpha$ , $\\varepsilon$ , $\\beta_1$ , $\\beta_2$ , and $\\eta$ were set to 0.3, 0.9, 0.25, 0.5, and 0.9, respectively. The LLM we used to yield implicit commonsense knowledge was the GPT-3.5 turbo. The sentiments of product reviews in Figure 2 were obtained via a review text classifier on Huggingface platform, which was fine-tuned on Amazon product reviews corpus.\n\nPGNet: For training the pointer-generator network model, we utilized a bidirectional two-layer LSTM as the encoder and a uni-directional single-layer LSTM as the decoder. The hidden size was\n\nhttps://platform.openai.com/docs/guides/text-generation\n\nset to 512 to capture richer context representations. We initialized both models with 300-dimensional GloVe word embeddings pre-trained on a large corpus. To prevent overfitting, we set the maximum number of epochs to 30 and employed an early stopping strategy with a patience of 5 epochs. The gradient norm was clipped at 5.0 to stabilize training. The batch size was 64 for efficient training on GPUs, and we used the Adam optimizer with a learning rate of 2e-4 and a weight decay of 1e-5.\n\nBART: We initialized the model with base size pre-trained on a large corpus for stronger language modeling capabilities. The maximum number of epochs was 20 with early stopping after 3 epochs if the validation loss does not decrease. The batch size was 32, and we utilized the AdamW optimizer with a linear warmup and decay schedule. The peak learning rate was 5e-5 and the weight decay was 1e-2 to regularize training objectives.\n\nPegasus: We implemented the model based on the transformers library with configurations for abstractive summarization tasks. The model featured a vocabulary size of 50,265 and utilizes 1024 position embeddings to handle long product-related content. It was composed of 12 layers each for the encoder and decoder, with a hidden size of 1024 and an $FFN$ dimension of 4096. The model used 16 attention heads in both the encoder and decoder. We employed GELU as its activation function, with a dropout rate of 0.1 and an attention dropout of 0.0 to prevent overfitting. The model initialization standard deviation was set at 0.02, and it includes parameters for padding, end-of-sequence, and forced end-of-sequence tokens. For optimization, both pre-training and fine-tuning used Adafactor (Shazeer and Stern, 2018) with square root learning rate decay and dropout rate of 0.1.\n\nInstructDS: The model was built on the foundation of Flan-T5-XL (Chung et al., 2022), leveraging LORA for parameter-efficient training, resulting in 37.7 million trainable parameters. This model was unique in its approach to dialogue summarization, aiming to synthesize high-quality query-based summarization triples by exploiting the question generation and answering capabilities of large language models. It underwent instruction tuning with a focus on general summarization, query-based summarization, and length-aware augmentations, making it adept at producing summaries that were tailored to user instructions and preferences.\n\nFor the PlanSum and FewSum subjective models, we followed the settings described in their original papers to ensure a fair comparison.\n\nIn the validation phase, we evaluated the loss for each epoch. When the loss was minimum, we can derived an optimal model for evaluation.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.491::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia RTX 3090",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "For evaluation, we reimplemented each baseline with default settings. For fair comparisons, we conducted five runs and showed the average results.\n\nOurs: We implemented our experiments on two Nvidia RTX 3090 GPUs with PyTorch. We initialized our model with the pre-trained $BART_{base}$ provided by Hugging Face (Wolf et al., 2020). The training batch size was 4, and we used the Adam optimizer with a learning rate of 3e-5 for $BART_{base}$ related modules and 1e-3 for the contextual representation module. During the adaptation step, we used a learning rate of 3e-6 for MLE training, 3e-7 for RL training, and 3e-4 for the discriminators. Our disentangled and reconstruction modules were built by multi-layer perceptron and activator. We utilized the grid search to tune the hyper-parameters according to the validation performance. The trade-off parameters $\\alpha$ , $\\varepsilon$ , $\\beta_1$ , $\\beta_2$ , and $\\eta$ were set to 0.3, 0.9, 0.25, 0.5, and 0.9, respectively. The LLM we used to yield implicit commonsense knowledge was the GPT-3.5 turbo. The sentiments of product reviews in Figure 2 were obtained via a review text classifier on Huggingface platform, which was fine-tuned on Amazon product reviews corpus.\n\nPGNet: For training the pointer-generator network model, we utilized a bidirectional two-layer LSTM as the encoder and a uni-directional single-layer LSTM as the decoder. The hidden size was\n\nhttps://platform.openai.com/docs/guides/text-generation\n\nset to 512 to capture richer context representations. We initialized both models with 300-dimensional GloVe word embeddings pre-trained on a large corpus. To prevent overfitting, we set the maximum number of epochs to 30 and employed an early stopping strategy with a patience of 5 epochs. The gradient norm was clipped at 5.0 to stabilize training. The batch size was 64 for efficient training on GPUs, and we used the Adam optimizer with a learning rate of 2e-4 and a weight decay of 1e-5.\n\nBART: We initialized the model with base size pre-trained on a large corpus for stronger language modeling capabilities. The maximum number of epochs was 20 with early stopping after 3 epochs if the validation loss does not decrease. The batch size was 32, and we utilized the AdamW optimizer with a linear warmup and decay schedule. The peak learning rate was 5e-5 and the weight decay was 1e-2 to regularize training objectives.\n\nPegasus: We implemented the model based on the transformers library with configurations for abstractive summarization tasks. The model featured a vocabulary size of 50,265 and utilizes 1024 position embeddings to handle long product-related content. It was composed of 12 layers each for the encoder and decoder, with a hidden size of 1024 and an $FFN$ dimension of 4096. The model used 16 attention heads in both the encoder and decoder. We employed GELU as its activation function, with a dropout rate of 0.1 and an attention dropout of 0.0 to prevent overfitting. The model initialization standard deviation was set at 0.02, and it includes parameters for padding, end-of-sequence, and forced end-of-sequence tokens. For optimization, both pre-training and fine-tuning used Adafactor (Shazeer and Stern, 2018) with square root learning rate decay and dropout rate of 0.1.\n\nInstructDS: The model was built on the foundation of Flan-T5-XL (Chung et al., 2022), leveraging LORA for parameter-efficient training, resulting in 37.7 million trainable parameters. This model was unique in its approach to dialogue summarization, aiming to synthesize high-quality query-based summarization triples by exploiting the question generation and answering capabilities of large language models. It underwent instruction tuning with a focus on general summarization, query-based summarization, and length-aware augmentations, making it adept at producing summaries that were tailored to user instructions and preferences.\n\nFor the PlanSum and FewSum subjective models, we followed the settings described in their original papers to ensure a fair comparison.\n\nIn the validation phase, we evaluated the loss for each epoch. When the loss was minimum, we can derived an optimal model for evaluation.",
+      "section_number": "B",
+      "section_title": "additional implementation details",
+      "normalized_section_title": "additional implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.491::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia RTX 3090",
+      "cleaned_hardware_name": "nvidia rtx 3090",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 3090",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 3090",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "B",
+      "section_title": "additional implementation details",
+      "normalized_section_title": "additional implementation details",
+      "evidence": "For evaluation, we reimplemented each baseline with default settings. For fair comparisons, we conducted five runs and showed the average results.\n\nOurs: We implemented our experiments on two Nvidia RTX 3090 GPUs with PyTorch. We initialized our model with the pre-trained $BART_{base}$ provided by Hugging Face (Wolf et al., 2020). The training batch size was 4, and we used the Adam optimizer with a learning rate of 3e-5 for $BART_{base}$ related modules and 1e-3 for the contextual representation module. During the adaptation step, we used a learning rate of 3e-6 for MLE training, 3e-7 for RL training, and 3e-4 for the discriminators. Our disentangled and reconstruction modules were built by multi-layer perceptron and activator. We utilized the grid search to tune the hyper-parameters according to the validation performance. The trade-off parameters $\\alpha$ , $\\varepsilon$ , $\\beta_1$ , $\\beta_2$ , and $\\eta$ were set to 0.3, 0.9, 0.25, 0.5, and 0.9, respectively. The LLM we used to yield implicit commonsense knowledge was the GPT-3.5 turbo. The sentiments of product reviews in Figure 2 were obtained via a review text classifier on Huggingface platform, which was fine-tuned on Amazon product reviews corpus.\n\nPGNet: For training the pointer-generator network model, we utilized a bidirectional two-layer LSTM as the encoder and a uni-directional single-layer LSTM as the decoder. The hidden size was\n\nhttps://platform.openai.com/docs/guides/text-generation\n\nset to 512 to capture richer context representations. We initialized both models with 300-dimensional GloVe word embeddings pre-trained on a large corpus. To prevent overfitting, we set the maximum number of epochs to 30 and employed an early stopping strategy with a patience of 5 epochs. The gradient norm was clipped at 5.0 to stabilize training. The batch size was 64 for efficient training on GPUs, and we used the Adam optimizer with a learning rate of 2e-4 and a weight decay of 1e-5.\n\nBART: We initialized the model with base size pre-trained on a large corpus for stronger language modeling capabilities. The maximum number of epochs was 20 with early stopping after 3 epochs if the validation loss does not decrease. The batch size was 32, and we utilized the AdamW optimizer with a linear warmup and decay schedule. The peak learning rate was 5e-5 and the weight decay was 1e-2 to regularize training objectives.\n\nPegasus: We implemented the model based on the transformers library with configurations for abstractive summarization tasks. The model featured a vocabulary size of 50,265 and utilizes 1024 position embeddings to handle long product-related content. It was composed of 12 layers each for the encoder and decoder, with a hidden size of 1024 and an $FFN$ dimension of 4096. The model used 16 attention heads in both the encoder and decoder. We employed GELU as its activation function, with a dropout rate of 0.1 and an attention dropout of 0.0 to prevent overfitting. The model initialization standard deviation was set at 0.02, and it includes parameters for padding, end-of-sequence, and forced end-of-sequence tokens. For optimization, both pre-training and fine-tuning used Adafactor (Shazeer and Stern, 2018) with square root learning rate decay and dropout rate of 0.1.\n\nInstructDS: The model was built on the foundation of Flan-T5-XL (Chung et al., 2022), leveraging LORA for parameter-efficient training, resulting in 37.7 million trainable parameters. This model was unique in its approach to dialogue summarization, aiming to synthesize high-quality query-based summarization triples by exploiting the question generation and answering capabilities of large language models. It underwent instruction tuning with a focus on general summarization, query-based summarization, and length-aware augmentations, making it adept at producing summaries that were tailored to user instructions and preferences.\n\nFor the PlanSum and FewSum subjective models, we followed the settings described in their original papers to ensure a fair comparison.\n\nIn the validation phase, we evaluated the loss for each epoch. When the loss was minimum, we can derived an optimal model for evaluation.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce RTX 3090",
+        "num": 2
+      }
+    ]
+  }
+}

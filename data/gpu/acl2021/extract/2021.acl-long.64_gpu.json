@@ -1,0 +1,120 @@
+{
+  "paper_id": "2021.acl-long.64",
+  "candidate_windows": [
+    {
+      "window_id": "2021.acl-long.64::sections::3",
+      "paper_id": "2021.acl-long.64",
+      "section_number": "3",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.64::sections::5",
+      "paper_id": "2021.acl-long.64",
+      "section_number": "5",
+      "section_title": "evaluation",
+      "normalized_section_title": "evaluation",
+      "window_text": "We first evaluate our approach w.r.t performance & extensibility, interpretability and transferability. We also discuss the training and inference time.\n\nDatasets. As shown in Table 2, we consider three short-text QA datasets. LC-QuAD and QALD-9 are datasets comprising of questions (Q) over DBpedia together with their corresponding SPARQL queries. We extract entities (E) from SPARQL queries and manually annotate mention spans. WebQSPEL dataset (Li et al., 2020) comprises of\n\nboth mention spans and links to the correct entity. Since the target KG for WebQSP is Wikidata, we translate each Wikidata entity to its DBpedia counterpart using DBpedia Mappings<sup>7</sup>. In addition, we discard mentions that link to DBpedia concepts (e.g., heaviest player linked to dbo:Person) and mentions $m_i$ with empty result (i.e., $C_i = \\phi$ ) or all not-link labels (i.e., $\\forall l_{ij} \\in L_i, l_{ij} = 0$ ).\n\nBaselines. We compare our approach to (1) BLINK (Wu et al., 2020), the current state-of-the-art on both short-text and long-text EL, (2) three BERT-based models - (a) BERT: both mention and candidate entity embeddings are obtained via $\\mathrm{BERT}_{\\mathrm{base}}$ pre-trained encoder, similar to (Gillick et al., 2019), (b) BERTWiki: mention embeddings are obtained from $\\mathrm{BERT}_{\\mathrm{base}}$ , while candidate entity is from pretrained Wiki2Vec (Yamada et al., 2020), (c) Box: BERTWiki embeddings finetuned with Query2Box embeddings (see Section 4.1). In addition to the aforementioned black-box neural models, we also compare our approach to (3) two logistic regression models that use the same feature set as LNN-EL: LogisticRegression without BLINK and LogisticRegressionBLINK with BLINK.\n\nFurthermore, we use the following variants of our approach: (4) RuleEL: a baseline rule-based EL approach with manually defined weights and thresholds, (5) LogicEL: a baseline approach built on RuleEL where only the thresholds are learnable, based on product $t$ -norm (see Section 3.2), (6) LNN-EL: our core LNN-based method using non-embedding features plus SpaCy, and (7) LNN-ELens: an ensemble combining core LNN-EL with additional features from existing EL approaches, namely BLINK and Box (we consider Box, as it outperforms BERT and BERTWiki on all datasets). Detailed rule templates are provided in Appendix A.3.\n\nSetup. All the baselines are trained for 30 epochs, except for BLINK which we use as a zero-shot approach. For BERT approaches, we use $\\mathrm{BERT}_{\\mathrm{base}}$ as pretrained model. We used two Nvidia V100 GPUs with 16GB memory each. We perform hyperparameter search for margin $\\mu$ and learning rates in the range [0.6, 0.95], $[10^{-5}, 10^{-1}]$ respectively.\n\nTable 3: Performance comparison of various baselines with our neuro-symbolic variants.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"3\">LC-QuAD</td><td colspan=\"3\">QALD-9</td><td colspan=\"3\">WebQSPEL</td></tr><tr><td>Precision</td><td>Recall</td><td>F1</td><td>Precision</td><td>Recall</td><td>F1</td><td>Precision</td><td>Recall</td><td>F1</td></tr><tr><td>BLINK</td><td>87.04</td><td>87.04</td><td>87.04</td><td>89.14</td><td>89.14</td><td>89.14</td><td>92.15</td><td>92.05</td><td>92.10</td></tr><tr><td>BERT</td><td>57.14</td><td>63.09</td><td>59.97</td><td>55.46</td><td>61.11</td><td>58.15</td><td>70.26</td><td>72.15</td><td>71.20</td></tr><tr><td>BERTWiki</td><td>66.96</td><td>73.85</td><td>70.23</td><td>66.16</td><td>72.90</td><td>69.37</td><td>81.11</td><td>83.29</td><td>82.19</td></tr><tr><td>Box</td><td>67.31</td><td>74.32</td><td>70.64</td><td>68.91</td><td>75.93</td><td>72.25</td><td>81.53</td><td>83.72</td><td>82.61</td></tr><tr><td>LogisticRegression</td><td>87.04</td><td>86.83</td><td>86.93</td><td>84.73</td><td>84.73</td><td>84.73</td><td>83.39</td><td>83.33</td><td>83.36</td></tr><tr><td>LogisticRegressionBLINK</td><td>90.50</td><td>90.30</td><td>90.40</td><td>88.94</td><td>88.94</td><td>88.94</td><td>89.33</td><td>89.28</td><td>89.31</td></tr><tr><td>RuleEL</td><td>79.82</td><td>80.10</td><td>79.96</td><td>81.55</td><td>75.15</td><td>78.22</td><td>76.56</td><td>74.55</td><td>75.54</td></tr><tr><td>LogicEL</td><td>86.68</td><td>86.48</td><td>86.58</td><td>83.05</td><td>83.05</td><td>83.05</td><td>82.60</td><td>82.58</td><td>82.59</td></tr><tr><td>LNN-EL</td><td>87.74</td><td>87.54</td><td>87.64</td><td>88.52</td><td>88.52</td><td>88.52</td><td>85.11</td><td>85.05</td><td>85.08</td></tr><tr><td>LNN-ELens</td><td>91.10</td><td>90.90</td><td>91.00</td><td>91.38</td><td>91.38</td><td>91.38</td><td>92.17</td><td>92.08</td><td>92.12</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.64::appendix::A",
+      "paper_id": "2021.acl-long.64",
+      "section_number": "A",
+      "section_title": "appendix",
+      "normalized_section_title": "appendix",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2021.acl-long.64::sections::5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia V100 16GB",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "We first evaluate our approach w.r.t performance & extensibility, interpretability and transferability. We also discuss the training and inference time.\n\nDatasets. As shown in Table 2, we consider three short-text QA datasets. LC-QuAD and QALD-9 are datasets comprising of questions (Q) over DBpedia together with their corresponding SPARQL queries. We extract entities (E) from SPARQL queries and manually annotate mention spans. WebQSPEL dataset (Li et al., 2020) comprises of\n\nboth mention spans and links to the correct entity. Since the target KG for WebQSP is Wikidata, we translate each Wikidata entity to its DBpedia counterpart using DBpedia Mappings<sup>7</sup>. In addition, we discard mentions that link to DBpedia concepts (e.g., heaviest player linked to dbo:Person) and mentions $m_i$ with empty result (i.e., $C_i = \\phi$ ) or all not-link labels (i.e., $\\forall l_{ij} \\in L_i, l_{ij} = 0$ ).\n\nBaselines. We compare our approach to (1) BLINK (Wu et al., 2020), the current state-of-the-art on both short-text and long-text EL, (2) three BERT-based models - (a) BERT: both mention and candidate entity embeddings are obtained via $\\mathrm{BERT}_{\\mathrm{base}}$ pre-trained encoder, similar to (Gillick et al., 2019), (b) BERTWiki: mention embeddings are obtained from $\\mathrm{BERT}_{\\mathrm{base}}$ , while candidate entity is from pretrained Wiki2Vec (Yamada et al., 2020), (c) Box: BERTWiki embeddings finetuned with Query2Box embeddings (see Section 4.1). In addition to the aforementioned black-box neural models, we also compare our approach to (3) two logistic regression models that use the same feature set as LNN-EL: LogisticRegression without BLINK and LogisticRegressionBLINK with BLINK.\n\nFurthermore, we use the following variants of our approach: (4) RuleEL: a baseline rule-based EL approach with manually defined weights and thresholds, (5) LogicEL: a baseline approach built on RuleEL where only the thresholds are learnable, based on product $t$ -norm (see Section 3.2), (6) LNN-EL: our core LNN-based method using non-embedding features plus SpaCy, and (7) LNN-ELens: an ensemble combining core LNN-EL with additional features from existing EL approaches, namely BLINK and Box (we consider Box, as it outperforms BERT and BERTWiki on all datasets). Detailed rule templates are provided in Appendix A.3.\n\nSetup. All the baselines are trained for 30 epochs, except for BLINK which we use as a zero-shot approach. For BERT approaches, we use $\\mathrm{BERT}_{\\mathrm{base}}$ as pretrained model. We used two Nvidia V100 GPUs with 16GB memory each. We perform hyperparameter search for margin $\\mu$ and learning rates in the range [0.6, 0.95], $[10^{-5}, 10^{-1}]$ respectively.\n\nTable 3: Performance comparison of various baselines with our neuro-symbolic variants.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"3\">LC-QuAD</td><td colspan=\"3\">QALD-9</td><td colspan=\"3\">WebQSPEL</td></tr><tr><td>Precision</td><td>Recall</td><td>F1</td><td>Precision</td><td>Recall</td><td>F1</td><td>Precision</td><td>Recall</td><td>F1</td></tr><tr><td>BLINK</td><td>87.04</td><td>87.04</td><td>87.04</td><td>89.14</td><td>89.14</td><td>89.14</td><td>92.15</td><td>92.05</td><td>92.10</td></tr><tr><td>BERT</td><td>57.14</td><td>63.09</td><td>59.97</td><td>55.46</td><td>61.11</td><td>58.15</td><td>70.26</td><td>72.15</td><td>71.20</td></tr><tr><td>BERTWiki</td><td>66.96</td><td>73.85</td><td>70.23</td><td>66.16</td><td>72.90</td><td>69.37</td><td>81.11</td><td>83.29</td><td>82.19</td></tr><tr><td>Box</td><td>67.31</td><td>74.32</td><td>70.64</td><td>68.91</td><td>75.93</td><td>72.25</td><td>81.53</td><td>83.72</td><td>82.61</td></tr><tr><td>LogisticRegression</td><td>87.04</td><td>86.83</td><td>86.93</td><td>84.73</td><td>84.73</td><td>84.73</td><td>83.39</td><td>83.33</td><td>83.36</td></tr><tr><td>LogisticRegressionBLINK</td><td>90.50</td><td>90.30</td><td>90.40</td><td>88.94</td><td>88.94</td><td>88.94</td><td>89.33</td><td>89.28</td><td>89.31</td></tr><tr><td>RuleEL</td><td>79.82</td><td>80.10</td><td>79.96</td><td>81.55</td><td>75.15</td><td>78.22</td><td>76.56</td><td>74.55</td><td>75.54</td></tr><tr><td>LogicEL</td><td>86.68</td><td>86.48</td><td>86.58</td><td>83.05</td><td>83.05</td><td>83.05</td><td>82.60</td><td>82.58</td><td>82.59</td></tr><tr><td>LNN-EL</td><td>87.74</td><td>87.54</td><td>87.64</td><td>88.52</td><td>88.52</td><td>88.52</td><td>85.11</td><td>85.05</td><td>85.08</td></tr><tr><td>LNN-ELens</td><td>91.10</td><td>90.90</td><td>91.00</td><td>91.38</td><td>91.38</td><td>91.38</td><td>92.17</td><td>92.08</td><td>92.12</td></tr></table>",
+      "section_number": "5",
+      "section_title": "evaluation",
+      "normalized_section_title": "evaluation"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2021.acl-long.64::sections::5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia V100 16GB",
+      "cleaned_hardware_name": "nvidia v100 16gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "5",
+      "section_title": "evaluation",
+      "normalized_section_title": "evaluation",
+      "evidence": "We first evaluate our approach w.r.t performance & extensibility, interpretability and transferability. We also discuss the training and inference time.\n\nDatasets. As shown in Table 2, we consider three short-text QA datasets. LC-QuAD and QALD-9 are datasets comprising of questions (Q) over DBpedia together with their corresponding SPARQL queries. We extract entities (E) from SPARQL queries and manually annotate mention spans. WebQSPEL dataset (Li et al., 2020) comprises of\n\nboth mention spans and links to the correct entity. Since the target KG for WebQSP is Wikidata, we translate each Wikidata entity to its DBpedia counterpart using DBpedia Mappings<sup>7</sup>. In addition, we discard mentions that link to DBpedia concepts (e.g., heaviest player linked to dbo:Person) and mentions $m_i$ with empty result (i.e., $C_i = \\phi$ ) or all not-link labels (i.e., $\\forall l_{ij} \\in L_i, l_{ij} = 0$ ).\n\nBaselines. We compare our approach to (1) BLINK (Wu et al., 2020), the current state-of-the-art on both short-text and long-text EL, (2) three BERT-based models - (a) BERT: both mention and candidate entity embeddings are obtained via $\\mathrm{BERT}_{\\mathrm{base}}$ pre-trained encoder, similar to (Gillick et al., 2019), (b) BERTWiki: mention embeddings are obtained from $\\mathrm{BERT}_{\\mathrm{base}}$ , while candidate entity is from pretrained Wiki2Vec (Yamada et al., 2020), (c) Box: BERTWiki embeddings finetuned with Query2Box embeddings (see Section 4.1). In addition to the aforementioned black-box neural models, we also compare our approach to (3) two logistic regression models that use the same feature set as LNN-EL: LogisticRegression without BLINK and LogisticRegressionBLINK with BLINK.\n\nFurthermore, we use the following variants of our approach: (4) RuleEL: a baseline rule-based EL approach with manually defined weights and thresholds, (5) LogicEL: a baseline approach built on RuleEL where only the thresholds are learnable, based on product $t$ -norm (see Section 3.2), (6) LNN-EL: our core LNN-based method using non-embedding features plus SpaCy, and (7) LNN-ELens: an ensemble combining core LNN-EL with additional features from existing EL approaches, namely BLINK and Box (we consider Box, as it outperforms BERT and BERTWiki on all datasets). Detailed rule templates are provided in Appendix A.3.\n\nSetup. All the baselines are trained for 30 epochs, except for BLINK which we use as a zero-shot approach. For BERT approaches, we use $\\mathrm{BERT}_{\\mathrm{base}}$ as pretrained model. We used two Nvidia V100 GPUs with 16GB memory each. We perform hyperparameter search for margin $\\mu$ and learning rates in the range [0.6, 0.95], $[10^{-5}, 10^{-1}]$ respectively.\n\nTable 3: Performance comparison of various baselines with our neuro-symbolic variants.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"3\">LC-QuAD</td><td colspan=\"3\">QALD-9</td><td colspan=\"3\">WebQSPEL</td></tr><tr><td>Precision</td><td>Recall</td><td>F1</td><td>Precision</td><td>Recall</td><td>F1</td><td>Precision</td><td>Recall</td><td>F1</td></tr><tr><td>BLINK</td><td>87.04</td><td>87.04</td><td>87.04</td><td>89.14</td><td>89.14</td><td>89.14</td><td>92.15</td><td>92.05</td><td>92.10</td></tr><tr><td>BERT</td><td>57.14</td><td>63.09</td><td>59.97</td><td>55.46</td><td>61.11</td><td>58.15</td><td>70.26</td><td>72.15</td><td>71.20</td></tr><tr><td>BERTWiki</td><td>66.96</td><td>73.85</td><td>70.23</td><td>66.16</td><td>72.90</td><td>69.37</td><td>81.11</td><td>83.29</td><td>82.19</td></tr><tr><td>Box</td><td>67.31</td><td>74.32</td><td>70.64</td><td>68.91</td><td>75.93</td><td>72.25</td><td>81.53</td><td>83.72</td><td>82.61</td></tr><tr><td>LogisticRegression</td><td>87.04</td><td>86.83</td><td>86.93</td><td>84.73</td><td>84.73</td><td>84.73</td><td>83.39</td><td>83.33</td><td>83.36</td></tr><tr><td>LogisticRegressionBLINK</td><td>90.50</td><td>90.30</td><td>90.40</td><td>88.94</td><td>88.94</td><td>88.94</td><td>89.33</td><td>89.28</td><td>89.31</td></tr><tr><td>RuleEL</td><td>79.82</td><td>80.10</td><td>79.96</td><td>81.55</td><td>75.15</td><td>78.22</td><td>76.56</td><td>74.55</td><td>75.54</td></tr><tr><td>LogicEL</td><td>86.68</td><td>86.48</td><td>86.58</td><td>83.05</td><td>83.05</td><td>83.05</td><td>82.60</td><td>82.58</td><td>82.59</td></tr><tr><td>LNN-EL</td><td>87.74</td><td>87.54</td><td>87.64</td><td>88.52</td><td>88.52</td><td>88.52</td><td>85.11</td><td>85.05</td><td>85.08</td></tr><tr><td>LNN-ELens</td><td>91.10</td><td>90.90</td><td>91.00</td><td>91.38</td><td>91.38</td><td>91.38</td><td>92.17</td><td>92.08</td><td>92.12</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2021.acl-long.64::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "preliminaries",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2021.acl-long.64::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "appendix",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "5"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 2
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2021\\2021.acl-long.64\\auto\\full.md",
+    "source_md_sha256": "54b4e206713ecea6fc49f2af623cd01b448db32a79a4fb73ac643171a5113ecd",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "a2f4e0f2222ac944a84b28fba08cc5ab0184a6c6ccb3a5a4deb8a7eefc1e4438"
+  }
+}

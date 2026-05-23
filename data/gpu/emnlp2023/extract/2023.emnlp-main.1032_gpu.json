@@ -1,0 +1,120 @@
+{
+  "paper_id": "2023.emnlp-main.1032",
+  "candidate_windows": [
+    {
+      "window_id": "2023.emnlp-main.1032::appendix::B",
+      "paper_id": "2023.emnlp-main.1032",
+      "section_number": "B",
+      "section_title": "training details",
+      "normalized_section_title": "training details",
+      "window_text": "We report in the following section the summary details about the architectures and training procedures used in this work.\n\nBoth the Representation model and the Transition model use the Transformer architecture. The Representation model comprises of the Encoder, the Decoder and the Vector Quantization layer; both the Encoder and the Decoder are implemented\n\nTable 3: Datasets collected for offline training of the model and relative statistics.   \n\n<table><tr><td>Dataset</td><td>one</td><td>two</td></tr><tr><td>Tot. frames</td><td>1120k</td><td>971k</td></tr><tr><td>Non-terminal</td><td>920k</td><td>771k</td></tr><tr><td>Successes</td><td>116k (10%)</td><td>77k (8%)</td></tr><tr><td>Failures</td><td>88k (8%)</td><td>123k (13%)</td></tr><tr><td>Win rate (random)</td><td>17.3%</td><td>4.6%</td></tr><tr><td>Win rate (MCTS)</td><td>94.7%</td><td>71.0%</td></tr></table>\n\nas two-layers Transformer encoder. The Transition model comprises a two-layer Transformer encoder (to encode $s_t$ and $a_t$ ) and a two-layer Transformer decoder (to auto-regressively predict the indices of $(z_{a,t+1}, z_{b,t+1})$ ). All hyper-parameters of the Transformer layers are reported in Table 4, following PyTorch naming convention.\n\nTable 4: Transformer hyper-parameters for the Representation and Transition models.   \n\n<table><tr><td>Hyper-parameters</td><td>Values</td></tr><tr><td>d_model</td><td>128</td></tr><tr><td>nhead</td><td>4</td></tr><tr><td>dim_feedforward</td><td>256</td></tr><tr><td>dropout</td><td>0.1</td></tr><tr><td>activation</td><td>gelu</td></tr></table>\n\nThe Vector Quantization layer is made of 2 codebooks of 32 codes with feature dimension 64 (half of the model dimension of the Encoder and Decoder model dimension). We use a commitment loss coefficient $\\beta = 0.25$ and a codebook learning rate multiplier $\\lambda = 5$ . Following (Lancucki et al., 2020), we use KMeans ++ to reinitialize the codes during the first 6 epochs, once every 50 forward passes.\n\nFor the Reward model, we modify $\\mathrm{txt}2\\pi$ architecture as follows:\n\n1. We remove the concatenation of 2D positional embeddings to the state;   \n2. We encode the next state and inventory in the same way as the current state and inventory are encoded in $\\mathrm{xt}2\\pi$ ;   \n3. We concatenate along the channel dimension the embedded current state and next state;   \n4. We concatenate along the feature dimension the embedded current inventory and next inventory;\n\n5. We adapt the $\\mathrm{xt}2\\pi$ layers to receive variables with double the amount of channels or features (because of the concatenation above);   \n6. We replace the linear layers for the policy and the value with linear layers to predict the reward class, the termination signal and the valid moves in the next state.\n\nWe use the same identical hyper-parameters as the ones used in $\\mathrm{txt}2\\pi$ : embedding dimension of 30, dimension of small RNN of 10, dimension of Bi-LSTM of 100 and dimension of final representations of 400. For more details about the architecture, please refer to (Zhong et al., 2019).\n\nFor the Transformer baseline model, we use a encoder-decoder architecture, plus the Reward model from Reader. Encoder and decoder use two layers; all layers use model dimension of 256, feedforward dimension of 1024, gelu activation function, dropout of 0.1. The choice of a bigger model was made to offset the fact that there is no Transition model, thus there are less layers in total (4 instead of 6).\n\nWe report the other hyper-parameters used during training in Table 5.\n\nTable 5: Hyper-parameters used.   \n\n<table><tr><td>Hyper-parameters</td><td>Values</td></tr><tr><td>Batch size</td><td>512</td></tr><tr><td>Optimizer</td><td>Adam</td></tr><tr><td>Learning rate</td><td>10-4</td></tr><tr><td>Lr warm-up steps</td><td>400</td></tr><tr><td>Epochs</td><td>114</td></tr></table>\n\nFinally we divide the collected transitions according to their reward $(0, +1, -1)$ and form batches with an equal number of samples from each class, as the 0 class represents roughly $79\\%$ of all transitions, while the $+1$ and $-1$ represent respectively $8\\%$ and $13\\%$ of the transitions.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.1032::appendix::C",
+      "paper_id": "2023.emnlp-main.1032",
+      "section_number": "C",
+      "section_title": "computational resources used",
+      "normalized_section_title": "computational resources used",
+      "window_text": "GPU resources used for Table 1 and Table 2 are reported in Table 6, whereas the CPU resources for the MCTS evaluation of the agents are reported in Tab 7.\n\nAll experiments use either the Tesla V100 or the AMD MI250X GPU models and the total amount\n\nTable 6: GPU resources used for Table 1 and Table 2. We use 5 random seeds and train on 8 tasks.   \n\n<table><tr><td>Model</td><td>single (h)</td><td>total (h)</td></tr><tr><td>Reader</td><td>13.5</td><td>540</td></tr><tr><td>Transformer baseline</td><td>10</td><td>400</td></tr><tr><td>txt2π</td><td>23</td><td>920</td></tr><tr><td>Total</td><td></td><td>1840</td></tr></table>\n\nTable 7: CPU resources used for Table 1 and Table 2. We use 5 random seeds and evaluate on 8 tasks. Number of CPU cores used for every run is reported between parenthesis after the name of the model.   \n\n<table><tr><td>Model</td><td>single (h)</td><td>total (h)</td></tr><tr><td>Reader (64)</td><td>112</td><td>4480</td></tr><tr><td>Transformer baseline (64)</td><td>304</td><td>12160</td></tr><tr><td>txt2π (24)</td><td>552</td><td>22080</td></tr><tr><td>Total</td><td></td><td>38720</td></tr></table>\n\nof resources used to obtain the reported results is approximately 1840 GPU hours and 38720 CPU hours.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.emnlp-main.1032::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100",
+      "count": null,
+      "count_text": "",
+      "evidence": "GPU resources used for Table 1 and Table 2 are reported in Table 6, whereas the CPU resources for the MCTS evaluation of the agents are reported in Tab 7.\n\nAll experiments use either the Tesla V100 or the AMD MI250X GPU models and the total amount\n\nTable 6: GPU resources used for Table 1 and Table 2. We use 5 random seeds and train on 8 tasks.   \n\n<table><tr><td>Model</td><td>single (h)</td><td>total (h)</td></tr><tr><td>Reader</td><td>13.5</td><td>540</td></tr><tr><td>Transformer baseline</td><td>10</td><td>400</td></tr><tr><td>txt2π</td><td>23</td><td>920</td></tr><tr><td>Total</td><td></td><td>1840</td></tr></table>\n\nTable 7: CPU resources used for Table 1 and Table 2. We use 5 random seeds and evaluate on 8 tasks. Number of CPU cores used for every run is reported between parenthesis after the name of the model.   \n\n<table><tr><td>Model</td><td>single (h)</td><td>total (h)</td></tr><tr><td>Reader (64)</td><td>112</td><td>4480</td></tr><tr><td>Transformer baseline (64)</td><td>304</td><td>12160</td></tr><tr><td>txt2π (24)</td><td>552</td><td>22080</td></tr><tr><td>Total</td><td></td><td>38720</td></tr></table>\n\nof resources used to obtain the reported results is approximately 1840 GPU hours and 38720 CPU hours.",
+      "section_number": "C",
+      "section_title": "computational resources used",
+      "normalized_section_title": "computational resources used"
+    },
+    {
+      "window_id": "2023.emnlp-main.1032::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "AMD MI250X",
+      "count": null,
+      "count_text": "",
+      "evidence": "GPU resources used for Table 1 and Table 2 are reported in Table 6, whereas the CPU resources for the MCTS evaluation of the agents are reported in Tab 7.\n\nAll experiments use either the Tesla V100 or the AMD MI250X GPU models and the total amount\n\nTable 6: GPU resources used for Table 1 and Table 2. We use 5 random seeds and train on 8 tasks.   \n\n<table><tr><td>Model</td><td>single (h)</td><td>total (h)</td></tr><tr><td>Reader</td><td>13.5</td><td>540</td></tr><tr><td>Transformer baseline</td><td>10</td><td>400</td></tr><tr><td>txt2π</td><td>23</td><td>920</td></tr><tr><td>Total</td><td></td><td>1840</td></tr></table>\n\nTable 7: CPU resources used for Table 1 and Table 2. We use 5 random seeds and evaluate on 8 tasks. Number of CPU cores used for every run is reported between parenthesis after the name of the model.   \n\n<table><tr><td>Model</td><td>single (h)</td><td>total (h)</td></tr><tr><td>Reader (64)</td><td>112</td><td>4480</td></tr><tr><td>Transformer baseline (64)</td><td>304</td><td>12160</td></tr><tr><td>txt2π (24)</td><td>552</td><td>22080</td></tr><tr><td>Total</td><td></td><td>38720</td></tr></table>\n\nof resources used to obtain the reported results is approximately 1840 GPU hours and 38720 CPU hours.",
+      "section_number": "C",
+      "section_title": "computational resources used",
+      "normalized_section_title": "computational resources used"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.emnlp-main.1032::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100",
+      "cleaned_hardware_name": "tesla v100",
+      "normalized_hardware_name": "Tesla V100",
+      "benchmark_hardware_name": null,
+      "count": null,
+      "count_text": "",
+      "section_number": "C",
+      "section_title": "computational resources used",
+      "normalized_section_title": "computational resources used",
+      "evidence": "GPU resources used for Table 1 and Table 2 are reported in Table 6, whereas the CPU resources for the MCTS evaluation of the agents are reported in Tab 7.\n\nAll experiments use either the Tesla V100 or the AMD MI250X GPU models and the total amount\n\nTable 6: GPU resources used for Table 1 and Table 2. We use 5 random seeds and train on 8 tasks.   \n\n<table><tr><td>Model</td><td>single (h)</td><td>total (h)</td></tr><tr><td>Reader</td><td>13.5</td><td>540</td></tr><tr><td>Transformer baseline</td><td>10</td><td>400</td></tr><tr><td>txt2π</td><td>23</td><td>920</td></tr><tr><td>Total</td><td></td><td>1840</td></tr></table>\n\nTable 7: CPU resources used for Table 1 and Table 2. We use 5 random seeds and evaluate on 8 tasks. Number of CPU cores used for every run is reported between parenthesis after the name of the model.   \n\n<table><tr><td>Model</td><td>single (h)</td><td>total (h)</td></tr><tr><td>Reader (64)</td><td>112</td><td>4480</td></tr><tr><td>Transformer baseline (64)</td><td>304</td><td>12160</td></tr><tr><td>txt2π (24)</td><td>552</td><td>22080</td></tr><tr><td>Total</td><td></td><td>38720</td></tr></table>\n\nof resources used to obtain the reported results is approximately 1840 GPU hours and 38720 CPU hours.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.emnlp-main.1032::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "AMD MI250X",
+      "cleaned_hardware_name": "amd mi250x",
+      "normalized_hardware_name": "AMD MI250X",
+      "benchmark_hardware_name": null,
+      "count": null,
+      "count_text": "",
+      "section_number": "C",
+      "section_title": "computational resources used",
+      "normalized_section_title": "computational resources used",
+      "evidence": "GPU resources used for Table 1 and Table 2 are reported in Table 6, whereas the CPU resources for the MCTS evaluation of the agents are reported in Tab 7.\n\nAll experiments use either the Tesla V100 or the AMD MI250X GPU models and the total amount\n\nTable 6: GPU resources used for Table 1 and Table 2. We use 5 random seeds and train on 8 tasks.   \n\n<table><tr><td>Model</td><td>single (h)</td><td>total (h)</td></tr><tr><td>Reader</td><td>13.5</td><td>540</td></tr><tr><td>Transformer baseline</td><td>10</td><td>400</td></tr><tr><td>txt2π</td><td>23</td><td>920</td></tr><tr><td>Total</td><td></td><td>1840</td></tr></table>\n\nTable 7: CPU resources used for Table 1 and Table 2. We use 5 random seeds and evaluate on 8 tasks. Number of CPU cores used for every run is reported between parenthesis after the name of the model.   \n\n<table><tr><td>Model</td><td>single (h)</td><td>total (h)</td></tr><tr><td>Reader (64)</td><td>112</td><td>4480</td></tr><tr><td>Transformer baseline (64)</td><td>304</td><td>12160</td></tr><tr><td>txt2π (24)</td><td>552</td><td>22080</td></tr><tr><td>Total</td><td></td><td>38720</td></tr></table>\n\nof resources used to obtain the reported results is approximately 1840 GPU hours and 38720 CPU hours.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "C"
+    ],
+    "pred": [
+      {
+        "name": "Tesla V100",
+        "num": null
+      },
+      {
+        "name": "AMD MI250X",
+        "num": null
+      }
+    ]
+  }
+}

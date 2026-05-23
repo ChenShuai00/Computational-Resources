@@ -1,0 +1,96 @@
+{
+  "paper_id": "2023.emnlp-main.714",
+  "candidate_windows": [
+    {
+      "window_id": "2023.emnlp-main.714::sections::4",
+      "paper_id": "2023.emnlp-main.714",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "We evaluate on CNN/DM (Hermann et al., 2015), which contains news articles and their bullet-point highlights considered as summaries. In line with previous work (Guo et al., 2023) where summaries have similar or easier readability level than the input document, we assess the subset of the CNN/DM test set with documents with a FRE score below 50 (high school and college student levels).\n\nThe readability of the summaries are computed using FRE metric and used during training for constructing the instructions for CATEGORYINSTRUCT and SCOREINSTRUCT, and as the desired readability $\\hat{r}$ in SCOREINSTRUCT+RL and SCOREINSTRUCT+LA. For CATEGORYINSTRUCT, we map the FRE score to the instruction for each reference summary as shown in Table 1. In SCOREINSTRUCT+RL, we randomly sample FRE scores which are used in the instruction to generate the summary and as $\\hat{r}$ in the reward. We define $\\sigma$ by drawing inspiration from the readability levels (see Table 1), with each level covering a range of 20 FRE points. We set the standard deviation $\\sigma$ to half of that value (i.e., 10), so that more than two thirds of the reward values lie within the requested reading level centered at $\\hat{r}$ . In SCOREINSTRUCT+LA, the number of tokens considered in future $n$ is set to 20.\n\nOur models are initialized with Flan-T5-Large (Chung et al., 2022) and fine-tuned using a context size of 1024. We include as baselines GPT3.5 (TEXT-DAVINCI-003) and a Flan-T5\n\nTable 2: Readability results for the proposed methods using different automatic metrics. $\\Delta$ is the absolute difference between the desired and generated FRE readability. $\\rho$ is the correlation with the target metric. All correlations are statistically significant (p<0.05).   \n\n<table><tr><td></td><td>FREΔ ↓</td><td>FREρ↑</td><td>GFIρ↓</td><td>CLIρ↓</td></tr><tr><td>GPT3.5 (TEXT-DAVINCI-003)</td><td>24.2</td><td>0.24</td><td>-0.28</td><td>-0.16</td></tr><tr><td>Best-GPT3.5 (TEXT-DAVINCI-003)</td><td>18.4</td><td>0.59</td><td>-0.50</td><td>-0.45</td></tr><tr><td>CATEGORYINSTRUCT</td><td>15.8</td><td>0.59</td><td>-0.37</td><td>-0.55</td></tr><tr><td>SCOREINSTRUCT</td><td>15.1</td><td>0.62</td><td>-0.40</td><td>-0.58</td></tr><tr><td>SCOREINSTRUCT+RL</td><td>11.8</td><td>0.74</td><td>-0.42</td><td>-0.72</td></tr><tr><td>SCOREINSTRUCT+LA</td><td>4.5</td><td>0.95</td><td>-0.67</td><td>-0.88</td></tr></table>\n\nmodel without readability control. As an additional baseline, which we call Best-GPT3.5, we sample $k$ summaries from GPT3.5 for each instruction and select the summary whose readability level is closest to the requested level. $^{3}$\n\nWe evaluate the readability with the FRE, GFI and CLI metrics (Sec. 2.2). We use BertScore (BS, Zhang et al., 2020b) and the F1 measure of ROUGE-L (RG-L, Lin, 2004) for evaluating the summary quality; and FactCC (Kryscinski et al., 2020) and UniEval (Zhong et al., 2022) for faithfulness assessment.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.714::appendix::A",
+      "paper_id": "2023.emnlp-main.714",
+      "section_number": "A",
+      "section_title": "readability metrics",
+      "normalized_section_title": "readability metrics",
+      "window_text": "Flesch reading ease (FRE) (Kincaid et al., 1975) metric assigns higher scores to texts that are easier to read. It is calculated as follows:\n\n$$\n\\mathrm {F R E} = 2 0 6. 8 3 5 - 1. 0 1 5 \\left(\\frac {\\text {t o t a l W o r d s}}{\\text {t o t a l S e n t e n c e s}}\\right) - 8 4. 6 \\left(\\frac {\\text {t o t a l S y l l a b e s}}{\\text {t o t a l W o r d s}}\\right).\n$$\n\nThe Gunning fog index (GFI) (Gunning, 1952) quantifies the level of formal education required for a person to comprehend a given text upon initial reading, and it is computed using the following formula:\n\n$$\n\\mathrm {G F I} = 0. 4 \\left(\\frac {\\text {t o t a l W o r d s}}{\\text {t o t a l S e n t e n c e s}} + 1 0 0 \\frac {\\text {l o n g W o r d s}}{\\text {t o t a l S e n t e n c e s}}\\right),\n$$\n\nwhere longWords are words longer than 7 characters. Higher values indicate lower readability.\n\nThe Automated Readability Index (ARI) (Smith and Senter, 1967) is an alternative readability formula that provides values correlating to the number of years of education needed to comprehend a given text:\n\nTable 9: Hyperparameter settings for Flan-T5 methods.   \n\n<table><tr><td>Computing Infrastructure</td><td>32GB NVIDIA V100 GPU</td></tr><tr><td>Optimizer</td><td>Adam</td></tr><tr><td>Optimizer Params</td><td>β = (0.9, 0.999), ε = 10-8</td></tr><tr><td>learning rate</td><td>1e-4</td></tr><tr><td>Learning Rate Decay</td><td>Linear</td></tr><tr><td>Weight Decay</td><td>0</td></tr><tr><td>Warmup Steps</td><td>0</td></tr><tr><td>Maximum Gradient Norm</td><td>1</td></tr><tr><td>batch size</td><td>4</td></tr><tr><td>beam size</td><td>3</td></tr><tr><td>epoch</td><td>10</td></tr><tr><td>Lookahead w</td><td>25</td></tr><tr><td>Lookahead n</td><td>20</td></tr></table>\n\nDale-Chall readability formula (Dale and Chall, 1948) (DCR) necessitates a compilation of 3000 words that are deemed understandable by fourth-grade students in the US. Words not found in this list are classified as difficult. The following expression is used in calculation:\n\n$$\n\\mathrm {D C R F} = 0. 1 5 7 9 \\left(\\frac {\\text {d i f f i c u l t W o r d s}}{\\text {t o t a l W o r d s}} * 1 0 0\\right) + 0. 0 4 9 6 \\left(\\frac {\\text {t o t a l W o r d s}}{\\text {t o t a l S e n t e n c e s}}\\right).\n$$\n\nColeman-Liau index (CLI) (Coleman and Liau, 1975) relies on characters instead of syllables per word:\n\n$$\n\\mathrm {C L I} = 0. 0 5 8 8 L - 0. 2 9 6 S - 1 5. 8,\n$$\n\nwhere $L$ is the average number of letters and $S$ is the average number of sentences.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.714::appendix::C",
+      "paper_id": "2023.emnlp-main.714",
+      "section_number": "C",
+      "section_title": "experiments with gpt3.5",
+      "normalized_section_title": "experiments with gpt3.5",
+      "window_text": "All of our experiments were conducted on the version of GPT3.5 (TEXT-DAVINCI-003) between 25 May 2023 and 13 Jun 2023 by using the OpenAI's API. $^{10}$ We set temperature $= 1$ , top_p=1, frequency penalty $= 0$ , and presence penalty $= 0$ . For Best-GPT3.5, we select $k = 3$ .\n\nWe select the following prompts that gave the best results in terms of readability metrics:\n\n$$\n\\mathrm {A R I} = 4. 7 1 \\left(\\frac {\\text {t o t a l C h a r a c e r s}}{\\text {t o t a l W o r d s}}\\right) + 0. 5 \\left(\\frac {\\text {t o t a l W o r d s}}{\\text {t o t a l S e n t e n c e s}}\\right) - 2 1. 4 3.\n$$\n\nTable 10: Comparison on CNN/DM using instruction-based, RL and Lookahead (LA) methods using additional readability metrics. Lower DCR and ARI $(\\downarrow)$ denote higher readability.   \n\n<table><tr><td>Readability level</td><td>DCR ↓</td><td>ARI ↓</td></tr><tr><td>GPT3.5</td><td></td><td></td></tr><tr><td>11-year-old</td><td>9.9</td><td>12.5</td></tr><tr><td>Middle school</td><td>10.1</td><td>13.3</td></tr><tr><td>High school</td><td>10.4</td><td>14.1</td></tr><tr><td>College student</td><td>10.6</td><td>14.8</td></tr><tr><td>Best-GPT3.5</td><td></td><td></td></tr><tr><td>11-year-old</td><td>9.5</td><td>11.4</td></tr><tr><td>Middle school</td><td>9.8</td><td>12.3</td></tr><tr><td>High school</td><td>10.1</td><td>13.3</td></tr><tr><td>College student</td><td>10.7</td><td>15.5</td></tr><tr><td>CATEGORYINSTRUCT</td><td></td><td></td></tr><tr><td>11-year-old</td><td>9.2</td><td>7.1</td></tr><tr><td>Middle school</td><td>9.7</td><td>8.8</td></tr><tr><td>High school</td><td>10.2</td><td>10.2</td></tr><tr><td>College student</td><td>10.8</td><td>11.4</td></tr><tr><td>SCOREINSTRUCT</td><td></td><td></td></tr><tr><td>90 (11-year-old)</td><td>9.0</td><td>6.5</td></tr><tr><td>70 (Middle school)</td><td>9.6</td><td>8.4</td></tr><tr><td>50 (High school)</td><td>10.2</td><td>10.1</td></tr><tr><td>30 (College student)</td><td>10.8</td><td>11.2</td></tr><tr><td>SCOREINSTRUCT+RL</td><td></td><td></td></tr><tr><td>90 (11-year-old)</td><td>8.0</td><td>4.7</td></tr><tr><td>70 (Middle school)</td><td>8.9</td><td>6.9</td></tr><tr><td>50 (High school)</td><td>9.7</td><td>8.6</td></tr><tr><td>30 (College student)</td><td>10.5</td><td>10.1</td></tr><tr><td>SCOREINSTRUCT+LA</td><td></td><td></td></tr><tr><td>90 (11-year-old)</td><td>8.2</td><td>4.6</td></tr><tr><td>70 (Middle school)</td><td>9.1</td><td>7.3</td></tr><tr><td>50 (High school)</td><td>10.2</td><td>9.9</td></tr><tr><td>30 (College student)</td><td>12.4</td><td>14.8</td></tr></table>\n\n- $\\{\\text{Document}\\} \\backslash n$ Summarize the above article in 3 sentences for a sixth-grade student.   \n- $\\{\\mathrm{Document}\\} \\backslash \\mathrm{n}$ Summarize the above article in 3 sentences for a middle-school student.   \n- $\\{\\text{Document}\\} \\backslash n$ Summarize the above article in 3 sentences for a high-school student.   \n- $\\{\\text{Document}\\} \\backslash n$ Summarize the above article in 3 sentences for a college student.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.emnlp-main.714::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA V100 32GB",
+      "count": null,
+      "count_text": "",
+      "evidence": "Flesch reading ease (FRE) (Kincaid et al., 1975) metric assigns higher scores to texts that are easier to read. It is calculated as follows:\n\n$$\n\\mathrm {F R E} = 2 0 6. 8 3 5 - 1. 0 1 5 \\left(\\frac {\\text {t o t a l W o r d s}}{\\text {t o t a l S e n t e n c e s}}\\right) - 8 4. 6 \\left(\\frac {\\text {t o t a l S y l l a b e s}}{\\text {t o t a l W o r d s}}\\right).\n$$\n\nThe Gunning fog index (GFI) (Gunning, 1952) quantifies the level of formal education required for a person to comprehend a given text upon initial reading, and it is computed using the following formula:\n\n$$\n\\mathrm {G F I} = 0. 4 \\left(\\frac {\\text {t o t a l W o r d s}}{\\text {t o t a l S e n t e n c e s}} + 1 0 0 \\frac {\\text {l o n g W o r d s}}{\\text {t o t a l S e n t e n c e s}}\\right),\n$$\n\nwhere longWords are words longer than 7 characters. Higher values indicate lower readability.\n\nThe Automated Readability Index (ARI) (Smith and Senter, 1967) is an alternative readability formula that provides values correlating to the number of years of education needed to comprehend a given text:\n\nTable 9: Hyperparameter settings for Flan-T5 methods.   \n\n<table><tr><td>Computing Infrastructure</td><td>32GB NVIDIA V100 GPU</td></tr><tr><td>Optimizer</td><td>Adam</td></tr><tr><td>Optimizer Params</td><td>β = (0.9, 0.999), ε = 10-8</td></tr><tr><td>learning rate</td><td>1e-4</td></tr><tr><td>Learning Rate Decay</td><td>Linear</td></tr><tr><td>Weight Decay</td><td>0</td></tr><tr><td>Warmup Steps</td><td>0</td></tr><tr><td>Maximum Gradient Norm</td><td>1</td></tr><tr><td>batch size</td><td>4</td></tr><tr><td>beam size</td><td>3</td></tr><tr><td>epoch</td><td>10</td></tr><tr><td>Lookahead w</td><td>25</td></tr><tr><td>Lookahead n</td><td>20</td></tr></table>\n\nDale-Chall readability formula (Dale and Chall, 1948) (DCR) necessitates a compilation of 3000 words that are deemed understandable by fourth-grade students in the US. Words not found in this list are classified as difficult. The following expression is used in calculation:\n\n$$\n\\mathrm {D C R F} = 0. 1 5 7 9 \\left(\\frac {\\text {d i f f i c u l t W o r d s}}{\\text {t o t a l W o r d s}} * 1 0 0\\right) + 0. 0 4 9 6 \\left(\\frac {\\text {t o t a l W o r d s}}{\\text {t o t a l S e n t e n c e s}}\\right).\n$$\n\nColeman-Liau index (CLI) (Coleman and Liau, 1975) relies on characters instead of syllables per word:\n\n$$\n\\mathrm {C L I} = 0. 0 5 8 8 L - 0. 2 9 6 S - 1 5. 8,\n$$\n\nwhere $L$ is the average number of letters and $S$ is the average number of sentences.",
+      "section_number": "A",
+      "section_title": "readability metrics",
+      "normalized_section_title": "readability metrics"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.emnlp-main.714::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA V100 32GB",
+      "cleaned_hardware_name": "nvidia v100 32gb",
+      "normalized_hardware_name": "NVIDIA V100 32GB",
+      "benchmark_hardware_name": null,
+      "count": null,
+      "count_text": "",
+      "section_number": "A",
+      "section_title": "readability metrics",
+      "normalized_section_title": "readability metrics",
+      "evidence": "Flesch reading ease (FRE) (Kincaid et al., 1975) metric assigns higher scores to texts that are easier to read. It is calculated as follows:\n\n$$\n\\mathrm {F R E} = 2 0 6. 8 3 5 - 1. 0 1 5 \\left(\\frac {\\text {t o t a l W o r d s}}{\\text {t o t a l S e n t e n c e s}}\\right) - 8 4. 6 \\left(\\frac {\\text {t o t a l S y l l a b e s}}{\\text {t o t a l W o r d s}}\\right).\n$$\n\nThe Gunning fog index (GFI) (Gunning, 1952) quantifies the level of formal education required for a person to comprehend a given text upon initial reading, and it is computed using the following formula:\n\n$$\n\\mathrm {G F I} = 0. 4 \\left(\\frac {\\text {t o t a l W o r d s}}{\\text {t o t a l S e n t e n c e s}} + 1 0 0 \\frac {\\text {l o n g W o r d s}}{\\text {t o t a l S e n t e n c e s}}\\right),\n$$\n\nwhere longWords are words longer than 7 characters. Higher values indicate lower readability.\n\nThe Automated Readability Index (ARI) (Smith and Senter, 1967) is an alternative readability formula that provides values correlating to the number of years of education needed to comprehend a given text:\n\nTable 9: Hyperparameter settings for Flan-T5 methods.   \n\n<table><tr><td>Computing Infrastructure</td><td>32GB NVIDIA V100 GPU</td></tr><tr><td>Optimizer</td><td>Adam</td></tr><tr><td>Optimizer Params</td><td>β = (0.9, 0.999), ε = 10-8</td></tr><tr><td>learning rate</td><td>1e-4</td></tr><tr><td>Learning Rate Decay</td><td>Linear</td></tr><tr><td>Weight Decay</td><td>0</td></tr><tr><td>Warmup Steps</td><td>0</td></tr><tr><td>Maximum Gradient Norm</td><td>1</td></tr><tr><td>batch size</td><td>4</td></tr><tr><td>beam size</td><td>3</td></tr><tr><td>epoch</td><td>10</td></tr><tr><td>Lookahead w</td><td>25</td></tr><tr><td>Lookahead n</td><td>20</td></tr></table>\n\nDale-Chall readability formula (Dale and Chall, 1948) (DCR) necessitates a compilation of 3000 words that are deemed understandable by fourth-grade students in the US. Words not found in this list are classified as difficult. The following expression is used in calculation:\n\n$$\n\\mathrm {D C R F} = 0. 1 5 7 9 \\left(\\frac {\\text {d i f f i c u l t W o r d s}}{\\text {t o t a l W o r d s}} * 1 0 0\\right) + 0. 0 4 9 6 \\left(\\frac {\\text {t o t a l W o r d s}}{\\text {t o t a l S e n t e n c e s}}\\right).\n$$\n\nColeman-Liau index (CLI) (Coleman and Liau, 1975) relies on characters instead of syllables per word:\n\n$$\n\\mathrm {C L I} = 0. 0 5 8 8 L - 0. 2 9 6 S - 1 5. 8,\n$$\n\nwhere $L$ is the average number of letters and $S$ is the average number of sentences.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA V100 32GB",
+        "num": null
+      }
+    ]
+  }
+}

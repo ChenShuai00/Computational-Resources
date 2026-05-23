@@ -1,0 +1,234 @@
+{
+  "paper_id": "2025.acl-long.556",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.556::sections::3.3",
+      "paper_id": "2025.acl-long.556",
+      "section_number": "3.3",
+      "section_title": "training",
+      "normalized_section_title": "training",
+      "window_text": "Note that without prior training, our terminology clip localization step can produce unsatisfactory speech clips, which may subsequently undermine the terminology-focused translation step. Therefore, we train the two steps sequentially.\n\nThe objective of training the terminology clip localization step is to ensure that $SE$ aligns with our Sliding Retrieval method. To achieve this, we employ contrastive learning for $SE$ training. Formally, our training objective $\\mathcal{L}_{\\mathrm{SE}}$ is to maximize the similarity with the positive examples while minimizing the similarity with the negative examples:\n\n$$\n\\mathcal {L} _ {\\mathrm {S E}} = - \\log \\frac {e ^ {\\sin (u , c ^ {+})}}{e ^ {\\sin (u , c ^ {+})} + \\sum_ {i = 1} ^ {n} e ^ {\\sin (u , c _ {i} ^ {-})}}, \\tag {2}\n$$\n\nwhere $c^+$ denotes the speech clip of the terminology appearing in $u$ , considered a positive example, while $c_i^-$ denotes the $i$ -th randomly sampled terminology speech clip, regarded as a negative example.\n\nSubsequently, we train the model to terminology-focused translation, ensuring it effectively utilizes the provided translation knowledge during translation. Following previous studies (Rajaa and Tushar, 2024; Chen et al., 2024), we apply LoRA (Hu et al., 2022) for fine-tuning. Formally, we train the speech LLM using the standard next token prediction loss as follows:\n\n$$\n\\mathcal {L} _ {\\mathrm {L L M}} = - \\frac {1}{N} \\sum_ {i = 1} ^ {N} \\log P \\left(w _ {i} \\mid K ^ {\\prime}, u, w _ {<   i}\\right), \\tag {3}\n$$\n\nwhere $N$ is the total number of tokens in the translations, $w_{i}$ is the target token and $P(w_{i}|K^{\\prime},u,w_{< i})$\n\nTable 1: Statistics of our collected dataset. #utt. indicates the number of utterances, and #term. represents the number of terminologies.   \n\n<table><tr><td rowspan=\"2\">Split</td><td colspan=\"2\">EN → ZH</td><td colspan=\"2\">EN → DE</td></tr><tr><td>#utt.</td><td>#term.</td><td>#utt.</td><td>#term.</td></tr><tr><td>CoVoST2-train</td><td>10000</td><td>14191</td><td>10000</td><td>14664</td></tr><tr><td>CoVoST2-test</td><td>671</td><td>1227</td><td>656</td><td>1270</td></tr><tr><td>MuST-C-test</td><td>220</td><td>335</td><td>220</td><td>355</td></tr><tr><td>MSLT-test</td><td>213</td><td>294</td><td>164</td><td>280</td></tr></table>\n\nis the prediction probability of $w_{i}$ .",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.556::sections::5",
+      "paper_id": "2025.acl-long.556",
+      "section_number": "5",
+      "section_title": "experiment",
+      "normalized_section_title": "experiment",
+      "window_text": "Base Model In our experiments, we utilize the Whisper-medium (Radford et al., 2023) as the speech encoder and the Qwen2-Audio-Instruct (Chu et al., 2024) as the speech LLM. When training the speech encoder, we use 4 negative samples per example and conduct the training over 3 epochs. To ensure the translation quality of the speech LLM, we combine the original CoVoST2 training split with the terminology translation data for training. For methods requiring external translation knowledge, we use the translation knowledge base constructed in Section 4. For further implementation details, please refer to Appendix A.\n\nBaselines We use the representative methods as our baselines.\n\n- Translation Training. We fine-tune the speech LLM only using the CoVoST2 training split data to enhance its translation performance. Note that it does not use external translation knowledge during inference.   \n- SALM (Chen et al., 2024). This Collect-and-Integrate method calculates term frequencies and provides the speech LLM with a fixed number of high-frequency terms and their\n\ntranslations as context to help model in translation.\n\n- Retrieval-and-Demonstration (Li et al., 2024a). This method aims to retrieve utterance-translation pairs that share terminologies with the source utterance, using them as sentence-level translation knowledge. These pairs are then employed as in-context learning examples aids to enhance terminology translation.\n\nSetup In our experiments, we use two different setups to supply the speech LLM with translation knowledge:\n\n- Oracle Knowledge Setting. In this setup, the speech LLM is directly supplied with ground truth translation knowledge without any irrelevant noise, enabling the evaluation of a terminology translation method's optimal performance under ideal conditions.   \n- End-to-End Setting. This setup requires the speech LLM to acquire external knowledge through retrieval or statistical methods, thus evaluating the terminology translation method's capability in an end-to-end manner. For SALM, we provide the translations of the top 50 most frequent terms. For the Retrieval-and-Demonstration and our method, we provide the top-5 retrieved translation knowledge.\n\nTable 3: Performance of the retriever on CoVoST2 and MuST-C. Please refer to Table 1 for retrieval pool sizes.   \n\n<table><tr><td></td><td colspan=\"3\">CoVoST2</td><td colspan=\"3\">MuST-C</td></tr><tr><td></td><td>Hits@1</td><td>Hits@5</td><td>Hits@10</td><td>Hits@1</td><td>Hits@5</td><td>Hits@10</td></tr><tr><td>EN→ZH</td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>MaxPool</td><td>45.07</td><td>56.97</td><td>62.18</td><td>55.12</td><td>68.17</td><td>74.37</td></tr><tr><td>MinPool</td><td>45.80</td><td>55.75</td><td>61.53</td><td>53.80</td><td>63.66</td><td>70.70</td></tr><tr><td>AvgPool</td><td>22.66</td><td>34.80</td><td>40.91</td><td>38.87</td><td>54.37</td><td>58.87</td></tr><tr><td>Sliding Retrieval</td><td>61.04</td><td>79.22</td><td>85.00</td><td>64.23</td><td>82.54</td><td>89.58</td></tr><tr><td>EN→DE</td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>MaxPool</td><td>46.08</td><td>56.85</td><td>62.00</td><td>56.21</td><td>68.64</td><td>72.31</td></tr><tr><td>MinPool</td><td>44.41</td><td>55.03</td><td>60.81</td><td>54.52</td><td>66.67</td><td>71.75</td></tr><tr><td>AvgPool</td><td>20.66</td><td>34.92</td><td>39.67</td><td>35.31</td><td>49.15</td><td>55.08</td></tr><tr><td>Sliding Retrieval</td><td>58.19</td><td>76.32</td><td>84.40</td><td>67.51</td><td>87.57</td><td>93.79</td></tr></table>\n\nAblation Settings To investigate the effects of different factors on our method, we consider the following variants for the ablation study.\n\n- $w / o$ Sliding Retrieval. In this variant, the retriever uses MaxPool to calculate the similarity between utterances and speech clips, instead of employing the Sliding Retrieval approach we proposed.   \n- w/o Audio Replacement. This variant supplies the retrieved knowledge triplet directly to the speech LLM without replacing the TTS-generated audio with the located clip from the utterance.   \n- $w/o$ Tag Cue. We exclude the use of the special tag during training in this variant, which means the model cannot use the special tag as a cue to predict when to output term translation.   \n- $w / o$ Replacement and Cue. This variant omits both the audio replacement and the tag cue during training and inference.\n\nMetrics For evaluating the retrieval performance, we use Hits@N to assess whether the correct item is included within the top- $n$ retrieved items, where $n$ is set to 1, 5, or 10. To assess the quality of terminology translation, following previous studies (Semenov et al., 2023; Li et al., 2024a), we employ BLEU (Papineni et al., 2002) and Term Success Rate (TSR) (Semenov et al., 2023). Term Success Rate quantifies the proportion of terminologies accurately translated within an utterance.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.556::sections::5.5",
+      "paper_id": "2025.acl-long.556",
+      "section_number": "5.5",
+      "section_title": "inference latency",
+      "normalized_section_title": "inference latency",
+      "window_text": "Considering the critical real-time constraints of speech translation systems, we present a comprehensive evaluation of our Sliding Retrieval method's computational efficiency. Using a single NVIDIA A100 80GB GPU, we pre-compute and store speech representations generated by speech encoders, then systematically measure the time required to retrieve results from the retrieval pool using a single utterance. Our analysis encompasses 5,000 samples, with average processing times reported in Table 6.\n\nThe results demonstrate that our Sliding Retrieval method introduces only negligible computational overhead compared to the MaxPool baseline. Specifically, when employing Whisper-medium, the MaxPool approach averages 0.152 ms per query, while our Sliding Retrieval method requires merely 0.217 ms, highlighting a minor difference. Note that retrieval latency is practically insignificant when considered against the 621.951 ms required by Qwen2-Audio-Instruct for the translation process. Furthermore, our analysis reveals that scaling the speech encoder parameters has minimal impact on system latency, with Sliding Retrieval averaging 0.195 ms and 0.217 ms for Whisper-base and Whisper-medium, respectively.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.556::appendix::A",
+      "paper_id": "2025.acl-long.556",
+      "section_number": "A",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.556::appendix::A.1",
+      "paper_id": "2025.acl-long.556",
+      "section_number": "A.1",
+      "section_title": "retriever training",
+      "normalized_section_title": "retriever training",
+      "window_text": "In our experiments, we utilize Whisper-medium as the primary retriever. We incorporate 4 negative samples per example and conduct training over 3 epochs, with a learning rate set at $1 \\times 10^{-5}$ and a batch size of 16. This process is executable on a single NVIDIA A100 80G GPU and requires approximately 6 hours to complete.\n\nWhen extracting a speech clip, we focus on the hidden state with the highest similarity. In Whisper, each hidden state represents roughly 0.02 seconds, allowing us to precisely segment the relevant portion of the speech.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.556::appendix::A.2",
+      "paper_id": "2025.acl-long.556",
+      "section_number": "A.2",
+      "section_title": "speech llm training",
+      "normalized_section_title": "speech llm training",
+      "window_text": "For fine-tuning the speech LLM, we employ the SWIFT framework $^{3}$ , using LoRA with a rank of 16, an alpha of 32, and a dropout probability of 0.05. The batch size is set to 96, and the learning rate is configured at $1e - 4$ . We target the q Projekt,\n\nk_Proj, and v_Proj modules. This training procedure is executed on eight NVIDIA A100 80G GPUs and necessitates roughly 16 hours to complete.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.556::appendix::B",
+      "paper_id": "2025.acl-long.556",
+      "section_number": "B",
+      "section_title": "supplementary experimental results",
+      "normalized_section_title": "supplementary experimental results",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.556::sections::5.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Considering the critical real-time constraints of speech translation systems, we present a comprehensive evaluation of our Sliding Retrieval method's computational efficiency. Using a single NVIDIA A100 80GB GPU, we pre-compute and store speech representations generated by speech encoders, then systematically measure the time required to retrieve results from the retrieval pool using a single utterance. Our analysis encompasses 5,000 samples, with average processing times reported in Table 6.\n\nThe results demonstrate that our Sliding Retrieval method introduces only negligible computational overhead compared to the MaxPool baseline. Specifically, when employing Whisper-medium, the MaxPool approach averages 0.152 ms per query, while our Sliding Retrieval method requires merely 0.217 ms, highlighting a minor difference. Note that retrieval latency is practically insignificant when considered against the 621.951 ms required by Qwen2-Audio-Instruct for the translation process. Furthermore, our analysis reveals that scaling the speech encoder parameters has minimal impact on system latency, with Sliding Retrieval averaging 0.195 ms and 0.217 ms for Whisper-base and Whisper-medium, respectively.",
+      "section_number": "5.5",
+      "section_title": "inference latency",
+      "normalized_section_title": "inference latency"
+    },
+    {
+      "window_id": "2025.acl-long.556::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80G",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "For fine-tuning the speech LLM, we employ the SWIFT framework $^{3}$ , using LoRA with a rank of 16, an alpha of 32, and a dropout probability of 0.05. The batch size is set to 96, and the learning rate is configured at $1e - 4$ . We target the q Projekt,\n\nk_Proj, and v_Proj modules. This training procedure is executed on eight NVIDIA A100 80G GPUs and necessitates roughly 16 hours to complete.",
+      "section_number": "A.2",
+      "section_title": "speech llm training",
+      "normalized_section_title": "speech llm training"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.556::sections::5.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "5.5",
+      "section_title": "inference latency",
+      "normalized_section_title": "inference latency",
+      "evidence": "Considering the critical real-time constraints of speech translation systems, we present a comprehensive evaluation of our Sliding Retrieval method's computational efficiency. Using a single NVIDIA A100 80GB GPU, we pre-compute and store speech representations generated by speech encoders, then systematically measure the time required to retrieve results from the retrieval pool using a single utterance. Our analysis encompasses 5,000 samples, with average processing times reported in Table 6.\n\nThe results demonstrate that our Sliding Retrieval method introduces only negligible computational overhead compared to the MaxPool baseline. Specifically, when employing Whisper-medium, the MaxPool approach averages 0.152 ms per query, while our Sliding Retrieval method requires merely 0.217 ms, highlighting a minor difference. Note that retrieval latency is practically insignificant when considered against the 621.951 ms required by Qwen2-Audio-Instruct for the translation process. Furthermore, our analysis reveals that scaling the speech encoder parameters has minimal impact on system latency, with Sliding Retrieval averaging 0.195 ms and 0.217 ms for Whisper-base and Whisper-medium, respectively.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.556::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80G",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "A.2",
+      "section_title": "speech llm training",
+      "normalized_section_title": "speech llm training",
+      "evidence": "For fine-tuning the speech LLM, we employ the SWIFT framework $^{3}$ , using LoRA with a rank of 16, an alpha of 32, and a dropout probability of 0.05. The batch size is set to 96, and the learning rate is configured at $1e - 4$ . We target the q Projekt,\n\nk_Proj, and v_Proj modules. This training procedure is executed on eight NVIDIA A100 80G GPUs and necessitates roughly 16 hours to complete.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.556::sections::3.3",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3.3",
+      "section_title": "training",
+      "evidence": "Note that without prior training, our terminology clip localization step can produce unsatisfactory speech clips, which may subsequently undermine the terminology-focused translation step. Therefore, we train the two steps sequentially.\n\nThe objective of training the terminology clip localization step is to ensure that $SE$ aligns with our Sliding Retrieval method. To achieve this, we employ contrastive learning for $SE$ training. Formally, our training objective $\\mathcal{L}_{\\mathrm{SE}}$ is to maximize the similarity with the positive examples while minimizing the similarity with the negative examples:\n\n$$\n\\mathcal {L} _ {\\mathrm {S E}} = - \\log \\frac {e ^ {\\sin (u , c ^ {+})}}{e ^ {\\sin (u , c ^ {+})} + \\sum_ {i = 1} ^ {n} e ^ {\\sin (u , c _ {i} ^ {-})}}, \\tag {2}\n$$\n\nwhere $c^+$ denotes the speech clip of the terminology appearing in $u$ , considered a positive example, while $c_i^-$ denotes the $i$ -th randomly sampled terminology speech clip, regarded as a negative example.\n\nSubsequently, we train the model to terminology-focused translation, ensuring it effectively utilizes the provided translation knowledge during translation. Following previous studies (Rajaa and Tushar, 2024; Chen et al., 2024), we apply LoRA (Hu et al., 2022) for fine-tuning. Formally, we train the speech LLM using the standard next token prediction loss as follows:\n\n$$\n\\mathcal {L} _ {\\mathrm {L L M}} = - \\frac {1}{N} \\sum_ {i = 1} ^ {N} \\log P \\left(w _ {i} \\mid K ^ {\\prime}, u, w _ {<   i}\\right), \\tag {3}\n$$\n\nwhere $N$ is the total number of tokens in the translations, $w_{i}$ is the target token and $P(w_{i}|K^{\\prime},u,w_{< i})$\n\nTable 1: Statistics of our collected dataset. #utt. indicates the number of utterances, and #term. represents the number of terminologies.   \n\n<table><tr><td rowspan=\"2\">Split</td><td colspan=\"2\">EN → ZH</td><td colspan=\"2\">EN → DE</td></tr><tr><td>#utt.</td><td>#term.</td><td>#utt.</td><td>#term.</td></tr><tr><td>CoVoST2-train</td><td>10000</td><td>14191</td><td>10000</td><td>14664</td></tr><tr><td>CoVoST2-test</td><td>671</td><td>1227</td><td>656</td><td>1270</td></tr><tr><td>MuST-C-test</td><td>220</td><td>335</td><td>220</td><td>355</td></tr><tr><td>MSLT-test</td><td>213</td><td>294</td><td>164</td><td>280</td></tr></table>\n\nis the prediction probability of $w_{i}$ ."
+    },
+    {
+      "source_window_id": "2025.acl-long.556::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiment",
+      "evidence": "Base Model In our experiments, we utilize the Whisper-medium (Radford et al., 2023) as the speech encoder and the Qwen2-Audio-Instruct (Chu et al., 2024) as the speech LLM. When training the speech encoder, we use 4 negative samples per example and conduct the training over 3 epochs. To ensure the translation quality of the speech LLM, we combine the original CoVoST2 training split with the terminology translation data for training. For methods requiring external translation knowledge, we use the translation knowledge base constructed in Section 4. For further implementation details, please refer to Appendix A.\n\nBaselines We use the representative methods as our baselines.\n\n- Translation Training. We fine-tune the speech LLM only using the CoVoST2 training split data to enhance its translation performance. Note that it does not use external translation knowledge during inference.   \n- SALM (Chen et al., 2024). This Collect-and-Integrate method calculates term frequencies and provides the speech LLM with a fixed number of high-frequency terms and their\n\ntranslations as context to help model in translation.\n\n- Retrieval-and-Demonstration (Li et al., 2024a). This method aims to retrieve utterance-translation pairs that share terminologies with the source utterance, using them as sentence-level translation knowledge. These pairs are then employed as in-context learning examples aids to enhance terminology translation.\n\nSetup In our experiments, we use two different setups to supply the speech LLM with translation knowledge:\n\n- Oracle Knowledge Setting. In this setup, the speech LLM is directly supplied with ground truth translation knowledge without any irrelevant noise, enabling the evaluation of a terminology translation method's optimal performance under ideal conditions.   \n- End-to-End Setting. This setup requires the speech LLM to acquire external knowledge through retrieval or statistical methods, thus evaluating the terminology translation method's capability in an end-to-end manner. For SALM, we provide the translations of the top 50 most frequent terms. For the Retrieval-and-Demonstration and our method, we provide the top-5 retrieved translation knowledge.\n\nTable 3: Performance of the retriever on CoVoST2 and MuST-C. Please refer to Table 1 for retrieval pool sizes.   \n\n<table><tr><td></td><td colspan=\"3\">CoVoST2</td><td colspan=\"3\">MuST-C</td></tr><tr><td></td><td>Hits@1</td><td>Hits@5</td><td>Hits@10</td><td>Hits@1</td><td>Hits@5</td><td>Hits@10</td></tr><tr><td>EN→ZH</td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>MaxPool</td><td>45.07</td><td>56.97</td><td>62.18</td><td>55.12</td><td>68.17</td><td>74.37</td></tr><tr><td>MinPool</td><td>45.80</td><td>55.75</td><td>61.53</td><td>53.80</td><td>63.66</td><td>70.70</td></tr><tr><td>AvgPool</td><td>22.66</td><td>34.80</td><td>40.91</td><td>38.87</td><td>54.37</td><td>58.87</td></tr><tr><td>Sliding Retrieval</td><td>61.04</td><td>79.22</td><td>85.00</td><td>64.23</td><td>82.54</td><td>89.58</td></tr><tr><td>EN→DE</td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>MaxPool</td><td>46.08</td><td>56.85</td><td>62.00</td><td>56.21</td><td>68.64</td><td>72.31</td></tr><tr><td>MinPool</td><td>44.41</td><td>55.03</td><td>60.81</td><td>54.52</td><td>66.67</td><td>71.75</td></tr><tr><td>AvgPool</td><td>20.66</td><td>34.92</td><td>39.67</td><td>35.31</td><td>49.15</td><td>55.08</td></tr><tr><td>Sliding Retrieval</td><td>58.19</td><td>76.32</td><td>84.40</td><td>67.51</td><td>87.57</td><td>93.79</td></tr></table>\n\nAblation Settings To investigate the effects of different factors on our method, we consider the following variants for the ablation study.\n\n- $w / o$ Sliding Retrieval. In this variant, the retriever uses MaxPool to calculate the similarity between utterances and speech clips, instead of employing the Sliding Retrieval approach we proposed.   \n- w/o Audio Replacement. This variant supplies the retrieved knowledge triplet directly to the speech LLM without replacing the TTS-generated audio with the located clip from the utterance.   \n- $w/o$ Tag Cue. We exclude the use of the special tag during training in this variant, which means the model cannot use the special tag as a cue to predict when to output term translation.   \n- $w / o$ Replacement and Cue. This variant omits both the audio replacement and the tag cue during training and inference.\n\nMetrics For evaluating the retrieval performance, we use Hits@N to assess whether the correct item is included within the top- $n$ retrieved items, where $n$ is set to 1, 5, or 10. To assess the quality of terminology translation, following previous studies (Semenov et al., 2023; Li et al., 2024a), we employ BLEU (Papineni et al., 2002) and Term Success Rate (TSR) (Semenov et al., 2023). Term Success Rate quantifies the proportion of terminologies accurately translated within an utterance."
+    },
+    {
+      "source_window_id": "2025.acl-long.556::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "implementation details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.556::appendix::A.1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.1",
+      "section_title": "retriever training",
+      "evidence": "In our experiments, we utilize Whisper-medium as the primary retriever. We incorporate 4 negative samples per example and conduct training over 3 epochs, with a learning rate set at $1 \\times 10^{-5}$ and a batch size of 16. This process is executable on a single NVIDIA A100 80G GPU and requires approximately 6 hours to complete.\n\nWhen extracting a speech clip, we focus on the hidden state with the highest similarity. In Whisper, each hidden state represents roughly 0.02 seconds, allowing us to precisely segment the relevant portion of the speech."
+    },
+    {
+      "source_window_id": "2025.acl-long.556::appendix::B",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B",
+      "section_title": "supplementary experimental results",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "5.5",
+      "A.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.556\\auto\\full.md",
+    "source_md_sha256": "b5542554e2eae786e857abf9dc3ff46c5a3266e960558a76b37cb472fa6331df",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

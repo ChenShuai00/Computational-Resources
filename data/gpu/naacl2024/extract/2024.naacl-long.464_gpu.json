@@ -1,0 +1,204 @@
+{
+  "paper_id": "2024.naacl-long.464",
+  "candidate_windows": [
+    {
+      "window_id": "2024.naacl-long.464::sections::3.2",
+      "paper_id": "2024.naacl-long.464",
+      "section_number": "3.2",
+      "section_title": "inference-time collaboration",
+      "normalized_section_title": "inference-time collaboration",
+      "window_text": "As shown in SSD-LM (Han et al., 2022) and prior work in other domains (Dhariwal and Nichol, 2021), diffusion models are naturally suited to allow for controlling the properties of the model outputs by interpolating the model outputs with gradients from a control function such as a classifier. Follow-up studies have extended this idea\n\nto classifier-free guidance where diffusion models with and without controlling attributes can be interpolated contrastively using a weighted sum of their outputs (Ho and Salimans, 2021). We explore a new setup of the latter idea for enabling collaboration between two versions of SSD-2 where we interpolate the output logits of the models. Intrinsic to the diffusion paradigm, this interpolation is sequence-level and through many iterations it leverages benefits of the bi-directional context.\n\nSetup We first define a core model $\\theta_{\\mathrm{core}}$ which is computationally expensive to train or deploy (e.g., a large model which can only be loaded on multiple GPUs). We assume the model is good at general-domain instruction following. We then define a user model $\\theta_{\\mathrm{user}}$ which is computationally friendly for a typical user to run on their personal device or a cloud device to their control. It allows incorporating data of their specific interest which they may not prefer to input to the large model. For both the core and user models, we also assume they do not have access to each others' model parameters.\n\nWe also assume a prompting instruction $\\boldsymbol{w}_{\\mathrm{inst}}$ which both the models have access to, and expert data $D_{\\mathrm{user}}$ that only the user model and not the core model has access to (see Figure 1). During inference,\n\n- $\\theta_{\\mathrm{core}}$ only takes in the prompt $\\mathbf{w}_{\\mathrm{inst}}$ , $f_{\\theta_{\\mathrm{core}}}(\\mathbf{w}_{\\mathrm{inst}})$ .   \n- $\\theta_{\\text{user}}$ can be finetuned with $D_{\\text{user}}$ , or use $D_{\\text{user}}$ in in-context learning. In this work, we experiment with the latter setup, where the user\n\nmodel takes in both the user expert data and the instruction as input, $f_{\\theta_{\\mathrm{user}}} \\left( D_{\\mathrm{user}}, \\boldsymbol{w}_{\\mathrm{inst}} \\right)$ .\n\n- Additionally, we assume the model size $\\left| {\\theta }_{\\text{core }}\\right|  \\gg  \\left| {\\theta }_{\\text{user }}\\right|$ (the size difference is ${100}\\mathrm{x}$ in our experiments).\n\nWe will discuss the specific instantiation of the setup in §5. In the section below, we first introduce a prominent collaboration algorithm when $\\theta_{\\mathrm{core}}$ and $\\theta_{\\mathrm{user}}$ are autoregressive, and then propose a novel algorithm when the models are diffusion-based SSD-2.\n\nMethod The collaboration between $\\theta_{\\mathrm{core}}$ and $\\theta_{\\mathrm{user}}$ is essentially an ensemble of the model outputs. One prominent way of approaching it is through a weighted average of the models' logits at inference time. For autoregressive LMs, this averaging can be performed at the token level where the logits are first combined and then transformed into probability distribution like a product-of-experts ensemble (e.g., Liu et al. (2021)).\n\n$$\n\\begin{array}{l} w ^ {c} \\sim p _ {\\text {c o l l a b}} \\left(w ^ {c} \\mid D _ {\\text {u s e r}}, w _ {\\text {i n s t}}, w ^ {<   c}\\right) \\\\ = \\operatorname {s o f t m a x} \\left[ \\left(1 - \\lambda_ {\\text {u s e r}}\\right) \\log_ {\\theta_ {\\text {c o r e}}} \\left(w ^ {c} \\mid \\boldsymbol {w} _ {\\text {i n s t}}, \\boldsymbol {w} ^ {<   c}\\right) \\right. \\\\ + \\lambda_ {\\text {u s e r}} \\operatorname {l o g i t s} _ {\\theta_ {\\text {u s e r}}} \\left(w ^ {c} \\mid D _ {\\text {u s e r}}, w _ {\\text {i n s t}}, w ^ {<   c}\\right) ] \\\\ \\end{array}\n$$\n\nWe also consider an extension of this setup where we add a contrastive term to $\\theta_{\\mathrm{user}}$ without the input $D_{\\mathrm{user}}$ , to promote the pointwise mutual information between the expert data and the generation conditioned on the instruction (Malkin et al., 2021).<sup>7</sup>\n\n$$\n\\begin{array}{l} w ^ {c} \\sim \\operatorname {s o f t m a x} [ (1 - \\lambda_ {\\text {u s e r}}) \\operatorname {l o g i t s} _ {\\theta_ {\\text {c o r e}}} \\left(w ^ {c} \\mid \\boldsymbol {w} _ {\\text {i n s t}}, w ^ {<   c}\\right) \\\\ + \\lambda_ {\\text {u s e r}} (1 + \\alpha) \\log \\mathrm {i t s} _ {\\theta_ {\\text {u s e r}}} \\left(w ^ {c} \\mid D _ {\\text {u s e r}}, w _ {\\text {i n s t}}, w ^ {<   c}\\right) \\\\ - \\lambda_ {\\text {u s e r}} \\alpha \\log_ {t} \\theta_ {\\text {u s e r}} \\left(w ^ {c} \\mid \\boldsymbol {w} _ {\\text {i n s t}}, \\boldsymbol {w} ^ {<   c}\\right) ] \\\\ \\end{array}\n$$\n\nFor SSD-2, the process of generating tokens is intrinsically different from autoregressive models. However, since it preserves the notion of logits in its iterative decoding procedure $(\\boldsymbol{w}_{\\mathrm{logits},t}^{c:c + B})$ , we propose a similar logits-averaging method for a diffusion $\\theta_{\\mathrm{core}}$ and $\\theta_{\\mathrm{user}}$ , performing an ensemble for a block of tokens at each diffusion timestep.\n\n$$\n\\boldsymbol {w} _ {\\text {c o r e - l o g i t s}, t} ^ {c: c + B} = \\operatorname {l o g i t s} _ {\\theta_ {\\text {c o r e}}} (\\boldsymbol {w} ^ {c: c + B} \\mid \\boldsymbol {w} _ {\\text {i n s t}}, \\boldsymbol {w} ^ {<   c}, \\tilde {\\boldsymbol {w}} _ {t} ^ {c: c + B})\n$$\n\n$$\n\\boldsymbol {w} _ {\\text {u s e r - l o g i t s}, t} ^ {c: c + B} = \\operatorname {l o g i t s} _ {\\theta_ {\\text {u s e r}}} (\\boldsymbol {w} ^ {c: c + B} \\mid D _ {\\text {u s e r}}, \\boldsymbol {w} _ {\\text {i n s t}}, \\boldsymbol {w} ^ {<   c}, \\tilde {\\boldsymbol {w}} _ {t} ^ {c: c + B})\n$$\n\n$$\n\\boldsymbol {w} _ {\\text {- u s e r - l o g i t s}, t} ^ {c: c + B} = \\log i s _ {\\theta_ {\\text {u s e r}}} (\\boldsymbol {w} ^ {c: c + B} \\mid \\boldsymbol {w} _ {\\text {i n s t}}, \\boldsymbol {w} ^ {<   c}, \\tilde {\\boldsymbol {w}} _ {t} ^ {c: c + B})\n$$\n\n$$\n\\begin{array}{l} \\boldsymbol {w} _ {\\text {l o g i t s}, t} ^ {c: c + B} = \\left(1 - \\lambda_ {\\text {u s e r}}\\right) \\boldsymbol {w} _ {\\text {c o r e - l o g i t s}, t} ^ {c: c + B} \\\\ + \\lambda_ {\\text {u s e r}} (1 + \\alpha) \\boldsymbol {w} _ {\\text {u s e r - l o g i t s}, t} ^ {c: c + B} - \\lambda_ {\\text {u s e r}} \\alpha \\boldsymbol {w} _ {- \\text {u s e r - l o g i t s}, t} ^ {c: c + B} \\\\ \\end{array}\n$$\n\nThe above procedure is instantiated through the operation all-reduce $\\Theta, \\lambda$ (w $_{\\mathrm{logits},t}^{c:c+B}$ ) in Figure 2. Figure 1 describes both the autoregressive and diffusion collaboration in our setup illustratively. It is noteworthy that for diffusion models, this manner of collaboration is only straightforward in a simplex-based model such as SSD-2. Diffusion variants proposed in the literature operating on token embeddings (\\$6) are not trivially suitable for it due to a mismatch in the models' embedding space.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.naacl-long.464::sections::4",
+      "paper_id": "2024.naacl-long.464",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Pretraining Existing work on diffusion LMs is limited to modest model sizes below the order of 1B parameters (Li et al., 2022c; Han et al., 2022; Dieleman et al., 2022). For example, SSD-LM has the same size as RoBERTA-large (Liu et al., 2019) with 0.4B parameters. It is unclear whether diffusions LMs have the ability to scale like autoregressive LMs. To answer this question, we pretrain three versions of SSD-2 with 0.1B, 2.7B, and 13B parameters, on a subset of a large corpus C4 (Raffel et al., 2020). Instead of pretraining from scratch, we initialize these models using publicly available OPT models (Zhang et al., 2022). We consider a maximum sequence length of 500 (up from 200 in SSD-LM), with a diffusion block size $B = 25$ . On the 13B SSD-2 model for our main evaluation, we first do 50K warmup steps without self-conditioning and then start a 100K-step pretraining with the full algorithm. It uses approximately 38B tokens from the C4 data in total. Other pretraining hyperparameters can be found in §B. We show the pretraining losses of SSD-2 over time in §C. Based on the trend of pretraining losses and the scale of our pretraining data compared to recent work, we conjecture that our SSD-2 models are\n\nstill considerably undertrained. Due to our computing budget, we leave to future work a potential continued pretraining over current SSD-2 models on larger and better curated data.\n\nInstruction finetuning While Han et al. (2022) show the effectiveness of pretrained SSD-LM in general-domain text continuation, in this work, we primarily investigate the use of SSD-2 in downstream fine-tuning tasks, particularly on chat-style instruction following.[11] We finetune the models with the DOLLY dataset[12] containing 15K human-collected instructions and responses (Databricks, 2023). DOLLY covers categories like open/closedQA, brainstorming, and creative writing, though it may still be less powerful than the distillation-based data in terms of size and quality.[13] We finetune on $95\\%$ of the DOLLY data and use the rest for held-out evaluation. We finetune with a batch size of 384 and for 500 or 1000 steps for the 0.1B/2.7B/13B models. As a baseline, we finetune the autoregressive model OPT (0.1B/2.7B/13B) on DOLLY with the same setup.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.naacl-long.464::sections::5",
+      "paper_id": "2024.naacl-long.464",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.naacl-long.464::appendix::A",
+      "paper_id": "2024.naacl-long.464",
+      "section_number": "A",
+      "section_title": "eliminating the sampling of context size $c$ in training",
+      "normalized_section_title": "eliminating the sampling of context size $c$ in training",
+      "window_text": "In the original training algorithm of SSD-LM (Han et al., 2022), they first sample a context length $c \\sim \\mathcal{U}(1, |w| - B)$ , and then compute the diffusion loss for reconstructing a block of length $B$ following that context. When the sequence length $|w|$ is large, this can lead to a drastic variance in the values of $c$ . Implemented naively in a distribution training setup, this setup wastes computations, and reduces the effective batch size considerably slowing down training. We eliminate the sampling of the context length $c$ in SSD-2 by processing multiple $c$ 's in parallel. To facilitate this, we encode the context\n\n$\\pmb{w}^{<  c}$ uni-directionally while preserving the locally bi-directional attention for the diffusion generation block $\\pmb{w}^{c:c + B}$\n\nMore specifically, assume we have a prompt $\\boldsymbol{w}^{< c_0}$ and want to form the same training objective as in Figure 2 on all of the following $n$ text blocks $\\boldsymbol{w}^{c_0:c_0 + nB}$ . We prepare a context sequence $\\boldsymbol{w}^{< c_0 + (n - 1)B}$ and obtain $\\boldsymbol{h}^{< c_0 + (n - 1)B}$ as described previously in §3.1. We prepare a diffusion sequence $\\tilde{\\boldsymbol{w}}^{c_0:c_0 + nB}$ and obtain $\\tilde{\\boldsymbol{h}}^{c_0:c_0 + nB}$ as described previously. Then a forward pass of $\\theta$ works as below.\n\n$$\n\\boldsymbol {o} ^ {<   c _ {0} + (2 n - 1) B} = \\mathrm {T r a n s f o r m e r} [\n$$\n\n$$\n\\operatorname {c o n c a t} \\left(\\boldsymbol {h} ^ {<   c _ {0} + (n - 1) B}, \\tilde {\\boldsymbol {h}} ^ {c _ {0}: c _ {0} + n B}\\right); \\delta \\left(c _ {0}, n, B\\right) ]\n$$\n\n$$\n\\boldsymbol {w} _ {\\text {l o g i t s}, t} ^ {c _ {0}: c _ {0} + n B} = \\boldsymbol {o} ^ {c _ {0} + (n - 1) B: c _ {0} + (2 n - 1) B}\n$$\n\nwhere $\\delta (c_0,n,B)$ is a special attention mask for the transformer model, allowing a reuse of the encoded contexts while preserving the original training loss:\n\n$$\n\\delta_ {i, j} = \\left\\{ \\begin{array}{l} \\mathbb {1} _ {j \\leq i} \\text {i f} i <   c _ {0} + (n - 1) B. \\\\ \\mathbb {1} _ {j \\leq c _ {0} + k B \\text {o r} c _ {0} + (n - 1 + k) B <   j <   c _ {0} + (n + k) B} \\\\ \\text {i f} c _ {0} + (n - 1 + k) B <   i <   c _ {0} + (n + k) B, \\\\ \\text {f o r} 0 \\leq k <   n. \\end{array} \\right.\n$$\n\nRow $i$ of $\\delta$ indicates the attention-accessible positions for the $i$ -th input token of the transformer. For example, assume the original context is $[a]$ and the target generation is in two blocks $[b, c]$ and $[d, e]$ . The input sequence to the SSD-2 transformer model is $[a, b, c, \\tilde{b}, \\tilde{c}, \\tilde{d}, \\tilde{e}]$ , and the attention mask is:\n\n$$\n\\boldsymbol {\\delta} (1, 2, 2) = \\left[ \\begin{array}{c c c c c c c} 1 & 0 & 0 & 0 & 0 & 0 & 0 \\\\ 1 & 1 & 0 & 0 & 0 & 0 & 0 \\\\ 1 & 1 & 1 & 0 & 0 & 0 & 0 \\\\ 1 & 0 & 0 & 1 & 1 & 0 & 0 \\\\ 1 & 0 & 0 & 1 & 1 & 0 & 0 \\\\ 1 & 1 & 1 & 0 & 0 & 1 & 1 \\\\ 1 & 1 & 1 & 0 & 0 & 1 & 1 \\end{array} \\right]\n$$\n\nComparing to regular language models, SSD-2 has a uni-directional encoder and locally bi-directional decoder. In a pilot pretraining session, we observe this change leads to a twice as fast training speed compared to the original SSD-LM on a same amount of training tokens.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.naacl-long.464::appendix::B",
+      "paper_id": "2024.naacl-long.464",
+      "section_number": "B",
+      "section_title": "pretraining hyperparameters",
+      "normalized_section_title": "pretraining hyperparameters",
+      "window_text": "For the SSD-2 model of each size (13B/2.7B/0.1B), we conduct two phases of training, a warmup phase\n\nwithout self-conditioning and a formal phase with self-conditioning using the complete algorithm shown in Figure 2. Throughout all pretraining setups, we use a max sequence length of 500, a learning rate of 1e-4, and a weight decay of 0.01. For the 13B SSD-2, we train with a warmup batch size of 768 for 50,000 steps (19B tokens) and a formal batch size of 384 for 100,000 steps (19B tokens). For the 2.7B SSD-2, we train with a warmup batch size of 256 for 100,000 steps (13B tokens) and a formal batch size of 1024 for 100,000 steps (51B tokens). For the 0.1B SSD-2, we train with a warmup batch size of 2,048 for 200,000 steps (205B tokens) and a formal batch size of 2,048 for 100,000 steps (102B tokens). We use Nvidia V100 GPUs in distributed training, and the different batch size and number of warmup steps across different models are due to the models' memory footprint and the relative cluster traffic during our pilot pretraining. Future work with a dedicated group of computing resources can explore pretraining for longer to mitigate the undertraining issue mentioned in §4.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.naacl-long.464::appendix::C",
+      "paper_id": "2024.naacl-long.464",
+      "section_number": "C",
+      "section_title": "pretraining losses",
+      "normalized_section_title": "pretraining losses",
+      "window_text": "Figure 3 shows the pretraining losses of SSD-2 over time. We report the losses after the warmup stage and average them across batches with a self-conditioning $p = 0.5$ as described in Figure 2. We see a sign of undertraining from the loss curves. Due to our computing budget, we leave to future work a potential continued pretraining over current SSD-2 models on larger and better curated data.\n\n![](images/c88ae547611ef1d18de6201ebcef2889601d33cce479987e1fce04f76ab18743.jpg)  \nFigure 3: Pretraining losses across training steps (with self-conditioning, after the warmup stage). We conjecture that the models can benefit from more training given more resources.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.naacl-long.464::appendix::D",
+      "paper_id": "2024.naacl-long.464",
+      "section_number": "D",
+      "section_title": "decoding speed",
+      "normalized_section_title": "decoding speed",
+      "window_text": "Though the decoding of SSD-2 is still significantly slower than an autoregressive language model, it achieves a great speedup compared to the original SSD-LM. We use a same setup as the reported SSD-LM decoding in Han et al. (2022). Conditioning on 50 prompting tokens, we record the speed of generating the next 25 tokens with timestep $T = 1000$ on a Nvidia V100 GPU.\n\nThe 0.4B SSD-LM takes 25 seconds. By contrast, though our 2.7B SSD-2 and 13B SSD-2 are 7x and 33x larger than SSD-LM, they only take 22 seconds and 48 seconds respectively, indicating a significant speedup.[16]",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.naacl-long.464::appendix::D",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia V100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Though the decoding of SSD-2 is still significantly slower than an autoregressive language model, it achieves a great speedup compared to the original SSD-LM. We use a same setup as the reported SSD-LM decoding in Han et al. (2022). Conditioning on 50 prompting tokens, we record the speed of generating the next 25 tokens with timestep $T = 1000$ on a Nvidia V100 GPU.\n\nThe 0.4B SSD-LM takes 25 seconds. By contrast, though our 2.7B SSD-2 and 13B SSD-2 are 7x and 33x larger than SSD-LM, they only take 22 seconds and 48 seconds respectively, indicating a significant speedup.[16]",
+      "section_number": "D",
+      "section_title": "decoding speed",
+      "normalized_section_title": "decoding speed"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.naacl-long.464::appendix::D",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia V100",
+      "cleaned_hardware_name": "nvidia v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "D",
+      "section_title": "decoding speed",
+      "normalized_section_title": "decoding speed",
+      "evidence": "Though the decoding of SSD-2 is still significantly slower than an autoregressive language model, it achieves a great speedup compared to the original SSD-LM. We use a same setup as the reported SSD-LM decoding in Han et al. (2022). Conditioning on 50 prompting tokens, we record the speed of generating the next 25 tokens with timestep $T = 1000$ on a Nvidia V100 GPU.\n\nThe 0.4B SSD-LM takes 25 seconds. By contrast, though our 2.7B SSD-2 and 13B SSD-2 are 7x and 33x larger than SSD-LM, they only take 22 seconds and 48 seconds respectively, indicating a significant speedup.[16]",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.naacl-long.464::sections::3.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3.2",
+      "section_title": "inference-time collaboration",
+      "evidence": "As shown in SSD-LM (Han et al., 2022) and prior work in other domains (Dhariwal and Nichol, 2021), diffusion models are naturally suited to allow for controlling the properties of the model outputs by interpolating the model outputs with gradients from a control function such as a classifier. Follow-up studies have extended this idea\n\nto classifier-free guidance where diffusion models with and without controlling attributes can be interpolated contrastively using a weighted sum of their outputs (Ho and Salimans, 2021). We explore a new setup of the latter idea for enabling collaboration between two versions of SSD-2 where we interpolate the output logits of the models. Intrinsic to the diffusion paradigm, this interpolation is sequence-level and through many iterations it leverages benefits of the bi-directional context.\n\nSetup We first define a core model $\\theta_{\\mathrm{core}}$ which is computationally expensive to train or deploy (e.g., a large model which can only be loaded on multiple GPUs). We assume the model is good at general-domain instruction following. We then define a user model $\\theta_{\\mathrm{user}}$ which is computationally friendly for a typical user to run on their personal device or a cloud device to their control. It allows incorporating data of their specific interest which they may not prefer to input to the large model. For both the core and user models, we also assume they do not have access to each others' model parameters.\n\nWe also assume a prompting instruction $\\boldsymbol{w}_{\\mathrm{inst}}$ which both the models have access to, and expert data $D_{\\mathrm{user}}$ that only the user model and not the core model has access to (see Figure 1). During inference,\n\n- $\\theta_{\\mathrm{core}}$ only takes in the prompt $\\mathbf{w}_{\\mathrm{inst}}$ , $f_{\\theta_{\\mathrm{core}}}(\\mathbf{w}_{\\mathrm{inst}})$ .   \n- $\\theta_{\\text{user}}$ can be finetuned with $D_{\\text{user}}$ , or use $D_{\\text{user}}$ in in-context learning. In this work, we experiment with the latter setup, where the user\n\nmodel takes in both the user expert data and the instruction as input, $f_{\\theta_{\\mathrm{user}}} \\left( D_{\\mathrm{user}}, \\boldsymbol{w}_{\\mathrm{inst}} \\right)$ .\n\n- Additionally, we assume the model size $\\left| {\\theta }_{\\text{core }}\\right|  \\gg  \\left| {\\theta }_{\\text{user }}\\right|$ (the size difference is ${100}\\mathrm{x}$ in our experiments).\n\nWe will discuss the specific instantiation of the setup in §5. In the section below, we first introduce a prominent collaboration algorithm when $\\theta_{\\mathrm{core}}$ and $\\theta_{\\mathrm{user}}$ are autoregressive, and then propose a novel algorithm when the models are diffusion-based SSD-2.\n\nMethod The collaboration between $\\theta_{\\mathrm{core}}$ and $\\theta_{\\mathrm{user}}$ is essentially an ensemble of the model outputs. One prominent way of approaching it is through a weighted average of the models' logits at inference time. For autoregressive LMs, this averaging can be performed at the token level where the logits are first combined and then transformed into probability distribution like a product-of-experts ensemble (e.g., Liu et al. (2021)).\n\n$$\n\\begin{array}{l} w ^ {c} \\sim p _ {\\text {c o l l a b}} \\left(w ^ {c} \\mid D _ {\\text {u s e r}}, w _ {\\text {i n s t}}, w ^ {<   c}\\right) \\\\ = \\operatorname {s o f t m a x} \\left[ \\left(1 - \\lambda_ {\\text {u s e r}}\\right) \\log_ {\\theta_ {\\text {c o r e}}} \\left(w ^ {c} \\mid \\boldsymbol {w} _ {\\text {i n s t}}, \\boldsymbol {w} ^ {<   c}\\right) \\right. \\\\ + \\lambda_ {\\text {u s e r}} \\operatorname {l o g i t s} _ {\\theta_ {\\text {u s e r}}} \\left(w ^ {c} \\mid D _ {\\text {u s e r}}, w _ {\\text {i n s t}}, w ^ {<   c}\\right) ] \\\\ \\end{array}\n$$\n\nWe also consider an extension of this setup where we add a contrastive term to $\\theta_{\\mathrm{user}}$ without the input $D_{\\mathrm{user}}$ , to promote the pointwise mutual information between the expert data and the generation conditioned on the instruction (Malkin et al., 2021).<sup>7</sup>\n\n$$\n\\begin{array}{l} w ^ {c} \\sim \\operatorname {s o f t m a x} [ (1 - \\lambda_ {\\text {u s e r}}) \\operatorname {l o g i t s} _ {\\theta_ {\\text {c o r e}}} \\left(w ^ {c} \\mid \\boldsymbol {w} _ {\\text {i n s t}}, w ^ {<   c}\\right) \\\\ + \\lambda_ {\\text {u s e r}} (1 + \\alpha) \\log \\mathrm {i t s} _ {\\theta_ {\\text {u s e r}}} \\left(w ^ {c} \\mid D _ {\\text {u s e r}}, w _ {\\text {i n s t}}, w ^ {<   c}\\right) \\\\ - \\lambda_ {\\text {u s e r}} \\alpha \\log_ {t} \\theta_ {\\text {u s e r}} \\left(w ^ {c} \\mid \\boldsymbol {w} _ {\\text {i n s t}}, \\boldsymbol {w} ^ {<   c}\\right) ] \\\\ \\end{array}\n$$\n\nFor SSD-2, the process of generating tokens is intrinsically different from autoregressive models. However, since it preserves the notion of logits in its iterative decoding procedure $(\\boldsymbol{w}_{\\mathrm{logits},t}^{c:c + B})$ , we propose a similar logits-averaging method for a diffusion $\\theta_{\\mathrm{core}}$ and $\\theta_{\\mathrm{user}}$ , performing an ensemble for a block of tokens at each diffusion timestep.\n\n$$\n\\boldsymbol {w} _ {\\text {c o r e - l o g i t s}, t} ^ {c: c + B} = \\operatorname {l o g i t s} _ {\\theta_ {\\text {c o r e}}} (\\boldsymbol {w} ^ {c: c + B} \\mid \\boldsymbol {w} _ {\\text {i n s t}}, \\boldsymbol {w} ^ {<   c}, \\tilde {\\boldsymbol {w}} _ {t} ^ {c: c + B})\n$$\n\n$$\n\\boldsymbol {w} _ {\\text {u s e r - l o g i t s}, t} ^ {c: c + B} = \\operatorname {l o g i t s} _ {\\theta_ {\\text {u s e r}}} (\\boldsymbol {w} ^ {c: c + B} \\mid D _ {\\text {u s e r}}, \\boldsymbol {w} _ {\\text {i n s t}}, \\boldsymbol {w} ^ {<   c}, \\tilde {\\boldsymbol {w}} _ {t} ^ {c: c + B})\n$$\n\n$$\n\\boldsymbol {w} _ {\\text {- u s e r - l o g i t s}, t} ^ {c: c + B} = \\log i s _ {\\theta_ {\\text {u s e r}}} (\\boldsymbol {w} ^ {c: c + B} \\mid \\boldsymbol {w} _ {\\text {i n s t}}, \\boldsymbol {w} ^ {<   c}, \\tilde {\\boldsymbol {w}} _ {t} ^ {c: c + B})\n$$\n\n$$\n\\begin{array}{l} \\boldsymbol {w} _ {\\text {l o g i t s}, t} ^ {c: c + B} = \\left(1 - \\lambda_ {\\text {u s e r}}\\right) \\boldsymbol {w} _ {\\text {c o r e - l o g i t s}, t} ^ {c: c + B} \\\\ + \\lambda_ {\\text {u s e r}} (1 + \\alpha) \\boldsymbol {w} _ {\\text {u s e r - l o g i t s}, t} ^ {c: c + B} - \\lambda_ {\\text {u s e r}} \\alpha \\boldsymbol {w} _ {- \\text {u s e r - l o g i t s}, t} ^ {c: c + B} \\\\ \\end{array}\n$$\n\nThe above procedure is instantiated through the operation all-reduce $\\Theta, \\lambda$ (w $_{\\mathrm{logits},t}^{c:c+B}$ ) in Figure 2. Figure 1 describes both the autoregressive and diffusion collaboration in our setup illustratively. It is noteworthy that for diffusion models, this manner of collaboration is only straightforward in a simplex-based model such as SSD-2. Diffusion variants proposed in the literature operating on token embeddings (\\$6) are not trivially suitable for it due to a mismatch in the models' embedding space."
+    },
+    {
+      "source_window_id": "2024.naacl-long.464::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "evidence": "Pretraining Existing work on diffusion LMs is limited to modest model sizes below the order of 1B parameters (Li et al., 2022c; Han et al., 2022; Dieleman et al., 2022). For example, SSD-LM has the same size as RoBERTA-large (Liu et al., 2019) with 0.4B parameters. It is unclear whether diffusions LMs have the ability to scale like autoregressive LMs. To answer this question, we pretrain three versions of SSD-2 with 0.1B, 2.7B, and 13B parameters, on a subset of a large corpus C4 (Raffel et al., 2020). Instead of pretraining from scratch, we initialize these models using publicly available OPT models (Zhang et al., 2022). We consider a maximum sequence length of 500 (up from 200 in SSD-LM), with a diffusion block size $B = 25$ . On the 13B SSD-2 model for our main evaluation, we first do 50K warmup steps without self-conditioning and then start a 100K-step pretraining with the full algorithm. It uses approximately 38B tokens from the C4 data in total. Other pretraining hyperparameters can be found in §B. We show the pretraining losses of SSD-2 over time in §C. Based on the trend of pretraining losses and the scale of our pretraining data compared to recent work, we conjecture that our SSD-2 models are\n\nstill considerably undertrained. Due to our computing budget, we leave to future work a potential continued pretraining over current SSD-2 models on larger and better curated data.\n\nInstruction finetuning While Han et al. (2022) show the effectiveness of pretrained SSD-LM in general-domain text continuation, in this work, we primarily investigate the use of SSD-2 in downstream fine-tuning tasks, particularly on chat-style instruction following.[11] We finetune the models with the DOLLY dataset[12] containing 15K human-collected instructions and responses (Databricks, 2023). DOLLY covers categories like open/closedQA, brainstorming, and creative writing, though it may still be less powerful than the distillation-based data in terms of size and quality.[13] We finetune on $95\\%$ of the DOLLY data and use the rest for held-out evaluation. We finetune with a batch size of 384 and for 500 or 1000 steps for the 0.1B/2.7B/13B models. As a baseline, we finetune the autoregressive model OPT (0.1B/2.7B/13B) on DOLLY with the same setup."
+    },
+    {
+      "source_window_id": "2024.naacl-long.464::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.naacl-long.464::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "eliminating the sampling of context size $c$ in training",
+      "evidence": "In the original training algorithm of SSD-LM (Han et al., 2022), they first sample a context length $c \\sim \\mathcal{U}(1, |w| - B)$ , and then compute the diffusion loss for reconstructing a block of length $B$ following that context. When the sequence length $|w|$ is large, this can lead to a drastic variance in the values of $c$ . Implemented naively in a distribution training setup, this setup wastes computations, and reduces the effective batch size considerably slowing down training. We eliminate the sampling of the context length $c$ in SSD-2 by processing multiple $c$ 's in parallel. To facilitate this, we encode the context\n\n$\\pmb{w}^{<  c}$ uni-directionally while preserving the locally bi-directional attention for the diffusion generation block $\\pmb{w}^{c:c + B}$\n\nMore specifically, assume we have a prompt $\\boldsymbol{w}^{< c_0}$ and want to form the same training objective as in Figure 2 on all of the following $n$ text blocks $\\boldsymbol{w}^{c_0:c_0 + nB}$ . We prepare a context sequence $\\boldsymbol{w}^{< c_0 + (n - 1)B}$ and obtain $\\boldsymbol{h}^{< c_0 + (n - 1)B}$ as described previously in §3.1. We prepare a diffusion sequence $\\tilde{\\boldsymbol{w}}^{c_0:c_0 + nB}$ and obtain $\\tilde{\\boldsymbol{h}}^{c_0:c_0 + nB}$ as described previously. Then a forward pass of $\\theta$ works as below.\n\n$$\n\\boldsymbol {o} ^ {<   c _ {0} + (2 n - 1) B} = \\mathrm {T r a n s f o r m e r} [\n$$\n\n$$\n\\operatorname {c o n c a t} \\left(\\boldsymbol {h} ^ {<   c _ {0} + (n - 1) B}, \\tilde {\\boldsymbol {h}} ^ {c _ {0}: c _ {0} + n B}\\right); \\delta \\left(c _ {0}, n, B\\right) ]\n$$\n\n$$\n\\boldsymbol {w} _ {\\text {l o g i t s}, t} ^ {c _ {0}: c _ {0} + n B} = \\boldsymbol {o} ^ {c _ {0} + (n - 1) B: c _ {0} + (2 n - 1) B}\n$$\n\nwhere $\\delta (c_0,n,B)$ is a special attention mask for the transformer model, allowing a reuse of the encoded contexts while preserving the original training loss:\n\n$$\n\\delta_ {i, j} = \\left\\{ \\begin{array}{l} \\mathbb {1} _ {j \\leq i} \\text {i f} i <   c _ {0} + (n - 1) B. \\\\ \\mathbb {1} _ {j \\leq c _ {0} + k B \\text {o r} c _ {0} + (n - 1 + k) B <   j <   c _ {0} + (n + k) B} \\\\ \\text {i f} c _ {0} + (n - 1 + k) B <   i <   c _ {0} + (n + k) B, \\\\ \\text {f o r} 0 \\leq k <   n. \\end{array} \\right.\n$$\n\nRow $i$ of $\\delta$ indicates the attention-accessible positions for the $i$ -th input token of the transformer. For example, assume the original context is $[a]$ and the target generation is in two blocks $[b, c]$ and $[d, e]$ . The input sequence to the SSD-2 transformer model is $[a, b, c, \\tilde{b}, \\tilde{c}, \\tilde{d}, \\tilde{e}]$ , and the attention mask is:\n\n$$\n\\boldsymbol {\\delta} (1, 2, 2) = \\left[ \\begin{array}{c c c c c c c} 1 & 0 & 0 & 0 & 0 & 0 & 0 \\\\ 1 & 1 & 0 & 0 & 0 & 0 & 0 \\\\ 1 & 1 & 1 & 0 & 0 & 0 & 0 \\\\ 1 & 0 & 0 & 1 & 1 & 0 & 0 \\\\ 1 & 0 & 0 & 1 & 1 & 0 & 0 \\\\ 1 & 1 & 1 & 0 & 0 & 1 & 1 \\\\ 1 & 1 & 1 & 0 & 0 & 1 & 1 \\end{array} \\right]\n$$\n\nComparing to regular language models, SSD-2 has a uni-directional encoder and locally bi-directional decoder. In a pilot pretraining session, we observe this change leads to a twice as fast training speed compared to the original SSD-LM on a same amount of training tokens."
+    },
+    {
+      "source_window_id": "2024.naacl-long.464::appendix::B",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B",
+      "section_title": "pretraining hyperparameters",
+      "evidence": "For the SSD-2 model of each size (13B/2.7B/0.1B), we conduct two phases of training, a warmup phase\n\nwithout self-conditioning and a formal phase with self-conditioning using the complete algorithm shown in Figure 2. Throughout all pretraining setups, we use a max sequence length of 500, a learning rate of 1e-4, and a weight decay of 0.01. For the 13B SSD-2, we train with a warmup batch size of 768 for 50,000 steps (19B tokens) and a formal batch size of 384 for 100,000 steps (19B tokens). For the 2.7B SSD-2, we train with a warmup batch size of 256 for 100,000 steps (13B tokens) and a formal batch size of 1024 for 100,000 steps (51B tokens). For the 0.1B SSD-2, we train with a warmup batch size of 2,048 for 200,000 steps (205B tokens) and a formal batch size of 2,048 for 100,000 steps (102B tokens). We use Nvidia V100 GPUs in distributed training, and the different batch size and number of warmup steps across different models are due to the models' memory footprint and the relative cluster traffic during our pilot pretraining. Future work with a dedicated group of computing resources can explore pretraining for longer to mitigate the undertraining issue mentioned in §4."
+    },
+    {
+      "source_window_id": "2024.naacl-long.464::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "pretraining losses",
+      "evidence": "Figure 3 shows the pretraining losses of SSD-2 over time. We report the losses after the warmup stage and average them across batches with a self-conditioning $p = 0.5$ as described in Figure 2. We see a sign of undertraining from the loss curves. Due to our computing budget, we leave to future work a potential continued pretraining over current SSD-2 models on larger and better curated data.\n\n![](images/c88ae547611ef1d18de6201ebcef2889601d33cce479987e1fce04f76ab18743.jpg)  \nFigure 3: Pretraining losses across training steps (with self-conditioning, after the warmup stage). We conjecture that the models can benefit from more training given more resources."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "D"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\naacl2024\\2024.naacl-long.464\\auto\\full.md",
+    "source_md_sha256": "930b05c4d831b85010b7795aa5c0241c9d2b1c1b18fbcfd6484fc1bd38e81bab",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "8a36e506af69db6224806495ee600ecb1cd88261dc8471c84d78ced3642dab27"
+  }
+}

@@ -1,0 +1,162 @@
+{
+  "paper_id": "2023.acl-long.852",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.852::sections::4",
+      "paper_id": "2023.acl-long.852",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.852::sections::4.2",
+      "paper_id": "2023.acl-long.852",
+      "section_number": "4.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "Baselines. We implement a vanilla Transformer for original languages as the initial model which is trained on multiple parallel data jointly (Johnson et al., 2017). And we compare the proposed method with different architectures for adapting the original model to new language pairs. All methods utilize the preprocessing script of a shared BPE model with $32\\mathrm{k}$ tokens based on the Sentencepiece library<sup>4</sup>. The baselines can be listed as follows:\n\nFrom-scratch (Johnson et al., 2017): A vanilla Transformer is trained from scratch on the incremental languages with the multilingual training strategy. Note that the models do not support the original translation directions.\n\nAdapter (Bapna and First, 2019): We follow previous adapter architectures and introduce extra parameters in each FFN layer of the original MNMT model. All original parameters are frozen and only the adapters are trainable.\n\nExtension (Lakew et al., 2018): On the basis of the adapter architecture, we extend the original vocabulary $(\\mathcal{V}_{\\mathcal{P}})$ for new languages adaptation. Initially, a supplementary vocabulary $(\\mathcal{V}_{\\mathcal{Q}})$ is created using the standard Byte-Pair Encoding (BPE) procedure from the incremental training data. Subsequently, $\\mathcal{V}_{\\mathcal{P}}$ and $\\mathcal{V}_{\\mathcal{Q}}$ are combined to form a unified vocabulary $\\mathcal{V}$ , which is defined as $\\mathcal{V} = \\mathcal{V}_{\\mathcal{P}} \\cup \\mathcal{V}_{\\mathcal{Q}}$ . The embeddings of the original models are expanded to match the size of the complete vocabulary $(\\mathcal{V})$ , and the additional embeddings are initialized using a Gaussian distribution.\n\nSerial/Parallel (Zhu et al., 2021): We follow Zhu et al. (2021) to introduce adapters in the serial or parallel connection manner. Our pluggable modules in the FFN layers can also be converted into a serial manner.\n\nTraining Setup. We implement all models based on the open-source toolkit fairseq $^5$ (Ott et al., 2019). For a fair comparison, we employ the same configuration of Transformer-Big (Vaswani et al., 2017)\n\nTable 2: Results in BLEU of adding a single language pair merely for MNMT in incremental learning. The highest score on each translation direction is highlighted in bold. The second highest score on each translation direction is highlighted in underline.   \n\n<table><tr><td rowspan=\"2\">Method</td><td rowspan=\"2\">Modules</td><td colspan=\"2\">WMT16</td><td colspan=\"2\">WMT14</td><td colspan=\"2\">FLoRes</td><td colspan=\"2\">FLoRes</td></tr><tr><td>ro→en</td><td>en→ro</td><td>de→en</td><td>en→de</td><td>bn→en</td><td>en→bn</td><td>uk→en</td><td>en→uk</td></tr><tr><td>From-scratch</td><td>-</td><td>30.63</td><td>23.58</td><td>31.35</td><td>26.55</td><td>30.58</td><td>15.54</td><td>28.22</td><td>23.70</td></tr><tr><td rowspan=\"2\">Adapter</td><td>Serial</td><td>34.39</td><td>22.85</td><td>30.34</td><td>19.43</td><td>16.94</td><td>0.12</td><td>28.47</td><td>19.01</td></tr><tr><td>Parallel</td><td>32.98</td><td>20.74</td><td>25.97</td><td>17.24</td><td>13.51</td><td>0.11</td><td>26.04</td><td>15.42</td></tr><tr><td rowspan=\"2\">Extension</td><td>Serial</td><td>32.06</td><td>22.36</td><td>30.53</td><td>22.05</td><td>27.78</td><td>13.42</td><td>30.65</td><td>21.12</td></tr><tr><td>Parallel</td><td>32.31</td><td>20.87</td><td>28.66</td><td>20.77</td><td>27.51</td><td>12.49</td><td>30.69</td><td>20.60</td></tr><tr><td rowspan=\"2\">KT (Ours)</td><td>Serial</td><td>34.38</td><td>25.52</td><td>31.24</td><td>26.33</td><td>30.73</td><td>15.63</td><td>31.91</td><td>24.46</td></tr><tr><td>Parallel</td><td>34.44</td><td>25.62</td><td>32.04</td><td>26.73</td><td>30.81</td><td>15.71</td><td>32.01</td><td>25.20</td></tr></table>\n\nTable 3: Results in BLEU of adding eight incremental language pairs for xx-to-English and English-to-xx simultaneously. The highest score on each translation direction is highlighted in bold. The second highest score on each translation direction is highlighted in underline.   \n\n<table><tr><td rowspan=\"2\">Method</td><td rowspan=\"2\">Modules</td><td colspan=\"2\">WMT16</td><td colspan=\"2\">WMT14</td><td colspan=\"2\">FLoRes</td><td colspan=\"2\">FLoRes</td></tr><tr><td>ro→en</td><td>en→ro</td><td>de→en</td><td>en→de</td><td>bn→en</td><td>en→bn</td><td>uk→en</td><td>en→uk</td></tr><tr><td>From-scratch</td><td>-</td><td>35.42</td><td>25.90</td><td>31.33</td><td>25.34</td><td>30.40</td><td>14.66</td><td>32.71</td><td>25.05</td></tr><tr><td rowspan=\"2\">Adapter</td><td>Serial</td><td>31.02</td><td>15.11</td><td>24.34</td><td>7.86</td><td>10.04</td><td>0.54</td><td>23.19</td><td>9.91</td></tr><tr><td>Parallel</td><td>35.38</td><td>14.58</td><td>29.57</td><td>6.56</td><td>24.95</td><td>0.34</td><td>31.52</td><td>9.40</td></tr><tr><td rowspan=\"2\">Extension</td><td>Serial</td><td>32.17</td><td>19.88</td><td>26.90</td><td>15.94</td><td>24.40</td><td>9.88</td><td>27.56</td><td>14.33</td></tr><tr><td>Parallel</td><td>36.28</td><td>23.17</td><td>30.45</td><td>20.92</td><td>28.78</td><td>11.62</td><td>31.94</td><td>19.59</td></tr><tr><td rowspan=\"2\">KT (Ours)</td><td>Serial</td><td>36.34</td><td>25.53</td><td>30.96</td><td>24.52</td><td>29.82</td><td>12.95</td><td>32.95</td><td>24.31</td></tr><tr><td>Parallel</td><td>36.88</td><td>26.48</td><td>31.65</td><td>25.65</td><td>30.10</td><td>15.10</td><td>33.86</td><td>25.42</td></tr></table>\n\nin our experiments. All original parameters are frozen during the incremental learning procedure. More model training details are provided in Appendix B.1.\n\nEvaluation. We report the detokenized case-sensitive BLEU of models by the SacreBLEU evaluation script (Post, 2018) $^6$ . We show the training time of each method in terms of milliseconds and use the beam search decoding algorithm with a beam size of 5 and a length penalty of 1.0.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.852::sections::4.5",
+      "paper_id": "2023.acl-long.852",
+      "section_number": "4.5",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.852::appendix::B.1",
+      "paper_id": "2023.acl-long.852",
+      "section_number": "B.1",
+      "section_title": "training setup",
+      "normalized_section_title": "training setup",
+      "window_text": "We implement Transformer translation models in all our experiments. In particular, the small original model (0.4B) consists of 6 stacked encoder layers, 6 stacked decoder layers, and 16 multi-attention heads, followed by the configuration of Transformer-Big (Vaswani et al., 2017). The dimensions of $d_{\\mathrm{model}}$ and $d_{\\mathrm{ffn}}$ are 1024 and 4096 respectively. The large original model (1.2B) consists of 24 stacked encoder layers, 24 stacked decoder layers, and 16 multi-attention heads, followed by the configuration of M2M-100 (Fan et al., 2021). The\n\nTable 10: The statistics of train, dev, and test data for the original languages (WMT-7) and the incremental languages. The top half part represents the set of the original languages. The second half represents the set of the incremental languages.   \n\n<table><tr><td rowspan=\"2\">Language Pair</td><td colspan=\"3\">Data Sources</td><td colspan=\"3\"># Samples</td></tr><tr><td>Train</td><td>Dev</td><td>Test</td><td>Train</td><td>Dev</td><td>Test</td></tr><tr><td>ja-en</td><td>WMT21</td><td>WMT20</td><td>WMT21</td><td>18,001,428</td><td>993</td><td>1,005</td></tr><tr><td>pl-en</td><td>WMT20</td><td>WMT20</td><td>WMT20</td><td>10,206,520</td><td>2,000</td><td>1,001</td></tr><tr><td>is-en</td><td>WMT21</td><td>WMT21</td><td>WMT21</td><td>4,376,282</td><td>2,004</td><td>1,000</td></tr><tr><td>ps-en</td><td>WMT20</td><td>WMT20</td><td>WMT20</td><td>1,155,942</td><td>2,698</td><td>2,719</td></tr><tr><td>ha-en</td><td>WMT21</td><td>WMT21</td><td>WMT21</td><td>744,856</td><td>2,000</td><td>997</td></tr><tr><td>ta-en</td><td>WMT20</td><td>WMT20</td><td>WMT20</td><td>660,818</td><td>1,989</td><td>997</td></tr><tr><td>de-en</td><td>WMT14</td><td>WMT13</td><td>WMT14</td><td>4,508,785</td><td>3,000</td><td>3,003</td></tr><tr><td>ro-en</td><td>WMT16</td><td>WMT16</td><td>WMT16</td><td>610,320</td><td>1,999</td><td>1,999</td></tr><tr><td>uk-en</td><td>FLoRes</td><td>FLoRes</td><td>FLoRes</td><td>8,604,580</td><td>997</td><td>1,012</td></tr><tr><td>bn-en</td><td>FLoRes</td><td>FLoRes</td><td>FLoRes</td><td>925,896</td><td>997</td><td>1,012</td></tr></table>\n\ndimensions of $d_{\\mathrm{model}}$ and $d_{\\mathrm{ffn}}$ are 1024 and 8192 respectively. We use Adam (Kingma and Ba, 2014) and a half-precision training scheme to optimize the parameters of all MNMT models. In addition, we reset the optimizer and learning scheduler in incremental learning and use the temperature-based sampling scheme (Arivazhagan et al., 2019) with a temperature of $T = 5$ to balance the training data between diverse language pairs. We adopt the early stop (patience is 10) strategy in incremental learning and the batch size is $4096 \\times 4$ in all training procedures. To eliminate the randomness of the result, we report the mean BLEU scores of the models that are trained in five seeds. All incremental models are trained on 2 NVIDIA A100 GPUs.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2023.acl-long.852::appendix::C.1",
+      "paper_id": "2023.acl-long.852",
+      "section_number": "C.1",
+      "section_title": "training cost",
+      "normalized_section_title": "training cost",
+      "window_text": "To further illustrate the efficiency of our method, we investigate the training time compared with the stronger baselines, as shown in Figure 3. The results show that the knowledge transfer method can reduce the training time of incremental learning, which is more efficient and practical than the other methods.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.852::appendix::B.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "We implement Transformer translation models in all our experiments. In particular, the small original model (0.4B) consists of 6 stacked encoder layers, 6 stacked decoder layers, and 16 multi-attention heads, followed by the configuration of Transformer-Big (Vaswani et al., 2017). The dimensions of $d_{\\mathrm{model}}$ and $d_{\\mathrm{ffn}}$ are 1024 and 4096 respectively. The large original model (1.2B) consists of 24 stacked encoder layers, 24 stacked decoder layers, and 16 multi-attention heads, followed by the configuration of M2M-100 (Fan et al., 2021). The\n\nTable 10: The statistics of train, dev, and test data for the original languages (WMT-7) and the incremental languages. The top half part represents the set of the original languages. The second half represents the set of the incremental languages.   \n\n<table><tr><td rowspan=\"2\">Language Pair</td><td colspan=\"3\">Data Sources</td><td colspan=\"3\"># Samples</td></tr><tr><td>Train</td><td>Dev</td><td>Test</td><td>Train</td><td>Dev</td><td>Test</td></tr><tr><td>ja-en</td><td>WMT21</td><td>WMT20</td><td>WMT21</td><td>18,001,428</td><td>993</td><td>1,005</td></tr><tr><td>pl-en</td><td>WMT20</td><td>WMT20</td><td>WMT20</td><td>10,206,520</td><td>2,000</td><td>1,001</td></tr><tr><td>is-en</td><td>WMT21</td><td>WMT21</td><td>WMT21</td><td>4,376,282</td><td>2,004</td><td>1,000</td></tr><tr><td>ps-en</td><td>WMT20</td><td>WMT20</td><td>WMT20</td><td>1,155,942</td><td>2,698</td><td>2,719</td></tr><tr><td>ha-en</td><td>WMT21</td><td>WMT21</td><td>WMT21</td><td>744,856</td><td>2,000</td><td>997</td></tr><tr><td>ta-en</td><td>WMT20</td><td>WMT20</td><td>WMT20</td><td>660,818</td><td>1,989</td><td>997</td></tr><tr><td>de-en</td><td>WMT14</td><td>WMT13</td><td>WMT14</td><td>4,508,785</td><td>3,000</td><td>3,003</td></tr><tr><td>ro-en</td><td>WMT16</td><td>WMT16</td><td>WMT16</td><td>610,320</td><td>1,999</td><td>1,999</td></tr><tr><td>uk-en</td><td>FLoRes</td><td>FLoRes</td><td>FLoRes</td><td>8,604,580</td><td>997</td><td>1,012</td></tr><tr><td>bn-en</td><td>FLoRes</td><td>FLoRes</td><td>FLoRes</td><td>925,896</td><td>997</td><td>1,012</td></tr></table>\n\ndimensions of $d_{\\mathrm{model}}$ and $d_{\\mathrm{ffn}}$ are 1024 and 8192 respectively. We use Adam (Kingma and Ba, 2014) and a half-precision training scheme to optimize the parameters of all MNMT models. In addition, we reset the optimizer and learning scheduler in incremental learning and use the temperature-based sampling scheme (Arivazhagan et al., 2019) with a temperature of $T = 5$ to balance the training data between diverse language pairs. We adopt the early stop (patience is 10) strategy in incremental learning and the batch size is $4096 \\times 4$ in all training procedures. To eliminate the randomness of the result, we report the mean BLEU scores of the models that are trained in five seeds. All incremental models are trained on 2 NVIDIA A100 GPUs.",
+      "section_number": "B.1",
+      "section_title": "training setup",
+      "normalized_section_title": "training setup"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.852::appendix::B.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "B.1",
+      "section_title": "training setup",
+      "normalized_section_title": "training setup",
+      "evidence": "We implement Transformer translation models in all our experiments. In particular, the small original model (0.4B) consists of 6 stacked encoder layers, 6 stacked decoder layers, and 16 multi-attention heads, followed by the configuration of Transformer-Big (Vaswani et al., 2017). The dimensions of $d_{\\mathrm{model}}$ and $d_{\\mathrm{ffn}}$ are 1024 and 4096 respectively. The large original model (1.2B) consists of 24 stacked encoder layers, 24 stacked decoder layers, and 16 multi-attention heads, followed by the configuration of M2M-100 (Fan et al., 2021). The\n\nTable 10: The statistics of train, dev, and test data for the original languages (WMT-7) and the incremental languages. The top half part represents the set of the original languages. The second half represents the set of the incremental languages.   \n\n<table><tr><td rowspan=\"2\">Language Pair</td><td colspan=\"3\">Data Sources</td><td colspan=\"3\"># Samples</td></tr><tr><td>Train</td><td>Dev</td><td>Test</td><td>Train</td><td>Dev</td><td>Test</td></tr><tr><td>ja-en</td><td>WMT21</td><td>WMT20</td><td>WMT21</td><td>18,001,428</td><td>993</td><td>1,005</td></tr><tr><td>pl-en</td><td>WMT20</td><td>WMT20</td><td>WMT20</td><td>10,206,520</td><td>2,000</td><td>1,001</td></tr><tr><td>is-en</td><td>WMT21</td><td>WMT21</td><td>WMT21</td><td>4,376,282</td><td>2,004</td><td>1,000</td></tr><tr><td>ps-en</td><td>WMT20</td><td>WMT20</td><td>WMT20</td><td>1,155,942</td><td>2,698</td><td>2,719</td></tr><tr><td>ha-en</td><td>WMT21</td><td>WMT21</td><td>WMT21</td><td>744,856</td><td>2,000</td><td>997</td></tr><tr><td>ta-en</td><td>WMT20</td><td>WMT20</td><td>WMT20</td><td>660,818</td><td>1,989</td><td>997</td></tr><tr><td>de-en</td><td>WMT14</td><td>WMT13</td><td>WMT14</td><td>4,508,785</td><td>3,000</td><td>3,003</td></tr><tr><td>ro-en</td><td>WMT16</td><td>WMT16</td><td>WMT16</td><td>610,320</td><td>1,999</td><td>1,999</td></tr><tr><td>uk-en</td><td>FLoRes</td><td>FLoRes</td><td>FLoRes</td><td>8,604,580</td><td>997</td><td>1,012</td></tr><tr><td>bn-en</td><td>FLoRes</td><td>FLoRes</td><td>FLoRes</td><td>925,896</td><td>997</td><td>1,012</td></tr></table>\n\ndimensions of $d_{\\mathrm{model}}$ and $d_{\\mathrm{ffn}}$ are 1024 and 8192 respectively. We use Adam (Kingma and Ba, 2014) and a half-precision training scheme to optimize the parameters of all MNMT models. In addition, we reset the optimizer and learning scheduler in incremental learning and use the temperature-based sampling scheme (Arivazhagan et al., 2019) with a temperature of $T = 5$ to balance the training data between diverse language pairs. We adopt the early stop (patience is 10) strategy in incremental learning and the batch size is $4096 \\times 4$ in all training procedures. To eliminate the randomness of the result, we report the mean BLEU scores of the models that are trained in five seeds. All incremental models are trained on 2 NVIDIA A100 GPUs.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.acl-long.852::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.852::sections::4.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2",
+      "section_title": "implementation details",
+      "evidence": "Baselines. We implement a vanilla Transformer for original languages as the initial model which is trained on multiple parallel data jointly (Johnson et al., 2017). And we compare the proposed method with different architectures for adapting the original model to new language pairs. All methods utilize the preprocessing script of a shared BPE model with $32\\mathrm{k}$ tokens based on the Sentencepiece library<sup>4</sup>. The baselines can be listed as follows:\n\nFrom-scratch (Johnson et al., 2017): A vanilla Transformer is trained from scratch on the incremental languages with the multilingual training strategy. Note that the models do not support the original translation directions.\n\nAdapter (Bapna and First, 2019): We follow previous adapter architectures and introduce extra parameters in each FFN layer of the original MNMT model. All original parameters are frozen and only the adapters are trainable.\n\nExtension (Lakew et al., 2018): On the basis of the adapter architecture, we extend the original vocabulary $(\\mathcal{V}_{\\mathcal{P}})$ for new languages adaptation. Initially, a supplementary vocabulary $(\\mathcal{V}_{\\mathcal{Q}})$ is created using the standard Byte-Pair Encoding (BPE) procedure from the incremental training data. Subsequently, $\\mathcal{V}_{\\mathcal{P}}$ and $\\mathcal{V}_{\\mathcal{Q}}$ are combined to form a unified vocabulary $\\mathcal{V}$ , which is defined as $\\mathcal{V} = \\mathcal{V}_{\\mathcal{P}} \\cup \\mathcal{V}_{\\mathcal{Q}}$ . The embeddings of the original models are expanded to match the size of the complete vocabulary $(\\mathcal{V})$ , and the additional embeddings are initialized using a Gaussian distribution.\n\nSerial/Parallel (Zhu et al., 2021): We follow Zhu et al. (2021) to introduce adapters in the serial or parallel connection manner. Our pluggable modules in the FFN layers can also be converted into a serial manner.\n\nTraining Setup. We implement all models based on the open-source toolkit fairseq $^5$ (Ott et al., 2019). For a fair comparison, we employ the same configuration of Transformer-Big (Vaswani et al., 2017)\n\nTable 2: Results in BLEU of adding a single language pair merely for MNMT in incremental learning. The highest score on each translation direction is highlighted in bold. The second highest score on each translation direction is highlighted in underline.   \n\n<table><tr><td rowspan=\"2\">Method</td><td rowspan=\"2\">Modules</td><td colspan=\"2\">WMT16</td><td colspan=\"2\">WMT14</td><td colspan=\"2\">FLoRes</td><td colspan=\"2\">FLoRes</td></tr><tr><td>ro→en</td><td>en→ro</td><td>de→en</td><td>en→de</td><td>bn→en</td><td>en→bn</td><td>uk→en</td><td>en→uk</td></tr><tr><td>From-scratch</td><td>-</td><td>30.63</td><td>23.58</td><td>31.35</td><td>26.55</td><td>30.58</td><td>15.54</td><td>28.22</td><td>23.70</td></tr><tr><td rowspan=\"2\">Adapter</td><td>Serial</td><td>34.39</td><td>22.85</td><td>30.34</td><td>19.43</td><td>16.94</td><td>0.12</td><td>28.47</td><td>19.01</td></tr><tr><td>Parallel</td><td>32.98</td><td>20.74</td><td>25.97</td><td>17.24</td><td>13.51</td><td>0.11</td><td>26.04</td><td>15.42</td></tr><tr><td rowspan=\"2\">Extension</td><td>Serial</td><td>32.06</td><td>22.36</td><td>30.53</td><td>22.05</td><td>27.78</td><td>13.42</td><td>30.65</td><td>21.12</td></tr><tr><td>Parallel</td><td>32.31</td><td>20.87</td><td>28.66</td><td>20.77</td><td>27.51</td><td>12.49</td><td>30.69</td><td>20.60</td></tr><tr><td rowspan=\"2\">KT (Ours)</td><td>Serial</td><td>34.38</td><td>25.52</td><td>31.24</td><td>26.33</td><td>30.73</td><td>15.63</td><td>31.91</td><td>24.46</td></tr><tr><td>Parallel</td><td>34.44</td><td>25.62</td><td>32.04</td><td>26.73</td><td>30.81</td><td>15.71</td><td>32.01</td><td>25.20</td></tr></table>\n\nTable 3: Results in BLEU of adding eight incremental language pairs for xx-to-English and English-to-xx simultaneously. The highest score on each translation direction is highlighted in bold. The second highest score on each translation direction is highlighted in underline.   \n\n<table><tr><td rowspan=\"2\">Method</td><td rowspan=\"2\">Modules</td><td colspan=\"2\">WMT16</td><td colspan=\"2\">WMT14</td><td colspan=\"2\">FLoRes</td><td colspan=\"2\">FLoRes</td></tr><tr><td>ro→en</td><td>en→ro</td><td>de→en</td><td>en→de</td><td>bn→en</td><td>en→bn</td><td>uk→en</td><td>en→uk</td></tr><tr><td>From-scratch</td><td>-</td><td>35.42</td><td>25.90</td><td>31.33</td><td>25.34</td><td>30.40</td><td>14.66</td><td>32.71</td><td>25.05</td></tr><tr><td rowspan=\"2\">Adapter</td><td>Serial</td><td>31.02</td><td>15.11</td><td>24.34</td><td>7.86</td><td>10.04</td><td>0.54</td><td>23.19</td><td>9.91</td></tr><tr><td>Parallel</td><td>35.38</td><td>14.58</td><td>29.57</td><td>6.56</td><td>24.95</td><td>0.34</td><td>31.52</td><td>9.40</td></tr><tr><td rowspan=\"2\">Extension</td><td>Serial</td><td>32.17</td><td>19.88</td><td>26.90</td><td>15.94</td><td>24.40</td><td>9.88</td><td>27.56</td><td>14.33</td></tr><tr><td>Parallel</td><td>36.28</td><td>23.17</td><td>30.45</td><td>20.92</td><td>28.78</td><td>11.62</td><td>31.94</td><td>19.59</td></tr><tr><td rowspan=\"2\">KT (Ours)</td><td>Serial</td><td>36.34</td><td>25.53</td><td>30.96</td><td>24.52</td><td>29.82</td><td>12.95</td><td>32.95</td><td>24.31</td></tr><tr><td>Parallel</td><td>36.88</td><td>26.48</td><td>31.65</td><td>25.65</td><td>30.10</td><td>15.10</td><td>33.86</td><td>25.42</td></tr></table>\n\nin our experiments. All original parameters are frozen during the incremental learning procedure. More model training details are provided in Appendix B.1.\n\nEvaluation. We report the detokenized case-sensitive BLEU of models by the SacreBLEU evaluation script (Post, 2018) $^6$ . We show the training time of each method in terms of milliseconds and use the beam search decoding algorithm with a beam size of 5 and a length penalty of 1.0."
+    },
+    {
+      "source_window_id": "2023.acl-long.852::sections::4.5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.5",
+      "section_title": "ablation studies",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.852::appendix::C.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C.1",
+      "section_title": "training cost",
+      "evidence": "To further illustrate the efficiency of our method, we investigate the training time compared with the stronger baselines, as shown in Figure 3. The results show that the knowledge transfer method can reduce the training time of incremental learning, which is more efficient and practical than the other methods."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 2
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2023\\2023.acl-long.852\\auto\\full.md",
+    "source_md_sha256": "993b352a1a37fab61c09a5c31ea19aaca5a5d9eb694a9a25d62d82777b971b46",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

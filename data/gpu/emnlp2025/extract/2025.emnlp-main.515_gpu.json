@@ -1,0 +1,109 @@
+{
+  "paper_id": "2025.emnlp-main.515",
+  "candidate_windows": [
+    {
+      "window_id": "2025.emnlp-main.515::sections::3",
+      "paper_id": "2025.emnlp-main.515",
+      "section_number": "3",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.515::sections::3.1",
+      "paper_id": "2025.emnlp-main.515",
+      "section_number": "3.1",
+      "section_title": "setup",
+      "normalized_section_title": "setup",
+      "window_text": "For our experiments,we chose the Gemma-2 2B model (Gemma Team,2024). We trained SAEs ona1 B-token subsample of the FineWeb dataset (Penedo et al., 2024). Unless stated otherwise, we use the output of the 12th Transformer layer and set the SAE dictionary size to $D = 6 5 5 3 6$ .Training details are provided in Appendix A.\n\n![](images/45f1c0689bb19ec1c767ca59075a00b4ff43eb46629ccf2378e37616c016c9b0.jpg)  \nFigure 2: Comparison of an SAE with Hierarchical activation against other activation variants. The proposed method lies on the Pareto-optimal frontier across all sparsity levels,even though it is a single model.\n\nWe report the fraction of unexplained variance (FVU) as the main metric:\n\n$$\n\\mathrm { F V U } ( { \\pmb x } , \\hat { \\pmb x } ) = \\frac { \\mathrm { V a r } ( { \\pmb x } - \\hat { \\pmb x } ) } { \\mathrm { V a r } ( { \\pmb x } ) } .\n$$\n\nSparsity is measured by the $\\ell _ { 0 }$ norm\n\n$$\n\\ell _ { 0 } = \\sum _ { i } \\mathbf { I } [ l _ { i } > 0 ] .\n$$\n\nBecause we use TopK-based activations, $\\ell _ { 0 } = k$ .",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.515::appendix::A",
+      "paper_id": "2025.emnlp-main.515",
+      "section_number": "A",
+      "section_title": "sae training details",
+      "normalized_section_title": "sae training details",
+      "window_text": "All SAEs were trained with a modified version of the code from Bussmann et al. (2O24). Hyperparameters are listed in Table 1. We use NVIDIA H100 80GB GPU and spent about 20 GPU-days of compute, including preliminary experiments.\n\nTable 1: Hyperparameters used to train the SAEs. See Section A for more details.   \n\n<table><tr><td>Parameter</td><td>Value</td></tr><tr><td>Optimizer</td><td>Adam</td></tr><tr><td>Learning Rate</td><td>0.0008</td></tr><tr><td># tokens</td><td>109</td></tr><tr><td>Dataset</td><td>FineWeb</td></tr><tr><td>Batch Size</td><td>8096</td></tr><tr><td>Decoder Normalization</td><td>True</td></tr></table>\n\nWe also used modified kernels from Gao et al. (2O25); see Appendix C for details.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.emnlp-main.515::appendix::C",
+      "paper_id": "2025.emnlp-main.515",
+      "section_number": "C",
+      "section_title": "implementation",
+      "normalized_section_title": "implementation",
+      "window_text": "HierarchicalTopK is memory-intensive if implemented naively (even when using torch.compile). To address this, we implemented Triton kernels1 that fuse the prefix-sum computation with the loss calculation; this fusion makes the additional overhead in both time and memory negligible.\n\nWe adapted embedding bag Triton kernels² to produce a TopK sparse-decoder implementation. As an additional baseline we use OpenAI's sparse-autoencoder’ implementation.\n\nAs reported in Table 3,our HierarchicalTopK Triton kernel is substantially faster than a naive torch .compile implementation while exhibiting comparable peak memory. Compared to previously published TopK Triton kernels,the HierarchicalTopK kernel achieves competitive latency at the evaluated settings. Crucially, these results explain why HierarchicalTopK requires specialized kernels: the naive implementation suffers from much higher latency and considerably larger peak memory, which makes it impractical at scale. By contrast, the performance gap between a pure torch-compiled TopK and Triton TopK implementations is small.\n\nFor clarity, we also provide a minimal (naive) PyTorch implementation of the HierarchicalTopK hierarchical loss. This reference implementation illustrates the core idea: gather decoder embeddings at the active indices,scale them by the sparse activations, compute cumulative reconstructions across the top- $K$ entries, and measure the mean squared error across all sparsity levels.\n\nListing 1: Naive PyTorch implementation of the Hierarchical loss.   \n\n<table><tr><td>def &quot;&quot;</td><td></td><td>hierarchical_loss(sparse_idx，sparse_val，decoder，b_dec，target):</td></tr><tr><td></td><td>sparse_idx: LongTensor of shape (B，K) with indices of active embeddings</td><td></td><td></td></tr><tr><td></td><td></td><td> sparse_val: FloatTensor of shape (B，K) with corresponding activation values</td><td></td></tr><tr><td>decoder:</td><td></td><td>FloatTensor of shape (D，h） containing the dictionary embeddings</td><td></td></tr><tr><td>b_dec:</td><td></td><td>FloatTensor of shape (h） containing decoder bias</td><td></td></tr><tr><td>target: &quot;&quot;&quot;</td><td></td><td>FloatTensor of shape (B，h） with the original inputs</td><td></td></tr><tr><td></td><td colspan=\"3\"></td></tr><tr><td></td><td colspan=\"3\">B，K = sparse_idx.shape</td></tr><tr><td></td><td colspan=\"3\">flatten_idx = sparse_idx.view(-1)</td></tr><tr><td></td><td colspan=\"3\">emb = decoder[flatten_idx].view(B，K，-1)</td></tr><tr><td></td><td colspan=\"3\">emb = emb * sparse_val.unsqueeze(-1)</td></tr><tr><td></td><td colspan=\"3\">recon_cum = emb.cumsum(dim=1） + b_dec.unsqueeze(1)</td></tr><tr><td></td><td colspan=\"3\">diff = recon_cum - target.unsqueeze(1)</td></tr><tr><td>return total_err</td><td colspan=\"3\">total_err = diff.pow(2).mean()</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.emnlp-main.515::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA H100 80GB",
+      "count": null,
+      "count_text": "",
+      "evidence": "All SAEs were trained with a modified version of the code from Bussmann et al. (2O24). Hyperparameters are listed in Table 1. We use NVIDIA H100 80GB GPU and spent about 20 GPU-days of compute, including preliminary experiments.\n\nTable 1: Hyperparameters used to train the SAEs. See Section A for more details.   \n\n<table><tr><td>Parameter</td><td>Value</td></tr><tr><td>Optimizer</td><td>Adam</td></tr><tr><td>Learning Rate</td><td>0.0008</td></tr><tr><td># tokens</td><td>109</td></tr><tr><td>Dataset</td><td>FineWeb</td></tr><tr><td>Batch Size</td><td>8096</td></tr><tr><td>Decoder Normalization</td><td>True</td></tr></table>\n\nWe also used modified kernels from Gao et al. (2O25); see Appendix C for details.",
+      "section_number": "A",
+      "section_title": "sae training details",
+      "normalized_section_title": "sae training details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.emnlp-main.515::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA H100 80GB",
+      "cleaned_hardware_name": "nvidia h100 80gb",
+      "normalized_hardware_name": "NVIDIA H100 PCIe",
+      "benchmark_hardware_name": "NVIDIA H100 PCIe",
+      "count": null,
+      "count_text": "",
+      "section_number": "A",
+      "section_title": "sae training details",
+      "normalized_section_title": "sae training details",
+      "evidence": "All SAEs were trained with a modified version of the code from Bussmann et al. (2O24). Hyperparameters are listed in Table 1. We use NVIDIA H100 80GB GPU and spent about 20 GPU-days of compute, including preliminary experiments.\n\nTable 1: Hyperparameters used to train the SAEs. See Section A for more details.   \n\n<table><tr><td>Parameter</td><td>Value</td></tr><tr><td>Optimizer</td><td>Adam</td></tr><tr><td>Learning Rate</td><td>0.0008</td></tr><tr><td># tokens</td><td>109</td></tr><tr><td>Dataset</td><td>FineWeb</td></tr><tr><td>Batch Size</td><td>8096</td></tr><tr><td>Decoder Normalization</td><td>True</td></tr></table>\n\nWe also used modified kernels from Gao et al. (2O25); see Appendix C for details.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA H100 PCIe",
+        "num": null
+      }
+    ]
+  }
+}

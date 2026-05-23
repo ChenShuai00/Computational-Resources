@@ -1,0 +1,192 @@
+{
+  "paper_id": "2025.acl-long.1175",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.1175::sections::4",
+      "paper_id": "2025.acl-long.1175",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1175::sections::4.2",
+      "paper_id": "2025.acl-long.1175",
+      "section_number": "4.2",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "In this study, we benchmark our method against the following three categories of baselines:\n\nRetrieval-Based Methods Retrieval-based methods typically segment lengthy documents into smaller passages and use retrieval techniques to prioritize relevant passages. For a fair comparison, we use sentences as the retrieval unit and employ BM25 (Yang et al., 2017), BGE-base-en-v1.5 (Xiao et al., 2023), and LLM-Embedder (Zhang et al., 2023b) as retrieval models. The highest-ranking sentences are selected as input context for the reader to support QA tasks.\n\nExtraction-Based Methods For extraction-based methods, we evaluate state-of-the-art long-context models, including ChatGLM3-6B-128K (GLM et al., 2024), Qwen2.5-7B-Instruct-1M (Team, 2025), GLM-4-9B-Chat-1M (GLM et al., 2024), Qwen2.5-14B-Instruct-1M (Team, 2025), Qwen2.5-32B-Instruct (Team, 2024), and Qwen2.5-72B-Instruct (Team, 2024). These models refine lengthy documents into concise text evidence, which serves as context for the reader LLM to support QA tasks.\n\nLearning-Based Methods Unlike the above methods, which use off-the-shelf models, learning-based methods fine-tune models specifically for the task of evidence retrieval to improve performance. We implement the current state-of-the-art model, CIFC (Qian et al., 2024), following its open-sourced code and data.\n\nTo ensure fairness, all models provide a comparable volume of textual evidence for the reader.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1175::sections::4.3",
+      "paper_id": "2025.acl-long.1175",
+      "section_number": "4.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "During the MCTS annotation process, the Qwen2.5-7B-Instruct-1M model is utilized as the reader. The maximum number of iterations is configured to 20. Following Chen et al. (2024), the parameter $w, \\beta$ is set to 1.4 and 0.1, respectively. For the training dataset, we sample 6,000 correct paths and 6,000 incorrect paths. The policy model is initialized using the Qwen2.5-7B-Instruct-1M. Training involves fine-tuning the model for two epochs with a batch size of 1 and a learning rate of $1 \\times 10^{-6}$ , utilizing 8 NVIDIA A100 80GB GPUs. To evaluate the generalizability of our approach, we employ two additional reader models: Qwen2.5-14B-Instruct-1M and Qwen2.5-72B-Instruct. We intend to open-source the code to facilitate the reproducibility of our methodology. For more implementation details, please refer to Appendix B.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.acl-long.1175::sections::4.5",
+      "paper_id": "2025.acl-long.1175",
+      "section_number": "4.5",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "Ablation Study During inference, we propose early terminating beam search to accelerate the process while ensuring comprehensive exploration of the sentence space. To evaluate its impact, we systematically remove beam search and early termination, conducting experiments on the 2Wiki-MultihopQA, HotpotQA, and MusiQue datasets. The results are shown in Figure 4.\n\nRemoving beam search significantly degrades performance, as the model fails to fully explore the sentence space, leading to suboptimal evidence retrieval. In contrast, removing early termination substantially improves latency, as the model can uniquely identify the location of the original sentence early in the decoding process, eliminating the need to decode subsequent tokens. Additionally, as the input length increases across the datasets, the inference latency grows significantly. However, with early termination, the additional latency caused by longer inputs is minimal, demonstrating its effectiveness in long-input scenarios. These results highlight the importance of both components in balancing performance and efficiency.\n\nHyperparameter Study In our method, beam search is employed to efficiently explore the sentence space, with two key hyperparameters—Expansion Size $B_{1}$ and Beam Size\n\nTable 2: Hyperparameter study. We tune the parameters using Qwen2.5-14B-Instruct-1M as the reader.   \n\n<table><tr><td rowspan=\"2\">Size</td><td colspan=\"2\">HotpotQA</td><td colspan=\"2\">2WikiMulti</td><td colspan=\"2\">MusiQue</td></tr><tr><td>EM</td><td>F1</td><td>EM</td><td>F1</td><td>EM</td><td>F1</td></tr><tr><td colspan=\"7\">Expansion Size B1</td></tr><tr><td>1</td><td>49.00</td><td>50.72</td><td>55.00</td><td>53.98</td><td>29.00</td><td>29.63</td></tr><tr><td>2</td><td>50.50</td><td>50.41</td><td>60.50</td><td>56.80</td><td>35.50</td><td>34.80</td></tr><tr><td>3</td><td>51.00</td><td>51.26</td><td>58.00</td><td>56.23</td><td>39.50</td><td>39.85</td></tr><tr><td>4</td><td>55.00</td><td>55.30</td><td>59.50</td><td>58.21</td><td>39.00</td><td>38.70</td></tr><tr><td>5</td><td>53.00</td><td>55.28</td><td>61.00</td><td>60.52</td><td>37.00</td><td>36.74</td></tr><tr><td colspan=\"7\">Beam Size B2</td></tr><tr><td>1</td><td>49.00</td><td>51.76</td><td>56.00</td><td>54.21</td><td>32.50</td><td>33.33</td></tr><tr><td>2</td><td>50.50</td><td>51.68</td><td>61.00</td><td>58.88</td><td>35.50</td><td>36.20</td></tr><tr><td>3</td><td>51.00</td><td>51.26</td><td>58.00</td><td>56.23</td><td>39.50</td><td>39.85</td></tr><tr><td>4</td><td>51.50</td><td>52.86</td><td>61.50</td><td>59.65</td><td>32.50</td><td>33.37</td></tr><tr><td>5</td><td>51.00</td><td>51.76</td><td>60.50</td><td>57.91</td><td>31.00</td><td>32.37</td></tr></table>\n\n$B_{2}$ ——playing a crucial role. To investigate their impact on model performance, we conduct experiments on the 2WikiMultihopQA, HotpotQA, and MusiQue datasets, tuning these parameters within the range of 1 to 5.\n\nExpansion size indicates the number of sentences expanded at each layer while beam size refers to the number of sentences retained at each layer during the search process. The results reveal a consistent pattern: performance peaks when the beam size or expansion size is set to approximately 4. Values smaller or larger than this threshold lead to a decline in performance. This is primarily because a larger beam size or expansion size offers the model a broader scope to explore potential sentences, increasing the likelihood of identifying the most relevant and optimal candidates. However, when these values exceed a certain threshold, the model encounters challenges in effectively ranking and selecting the best sentences from the expanded pool. This inefficiency arises because the increased search space introduces more noise and less relevant candidates, making it harder for the model to discern the best options. Additionally, increasing these values incurs higher computational costs, highlighting the need for a balanced configuration.\n\nEffect of Input Length In this section, we analyze the effect of input length on model performance. Specifically, we vary the input length across {5000, 10000, 30000, 50000, 70000} and observe the resulting performance changes, comparing our method with using the full article as grounding evidence.\n\nAs shown in 5, both models exhibit a perfor\n\n![](images/0fd55125ea40a6ef910e0084aec447653080fbb08561db344b181bcf3cb9e25f.jpg)  \n(a) Qwen2.5-14B-Instruct-1M\n\n![](images/5f1fcd26baf26ff7f5f923e0499dc603f8ca091a88c9cf1bef1ad48610f70b04.jpg)  \n(b) Qwen2.5-72B-Instruct   \nFigure 5: Effect of input length. We vary the input length and observe the performance change.\n\nmance decline as input length increases. However, our method consistently outperforms the full-article input approach. While the performance of the full-article method drops significantly, our method shows only a slight decrease, demonstrating its robustness. This is because long-context models struggle to effectively capture the interaction between the query and the entire sentence set as input length grows. Our method addresses this challenge by modeling the process as node expansion, where the policy model is guided to thoroughly explore the sentence space at each step, ensuring robust performance even with longer inputs.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1175::appendix::B",
+      "paper_id": "2025.acl-long.1175",
+      "section_number": "B",
+      "section_title": "training details",
+      "normalized_section_title": "training details",
+      "window_text": "Dataset Construction We sample 5000 queries from the training data of 2WikiMultihopQA, HotpotQA, and MuSiQue datasets and conduct the MCTS annotations. We then sample 6,000 correct paths and 6,000 incorrect paths, and the correct paths are used to train the policy model, while both paths are used to train the value model.\n\nTraining Process The policy model is initialized using the Qwen2.5-7B-Instruct-1M. Training involves fine-tuning the model for two epochs with a batch size of 1 and a learning rate of $1 \\times 10^{-6}$ , utilizing 8 NVIDIA A100 80GB GPUs. During inference, the expansion size and the beam search size are set to 3.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.1175::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "During the MCTS annotation process, the Qwen2.5-7B-Instruct-1M model is utilized as the reader. The maximum number of iterations is configured to 20. Following Chen et al. (2024), the parameter $w, \\beta$ is set to 1.4 and 0.1, respectively. For the training dataset, we sample 6,000 correct paths and 6,000 incorrect paths. The policy model is initialized using the Qwen2.5-7B-Instruct-1M. Training involves fine-tuning the model for two epochs with a batch size of 1 and a learning rate of $1 \\times 10^{-6}$ , utilizing 8 NVIDIA A100 80GB GPUs. To evaluate the generalizability of our approach, we employ two additional reader models: Qwen2.5-14B-Instruct-1M and Qwen2.5-72B-Instruct. We intend to open-source the code to facilitate the reproducibility of our methodology. For more implementation details, please refer to Appendix B.",
+      "section_number": "4.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    },
+    {
+      "window_id": "2025.acl-long.1175::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Dataset Construction We sample 5000 queries from the training data of 2WikiMultihopQA, HotpotQA, and MuSiQue datasets and conduct the MCTS annotations. We then sample 6,000 correct paths and 6,000 incorrect paths, and the correct paths are used to train the policy model, while both paths are used to train the value model.\n\nTraining Process The policy model is initialized using the Qwen2.5-7B-Instruct-1M. Training involves fine-tuning the model for two epochs with a batch size of 1 and a learning rate of $1 \\times 10^{-6}$ , utilizing 8 NVIDIA A100 80GB GPUs. During inference, the expansion size and the beam search size are set to 3.",
+      "section_number": "B",
+      "section_title": "training details",
+      "normalized_section_title": "training details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.1175::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "4.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "During the MCTS annotation process, the Qwen2.5-7B-Instruct-1M model is utilized as the reader. The maximum number of iterations is configured to 20. Following Chen et al. (2024), the parameter $w, \\beta$ is set to 1.4 and 0.1, respectively. For the training dataset, we sample 6,000 correct paths and 6,000 incorrect paths. The policy model is initialized using the Qwen2.5-7B-Instruct-1M. Training involves fine-tuning the model for two epochs with a batch size of 1 and a learning rate of $1 \\times 10^{-6}$ , utilizing 8 NVIDIA A100 80GB GPUs. To evaluate the generalizability of our approach, we employ two additional reader models: Qwen2.5-14B-Instruct-1M and Qwen2.5-72B-Instruct. We intend to open-source the code to facilitate the reproducibility of our methodology. For more implementation details, please refer to Appendix B.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.1175::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "B",
+      "section_title": "training details",
+      "normalized_section_title": "training details",
+      "evidence": "Dataset Construction We sample 5000 queries from the training data of 2WikiMultihopQA, HotpotQA, and MuSiQue datasets and conduct the MCTS annotations. We then sample 6,000 correct paths and 6,000 incorrect paths, and the correct paths are used to train the policy model, while both paths are used to train the value model.\n\nTraining Process The policy model is initialized using the Qwen2.5-7B-Instruct-1M. Training involves fine-tuning the model for two epochs with a batch size of 1 and a learning rate of $1 \\times 10^{-6}$ , utilizing 8 NVIDIA A100 80GB GPUs. During inference, the expansion size and the beam search size are set to 3.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.1175::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.1175::sections::4.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2",
+      "section_title": "baselines",
+      "evidence": "In this study, we benchmark our method against the following three categories of baselines:\n\nRetrieval-Based Methods Retrieval-based methods typically segment lengthy documents into smaller passages and use retrieval techniques to prioritize relevant passages. For a fair comparison, we use sentences as the retrieval unit and employ BM25 (Yang et al., 2017), BGE-base-en-v1.5 (Xiao et al., 2023), and LLM-Embedder (Zhang et al., 2023b) as retrieval models. The highest-ranking sentences are selected as input context for the reader to support QA tasks.\n\nExtraction-Based Methods For extraction-based methods, we evaluate state-of-the-art long-context models, including ChatGLM3-6B-128K (GLM et al., 2024), Qwen2.5-7B-Instruct-1M (Team, 2025), GLM-4-9B-Chat-1M (GLM et al., 2024), Qwen2.5-14B-Instruct-1M (Team, 2025), Qwen2.5-32B-Instruct (Team, 2024), and Qwen2.5-72B-Instruct (Team, 2024). These models refine lengthy documents into concise text evidence, which serves as context for the reader LLM to support QA tasks.\n\nLearning-Based Methods Unlike the above methods, which use off-the-shelf models, learning-based methods fine-tune models specifically for the task of evidence retrieval to improve performance. We implement the current state-of-the-art model, CIFC (Qian et al., 2024), following its open-sourced code and data.\n\nTo ensure fairness, all models provide a comparable volume of textual evidence for the reader."
+    },
+    {
+      "source_window_id": "2025.acl-long.1175::sections::4.5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.5",
+      "section_title": "discussion",
+      "evidence": "Ablation Study During inference, we propose early terminating beam search to accelerate the process while ensuring comprehensive exploration of the sentence space. To evaluate its impact, we systematically remove beam search and early termination, conducting experiments on the 2Wiki-MultihopQA, HotpotQA, and MusiQue datasets. The results are shown in Figure 4.\n\nRemoving beam search significantly degrades performance, as the model fails to fully explore the sentence space, leading to suboptimal evidence retrieval. In contrast, removing early termination substantially improves latency, as the model can uniquely identify the location of the original sentence early in the decoding process, eliminating the need to decode subsequent tokens. Additionally, as the input length increases across the datasets, the inference latency grows significantly. However, with early termination, the additional latency caused by longer inputs is minimal, demonstrating its effectiveness in long-input scenarios. These results highlight the importance of both components in balancing performance and efficiency.\n\nHyperparameter Study In our method, beam search is employed to efficiently explore the sentence space, with two key hyperparameters—Expansion Size $B_{1}$ and Beam Size\n\nTable 2: Hyperparameter study. We tune the parameters using Qwen2.5-14B-Instruct-1M as the reader.   \n\n<table><tr><td rowspan=\"2\">Size</td><td colspan=\"2\">HotpotQA</td><td colspan=\"2\">2WikiMulti</td><td colspan=\"2\">MusiQue</td></tr><tr><td>EM</td><td>F1</td><td>EM</td><td>F1</td><td>EM</td><td>F1</td></tr><tr><td colspan=\"7\">Expansion Size B1</td></tr><tr><td>1</td><td>49.00</td><td>50.72</td><td>55.00</td><td>53.98</td><td>29.00</td><td>29.63</td></tr><tr><td>2</td><td>50.50</td><td>50.41</td><td>60.50</td><td>56.80</td><td>35.50</td><td>34.80</td></tr><tr><td>3</td><td>51.00</td><td>51.26</td><td>58.00</td><td>56.23</td><td>39.50</td><td>39.85</td></tr><tr><td>4</td><td>55.00</td><td>55.30</td><td>59.50</td><td>58.21</td><td>39.00</td><td>38.70</td></tr><tr><td>5</td><td>53.00</td><td>55.28</td><td>61.00</td><td>60.52</td><td>37.00</td><td>36.74</td></tr><tr><td colspan=\"7\">Beam Size B2</td></tr><tr><td>1</td><td>49.00</td><td>51.76</td><td>56.00</td><td>54.21</td><td>32.50</td><td>33.33</td></tr><tr><td>2</td><td>50.50</td><td>51.68</td><td>61.00</td><td>58.88</td><td>35.50</td><td>36.20</td></tr><tr><td>3</td><td>51.00</td><td>51.26</td><td>58.00</td><td>56.23</td><td>39.50</td><td>39.85</td></tr><tr><td>4</td><td>51.50</td><td>52.86</td><td>61.50</td><td>59.65</td><td>32.50</td><td>33.37</td></tr><tr><td>5</td><td>51.00</td><td>51.76</td><td>60.50</td><td>57.91</td><td>31.00</td><td>32.37</td></tr></table>\n\n$B_{2}$ ——playing a crucial role. To investigate their impact on model performance, we conduct experiments on the 2WikiMultihopQA, HotpotQA, and MusiQue datasets, tuning these parameters within the range of 1 to 5.\n\nExpansion size indicates the number of sentences expanded at each layer while beam size refers to the number of sentences retained at each layer during the search process. The results reveal a consistent pattern: performance peaks when the beam size or expansion size is set to approximately 4. Values smaller or larger than this threshold lead to a decline in performance. This is primarily because a larger beam size or expansion size offers the model a broader scope to explore potential sentences, increasing the likelihood of identifying the most relevant and optimal candidates. However, when these values exceed a certain threshold, the model encounters challenges in effectively ranking and selecting the best sentences from the expanded pool. This inefficiency arises because the increased search space introduces more noise and less relevant candidates, making it harder for the model to discern the best options. Additionally, increasing these values incurs higher computational costs, highlighting the need for a balanced configuration.\n\nEffect of Input Length In this section, we analyze the effect of input length on model performance. Specifically, we vary the input length across {5000, 10000, 30000, 50000, 70000} and observe the resulting performance changes, comparing our method with using the full article as grounding evidence.\n\nAs shown in 5, both models exhibit a perfor\n\n![](images/0fd55125ea40a6ef910e0084aec447653080fbb08561db344b181bcf3cb9e25f.jpg)  \n(a) Qwen2.5-14B-Instruct-1M\n\n![](images/5f1fcd26baf26ff7f5f923e0499dc603f8ca091a88c9cf1bef1ad48610f70b04.jpg)  \n(b) Qwen2.5-72B-Instruct   \nFigure 5: Effect of input length. We vary the input length and observe the performance change.\n\nmance decline as input length increases. However, our method consistently outperforms the full-article input approach. While the performance of the full-article method drops significantly, our method shows only a slight decrease, demonstrating its robustness. This is because long-context models struggle to effectively capture the interaction between the query and the entire sentence set as input length grows. Our method addresses this challenge by modeling the process as node expansion, where the policy model is guided to thoroughly explore the sentence space at each step, ensuring robust performance even with longer inputs."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.3",
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 8
+      },
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.1175\\auto\\full.md",
+    "source_md_sha256": "24c50cafbd94536a15f74e127ffa45562ada58a882cc50e2812f3ec3efe548c4",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

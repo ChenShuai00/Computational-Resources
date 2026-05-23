@@ -1,0 +1,234 @@
+{
+  "paper_id": "2025.acl-long.301",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.301::sections::4",
+      "paper_id": "2025.acl-long.301",
+      "section_number": "4",
+      "section_title": "experiment setup",
+      "normalized_section_title": "experiment setup",
+      "window_text": "In this section, we present definitions for document/passage categories, introduce time-aware instruction, explain the data and models tested in our experiments, and discuss the metrics and evaluation methods.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.301::sections::5",
+      "paper_id": "2025.acl-long.301",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "This section conducts a comprehensive benchmarking evaluation of various large language models and retrieval mechanisms within RAG. Through a series of experiments, our results reveal the limitations and shortcomings of existing methods when handling outdated information, providing insights for potential future enhancements.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.301::appendix::A.2",
+      "paper_id": "2025.acl-long.301",
+      "section_number": "A.2",
+      "section_title": "efficiency analysis",
+      "normalized_section_title": "efficiency analysis",
+      "window_text": "Given the computational costs and complexity involved in dynamic dataset construction, we provide a theoretical analysis of the efficiency of different approaches. The construction process primarily consists of two key steps: (1) factual change extraction and (2) QA generation/update using LLMs. We analyze the time complexity for processing a single article:\n\nLet $T_{ext}$ denotes the average time for extracting sentence pairs from an article, $N$ be the average number of sentence pairs extracted per article, and $T_{llm}$ represents the processing time for LLM per sentence pair. The total processing time $T_{total}$ for an article can be expressed as:\n\n$$\nT _ {t o t a l} = T _ {e x t} + N \\times T _ {l l m}\n$$\n\nAs shown in Table 8, the traditional sentence-level diff algorithm (as used in EvolvingQA) initially extracts a large number of sentence pairs (over 3.7M pairs across five months). While $T_{ext}$ is relatively small with this approach, $N$ remains large as it captures all sentence-level changes without distinguishing factual from non-factual modifications. The embedding-based approach (GrowOVER) requires computing and comparing embeddings for all sentence pairs, increasing $T_{ext}$ while still struggling to effectively reduce $N$ .\n\nOur method achieves better efficiency through a multi-stage filtering process: (1) Initial heuristic filtering reduces the number of sentence pairs by approximately $74.57\\%$ , eliminating obvious non-factual changes. Moreover, (2) language model screening further filters out $85.80\\%$ of the remaining pairs, identifying subtle non-factual modifications. Therefore, (3) the final LLM processing only needs to handle about 133,973 sentence pairs, significantly reducing the computational cost of the most time-consuming component $(T_{llm})$\n\nTable 7: The effectiveness of different methods in judging the factual changes in sentence pairs. We compares different approaches for identifying factual changes between sentence pairs, including baseline methods (EvolvingQA, GrowOVER) and our proposed HoH method. Results are evaluated using accuracy (\\%) and F1 score (\\%), with variations in model architecture, input processing settings, and whether the model requires training.   \n\n<table><tr><td>Dataset</td><td>Architecture</td><td>Setting</td><td>Training</td><td>Accuracy</td><td>F1</td><td>BackBone</td></tr><tr><td>EvolvingQA(2024)</td><td>-</td><td>-</td><td>-</td><td>20.85</td><td>34.50</td><td>-</td></tr><tr><td>GrowOVER(2024)</td><td>dual-tower</td><td>-</td><td>×</td><td>41.26</td><td>41.08</td><td>SimCSE</td></tr><tr><td>HoHconcate</td><td>single-tower</td><td>concat</td><td>✓</td><td>94.46</td><td>91.10</td><td>Qwen-0.5B</td></tr><tr><td>HoHcharacter</td><td>single-tower</td><td>character-diff</td><td>✓</td><td>95.20</td><td>92.46</td><td>Qwen-0.5B</td></tr><tr><td>HoH(Ours)</td><td>single-tower</td><td>token-diff</td><td>✓</td><td>96.80</td><td>95.08</td><td>Qwen-0.5B</td></tr></table>\n\nTable 8: Detailed statistics of sentence pairs during factual change extraction. The Original represents the number of sentence pairs after traditional sentence-level diff algorithm processing, the Filtering shows the number after heuristic filtering, the Screening indicates the count after language model screening, and the Final represents the number of QA pairs after LLM generation and verification.   \n\n<table><tr><td>Month</td><td>Original</td><td>→</td><td>Filtering</td><td>→</td><td>Screening</td><td>→</td><td>Final</td></tr><tr><td>06-07</td><td>632,244</td><td>-74.51%</td><td>161,135</td><td>-86.02%</td><td>22,528</td><td>-25.00%</td><td>16,896</td></tr><tr><td>07-08</td><td>757,473</td><td>-74.85%</td><td>190,494</td><td>-85.47%</td><td>27,680</td><td>-23.64%</td><td>21,136</td></tr><tr><td>08-09</td><td>752,743</td><td>-74.50%</td><td>191,950</td><td>-85.54%</td><td>27,761</td><td>-23.78%</td><td>21,159</td></tr><tr><td>09-10</td><td>782,480</td><td>-74.56%</td><td>199,093</td><td>-86.02%</td><td>27,839</td><td>-24.67%</td><td>20,972</td></tr><tr><td>10-11</td><td>783,603</td><td>-74.42%</td><td>200,470</td><td>-85.95%</td><td>28,165</td><td>-25.12%</td><td>21,090</td></tr><tr><td>Avg.</td><td>3,708,543</td><td>-74.57%</td><td>943,142</td><td>-85.80%</td><td>133,973</td><td>-24.44%</td><td>101,253</td></tr></table>\n\nThis empirical evidence supports our theoretical analysis that our approach achieves better computational efficiency by effectively reducing $N$ through accurate filtering, even though we may spend slightly more time on initial change detection ( $T_{ext}$ ). The dramatic reduction in sentence pairs (from 3.7M to 133K) before LLM processing demonstrates the effectiveness of our filtering strategy in minimizing unnecessary computational costs.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.301::appendix::B.2",
+      "paper_id": "2025.acl-long.301",
+      "section_number": "B.2",
+      "section_title": "details of fine-tuning methods",
+      "normalized_section_title": "details of fine-tuning methods",
+      "window_text": "Despite the fact that the Heuristic Filter can effectively filter out most sentence pairs that clearly do not exhibit factual changes, the number of remaining sentence pairs is still substantial. Directly using a large language model (LLM) for analyzing and generating questions based on these sentence pairs would result in significant resource consumption. Therefore, we train a language model-based sentence pair discriminator to further filter out sentence pairs without factual changes at the semantic\n\nlevel.\n\nSpecifically, we randomly select approximately 2000 sentence pairs from a dataset that had undergone heuristic filtering, and these pairs are annotated and mutually verified by three annotators. Among these sentence pairs, about 400 pairs that exhibited factual changes are labeled as 1, while the remaining over 1600 pairs without factual changes are labeled as 0. Subsequently, we use Qwen2.5-0.5B (Qwen, 2024) as the backbone model and replace its output layer with a linear classification head. We split the dataset into training and test sets with a ratio of 8:2, then perform full fine-tuning of Qwen-0.5B on the training set, with the objective of minimizing cross-entropy loss, and evaluate on the test set. This experiment is conducted using PyTorch (Paszke et al., 2019) on a single NVIDIA A100 40G GPU, with a learning rate set to 2e-5 and a batch size of 24; other parameters can be found in the config file of our open-source repository.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.301::appendix::D",
+      "paper_id": "2025.acl-long.301",
+      "section_number": "D",
+      "section_title": "additional experiment setup",
+      "normalized_section_title": "additional experiment setup",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.301::appendix::D.5",
+      "paper_id": "2025.acl-long.301",
+      "section_number": "D.5",
+      "section_title": "detailed setup",
+      "normalized_section_title": "detailed setup",
+      "window_text": "Model Setting. Due to budget constraints, we do not test any close-source LLMs. For all the open-source LLMs tested (Qwen-2.5-7B-Instruct, Llama-3.1-8B-Instruct and Llama-3.1-70B-Instruct), we locally deploy them in bfloat16 using vLLM $^6$ on our own server. The temperature parameter for each model is set to 0.3 to reduce output uncertainty, and the maximum output length is limited to 100 tokens.\n\nEnvironment Setting. All experiments are completed on a Linux server with AMD EPYC 7742 64-Core Processor CPUs @ 2.25GHz and 8 NVIDIA A100 GPUs (40G). GPUs are used for deploying close-source models. The version of Python is 3.10.15. The version of the torch package is 2.5.1. The version of the transformers package is 4.46.2. The version of the vllm package is 0.6.4.post1.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.acl-long.301::appendix::E",
+      "paper_id": "2025.acl-long.301",
+      "section_number": "E",
+      "section_title": "additional experiments",
+      "normalized_section_title": "additional experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.301::appendix::B.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 40G",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Despite the fact that the Heuristic Filter can effectively filter out most sentence pairs that clearly do not exhibit factual changes, the number of remaining sentence pairs is still substantial. Directly using a large language model (LLM) for analyzing and generating questions based on these sentence pairs would result in significant resource consumption. Therefore, we train a language model-based sentence pair discriminator to further filter out sentence pairs without factual changes at the semantic\n\nlevel.\n\nSpecifically, we randomly select approximately 2000 sentence pairs from a dataset that had undergone heuristic filtering, and these pairs are annotated and mutually verified by three annotators. Among these sentence pairs, about 400 pairs that exhibited factual changes are labeled as 1, while the remaining over 1600 pairs without factual changes are labeled as 0. Subsequently, we use Qwen2.5-0.5B (Qwen, 2024) as the backbone model and replace its output layer with a linear classification head. We split the dataset into training and test sets with a ratio of 8:2, then perform full fine-tuning of Qwen-0.5B on the training set, with the objective of minimizing cross-entropy loss, and evaluate on the test set. This experiment is conducted using PyTorch (Paszke et al., 2019) on a single NVIDIA A100 40G GPU, with a learning rate set to 2e-5 and a batch size of 24; other parameters can be found in the config file of our open-source repository.",
+      "section_number": "B.2",
+      "section_title": "details of fine-tuning methods",
+      "normalized_section_title": "details of fine-tuning methods"
+    },
+    {
+      "window_id": "2025.acl-long.301::appendix::D.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 40G",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Model Setting. Due to budget constraints, we do not test any close-source LLMs. For all the open-source LLMs tested (Qwen-2.5-7B-Instruct, Llama-3.1-8B-Instruct and Llama-3.1-70B-Instruct), we locally deploy them in bfloat16 using vLLM $^6$ on our own server. The temperature parameter for each model is set to 0.3 to reduce output uncertainty, and the maximum output length is limited to 100 tokens.\n\nEnvironment Setting. All experiments are completed on a Linux server with AMD EPYC 7742 64-Core Processor CPUs @ 2.25GHz and 8 NVIDIA A100 GPUs (40G). GPUs are used for deploying close-source models. The version of Python is 3.10.15. The version of the torch package is 2.5.1. The version of the transformers package is 4.46.2. The version of the vllm package is 0.6.4.post1.",
+      "section_number": "D.5",
+      "section_title": "detailed setup",
+      "normalized_section_title": "detailed setup"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.301::appendix::B.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 40G",
+      "cleaned_hardware_name": "nvidia a100 40gb",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "B.2",
+      "section_title": "details of fine-tuning methods",
+      "normalized_section_title": "details of fine-tuning methods",
+      "evidence": "Despite the fact that the Heuristic Filter can effectively filter out most sentence pairs that clearly do not exhibit factual changes, the number of remaining sentence pairs is still substantial. Directly using a large language model (LLM) for analyzing and generating questions based on these sentence pairs would result in significant resource consumption. Therefore, we train a language model-based sentence pair discriminator to further filter out sentence pairs without factual changes at the semantic\n\nlevel.\n\nSpecifically, we randomly select approximately 2000 sentence pairs from a dataset that had undergone heuristic filtering, and these pairs are annotated and mutually verified by three annotators. Among these sentence pairs, about 400 pairs that exhibited factual changes are labeled as 1, while the remaining over 1600 pairs without factual changes are labeled as 0. Subsequently, we use Qwen2.5-0.5B (Qwen, 2024) as the backbone model and replace its output layer with a linear classification head. We split the dataset into training and test sets with a ratio of 8:2, then perform full fine-tuning of Qwen-0.5B on the training set, with the objective of minimizing cross-entropy loss, and evaluate on the test set. This experiment is conducted using PyTorch (Paszke et al., 2019) on a single NVIDIA A100 40G GPU, with a learning rate set to 2e-5 and a batch size of 24; other parameters can be found in the config file of our open-source repository.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.301::appendix::D.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 40G",
+      "cleaned_hardware_name": "nvidia a100 40gb",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "D.5",
+      "section_title": "detailed setup",
+      "normalized_section_title": "detailed setup",
+      "evidence": "Model Setting. Due to budget constraints, we do not test any close-source LLMs. For all the open-source LLMs tested (Qwen-2.5-7B-Instruct, Llama-3.1-8B-Instruct and Llama-3.1-70B-Instruct), we locally deploy them in bfloat16 using vLLM $^6$ on our own server. The temperature parameter for each model is set to 0.3 to reduce output uncertainty, and the maximum output length is limited to 100 tokens.\n\nEnvironment Setting. All experiments are completed on a Linux server with AMD EPYC 7742 64-Core Processor CPUs @ 2.25GHz and 8 NVIDIA A100 GPUs (40G). GPUs are used for deploying close-source models. The version of Python is 3.10.15. The version of the torch package is 2.5.1. The version of the transformers package is 4.46.2. The version of the vllm package is 0.6.4.post1.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.301::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiment setup",
+      "evidence": "In this section, we present definitions for document/passage categories, introduce time-aware instruction, explain the data and models tested in our experiments, and discuss the metrics and evaluation methods."
+    },
+    {
+      "source_window_id": "2025.acl-long.301::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiments",
+      "evidence": "This section conducts a comprehensive benchmarking evaluation of various large language models and retrieval mechanisms within RAG. Through a series of experiments, our results reveal the limitations and shortcomings of existing methods when handling outdated information, providing insights for potential future enhancements."
+    },
+    {
+      "source_window_id": "2025.acl-long.301::appendix::A.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.2",
+      "section_title": "efficiency analysis",
+      "evidence": "Given the computational costs and complexity involved in dynamic dataset construction, we provide a theoretical analysis of the efficiency of different approaches. The construction process primarily consists of two key steps: (1) factual change extraction and (2) QA generation/update using LLMs. We analyze the time complexity for processing a single article:\n\nLet $T_{ext}$ denotes the average time for extracting sentence pairs from an article, $N$ be the average number of sentence pairs extracted per article, and $T_{llm}$ represents the processing time for LLM per sentence pair. The total processing time $T_{total}$ for an article can be expressed as:\n\n$$\nT _ {t o t a l} = T _ {e x t} + N \\times T _ {l l m}\n$$\n\nAs shown in Table 8, the traditional sentence-level diff algorithm (as used in EvolvingQA) initially extracts a large number of sentence pairs (over 3.7M pairs across five months). While $T_{ext}$ is relatively small with this approach, $N$ remains large as it captures all sentence-level changes without distinguishing factual from non-factual modifications. The embedding-based approach (GrowOVER) requires computing and comparing embeddings for all sentence pairs, increasing $T_{ext}$ while still struggling to effectively reduce $N$ .\n\nOur method achieves better efficiency through a multi-stage filtering process: (1) Initial heuristic filtering reduces the number of sentence pairs by approximately $74.57\\%$ , eliminating obvious non-factual changes. Moreover, (2) language model screening further filters out $85.80\\%$ of the remaining pairs, identifying subtle non-factual modifications. Therefore, (3) the final LLM processing only needs to handle about 133,973 sentence pairs, significantly reducing the computational cost of the most time-consuming component $(T_{llm})$\n\nTable 7: The effectiveness of different methods in judging the factual changes in sentence pairs. We compares different approaches for identifying factual changes between sentence pairs, including baseline methods (EvolvingQA, GrowOVER) and our proposed HoH method. Results are evaluated using accuracy (\\%) and F1 score (\\%), with variations in model architecture, input processing settings, and whether the model requires training.   \n\n<table><tr><td>Dataset</td><td>Architecture</td><td>Setting</td><td>Training</td><td>Accuracy</td><td>F1</td><td>BackBone</td></tr><tr><td>EvolvingQA(2024)</td><td>-</td><td>-</td><td>-</td><td>20.85</td><td>34.50</td><td>-</td></tr><tr><td>GrowOVER(2024)</td><td>dual-tower</td><td>-</td><td>×</td><td>41.26</td><td>41.08</td><td>SimCSE</td></tr><tr><td>HoHconcate</td><td>single-tower</td><td>concat</td><td>✓</td><td>94.46</td><td>91.10</td><td>Qwen-0.5B</td></tr><tr><td>HoHcharacter</td><td>single-tower</td><td>character-diff</td><td>✓</td><td>95.20</td><td>92.46</td><td>Qwen-0.5B</td></tr><tr><td>HoH(Ours)</td><td>single-tower</td><td>token-diff</td><td>✓</td><td>96.80</td><td>95.08</td><td>Qwen-0.5B</td></tr></table>\n\nTable 8: Detailed statistics of sentence pairs during factual change extraction. The Original represents the number of sentence pairs after traditional sentence-level diff algorithm processing, the Filtering shows the number after heuristic filtering, the Screening indicates the count after language model screening, and the Final represents the number of QA pairs after LLM generation and verification.   \n\n<table><tr><td>Month</td><td>Original</td><td>→</td><td>Filtering</td><td>→</td><td>Screening</td><td>→</td><td>Final</td></tr><tr><td>06-07</td><td>632,244</td><td>-74.51%</td><td>161,135</td><td>-86.02%</td><td>22,528</td><td>-25.00%</td><td>16,896</td></tr><tr><td>07-08</td><td>757,473</td><td>-74.85%</td><td>190,494</td><td>-85.47%</td><td>27,680</td><td>-23.64%</td><td>21,136</td></tr><tr><td>08-09</td><td>752,743</td><td>-74.50%</td><td>191,950</td><td>-85.54%</td><td>27,761</td><td>-23.78%</td><td>21,159</td></tr><tr><td>09-10</td><td>782,480</td><td>-74.56%</td><td>199,093</td><td>-86.02%</td><td>27,839</td><td>-24.67%</td><td>20,972</td></tr><tr><td>10-11</td><td>783,603</td><td>-74.42%</td><td>200,470</td><td>-85.95%</td><td>28,165</td><td>-25.12%</td><td>21,090</td></tr><tr><td>Avg.</td><td>3,708,543</td><td>-74.57%</td><td>943,142</td><td>-85.80%</td><td>133,973</td><td>-24.44%</td><td>101,253</td></tr></table>\n\nThis empirical evidence supports our theoretical analysis that our approach achieves better computational efficiency by effectively reducing $N$ through accurate filtering, even though we may spend slightly more time on initial change detection ( $T_{ext}$ ). The dramatic reduction in sentence pairs (from 3.7M to 133K) before LLM processing demonstrates the effectiveness of our filtering strategy in minimizing unnecessary computational costs."
+    },
+    {
+      "source_window_id": "2025.acl-long.301::appendix::D",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D",
+      "section_title": "additional experiment setup",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.301::appendix::E",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "E",
+      "section_title": "additional experiments",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B.2",
+      "D.5"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.301\\auto\\full.md",
+    "source_md_sha256": "9cd91a89de80bcf667f7499129fa49e572e64717cab519e7aabae14b1b3b2255",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

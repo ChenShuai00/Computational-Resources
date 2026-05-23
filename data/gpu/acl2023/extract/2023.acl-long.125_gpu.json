@@ -1,0 +1,187 @@
+{
+  "paper_id": "2023.acl-long.125",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.125::sections::4",
+      "paper_id": "2023.acl-long.125",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.125::sections::4.1",
+      "paper_id": "2023.acl-long.125",
+      "section_number": "4.1",
+      "section_title": "setup",
+      "normalized_section_title": "setup",
+      "window_text": "Datasets and Evaluation We use MS-MARCO passage ranking (Campos et al., 2016), TREC Deep Learning (DL) Track 2019 (Craswell et al., 2020a) and 2020 (Craswell et al., 2020b), Natural Questions (NQ) (Kwiatkowski et al., 2019; Karpukhin et al., 2020) datasets for training and evaluation. The MS-MARCO dataset is based on Bing search results and consists of about $500k$ labeled queries and $8.8M$ passages. Since the test set labels are not publicly available, we report results on the development set with 6980 queries. The NQ dataset is targeted for open QA with about $80k$ question-answer pairs in the training set and $21M$ Wikipedia passages. For evaluation metrics, we use MRR@10, Recall@50, and Recall@1k for MS-MARCO, nDCG@10 for TREC DL, and Recall@20, Recall@100 for the NQ dataset.\n\nImplementation Details For pre-training, we initialize the encoder with $\\mathrm{BERT}_{\\mathrm{base}}$ (uncased version). The decoder is a two-layer Transformer whose parameters are initialized with the last two\n\nlayers of $\\mathrm{BERT}_{\\mathrm{base}}$ . The generator is borrowed from the ELECTRA<sub>base</sub> generator, and its parameters are frozen during pre-training. We pre-train for $80k$ steps for MS-MARCO corpus and $200k$ steps for NQ corpus, which roughly correspond to 20 epochs. Pre-training is based on 8 V100 GPUs. With automatic mixed-precision training, it takes about 1.5 days and 3 days for the MS-MARCO and NQ corpus respectively.\n\nFor more implementation details, please check out the Appendix section B.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2023.acl-long.125::appendix::C",
+      "paper_id": "2023.acl-long.125",
+      "section_number": "C",
+      "section_title": "variants of generators",
+      "normalized_section_title": "variants of generators",
+      "window_text": "In the ELECTRA pre-training, the generator plays a critical role. Using either a too strong or too weak generator hurts the learnability and generalization of the discriminator.\n\n<table><tr><td>generator</td><td>MRR@10</td><td>R@1k</td></tr><tr><td>frozen generator</td><td>38.0</td><td>98.3</td></tr><tr><td>joint train</td><td>38.0</td><td>98.4</td></tr><tr><td>joint train w/ random init</td><td>37.8</td><td>98.4</td></tr></table>\n\nTable 12: Variants of generators for SimLM pretraining. Performances are reported on the dev set of MS-MARCO with BM25 negatives only.\n\nWe also tried several variants of generators. In Table 12, \"frozen generator\" keeps the generator parameters unchanged during our pre-training, \"joint train\" also fine-tunes the generator parameters, and \"joint train w/ random init\" uses randomly initialized generator parameters. We do not observe any significant performance difference between these variants. In our experiments, we simply use the \"frozen generator\" as it has a faster training speed.\n\nTable 13: Hyper-parameters for supervised fine-tuning on MS-MARCO passage ranking dataset. †: Max length for the concatenation of the query and passage.   \n\n<table><tr><td></td><td>Retriever 1-2</td><td>Re-ranker</td><td>Retriever(distill</td></tr><tr><td>learning rate</td><td>\\( 2 \\times 10^{-5} \\)</td><td>\\( 3 \\times 10^{-5} \\)</td><td>\\( 3 \\times 10^{-5} \\)</td></tr><tr><td>PLM</td><td>SIMLM</td><td>ELECTRAbase</td><td>SIMLM</td></tr><tr><td># of GPUs</td><td>4</td><td>8</td><td>4</td></tr><tr><td>warmup steps</td><td>1000</td><td>1000</td><td>1000</td></tr><tr><td>batch size</td><td>64</td><td>64</td><td>64</td></tr><tr><td>epoch</td><td>3</td><td>3</td><td>6</td></tr><tr><td>τ</td><td>0.02</td><td>n.a.</td><td>0.02</td></tr><tr><td>α</td><td>n.a.</td><td>n.a.</td><td>0.2</td></tr><tr><td>negatives depth</td><td>200</td><td>200</td><td>200</td></tr><tr><td>rerank depth</td><td>n.a.</td><td>200</td><td>n.a.</td></tr><tr><td>query length</td><td>32</td><td>n.a.</td><td>32</td></tr><tr><td>passage length</td><td>144</td><td>\\( 192^† \\)</td><td>144</td></tr><tr><td># of negatives</td><td>15</td><td>63</td><td>23</td></tr></table>\n\nTable 14: Additional examples from dev set of MS-MARCO passage ranking dataset.   \n\n<table><tr><td>query</td><td>is the keto diet good for kidney disease</td></tr><tr><td>BERTbase</td><td>Rank: 1, Relevant: XPassage: The keto diet (also known as ketogenic diet, low carb diet and LCHF diet) is a low carbohydrate, high fat diet. Maintaining this diet is a great tool for weight loss. More importantly though, according to an increasing number of studies, it helps reduce risk factors for diabetes, heart diseases, stroke ...</td></tr><tr><td>SIMLM</td><td>Rank: 1, Relevant: ✔Passage: 4-Many kidney issues have either a hyperinsulinemic characteristic, an autoimmune characteristic, and or a combination of autoimmunity or hyperinsulinism. A standard, low-ish carb paleo diet can fix most of these issues. 5-For serious kidney damage a low-protein, ketogenic diet can be remarkably therapeutic.</td></tr><tr><td>query</td><td>who announced the european recovery program?</td></tr><tr><td>BERTbase</td><td>Rank: 1, Relevant: XPassage: 1 The CEEC submits its report estimating needs and the cost of the European Recovery Program (ERP) over four years. 2 It provides for the establishment of the Organization for European Economic Cooperation (OEEC) to coordinate the program from the European side. 3 February 1948.</td></tr><tr><td>SIMLM</td><td>Rank: 2, Relevant: ✔Passage: Marshall Plan. Introduction. The Marshall Plan, also known as the European Recovery Program, channeled over $13 billion to finance the economic recovery ... The plan is named for Secretary of State George C. Marshall, who announced it in a commencement speech at Harvard University on June 5, 1947.</td></tr><tr><td>query</td><td>what is process control equipment</td></tr><tr><td>BERTbase</td><td>Rank: 1, Relevant: XPassage: What is process control? Process control is an algorithm that is used in the during the manufacturing process in the industries for the active changing process based on the output of process monitoring.</td></tr><tr><td>SIMLM</td><td>Rank: 1, Relevant: XPassage: Process equipment is equipment used in chemical and materials processing, in facilities like refineries, chemical plants, and wastewater treatment plants. This equipment is usually designed with a specific process or family of processes in mind and can be customized for a particular facility in some cases.</td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.125::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Datasets and Evaluation We use MS-MARCO passage ranking (Campos et al., 2016), TREC Deep Learning (DL) Track 2019 (Craswell et al., 2020a) and 2020 (Craswell et al., 2020b), Natural Questions (NQ) (Kwiatkowski et al., 2019; Karpukhin et al., 2020) datasets for training and evaluation. The MS-MARCO dataset is based on Bing search results and consists of about $500k$ labeled queries and $8.8M$ passages. Since the test set labels are not publicly available, we report results on the development set with 6980 queries. The NQ dataset is targeted for open QA with about $80k$ question-answer pairs in the training set and $21M$ Wikipedia passages. For evaluation metrics, we use MRR@10, Recall@50, and Recall@1k for MS-MARCO, nDCG@10 for TREC DL, and Recall@20, Recall@100 for the NQ dataset.\n\nImplementation Details For pre-training, we initialize the encoder with $\\mathrm{BERT}_{\\mathrm{base}}$ (uncased version). The decoder is a two-layer Transformer whose parameters are initialized with the last two\n\nlayers of $\\mathrm{BERT}_{\\mathrm{base}}$ . The generator is borrowed from the ELECTRA<sub>base</sub> generator, and its parameters are frozen during pre-training. We pre-train for $80k$ steps for MS-MARCO corpus and $200k$ steps for NQ corpus, which roughly correspond to 20 epochs. Pre-training is based on 8 V100 GPUs. With automatic mixed-precision training, it takes about 1.5 days and 3 days for the MS-MARCO and NQ corpus respectively.\n\nFor more implementation details, please check out the Appendix section B.",
+      "section_number": "4.1",
+      "section_title": "setup",
+      "normalized_section_title": "setup"
+    },
+    {
+      "window_id": "2023.acl-long.125::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "In the ELECTRA pre-training, the generator plays a critical role. Using either a too strong or too weak generator hurts the learnability and generalization of the discriminator.\n\n<table><tr><td>generator</td><td>MRR@10</td><td>R@1k</td></tr><tr><td>frozen generator</td><td>38.0</td><td>98.3</td></tr><tr><td>joint train</td><td>38.0</td><td>98.4</td></tr><tr><td>joint train w/ random init</td><td>37.8</td><td>98.4</td></tr></table>\n\nTable 12: Variants of generators for SimLM pretraining. Performances are reported on the dev set of MS-MARCO with BM25 negatives only.\n\nWe also tried several variants of generators. In Table 12, \"frozen generator\" keeps the generator parameters unchanged during our pre-training, \"joint train\" also fine-tunes the generator parameters, and \"joint train w/ random init\" uses randomly initialized generator parameters. We do not observe any significant performance difference between these variants. In our experiments, we simply use the \"frozen generator\" as it has a faster training speed.\n\nTable 13: Hyper-parameters for supervised fine-tuning on MS-MARCO passage ranking dataset. †: Max length for the concatenation of the query and passage.   \n\n<table><tr><td></td><td>Retriever 1-2</td><td>Re-ranker</td><td>Retriever(distill</td></tr><tr><td>learning rate</td><td>\\( 2 \\times 10^{-5} \\)</td><td>\\( 3 \\times 10^{-5} \\)</td><td>\\( 3 \\times 10^{-5} \\)</td></tr><tr><td>PLM</td><td>SIMLM</td><td>ELECTRAbase</td><td>SIMLM</td></tr><tr><td># of GPUs</td><td>4</td><td>8</td><td>4</td></tr><tr><td>warmup steps</td><td>1000</td><td>1000</td><td>1000</td></tr><tr><td>batch size</td><td>64</td><td>64</td><td>64</td></tr><tr><td>epoch</td><td>3</td><td>3</td><td>6</td></tr><tr><td>τ</td><td>0.02</td><td>n.a.</td><td>0.02</td></tr><tr><td>α</td><td>n.a.</td><td>n.a.</td><td>0.2</td></tr><tr><td>negatives depth</td><td>200</td><td>200</td><td>200</td></tr><tr><td>rerank depth</td><td>n.a.</td><td>200</td><td>n.a.</td></tr><tr><td>query length</td><td>32</td><td>n.a.</td><td>32</td></tr><tr><td>passage length</td><td>144</td><td>\\( 192^† \\)</td><td>144</td></tr><tr><td># of negatives</td><td>15</td><td>63</td><td>23</td></tr></table>\n\nTable 14: Additional examples from dev set of MS-MARCO passage ranking dataset.   \n\n<table><tr><td>query</td><td>is the keto diet good for kidney disease</td></tr><tr><td>BERTbase</td><td>Rank: 1, Relevant: XPassage: The keto diet (also known as ketogenic diet, low carb diet and LCHF diet) is a low carbohydrate, high fat diet. Maintaining this diet is a great tool for weight loss. More importantly though, according to an increasing number of studies, it helps reduce risk factors for diabetes, heart diseases, stroke ...</td></tr><tr><td>SIMLM</td><td>Rank: 1, Relevant: ✔Passage: 4-Many kidney issues have either a hyperinsulinemic characteristic, an autoimmune characteristic, and or a combination of autoimmunity or hyperinsulinism. A standard, low-ish carb paleo diet can fix most of these issues. 5-For serious kidney damage a low-protein, ketogenic diet can be remarkably therapeutic.</td></tr><tr><td>query</td><td>who announced the european recovery program?</td></tr><tr><td>BERTbase</td><td>Rank: 1, Relevant: XPassage: 1 The CEEC submits its report estimating needs and the cost of the European Recovery Program (ERP) over four years. 2 It provides for the establishment of the Organization for European Economic Cooperation (OEEC) to coordinate the program from the European side. 3 February 1948.</td></tr><tr><td>SIMLM</td><td>Rank: 2, Relevant: ✔Passage: Marshall Plan. Introduction. The Marshall Plan, also known as the European Recovery Program, channeled over $13 billion to finance the economic recovery ... The plan is named for Secretary of State George C. Marshall, who announced it in a commencement speech at Harvard University on June 5, 1947.</td></tr><tr><td>query</td><td>what is process control equipment</td></tr><tr><td>BERTbase</td><td>Rank: 1, Relevant: XPassage: What is process control? Process control is an algorithm that is used in the during the manufacturing process in the industries for the active changing process based on the output of process monitoring.</td></tr><tr><td>SIMLM</td><td>Rank: 1, Relevant: XPassage: Process equipment is equipment used in chemical and materials processing, in facilities like refineries, chemical plants, and wastewater treatment plants. This equipment is usually designed with a specific process or family of processes in mind and can be customized for a particular facility in some cases.</td></tr></table>",
+      "section_number": "C",
+      "section_title": "variants of generators",
+      "normalized_section_title": "variants of generators"
+    },
+    {
+      "window_id": "2023.acl-long.125::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "In the ELECTRA pre-training, the generator plays a critical role. Using either a too strong or too weak generator hurts the learnability and generalization of the discriminator.\n\n<table><tr><td>generator</td><td>MRR@10</td><td>R@1k</td></tr><tr><td>frozen generator</td><td>38.0</td><td>98.3</td></tr><tr><td>joint train</td><td>38.0</td><td>98.4</td></tr><tr><td>joint train w/ random init</td><td>37.8</td><td>98.4</td></tr></table>\n\nTable 12: Variants of generators for SimLM pretraining. Performances are reported on the dev set of MS-MARCO with BM25 negatives only.\n\nWe also tried several variants of generators. In Table 12, \"frozen generator\" keeps the generator parameters unchanged during our pre-training, \"joint train\" also fine-tunes the generator parameters, and \"joint train w/ random init\" uses randomly initialized generator parameters. We do not observe any significant performance difference between these variants. In our experiments, we simply use the \"frozen generator\" as it has a faster training speed.\n\nTable 13: Hyper-parameters for supervised fine-tuning on MS-MARCO passage ranking dataset. †: Max length for the concatenation of the query and passage.   \n\n<table><tr><td></td><td>Retriever 1-2</td><td>Re-ranker</td><td>Retriever(distill</td></tr><tr><td>learning rate</td><td>\\( 2 \\times 10^{-5} \\)</td><td>\\( 3 \\times 10^{-5} \\)</td><td>\\( 3 \\times 10^{-5} \\)</td></tr><tr><td>PLM</td><td>SIMLM</td><td>ELECTRAbase</td><td>SIMLM</td></tr><tr><td># of GPUs</td><td>4</td><td>8</td><td>4</td></tr><tr><td>warmup steps</td><td>1000</td><td>1000</td><td>1000</td></tr><tr><td>batch size</td><td>64</td><td>64</td><td>64</td></tr><tr><td>epoch</td><td>3</td><td>3</td><td>6</td></tr><tr><td>τ</td><td>0.02</td><td>n.a.</td><td>0.02</td></tr><tr><td>α</td><td>n.a.</td><td>n.a.</td><td>0.2</td></tr><tr><td>negatives depth</td><td>200</td><td>200</td><td>200</td></tr><tr><td>rerank depth</td><td>n.a.</td><td>200</td><td>n.a.</td></tr><tr><td>query length</td><td>32</td><td>n.a.</td><td>32</td></tr><tr><td>passage length</td><td>144</td><td>\\( 192^† \\)</td><td>144</td></tr><tr><td># of negatives</td><td>15</td><td>63</td><td>23</td></tr></table>\n\nTable 14: Additional examples from dev set of MS-MARCO passage ranking dataset.   \n\n<table><tr><td>query</td><td>is the keto diet good for kidney disease</td></tr><tr><td>BERTbase</td><td>Rank: 1, Relevant: XPassage: The keto diet (also known as ketogenic diet, low carb diet and LCHF diet) is a low carbohydrate, high fat diet. Maintaining this diet is a great tool for weight loss. More importantly though, according to an increasing number of studies, it helps reduce risk factors for diabetes, heart diseases, stroke ...</td></tr><tr><td>SIMLM</td><td>Rank: 1, Relevant: ✔Passage: 4-Many kidney issues have either a hyperinsulinemic characteristic, an autoimmune characteristic, and or a combination of autoimmunity or hyperinsulinism. A standard, low-ish carb paleo diet can fix most of these issues. 5-For serious kidney damage a low-protein, ketogenic diet can be remarkably therapeutic.</td></tr><tr><td>query</td><td>who announced the european recovery program?</td></tr><tr><td>BERTbase</td><td>Rank: 1, Relevant: XPassage: 1 The CEEC submits its report estimating needs and the cost of the European Recovery Program (ERP) over four years. 2 It provides for the establishment of the Organization for European Economic Cooperation (OEEC) to coordinate the program from the European side. 3 February 1948.</td></tr><tr><td>SIMLM</td><td>Rank: 2, Relevant: ✔Passage: Marshall Plan. Introduction. The Marshall Plan, also known as the European Recovery Program, channeled over $13 billion to finance the economic recovery ... The plan is named for Secretary of State George C. Marshall, who announced it in a commencement speech at Harvard University on June 5, 1947.</td></tr><tr><td>query</td><td>what is process control equipment</td></tr><tr><td>BERTbase</td><td>Rank: 1, Relevant: XPassage: What is process control? Process control is an algorithm that is used in the during the manufacturing process in the industries for the active changing process based on the output of process monitoring.</td></tr><tr><td>SIMLM</td><td>Rank: 1, Relevant: XPassage: Process equipment is equipment used in chemical and materials processing, in facilities like refineries, chemical plants, and wastewater treatment plants. This equipment is usually designed with a specific process or family of processes in mind and can be customized for a particular facility in some cases.</td></tr></table>",
+      "section_number": "C",
+      "section_title": "variants of generators",
+      "normalized_section_title": "variants of generators"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.125::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "cleaned_hardware_name": "v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "4.1",
+      "section_title": "setup",
+      "normalized_section_title": "setup",
+      "evidence": "Datasets and Evaluation We use MS-MARCO passage ranking (Campos et al., 2016), TREC Deep Learning (DL) Track 2019 (Craswell et al., 2020a) and 2020 (Craswell et al., 2020b), Natural Questions (NQ) (Kwiatkowski et al., 2019; Karpukhin et al., 2020) datasets for training and evaluation. The MS-MARCO dataset is based on Bing search results and consists of about $500k$ labeled queries and $8.8M$ passages. Since the test set labels are not publicly available, we report results on the development set with 6980 queries. The NQ dataset is targeted for open QA with about $80k$ question-answer pairs in the training set and $21M$ Wikipedia passages. For evaluation metrics, we use MRR@10, Recall@50, and Recall@1k for MS-MARCO, nDCG@10 for TREC DL, and Recall@20, Recall@100 for the NQ dataset.\n\nImplementation Details For pre-training, we initialize the encoder with $\\mathrm{BERT}_{\\mathrm{base}}$ (uncased version). The decoder is a two-layer Transformer whose parameters are initialized with the last two\n\nlayers of $\\mathrm{BERT}_{\\mathrm{base}}$ . The generator is borrowed from the ELECTRA<sub>base</sub> generator, and its parameters are frozen during pre-training. We pre-train for $80k$ steps for MS-MARCO corpus and $200k$ steps for NQ corpus, which roughly correspond to 20 epochs. Pre-training is based on 8 V100 GPUs. With automatic mixed-precision training, it takes about 1.5 days and 3 days for the MS-MARCO and NQ corpus respectively.\n\nFor more implementation details, please check out the Appendix section B.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.acl-long.125::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "C",
+      "section_title": "variants of generators",
+      "normalized_section_title": "variants of generators",
+      "evidence": "In the ELECTRA pre-training, the generator plays a critical role. Using either a too strong or too weak generator hurts the learnability and generalization of the discriminator.\n\n<table><tr><td>generator</td><td>MRR@10</td><td>R@1k</td></tr><tr><td>frozen generator</td><td>38.0</td><td>98.3</td></tr><tr><td>joint train</td><td>38.0</td><td>98.4</td></tr><tr><td>joint train w/ random init</td><td>37.8</td><td>98.4</td></tr></table>\n\nTable 12: Variants of generators for SimLM pretraining. Performances are reported on the dev set of MS-MARCO with BM25 negatives only.\n\nWe also tried several variants of generators. In Table 12, \"frozen generator\" keeps the generator parameters unchanged during our pre-training, \"joint train\" also fine-tunes the generator parameters, and \"joint train w/ random init\" uses randomly initialized generator parameters. We do not observe any significant performance difference between these variants. In our experiments, we simply use the \"frozen generator\" as it has a faster training speed.\n\nTable 13: Hyper-parameters for supervised fine-tuning on MS-MARCO passage ranking dataset. †: Max length for the concatenation of the query and passage.   \n\n<table><tr><td></td><td>Retriever 1-2</td><td>Re-ranker</td><td>Retriever(distill</td></tr><tr><td>learning rate</td><td>\\( 2 \\times 10^{-5} \\)</td><td>\\( 3 \\times 10^{-5} \\)</td><td>\\( 3 \\times 10^{-5} \\)</td></tr><tr><td>PLM</td><td>SIMLM</td><td>ELECTRAbase</td><td>SIMLM</td></tr><tr><td># of GPUs</td><td>4</td><td>8</td><td>4</td></tr><tr><td>warmup steps</td><td>1000</td><td>1000</td><td>1000</td></tr><tr><td>batch size</td><td>64</td><td>64</td><td>64</td></tr><tr><td>epoch</td><td>3</td><td>3</td><td>6</td></tr><tr><td>τ</td><td>0.02</td><td>n.a.</td><td>0.02</td></tr><tr><td>α</td><td>n.a.</td><td>n.a.</td><td>0.2</td></tr><tr><td>negatives depth</td><td>200</td><td>200</td><td>200</td></tr><tr><td>rerank depth</td><td>n.a.</td><td>200</td><td>n.a.</td></tr><tr><td>query length</td><td>32</td><td>n.a.</td><td>32</td></tr><tr><td>passage length</td><td>144</td><td>\\( 192^† \\)</td><td>144</td></tr><tr><td># of negatives</td><td>15</td><td>63</td><td>23</td></tr></table>\n\nTable 14: Additional examples from dev set of MS-MARCO passage ranking dataset.   \n\n<table><tr><td>query</td><td>is the keto diet good for kidney disease</td></tr><tr><td>BERTbase</td><td>Rank: 1, Relevant: XPassage: The keto diet (also known as ketogenic diet, low carb diet and LCHF diet) is a low carbohydrate, high fat diet. Maintaining this diet is a great tool for weight loss. More importantly though, according to an increasing number of studies, it helps reduce risk factors for diabetes, heart diseases, stroke ...</td></tr><tr><td>SIMLM</td><td>Rank: 1, Relevant: ✔Passage: 4-Many kidney issues have either a hyperinsulinemic characteristic, an autoimmune characteristic, and or a combination of autoimmunity or hyperinsulinism. A standard, low-ish carb paleo diet can fix most of these issues. 5-For serious kidney damage a low-protein, ketogenic diet can be remarkably therapeutic.</td></tr><tr><td>query</td><td>who announced the european recovery program?</td></tr><tr><td>BERTbase</td><td>Rank: 1, Relevant: XPassage: 1 The CEEC submits its report estimating needs and the cost of the European Recovery Program (ERP) over four years. 2 It provides for the establishment of the Organization for European Economic Cooperation (OEEC) to coordinate the program from the European side. 3 February 1948.</td></tr><tr><td>SIMLM</td><td>Rank: 2, Relevant: ✔Passage: Marshall Plan. Introduction. The Marshall Plan, also known as the European Recovery Program, channeled over $13 billion to finance the economic recovery ... The plan is named for Secretary of State George C. Marshall, who announced it in a commencement speech at Harvard University on June 5, 1947.</td></tr><tr><td>query</td><td>what is process control equipment</td></tr><tr><td>BERTbase</td><td>Rank: 1, Relevant: XPassage: What is process control? Process control is an algorithm that is used in the during the manufacturing process in the industries for the active changing process based on the output of process monitoring.</td></tr><tr><td>SIMLM</td><td>Rank: 1, Relevant: XPassage: Process equipment is equipment used in chemical and materials processing, in facilities like refineries, chemical plants, and wastewater treatment plants. This equipment is usually designed with a specific process or family of processes in mind and can be customized for a particular facility in some cases.</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.acl-long.125::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "C",
+      "section_title": "variants of generators",
+      "normalized_section_title": "variants of generators",
+      "evidence": "In the ELECTRA pre-training, the generator plays a critical role. Using either a too strong or too weak generator hurts the learnability and generalization of the discriminator.\n\n<table><tr><td>generator</td><td>MRR@10</td><td>R@1k</td></tr><tr><td>frozen generator</td><td>38.0</td><td>98.3</td></tr><tr><td>joint train</td><td>38.0</td><td>98.4</td></tr><tr><td>joint train w/ random init</td><td>37.8</td><td>98.4</td></tr></table>\n\nTable 12: Variants of generators for SimLM pretraining. Performances are reported on the dev set of MS-MARCO with BM25 negatives only.\n\nWe also tried several variants of generators. In Table 12, \"frozen generator\" keeps the generator parameters unchanged during our pre-training, \"joint train\" also fine-tunes the generator parameters, and \"joint train w/ random init\" uses randomly initialized generator parameters. We do not observe any significant performance difference between these variants. In our experiments, we simply use the \"frozen generator\" as it has a faster training speed.\n\nTable 13: Hyper-parameters for supervised fine-tuning on MS-MARCO passage ranking dataset. †: Max length for the concatenation of the query and passage.   \n\n<table><tr><td></td><td>Retriever 1-2</td><td>Re-ranker</td><td>Retriever(distill</td></tr><tr><td>learning rate</td><td>\\( 2 \\times 10^{-5} \\)</td><td>\\( 3 \\times 10^{-5} \\)</td><td>\\( 3 \\times 10^{-5} \\)</td></tr><tr><td>PLM</td><td>SIMLM</td><td>ELECTRAbase</td><td>SIMLM</td></tr><tr><td># of GPUs</td><td>4</td><td>8</td><td>4</td></tr><tr><td>warmup steps</td><td>1000</td><td>1000</td><td>1000</td></tr><tr><td>batch size</td><td>64</td><td>64</td><td>64</td></tr><tr><td>epoch</td><td>3</td><td>3</td><td>6</td></tr><tr><td>τ</td><td>0.02</td><td>n.a.</td><td>0.02</td></tr><tr><td>α</td><td>n.a.</td><td>n.a.</td><td>0.2</td></tr><tr><td>negatives depth</td><td>200</td><td>200</td><td>200</td></tr><tr><td>rerank depth</td><td>n.a.</td><td>200</td><td>n.a.</td></tr><tr><td>query length</td><td>32</td><td>n.a.</td><td>32</td></tr><tr><td>passage length</td><td>144</td><td>\\( 192^† \\)</td><td>144</td></tr><tr><td># of negatives</td><td>15</td><td>63</td><td>23</td></tr></table>\n\nTable 14: Additional examples from dev set of MS-MARCO passage ranking dataset.   \n\n<table><tr><td>query</td><td>is the keto diet good for kidney disease</td></tr><tr><td>BERTbase</td><td>Rank: 1, Relevant: XPassage: The keto diet (also known as ketogenic diet, low carb diet and LCHF diet) is a low carbohydrate, high fat diet. Maintaining this diet is a great tool for weight loss. More importantly though, according to an increasing number of studies, it helps reduce risk factors for diabetes, heart diseases, stroke ...</td></tr><tr><td>SIMLM</td><td>Rank: 1, Relevant: ✔Passage: 4-Many kidney issues have either a hyperinsulinemic characteristic, an autoimmune characteristic, and or a combination of autoimmunity or hyperinsulinism. A standard, low-ish carb paleo diet can fix most of these issues. 5-For serious kidney damage a low-protein, ketogenic diet can be remarkably therapeutic.</td></tr><tr><td>query</td><td>who announced the european recovery program?</td></tr><tr><td>BERTbase</td><td>Rank: 1, Relevant: XPassage: 1 The CEEC submits its report estimating needs and the cost of the European Recovery Program (ERP) over four years. 2 It provides for the establishment of the Organization for European Economic Cooperation (OEEC) to coordinate the program from the European side. 3 February 1948.</td></tr><tr><td>SIMLM</td><td>Rank: 2, Relevant: ✔Passage: Marshall Plan. Introduction. The Marshall Plan, also known as the European Recovery Program, channeled over $13 billion to finance the economic recovery ... The plan is named for Secretary of State George C. Marshall, who announced it in a commencement speech at Harvard University on June 5, 1947.</td></tr><tr><td>query</td><td>what is process control equipment</td></tr><tr><td>BERTbase</td><td>Rank: 1, Relevant: XPassage: What is process control? Process control is an algorithm that is used in the during the manufacturing process in the industries for the active changing process based on the output of process monitoring.</td></tr><tr><td>SIMLM</td><td>Rank: 1, Relevant: XPassage: Process equipment is equipment used in chemical and materials processing, in facilities like refineries, chemical plants, and wastewater treatment plants. This equipment is usually designed with a specific process or family of processes in mind and can be customized for a particular facility in some cases.</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.acl-long.125::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.1",
+      "C"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 8
+      },
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 4
+      },
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2023\\2023.acl-long.125\\auto\\full.md",
+    "source_md_sha256": "8b6d240422e8e8d97750096562d25967a75f2da937b98f181d616fbc1385c08c",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

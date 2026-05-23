@@ -1,0 +1,178 @@
+{
+  "paper_id": "2025.acl-long.1180",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.1180::sections::5",
+      "paper_id": "2025.acl-long.1180",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "As previous work suggests that subword regularisation most significantly improves downstream performance in low-resource scenarios (Kudo, 2018; Cognetta et al. 2024; Song et al., 2024), we limit both the model and dataset size in all experiments.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1180::appendix::D",
+      "paper_id": "2025.acl-long.1180",
+      "section_number": "D",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1180::appendix::D.1",
+      "paper_id": "2025.acl-long.1180",
+      "section_number": "D.1",
+      "section_title": "hardware",
+      "normalized_section_title": "hardware",
+      "window_text": "Vocabularylation with SentencePiece was done on an Intel Xeon Platinum 8360Y (2.4 GHz) with peak memory usage being about 50 GiB for BPE and 260 GiB for ULM.\n\nPre-training the 14 DeBERTa models to 512 batches was done with one GPU each. Half were trained on an NVIDIA A100 SXM4 (80 GiB), the other half on an NVIDIA H100 HBM3 (80 GiB). Each pre-training run took about a day on the A100 and about half a day on the H100. Experimental runs amounted to about 4 extra days on one A100.\n\nFine-tuning was also done on a mixture of A100s and H100s. The precise mixture is shown in Table 3, although we didn't track steps 1-4 in §D.2 (the 5 shortened hyperparameter tuning runs preceding each reported fine-tuning run). Considering one H100 as equivalent to two A100s, the total compute spent was at least 20 A100 GPU days.\n\nTable 3 - Minimal GPU time spent on this paper.   \n\n<table><tr><td></td><td colspan=\"2\">A100</td><td colspan=\"2\">H100</td><td colspan=\"2\">A100-eq. total</td></tr><tr><td></td><td>hours</td><td>days</td><td>hours</td><td>days</td><td>hours</td><td>days</td></tr><tr><td>pretraining</td><td>259.48</td><td>10.81</td><td>79.22</td><td>3.30</td><td>417.92</td><td>17.41</td></tr><tr><td>finetuning</td><td>27.35</td><td>1.14</td><td>19.00</td><td>0.79</td><td>65.35</td><td>2.72</td></tr><tr><td>all</td><td>286.82</td><td>11.95</td><td>98.22</td><td>4.09</td><td>483.27</td><td>20.14</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.acl-long.1180::appendix::D.2",
+      "paper_id": "2025.acl-long.1180",
+      "section_number": "D.2",
+      "section_title": "hyperparameters",
+      "normalized_section_title": "hyperparameters",
+      "window_text": "Pre-training We use the pre-training hyperparameters in Table 4. The masking rate is taken from BERT (Devlin et al., 2019). The context length was chosen to be twice that of RoBERTa (Liu et al., 2019) because of the finding that uniform sampling doubles the amount of tokens produced by the tokeniser. The device batch size was chosen because after including the model and optimiser, it held the VRAM usage of the GPUs at a constant $94\\%$ given packed examples. The effective batch size (i.e. the amount of examples between gradient descents) was chosen equal to that of DeBERTa (He et al., 2021) and because it is the best-performing size in the RoBERTa paper. The validation interval and validation set size were chosen based on timing benchmarks ( $\\S$ D.3) such that respectively (1) no more than 4 hours would pass without evaluation and checkpointing, and (2) evaluation would take no more than about $10\\%$ of the total compute.\n\nThe learning rate schedule was chosen to not decrease after reaching its peak because reducing the size of gradient updates is exactly the purpose\n\nTable 4 - DeBERTa pre-training hyperparameters   \n\n<table><tr><td>Hyperparameter</td><td>Value</td></tr><tr><td>Device batch size</td><td>27 = 128 ex</td></tr><tr><td>Effective batch size</td><td>211 = 2048 ex/bs</td></tr><tr><td>Validation set size</td><td>214 = 16384 ex</td></tr><tr><td>Context length</td><td>210 = 1024 tk/ex</td></tr><tr><td>Validation interval</td><td>26 = 64 bs</td></tr><tr><td>Warmup batches</td><td>28 = 256 bs</td></tr><tr><td>Peak learning rate</td><td>1 × 10-3</td></tr><tr><td>Learning rate schedule</td><td>Fixed w/ warmup</td></tr><tr><td>Stopping criterion</td><td>Convergence or 512 bs</td></tr><tr><td>Masking rate</td><td>15%</td></tr><tr><td>Tied embeddings</td><td>yes</td></tr><tr><td>AdamW decay rate</td><td>0.01</td></tr><tr><td>AdamW (β1, β2)</td><td>(0.9, 0.999)</td></tr><tr><td>Layers</td><td>6</td></tr><tr><td>Embedding size</td><td>512</td></tr><tr><td>FFNN size per layer</td><td>2048</td></tr><tr><td>Att. heads per layer</td><td>8</td></tr><tr><td>DeBERTa k</td><td>512</td></tr><tr><td colspan=\"2\">⇒ Base model size: 39 362 560 parameters</td></tr></table>\n\nof an adaptive momentum-based optimiser, which is AdamW (Loshchilov and Hutter, 2019) with default hyperparameters in our case. We use much fewer warmup batches than the aforementioned papers because we expect to train for no more than two days; we take this number from Kalra and Barkeshli (2024) who found it to be the minimal number needed for stable training.\n\nThe maximum number of batches in the stopping criterion, namely 512, was selected due to a server outage in pre-training, causing some runs to terminate early at that value.\n\nTable 5 - DeBERTa fine-tuning hyperparameter domains   \n\n<table><tr><td>Hyperparameter</td><td>Value</td></tr><tr><td>Warmup batches</td><td>{50, 100, 500, 1000}</td></tr><tr><td>Effective batch size</td><td>{16, 32, 64, 128, 256, 512}</td></tr><tr><td>Learning rate</td><td>{1e-6, 5e-6, 1e-5, 5e-5, 1e-4, 5e-4, 1e-3}</td></tr><tr><td>AdamW decay rate</td><td>{0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.10}</td></tr></table>\n\nFine-tuning All fine-tuning experiments proceed as follows, using the following method for hyperparameter search: for a given task $\\mathcal{T}$ and a pre-trained model $\\mathcal{M}_0$ ,\n\n1. Take 5 samples of the form $h = (w, b, r, \\lambda)$ from the grid in Table 5.\n\n2. For each sample $h$ : fine-tune $\\mathcal{M}_0$ on $\\mathcal{T}$ with hyperparameters $h$ , evaluating and checkpointing after every $\\frac{2^{14}}{5}$ examples or 1 epoch (whichever is smaller), stopping if either (1) validation loss $\\mathcal{L}_v$ hasn't decreased for 5 evaluations in a row or (2) $2^{14}$ examples have been seen. Finally, keep the checkpoint with lowest $\\mathcal{L}_v$ and call it $\\mathcal{M}_1^h$ .   \n3. For each sample $h$ : evaluate $\\mathcal{M}_1^h$ on a task-dependent downstream metric $m_{\\mathcal{T}}$ .   \n4. Select the best sample $h^*$ according to the best value of $m_{\\mathcal{T}}$ , which in our case is always better when bigger.   \n5. Fine-tune $\\mathcal{M}_0$ on $\\mathcal{T}$ with hyperparameters $h^*$ , evaluating and checkpointing after every $2^{14}$ examples or 1 epoch (whichever is smaller), stopping if either (1) $m_{\\mathcal{T}}$ hasn't decreased for 5 evaluations in a row or (2) $2^{19}$ examples have been seen. Call the resulting fine-tuned model $\\mathcal{M}_2$ .   \n6. Evaluate $\\mathcal{M}_2$ on the test set and report that.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.1180::appendix::D.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 SXM4 80GB",
+      "count": null,
+      "count_text": "",
+      "evidence": "Vocabularylation with SentencePiece was done on an Intel Xeon Platinum 8360Y (2.4 GHz) with peak memory usage being about 50 GiB for BPE and 260 GiB for ULM.\n\nPre-training the 14 DeBERTa models to 512 batches was done with one GPU each. Half were trained on an NVIDIA A100 SXM4 (80 GiB), the other half on an NVIDIA H100 HBM3 (80 GiB). Each pre-training run took about a day on the A100 and about half a day on the H100. Experimental runs amounted to about 4 extra days on one A100.\n\nFine-tuning was also done on a mixture of A100s and H100s. The precise mixture is shown in Table 3, although we didn't track steps 1-4 in §D.2 (the 5 shortened hyperparameter tuning runs preceding each reported fine-tuning run). Considering one H100 as equivalent to two A100s, the total compute spent was at least 20 A100 GPU days.\n\nTable 3 - Minimal GPU time spent on this paper.   \n\n<table><tr><td></td><td colspan=\"2\">A100</td><td colspan=\"2\">H100</td><td colspan=\"2\">A100-eq. total</td></tr><tr><td></td><td>hours</td><td>days</td><td>hours</td><td>days</td><td>hours</td><td>days</td></tr><tr><td>pretraining</td><td>259.48</td><td>10.81</td><td>79.22</td><td>3.30</td><td>417.92</td><td>17.41</td></tr><tr><td>finetuning</td><td>27.35</td><td>1.14</td><td>19.00</td><td>0.79</td><td>65.35</td><td>2.72</td></tr><tr><td>all</td><td>286.82</td><td>11.95</td><td>98.22</td><td>4.09</td><td>483.27</td><td>20.14</td></tr></table>",
+      "section_number": "D.1",
+      "section_title": "hardware",
+      "normalized_section_title": "hardware"
+    },
+    {
+      "window_id": "2025.acl-long.1180::appendix::D.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA H100 HBM3 80GB",
+      "count": null,
+      "count_text": "",
+      "evidence": "Vocabularylation with SentencePiece was done on an Intel Xeon Platinum 8360Y (2.4 GHz) with peak memory usage being about 50 GiB for BPE and 260 GiB for ULM.\n\nPre-training the 14 DeBERTa models to 512 batches was done with one GPU each. Half were trained on an NVIDIA A100 SXM4 (80 GiB), the other half on an NVIDIA H100 HBM3 (80 GiB). Each pre-training run took about a day on the A100 and about half a day on the H100. Experimental runs amounted to about 4 extra days on one A100.\n\nFine-tuning was also done on a mixture of A100s and H100s. The precise mixture is shown in Table 3, although we didn't track steps 1-4 in §D.2 (the 5 shortened hyperparameter tuning runs preceding each reported fine-tuning run). Considering one H100 as equivalent to two A100s, the total compute spent was at least 20 A100 GPU days.\n\nTable 3 - Minimal GPU time spent on this paper.   \n\n<table><tr><td></td><td colspan=\"2\">A100</td><td colspan=\"2\">H100</td><td colspan=\"2\">A100-eq. total</td></tr><tr><td></td><td>hours</td><td>days</td><td>hours</td><td>days</td><td>hours</td><td>days</td></tr><tr><td>pretraining</td><td>259.48</td><td>10.81</td><td>79.22</td><td>3.30</td><td>417.92</td><td>17.41</td></tr><tr><td>finetuning</td><td>27.35</td><td>1.14</td><td>19.00</td><td>0.79</td><td>65.35</td><td>2.72</td></tr><tr><td>all</td><td>286.82</td><td>11.95</td><td>98.22</td><td>4.09</td><td>483.27</td><td>20.14</td></tr></table>",
+      "section_number": "D.1",
+      "section_title": "hardware",
+      "normalized_section_title": "hardware"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.1180::appendix::D.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 SXM4 80GB",
+      "cleaned_hardware_name": "nvidia a100 sxm4 80gb",
+      "normalized_hardware_name": "NVIDIA A100 SXM4 80 GB",
+      "benchmark_hardware_name": "NVIDIA A100 SXM4 80 GB",
+      "count": null,
+      "count_text": "",
+      "section_number": "D.1",
+      "section_title": "hardware",
+      "normalized_section_title": "hardware",
+      "evidence": "Vocabularylation with SentencePiece was done on an Intel Xeon Platinum 8360Y (2.4 GHz) with peak memory usage being about 50 GiB for BPE and 260 GiB for ULM.\n\nPre-training the 14 DeBERTa models to 512 batches was done with one GPU each. Half were trained on an NVIDIA A100 SXM4 (80 GiB), the other half on an NVIDIA H100 HBM3 (80 GiB). Each pre-training run took about a day on the A100 and about half a day on the H100. Experimental runs amounted to about 4 extra days on one A100.\n\nFine-tuning was also done on a mixture of A100s and H100s. The precise mixture is shown in Table 3, although we didn't track steps 1-4 in §D.2 (the 5 shortened hyperparameter tuning runs preceding each reported fine-tuning run). Considering one H100 as equivalent to two A100s, the total compute spent was at least 20 A100 GPU days.\n\nTable 3 - Minimal GPU time spent on this paper.   \n\n<table><tr><td></td><td colspan=\"2\">A100</td><td colspan=\"2\">H100</td><td colspan=\"2\">A100-eq. total</td></tr><tr><td></td><td>hours</td><td>days</td><td>hours</td><td>days</td><td>hours</td><td>days</td></tr><tr><td>pretraining</td><td>259.48</td><td>10.81</td><td>79.22</td><td>3.30</td><td>417.92</td><td>17.41</td></tr><tr><td>finetuning</td><td>27.35</td><td>1.14</td><td>19.00</td><td>0.79</td><td>65.35</td><td>2.72</td></tr><tr><td>all</td><td>286.82</td><td>11.95</td><td>98.22</td><td>4.09</td><td>483.27</td><td>20.14</td></tr></table>",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.1180::appendix::D.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA H100 HBM3 80GB",
+      "cleaned_hardware_name": "nvidia h100 hbm3 80gb",
+      "normalized_hardware_name": "NVIDIA H100 HBM3 80GB",
+      "benchmark_hardware_name": null,
+      "count": null,
+      "count_text": "",
+      "section_number": "D.1",
+      "section_title": "hardware",
+      "normalized_section_title": "hardware",
+      "evidence": "Vocabularylation with SentencePiece was done on an Intel Xeon Platinum 8360Y (2.4 GHz) with peak memory usage being about 50 GiB for BPE and 260 GiB for ULM.\n\nPre-training the 14 DeBERTa models to 512 batches was done with one GPU each. Half were trained on an NVIDIA A100 SXM4 (80 GiB), the other half on an NVIDIA H100 HBM3 (80 GiB). Each pre-training run took about a day on the A100 and about half a day on the H100. Experimental runs amounted to about 4 extra days on one A100.\n\nFine-tuning was also done on a mixture of A100s and H100s. The precise mixture is shown in Table 3, although we didn't track steps 1-4 in §D.2 (the 5 shortened hyperparameter tuning runs preceding each reported fine-tuning run). Considering one H100 as equivalent to two A100s, the total compute spent was at least 20 A100 GPU days.\n\nTable 3 - Minimal GPU time spent on this paper.   \n\n<table><tr><td></td><td colspan=\"2\">A100</td><td colspan=\"2\">H100</td><td colspan=\"2\">A100-eq. total</td></tr><tr><td></td><td>hours</td><td>days</td><td>hours</td><td>days</td><td>hours</td><td>days</td></tr><tr><td>pretraining</td><td>259.48</td><td>10.81</td><td>79.22</td><td>3.30</td><td>417.92</td><td>17.41</td></tr><tr><td>finetuning</td><td>27.35</td><td>1.14</td><td>19.00</td><td>0.79</td><td>65.35</td><td>2.72</td></tr><tr><td>all</td><td>286.82</td><td>11.95</td><td>98.22</td><td>4.09</td><td>483.27</td><td>20.14</td></tr></table>",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.1180::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiments",
+      "evidence": "As previous work suggests that subword regularisation most significantly improves downstream performance in low-resource scenarios (Kudo, 2018; Cognetta et al. 2024; Song et al., 2024), we limit both the model and dataset size in all experiments."
+    },
+    {
+      "source_window_id": "2025.acl-long.1180::appendix::D",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D",
+      "section_title": "experimental setup",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.1180::appendix::D.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D.2",
+      "section_title": "hyperparameters",
+      "evidence": "Pre-training We use the pre-training hyperparameters in Table 4. The masking rate is taken from BERT (Devlin et al., 2019). The context length was chosen to be twice that of RoBERTa (Liu et al., 2019) because of the finding that uniform sampling doubles the amount of tokens produced by the tokeniser. The device batch size was chosen because after including the model and optimiser, it held the VRAM usage of the GPUs at a constant $94\\%$ given packed examples. The effective batch size (i.e. the amount of examples between gradient descents) was chosen equal to that of DeBERTa (He et al., 2021) and because it is the best-performing size in the RoBERTa paper. The validation interval and validation set size were chosen based on timing benchmarks ( $\\S$ D.3) such that respectively (1) no more than 4 hours would pass without evaluation and checkpointing, and (2) evaluation would take no more than about $10\\%$ of the total compute.\n\nThe learning rate schedule was chosen to not decrease after reaching its peak because reducing the size of gradient updates is exactly the purpose\n\nTable 4 - DeBERTa pre-training hyperparameters   \n\n<table><tr><td>Hyperparameter</td><td>Value</td></tr><tr><td>Device batch size</td><td>27 = 128 ex</td></tr><tr><td>Effective batch size</td><td>211 = 2048 ex/bs</td></tr><tr><td>Validation set size</td><td>214 = 16384 ex</td></tr><tr><td>Context length</td><td>210 = 1024 tk/ex</td></tr><tr><td>Validation interval</td><td>26 = 64 bs</td></tr><tr><td>Warmup batches</td><td>28 = 256 bs</td></tr><tr><td>Peak learning rate</td><td>1 × 10-3</td></tr><tr><td>Learning rate schedule</td><td>Fixed w/ warmup</td></tr><tr><td>Stopping criterion</td><td>Convergence or 512 bs</td></tr><tr><td>Masking rate</td><td>15%</td></tr><tr><td>Tied embeddings</td><td>yes</td></tr><tr><td>AdamW decay rate</td><td>0.01</td></tr><tr><td>AdamW (β1, β2)</td><td>(0.9, 0.999)</td></tr><tr><td>Layers</td><td>6</td></tr><tr><td>Embedding size</td><td>512</td></tr><tr><td>FFNN size per layer</td><td>2048</td></tr><tr><td>Att. heads per layer</td><td>8</td></tr><tr><td>DeBERTa k</td><td>512</td></tr><tr><td colspan=\"2\">⇒ Base model size: 39 362 560 parameters</td></tr></table>\n\nof an adaptive momentum-based optimiser, which is AdamW (Loshchilov and Hutter, 2019) with default hyperparameters in our case. We use much fewer warmup batches than the aforementioned papers because we expect to train for no more than two days; we take this number from Kalra and Barkeshli (2024) who found it to be the minimal number needed for stable training.\n\nThe maximum number of batches in the stopping criterion, namely 512, was selected due to a server outage in pre-training, causing some runs to terminate early at that value.\n\nTable 5 - DeBERTa fine-tuning hyperparameter domains   \n\n<table><tr><td>Hyperparameter</td><td>Value</td></tr><tr><td>Warmup batches</td><td>{50, 100, 500, 1000}</td></tr><tr><td>Effective batch size</td><td>{16, 32, 64, 128, 256, 512}</td></tr><tr><td>Learning rate</td><td>{1e-6, 5e-6, 1e-5, 5e-5, 1e-4, 5e-4, 1e-3}</td></tr><tr><td>AdamW decay rate</td><td>{0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.10}</td></tr></table>\n\nFine-tuning All fine-tuning experiments proceed as follows, using the following method for hyperparameter search: for a given task $\\mathcal{T}$ and a pre-trained model $\\mathcal{M}_0$ ,\n\n1. Take 5 samples of the form $h = (w, b, r, \\lambda)$ from the grid in Table 5.\n\n2. For each sample $h$ : fine-tune $\\mathcal{M}_0$ on $\\mathcal{T}$ with hyperparameters $h$ , evaluating and checkpointing after every $\\frac{2^{14}}{5}$ examples or 1 epoch (whichever is smaller), stopping if either (1) validation loss $\\mathcal{L}_v$ hasn't decreased for 5 evaluations in a row or (2) $2^{14}$ examples have been seen. Finally, keep the checkpoint with lowest $\\mathcal{L}_v$ and call it $\\mathcal{M}_1^h$ .   \n3. For each sample $h$ : evaluate $\\mathcal{M}_1^h$ on a task-dependent downstream metric $m_{\\mathcal{T}}$ .   \n4. Select the best sample $h^*$ according to the best value of $m_{\\mathcal{T}}$ , which in our case is always better when bigger.   \n5. Fine-tune $\\mathcal{M}_0$ on $\\mathcal{T}$ with hyperparameters $h^*$ , evaluating and checkpointing after every $2^{14}$ examples or 1 epoch (whichever is smaller), stopping if either (1) $m_{\\mathcal{T}}$ hasn't decreased for 5 evaluations in a row or (2) $2^{19}$ examples have been seen. Call the resulting fine-tuned model $\\mathcal{M}_2$ .   \n6. Evaluate $\\mathcal{M}_2$ on the test set and report that."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "D.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 SXM4 80 GB",
+        "num": null
+      },
+      {
+        "name": "NVIDIA H100 HBM3 80GB",
+        "num": null
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.1180\\auto\\full.md",
+    "source_md_sha256": "d3b7e2fcd48fec87bdb643205f441a68b22aa2ec0e58a139e10e5e92fbe3d1cb",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

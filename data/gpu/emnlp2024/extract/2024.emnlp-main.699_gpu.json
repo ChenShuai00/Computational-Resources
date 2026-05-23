@@ -1,0 +1,105 @@
+{
+  "paper_id": "2024.emnlp-main.699",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.699::sections::4.1",
+      "paper_id": "2024.emnlp-main.699",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "We test on GPT-2 Small, which has 144 heads and 12 MLPs, with a total of 117M parameters.\n\nTask Comparison. We compare increasing sequences of: (1) Arabic Numerals (or 'Numerals'), (2) Number Words, and (3) Months.\n\nDatasets. We run a generated prompts dataset of length 4 sequences (eg. 1 2 3 4). Our focus in this paper is not on finding circuits only for Numeral sequences, but on prompt types that share a common abstraction. Thus, to better compare numbers to months, we use sequences ranging from 1 to 12.\n\nFor each task on GPT-2 Small, we generate samples by placing our sequence members among non-sequence tokens. For instance, one sample may be 'Kyle was born in February. Bob was born in March. Grant was born in April. Madison was born in'. Placing sequence members amongst non-sequence tokens allows us to evaluate the circuit representation of the shared sub-task of how the model selects sequence members from non-sequence members. We generate a total of 1536 samples per task, with a total of 4608 samples. More details can be found in Appendix B.\n\nCorrupted Datasets. We corrupt sequence information by using randomly chosen tokens of a similar sequence type (eg. '1 2 3' is replaced with '8 1 4'). The non-sequence tokens are kept the same, while the sequence members are replaced.\n\nMetric. We measure using logit difference using the last sequence member as the incorrect token (eg. for \"1 2 3\", the correct token is \"4\", the incorrect token is \"3\").",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.699::appendix::A",
+      "paper_id": "2024.emnlp-main.699",
+      "section_number": "A",
+      "section_title": "computational resources and packages",
+      "normalized_section_title": "computational resources and packages",
+      "window_text": "The code for the experiments was written in Python, utilizing the TransformerLens package, and were run on an A100.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.699::appendix::B",
+      "paper_id": "2024.emnlp-main.699",
+      "section_number": "B",
+      "section_title": "gpt-2 experimental setup details",
+      "normalized_section_title": "gpt-2 experimental setup details",
+      "window_text": "Circuits Variations. We observe that there are multiple circuits, with slight variations between them, that have similar performances for the same task. However, we find that important heads are often found in most circuits, regardless of the method, metric or dataset choices. Thus, we focus more on the \"big picture\" comparison of scores and on the most important heads, and less on the exact variations between scores or the less important heads.\n\nDataset Generation Procedure. To generate each sample, we place each sequence within a specific template that is generated from an abstract template. For instance, the abstract template of ' <name 1> born in <seq mem A>. <name 2> born in <seq mem B>. <name 3> born in' can fill in names with (Kyle, Anthony, Madison) to make a specific template. Then, the specific template can be filled in with sequence members (February, March) to create the sample 'Kyle was born in February. Anthony was born in March. Madison was born in'. We generate 1024 samples from each of three abstract templates, where each sequence (eg. 1 2 3, or 8 9 10) is represented the same number of times, for a total of 1536 samples per task.\n\nWe use single tokens for all tokens in each sample. We choose samples such that the model outputs the correct answer with at least twice as high probability as the incorrect answer's probability. Each specific template must also meet these conditions for all sequences (eg. must work for 123, 89 10, and two three four); else, it is not used. Each template is represented in equal proportion.\n\nWe use the same templates for all tasks. For example: given the sample for the months task \"Ham was bought in February. Egg was bought in March. Bread was bought in April. Steak was bought in\", we use the same non-sequence tokens to make a sample for the digits task: \"Ham was bought in 2. Egg was bought in 3. Bread was bought in 4. Steak was bought in\".\n\nThe three templates we used are: <name> born in, <item> lost in, <item> done in. We choose from a set of 136 names and 100 items.\n\nOriginally, we use the token \"was\" in our samples (eg. \"Steak was sold in March.\") However, we find that the prediction outcomes are largely the same whether we included \"was\" or not. Thus, although \"was\" would make the sentences sound more natural to a human, we choose to omit it. Additionally, this allows us to reduce the memory usage while running in Colab.\n\nRandom Words vs Meaningful Sentences. We find that using random words as non-sequence tokens could also allow the model to sometimes predict the next sequence member correctly. However, this did not always occur; thus, we choose to use semantically meaningful templates instead.\n\nSequence Member Input Positions. We did not construct samples such that there are different intervals between the sequence members, placing them at different positions in the input (eg. \"1 2 house fork 3\" or \"1 house fork 2 3\"), because we want the model to be able to predict the next sequence member with high probability. Thus, we give it an in-context pattern where after every random word, it should predict a sequence member.\n\nSequence Length. We find that using sequences with four members allows the model to consistently obtain high probability predictions for the correct answer for all three tasks. For continuing sequences without non-sequence members, four members is usually enough to obtain a correct token probability of around $90\\%$ or more for the three tasks, within a certain range (eg. not above twenty for number words for GPT-2).\n\nModel Sequence Continuation Abilities. For number words, as GPT-2 Small does not seem to be able to continue number word sequences higher than twenty, even when giving it the starting prefix with and without hyphens (eg. twenty or twenty-for twenty-one). We add a space in front of each number word as without the space in front, the model tokenizer would break some words greater than ten into more than one token (eg. eleven into two tokens, and seventeen into three tokens), while we aim for all our samples in a dataset to have the same number of tokens. Similarly, for digit sequences there are cases where it would break the answer into multiple tokens (eg. in the 500-600 digit range, sometimes the next token predicted would be \"5\", and sometimes it would be \"524\").\n\nCorrupted Dataset Details. We ensure that our randomly chosen sequence does not contain any elements in sequence order for the last two elements of the input, as if the last two elements are not sequential, sequence continuation cannot successfully occur. We also test variations of several corruptions other than randomly chosen tokens of a similar sequence type, such as repeats and permutations. Overall, the most important components remain the same regardless of the ablation dataset and metric choices.\n\nOther Task Datasets. We also look for similarities between other types of tasks, such as decreasing sequences, greater-than sequences, and alphabet sequences. However, while there are a few shared circuit overlaps between these tasks and three main tasks of this paper, there are more dissimilarities. Thus, we mainly focus on the similarities of the three tasks of this paper.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.699::appendix::C",
+      "paper_id": "2024.emnlp-main.699",
+      "section_number": "C",
+      "section_title": "llama-2 experimental setup details",
+      "normalized_section_title": "llama-2 experimental setup details",
+      "window_text": "Dataset. For Llama-2, we ran iterative node pruning on samples consisting only of sequence members, and ran attention patterns on samples consisting of both sequence and non-sequence members. This is because for Llama-2, the main focus was on finding similar components between the sequence\n\ncontinuation sub-circuits of GPT-2 and Llama-2, rather than finding more minimal circuits, which would be beyond the computational resources we allocated. Additionally, the numbers 10 to 12 are represented as two tokens (eg. '10' is '1' and '0') in Llama-2-7b; as we evaluate only on prompts of the same length and use single token answers, we only use numbers 1 to 9 in the Numerals dataset.\n\nIterative Methods. Given that Llama-2 is larger than GPT-2, we only use on backwards sweep, which we found to be enough for finding the most important components. We also try modifying the iterative component ablation method to first ablate all the heads of an attention layer to see if this makes the model performance perform below the threshold; if it does, we remove all the heads of that attention layer from the candidate circuit. While this method variation is faster if many attention layers are unnecessary, it has the downside in which removing certain unimportant heads may increase performance, which may, in summation, offset the performance degrading abilities of important heads. This means that there may be some important heads which may be missed by this method. However, we found that the most important attention heads were not missed by this method, and the end results were often comparable to the original version of our iterative methods. The results in this paper do not use this modification.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.699::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "The code for the experiments was written in Python, utilizing the TransformerLens package, and were run on an A100.",
+      "section_number": "A",
+      "section_title": "computational resources and packages",
+      "normalized_section_title": "computational resources and packages"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.699::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "cleaned_hardware_name": "a100",
+      "normalized_hardware_name": "NVIDIA A100",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A",
+      "section_title": "computational resources and packages",
+      "normalized_section_title": "computational resources and packages",
+      "evidence": "The code for the experiments was written in Python, utilizing the TransformerLens package, and were run on an A100.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "a100_shorthand_rule",
+      "catalog_candidate_count": 0,
+      "review_required": false,
+      "review_reason": ""
+    }
+  ],
+  "review_flags": [],
+  "pred_result": {
+    "sec": [
+      "A"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100",
+        "num": 1
+      }
+    ]
+  }
+}

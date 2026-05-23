@@ -1,0 +1,83 @@
+{
+  "paper_id": "2022.emnlp-main.375",
+  "candidate_windows": [
+    {
+      "window_id": "2022.emnlp-main.375::sections::4.1",
+      "paper_id": "2022.emnlp-main.375",
+      "section_number": "4.1",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "The backbone model uses T5-base (Raffel et al., 2020) and a ViT-large model (Dosovitskiy et al., 2020) as described in Table 2. We adopt the sentence-piece model from T5 with a vocabulary size of 32128. The ViT model was pre-trained on the JFT dataset. We resize every image into $224 \\times 224$ pixels and split them into a sequence of 16x16 patches. The output of ViT is a sequence of 1024-dimension vectors, which are projected to 768-dimension for consistency with T5 model. MuRAG reuses the model as retriever and reader, thus the full model size is 527M parameters.\n\nTable 2: The model size and configurations, with #Enc/#Dec denoting encoder/decoder layers.   \n\n<table><tr><td>Model</td><td>#Enc</td><td>#Dec</td><td>Hidden</td><td>Heads</td><td>Params</td></tr><tr><td>ViT-large</td><td>24</td><td>0</td><td>1024</td><td>16</td><td>307M</td></tr><tr><td>T5-base</td><td>12</td><td>12</td><td>768</td><td>12</td><td>220M</td></tr></table>\n\nOur model is implemented in JAX (Bradbury et al., 2018), based on the T5X codebase (Roberts et al., 2022). During pre-training, we first train the model on LAION for 1M steps, and then continue training on CC/PAQ/VQA with 1:1:1 sample ratio for another 200K steps. We optimize the model with Adafactor (Shazeer and Stern, 2018). For both stages, we adopt a constant learning rate of 5e-4 and a batch size of 4096. The models are trained on 64 Cloud v4 TPUs (Jouppi et al., 2020).\n\nWe then fine-tune MuRAG on WebQA and MultimodalQA with a constant learning rate of 3e-4 for 20K steps. The checkpoint with the highest validation score is run on the test set. We use a batch size of 64 and set TopK=4 for both in-batch training and fixed-retrieval training. We noticed that increasing Top-K further does not yield further improvement. We use a beam size of 2 to search for the best hypothesis for both datasets (increasing it further doesn't yield better performance).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.375::appendix::A",
+      "paper_id": "2022.emnlp-main.375",
+      "section_number": "A",
+      "section_title": "pre-training",
+      "normalized_section_title": "pre-training",
+      "window_text": "During Pre-trainnig, we found that directly training with a mixture of all four datasets will lead to instability. We experimented with different variants and found that a scheduled pre-training can lead to a stable solution. We propose to first pretrain the model on the largest LAION dataset for 1M steps, and then continue training on the other three datasets with a fixed sample ratio. We plot the first stage of LAION training in Figure 8. We monitor the generation quality (LAION image -> text captioning), and the retrieval quality (image -> 4096 in-batch caption retrieval). As can be seen, the LAION pre-training converges after 1M steps, where we first warm up and then decrease the learning rate using a scheduler.\n\n![](images/ef6f03c3b8bb69fcafee21edec7f625b452ce798be0bf21005fa1fd3ae289e65.jpg)\n\n![](images/bf1ae0b45b13b1d0bdc975c5fc9a388936817701c8063bc0b0eecaaf7cc40a8f.jpg)  \nFigure 8: LAION Pre-training, validation accuracy, generation Cider score and retrieval recall score from the in-batch memory.\n\nWe further the pre-training on a mixture of the other three datasets. We plot their inference evaluation scores in Figure 9. We can see that the model is able to achieve very strong performance on these datasets, i.e. higher than 1.2 CiDEr\n\non CC12M+3M validation set. The model also achieves strong performance on text-only reading comprehension on PAQ (similar to NQ), i.e. higher than $55\\%$ EM score. On the VQA dataset, the model is able to achieve higher than $72\\%$ VQA accuracy on the validation set. These results demonstrate the efficiency and multi-tasking capabilities of the pre-trained model. The overall retrieval accuracy from the multimodal memory consisting of captions, and passages are plotted in Figure 10, where the model is able to achieve $85\\%$ RECALL@1 from a 4K memory.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.emnlp-main.375::sections::4.1",
+      "hardware_type": "TPU",
+      "raw_hardware_name": "Cloud v4 TPU",
+      "count": 64,
+      "count_text": "64",
+      "evidence": "The backbone model uses T5-base (Raffel et al., 2020) and a ViT-large model (Dosovitskiy et al., 2020) as described in Table 2. We adopt the sentence-piece model from T5 with a vocabulary size of 32128. The ViT model was pre-trained on the JFT dataset. We resize every image into $224 \\times 224$ pixels and split them into a sequence of 16x16 patches. The output of ViT is a sequence of 1024-dimension vectors, which are projected to 768-dimension for consistency with T5 model. MuRAG reuses the model as retriever and reader, thus the full model size is 527M parameters.\n\nTable 2: The model size and configurations, with #Enc/#Dec denoting encoder/decoder layers.   \n\n<table><tr><td>Model</td><td>#Enc</td><td>#Dec</td><td>Hidden</td><td>Heads</td><td>Params</td></tr><tr><td>ViT-large</td><td>24</td><td>0</td><td>1024</td><td>16</td><td>307M</td></tr><tr><td>T5-base</td><td>12</td><td>12</td><td>768</td><td>12</td><td>220M</td></tr></table>\n\nOur model is implemented in JAX (Bradbury et al., 2018), based on the T5X codebase (Roberts et al., 2022). During pre-training, we first train the model on LAION for 1M steps, and then continue training on CC/PAQ/VQA with 1:1:1 sample ratio for another 200K steps. We optimize the model with Adafactor (Shazeer and Stern, 2018). For both stages, we adopt a constant learning rate of 5e-4 and a batch size of 4096. The models are trained on 64 Cloud v4 TPUs (Jouppi et al., 2020).\n\nWe then fine-tune MuRAG on WebQA and MultimodalQA with a constant learning rate of 3e-4 for 20K steps. The checkpoint with the highest validation score is run on the test set. We use a batch size of 64 and set TopK=4 for both in-batch training and fixed-retrieval training. We noticed that increasing Top-K further does not yield further improvement. We use a beam size of 2 to search for the best hypothesis for both datasets (increasing it further doesn't yield better performance).",
+      "section_number": "4.1",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.emnlp-main.375::sections::4.1",
+      "hardware_type": "TPU",
+      "raw_hardware_name": "Cloud v4 TPU",
+      "cleaned_hardware_name": "cloud v4 tpu",
+      "normalized_hardware_name": "Cloud v4 TPU",
+      "benchmark_hardware_name": null,
+      "count": 64,
+      "count_text": "64",
+      "section_number": "4.1",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "The backbone model uses T5-base (Raffel et al., 2020) and a ViT-large model (Dosovitskiy et al., 2020) as described in Table 2. We adopt the sentence-piece model from T5 with a vocabulary size of 32128. The ViT model was pre-trained on the JFT dataset. We resize every image into $224 \\times 224$ pixels and split them into a sequence of 16x16 patches. The output of ViT is a sequence of 1024-dimension vectors, which are projected to 768-dimension for consistency with T5 model. MuRAG reuses the model as retriever and reader, thus the full model size is 527M parameters.\n\nTable 2: The model size and configurations, with #Enc/#Dec denoting encoder/decoder layers.   \n\n<table><tr><td>Model</td><td>#Enc</td><td>#Dec</td><td>Hidden</td><td>Heads</td><td>Params</td></tr><tr><td>ViT-large</td><td>24</td><td>0</td><td>1024</td><td>16</td><td>307M</td></tr><tr><td>T5-base</td><td>12</td><td>12</td><td>768</td><td>12</td><td>220M</td></tr></table>\n\nOur model is implemented in JAX (Bradbury et al., 2018), based on the T5X codebase (Roberts et al., 2022). During pre-training, we first train the model on LAION for 1M steps, and then continue training on CC/PAQ/VQA with 1:1:1 sample ratio for another 200K steps. We optimize the model with Adafactor (Shazeer and Stern, 2018). For both stages, we adopt a constant learning rate of 5e-4 and a batch size of 4096. The models are trained on 64 Cloud v4 TPUs (Jouppi et al., 2020).\n\nWe then fine-tune MuRAG on WebQA and MultimodalQA with a constant learning rate of 3e-4 for 20K steps. The checkpoint with the highest validation score is run on the test set. We use a batch size of 64 and set TopK=4 for both in-batch training and fixed-retrieval training. We noticed that increasing Top-K further does not yield further improvement. We use a beam size of 2 to search for the best hypothesis for both datasets (increasing it further doesn't yield better performance).",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.1"
+    ],
+    "pred": [
+      {
+        "name": "Cloud v4 TPU",
+        "num": 64
+      }
+    ]
+  }
+}

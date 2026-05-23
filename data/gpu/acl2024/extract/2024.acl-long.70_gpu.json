@@ -1,0 +1,262 @@
+{
+  "paper_id": "2024.acl-long.70",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.70::sections::2",
+      "paper_id": "2024.acl-long.70",
+      "section_number": "2",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "We first introduce a generic MoE architecture for Transformer language models. A standard Trans\n\nformer language model is constructed by stacking $L$ layers of standard Transformer blocks, where each block can be represented as follows:\n\n$$\n\\mathbf {u} _ {1: T} ^ {l} = \\text {S e l f - A t t} \\left(\\mathbf {h} _ {1: T} ^ {l - 1}\\right) + \\mathbf {h} _ {1: T} ^ {l - 1}, \\tag {1}\n$$\n\n$$\n\\mathbf {h} _ {t} ^ {l} = \\operatorname {F F N} \\left(\\mathbf {u} _ {t} ^ {l}\\right) + \\mathbf {u} _ {t} ^ {l}, \\tag {2}\n$$\n\nwhere $T$ denotes the sequence length, $\\mathbf{u}_{1:T}^{l} \\in \\mathbb{R}^{T \\times d}$ are the hidden states after the $l$ -th attention module, and $\\mathbf{h}_t^l \\in \\mathbb{R}^d$ is the output hidden state of the $t$ -th token after the $l$ -th Transformer block. For brevity, we omit the layer normalization.\n\nA typical practice to construct an MoE language model usually substitutes Feed-Forward Networks (FFNs) in a Transformer with MoE layers at specified intervals (Fedus et al., 2021; Lepikhin et al., 2021; Du et al., 2022; Zoph, 2022). An MoE layer is composed of multiple experts, where each expert is structurally identical to a standard FFN. Then, each token will be assigned to a few experts. If the $l$ -th FFN is substituted with an MoE layer, its computation can be expressed as:\n\n$$\n\\mathbf {h} _ {t} ^ {l} = \\sum_ {i = 1} ^ {N} \\left(g _ {i, t} \\operatorname {F F N} _ {i} \\left(\\mathbf {u} _ {t} ^ {l}\\right)\\right) + \\mathbf {u} _ {t} ^ {l}, \\tag {3}\n$$\n\n$$\ng _ {i, t} = \\left\\{ \\begin{array}{l l} s _ {i, t}, & s _ {i, t} \\in \\operatorname {T o p k} (\\{s _ {j, t} | 1 \\leq j \\leq N \\}, K), \\\\ 0, & \\text {o t h e r w i s e}, \\end{array} \\right. \\tag {4}\n$$\n\n$$\ns _ {i, t} = \\operatorname {S o f t m a x} _ {i} \\left(\\mathbf {u} _ {t} ^ {l ^ {T}} \\mathbf {e} _ {i} ^ {l}\\right), \\tag {5}\n$$\n\nwhere $N$ denotes the total number of experts, $\\mathrm{FFN}_i(\\cdot)$ is the $i$ -th expert FFN, $g_{i,t}$ denotes the gate value for the $i$ -th expert, $s_{i,t}$ denotes the token-to-expert affinity, $\\mathrm{Topk}(\\cdot, K)$ denotes the set comprising $K$ highest affinity scores among those calculated for the $t$ -th token and all $N$ experts, and $\\mathbf{e}_i^l$ is the centroid of the $i$ -th expert in the $l$ -th layer. Note that for each token, only $K$ out of $N$ gate values are nonzero. This sparsity property ensures computational efficiency within an MoE layer.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.70::sections::4.1",
+      "paper_id": "2024.acl-long.70",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Training Data and Tokenization. Our training data is sampled from a large-scale corpus created by DeepSeek-AI (DeepSeek-AI, 2024), which focuses on English and Chinese and is derived from diverse sources. For the purpose of validation experiments, we sample a subset containing 100B tokens from the corpus to train our models. For tokenization, we utilize the HuggingFace Tokenizer<sup>1</sup> tools to train a byte pair encoding (BPE) (Sennrich et al., 2016) tokenizer with an 8K vocabulary size on a subset of the training corpus.\n\nHyper-Parameters. In the validation experiments, we set the number of Transformer layers\n\nto 9 and the hidden dimension to 1280. We substitute all FFNs with MoE layers, and ensure that the total number of expert parameters equals 16 times that of a standard FFN. Additionally, we keep the activated expert parameters, including shared expert parameters and activated routed expert parameters, as 2 times that of a standard FFN. Under this configuration, each MoE model has approximately 2B total parameters, with the number of activated parameters around 0.3B. As for training, we employ the AdamW optimizer (Loshchilov and Hutter, 2019) and set the maximum learning rate to $1.08 \\times 10^{-3}$ . The batch size is set to 2K, and with a maximum sequence length of 2K, each training batch contains 4M tokens. Correspondingly, the total number of training steps is set to 25,000 to achieve 100B training tokens. In order to prevent routing collapse, we set a balance factor of 0.01. Due to the page limit, we leave the other hyper-parameters in Appendix A.1. We also describe the training framework and infrastructures in Appendix B.\n\nEvaluation Benchmarks. We conduct evaluations on a wide range of benchmarks covering various types of tasks. For language modeling, we evaluate the models on the test set of Pile (Gao et al., 2020), and the evaluation metric is the cross-entropy loss. For language understanding and reasoning, we consider HellaSwag (Zellers et al., 2019), PIQA (Bisk et al., 2020), ARC-challenge and ARC-easy (Clark et al., 2018), and the evaluation metric for these tasks is accuracy. For reading comprehension, we consider RACE-high and RACE-middle (Lai et al., 2017), and the evaluation metric is accuracy. For code generation, we consider HumanEval (Chen et al., 2021) and MBPP (Austin et al., 2021), and the evaluation metric is Pass@1. For closed-book question answering, we consider TriviaQA (Joshi et al., 2017) and NaturalQuestions (Kwiatkowski et al., 2019), and the metric is the Exactly Matching (EM) rate.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.70::sections::4.4",
+      "paper_id": "2024.acl-long.70",
+      "section_number": "4.4",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "window_text": "We conduct ablation studies for DeepSeekMoE to substantiate the effectiveness of our two principal strategies. For a fair comparison, we ensure all models included in the comparison have the same number of total and activated parameters.\n\nShared Expert Isolation. In order to evaluate the influence of shared expert isolation, based on GShard, we isolate one expert as the shared one. From Figure 2, we observe that compared with GShard, the isolation yields improved performance across a majority of benchmarks.\n\nFine-Grained Expert Segmentation. For assessing the effectiveness of fine-grained expert segmentation, we segment each expert into 2 or 4 smaller experts, resulting in 32 (1 shared + 31 routed) or 64 (1 shared + 63 routed) total experts. Figure 2 shows a consistent trend that finer expert segmentation granularity corresponds to better performance.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.70::sections::5.1",
+      "paper_id": "2024.acl-long.70",
+      "section_number": "5.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Training Data and Tokenization For training DeepSeekMoE 16B, we sample 2T tokens from the same corpus as described in Section 4.1, and use a larger BPE tokenizer with a 100K vocabulary size.\n\nHyper-Parameters For DeepSeekMoE 16B, we set the number of Transformer layers to 28 and the hidden dimension to 2048. We substitute all FFNs except for the first layer with MoE layers, since we observe that the load balance status converges especially slower for the first layer. Each MoE layer consists of 2 shared experts and 64 routed experts, where each expert is 0.25 times the size of a standard FFN. Each token will be routed to these 2 shared experts and 6 out of 64 routed experts. Under this configuration, DeepSeekMoE 16B has approximately 16.4B total parameters, with the number of activated parameters around 2.8B. As for training, we employ the AdamW optimizer (Loshchilov and Hutter, 2019) and set the maximum learning rate to $4.2 \\times 10^{-4}$ . The batch size is set to 4.5K, and with a maximum sequence length of 4K, each training batch contains 18M tokens. Correspondingly, the total number of training steps is set to 106,449 to achieve 2T training tokens. In order to prevent routing collapse, we set a balance factor of 0.001. Due to the page limit, we leave the other hyper-parameters in Appendix A.2.\n\nEvaluation Benchmarks In addition to the benchmarks used in the validation experiments, we incorporate additional benchmarks for a more comprehensive evaluation. For language modeling, we also evaluate the models on the test set of Pile (Gao et al., 2020). Since the tokenizer used in DeepSeekMoE 16B is different from that used in LLaMA2 7B, we use bits per byte (BPB)\n\nas the evaluation metric for a fair comparison. For reading comprehension, we additionally consider DROP (Dua et al., 2019) and the evaluation metric is EM. For math reasoning, we additionally incorporate GSM8K (Cobbe et al., 2021) and MATH (Hendrycks et al., 2021), using EM as the evaluation metric. For multi-subject multiple-choice, we additionally evaluate the models on MMLU (Hendrycks et al., 2020) and the evaluation metric is accuracy. For disambiguation, we additionally consider WinoGrande (Sakaguchi et al., 2019) and the evaluation metric is accuracy. Since DeepSeekMoE 16B is pretrained on a bilingual corpus, we also evaluate it on four Chinese benchmarks: CLUEWSC (Xu et al., 2020), CEval (Huang et al., 2023), CMMLU (Li et al., 2023), and CHID (Zheng et al., 2019). Evaluation metrics for these benchmarks are accuracy or EM.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.70::sections::7",
+      "paper_id": "2024.acl-long.70",
+      "section_number": "7",
+      "section_title": "conclusion",
+      "normalized_section_title": "conclusion",
+      "window_text": "In this paper, we introduce the DeepSeekMoE architecture for MoE language models, with the objective of achieving ultimate expert specialization. Through fine-grained expert segmentation and shared expert isolation, DeepSeekMoE achieves significantly higher expert specialization and performance compared with prevailing MoE architectures. Starting with a modest scale of 2B parameters, we validate the advantages of DeepSeekMoE, demonstrating its capability to approach the upper bound performance for MoE models. Further\n\nmore, we provide empirical evidence to show that DeepSeekMoE has a higher level of expert specialization than GShard. Scaling up to a larger scale of 16B total parameters, we train DeepSeekMoE 16B on 2T tokens and demonstrate its outstanding performance comparable with DeepSeek 7B and LLaMA2 7B, with only about $40\\%$ of computations. For research purposes, we will release the model checkpoint of DeepSeekMoE 16B to the public, which can be deployed on a single GPU with 40GB of memory. We aspire for this work to provide valuable insights for both academia and industry, and contribute to the accelerated advancement of large language models.",
+      "rule_tier": "soft_skip",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2024.acl-long.70::appendix::A.1",
+      "paper_id": "2024.acl-long.70",
+      "section_number": "A.1",
+      "section_title": "validation experiments",
+      "normalized_section_title": "validation experiments",
+      "window_text": "Model Settings. In the validation experiments, we set the number of Transformer layers to 9 and the hidden dimension to 1280. We employ the multi-head attention mechanism with a total of 10 attention heads, where each head has a dimension of 128. For initialization, all learnable parameters are randomly initialized with a standard deviation of 0.006. We substitute all FFNs with MoE layers, and ensure that the total number of expert parameters equals 16 times that of a standard FFN. Additionally, we keep the activated expert parameters, including shared expert parameters and activated routed expert parameters, as 2 times that of a standard FFN. Under this configuration, each MoE model has approximately 2B total parameters, with the number of activated parameters around 0.3B.\n\nTraining Settings. We employ the AdamW optimizer (Loshchilov and Hutter, 2019) with hyperparameters set to $\\beta_{1} = 0.9$ , $\\beta_{2} = 0.95$ , and weight Decay $= 0.1$ . The learning rate is scheduled using a warmup-and-step-decay strategy. Initially, the learning rate linearly increases from 0 to the maximum value during the first 2K steps. Subsequently, the learning rate is multiplied by 0.316 at $80\\%$ of the training steps, and again by 0.316 at $90\\%$ of the training steps. The maximum learning rate for validation experiments is set to $1.08 \\times 10^{-3}$ , and the gradient clipping norm is set to 1.0. The batch size is set to 2K, and with a maximum sequence length of 2K, each training batch contains 4M tokens. Correspondingly, the total number of training steps is set to 25,000 to achieve 100B training tokens. Due to the abundance of training data, we do not use dropout during training. Given the relatively small model size, all parameters, including expert parameters, are deployed on a single GPU device to avoid unbalanced computation. In order to prevent routing collapse, we set the balance factor to 0.01.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2024.acl-long.70::appendix::B",
+      "paper_id": "2024.acl-long.70",
+      "section_number": "B",
+      "section_title": "infrastructures",
+      "normalized_section_title": "infrastructures",
+      "window_text": "We conduct experiments based on HAI-LLM (High-Flyer, 2023), an efficient and light-weight training framework which integrates multiple parallelism strategies, including tensor\n\nparallelism (Shoeybi et al., 2019; Narayanan et al., 2021; Korthikanti et al., 2023), ZeRO data parallelism (Rajbhandari et al., 2020), PipeDream pipeline parallelism (Harlap et al., 2018), and more specifically, expert parallelism (Lepikhin et al., 2021) by combining data and tensor parallelism. In order to optimize performance, we develop GPU kernels with CUDA and Triton (Tillet et al., 2019) for gating algorithms and fusing computations across linear layers in different experts.\n\nAll experiments are carried out on clusters equipped with NVIDIA A100 or H800 GPUs. Each node in the A100 cluster contains 8 GPUs connected pairwise via the NVLink bridge. The H800 cluster also features 8 GPUs per node, interconnected using NVLink and NVSwitch within nodes. For both A100 and H800 clusters, InfiniBand interconnects are utilized to facilitate communication across nodes.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2024.acl-long.70::appendix::D",
+      "paper_id": "2024.acl-long.70",
+      "section_number": "D",
+      "section_title": "training benchmark curves of deepseekmoe 16b",
+      "normalized_section_title": "training benchmark curves of deepseekmoe 16b",
+      "window_text": "We present the benchmark curves during training of DeepSeekMoE 16B and DeepSeek 7B (Dense) in Figure 6 for reference.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.70::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": null,
+      "count_text": "",
+      "evidence": "We conduct experiments based on HAI-LLM (High-Flyer, 2023), an efficient and light-weight training framework which integrates multiple parallelism strategies, including tensor\n\nparallelism (Shoeybi et al., 2019; Narayanan et al., 2021; Korthikanti et al., 2023), ZeRO data parallelism (Rajbhandari et al., 2020), PipeDream pipeline parallelism (Harlap et al., 2018), and more specifically, expert parallelism (Lepikhin et al., 2021) by combining data and tensor parallelism. In order to optimize performance, we develop GPU kernels with CUDA and Triton (Tillet et al., 2019) for gating algorithms and fusing computations across linear layers in different experts.\n\nAll experiments are carried out on clusters equipped with NVIDIA A100 or H800 GPUs. Each node in the A100 cluster contains 8 GPUs connected pairwise via the NVLink bridge. The H800 cluster also features 8 GPUs per node, interconnected using NVLink and NVSwitch within nodes. For both A100 and H800 clusters, InfiniBand interconnects are utilized to facilitate communication across nodes.",
+      "section_number": "B",
+      "section_title": "infrastructures",
+      "normalized_section_title": "infrastructures"
+    },
+    {
+      "window_id": "2024.acl-long.70::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "H800",
+      "count": null,
+      "count_text": "",
+      "evidence": "We conduct experiments based on HAI-LLM (High-Flyer, 2023), an efficient and light-weight training framework which integrates multiple parallelism strategies, including tensor\n\nparallelism (Shoeybi et al., 2019; Narayanan et al., 2021; Korthikanti et al., 2023), ZeRO data parallelism (Rajbhandari et al., 2020), PipeDream pipeline parallelism (Harlap et al., 2018), and more specifically, expert parallelism (Lepikhin et al., 2021) by combining data and tensor parallelism. In order to optimize performance, we develop GPU kernels with CUDA and Triton (Tillet et al., 2019) for gating algorithms and fusing computations across linear layers in different experts.\n\nAll experiments are carried out on clusters equipped with NVIDIA A100 or H800 GPUs. Each node in the A100 cluster contains 8 GPUs connected pairwise via the NVLink bridge. The H800 cluster also features 8 GPUs per node, interconnected using NVLink and NVSwitch within nodes. For both A100 and H800 clusters, InfiniBand interconnects are utilized to facilitate communication across nodes.",
+      "section_number": "B",
+      "section_title": "infrastructures",
+      "normalized_section_title": "infrastructures"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.70::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": null,
+      "count_text": "",
+      "section_number": "B",
+      "section_title": "infrastructures",
+      "normalized_section_title": "infrastructures",
+      "evidence": "We conduct experiments based on HAI-LLM (High-Flyer, 2023), an efficient and light-weight training framework which integrates multiple parallelism strategies, including tensor\n\nparallelism (Shoeybi et al., 2019; Narayanan et al., 2021; Korthikanti et al., 2023), ZeRO data parallelism (Rajbhandari et al., 2020), PipeDream pipeline parallelism (Harlap et al., 2018), and more specifically, expert parallelism (Lepikhin et al., 2021) by combining data and tensor parallelism. In order to optimize performance, we develop GPU kernels with CUDA and Triton (Tillet et al., 2019) for gating algorithms and fusing computations across linear layers in different experts.\n\nAll experiments are carried out on clusters equipped with NVIDIA A100 or H800 GPUs. Each node in the A100 cluster contains 8 GPUs connected pairwise via the NVLink bridge. The H800 cluster also features 8 GPUs per node, interconnected using NVLink and NVSwitch within nodes. For both A100 and H800 clusters, InfiniBand interconnects are utilized to facilitate communication across nodes.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.acl-long.70::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "H800",
+      "cleaned_hardware_name": "h800",
+      "normalized_hardware_name": "NVIDIA H800 PCIe",
+      "benchmark_hardware_name": "NVIDIA H800 PCIe",
+      "count": null,
+      "count_text": "",
+      "section_number": "B",
+      "section_title": "infrastructures",
+      "normalized_section_title": "infrastructures",
+      "evidence": "We conduct experiments based on HAI-LLM (High-Flyer, 2023), an efficient and light-weight training framework which integrates multiple parallelism strategies, including tensor\n\nparallelism (Shoeybi et al., 2019; Narayanan et al., 2021; Korthikanti et al., 2023), ZeRO data parallelism (Rajbhandari et al., 2020), PipeDream pipeline parallelism (Harlap et al., 2018), and more specifically, expert parallelism (Lepikhin et al., 2021) by combining data and tensor parallelism. In order to optimize performance, we develop GPU kernels with CUDA and Triton (Tillet et al., 2019) for gating algorithms and fusing computations across linear layers in different experts.\n\nAll experiments are carried out on clusters equipped with NVIDIA A100 or H800 GPUs. Each node in the A100 cluster contains 8 GPUs connected pairwise via the NVLink bridge. The H800 cluster also features 8 GPUs per node, interconnected using NVLink and NVSwitch within nodes. For both A100 and H800 clusters, InfiniBand interconnects are utilized to facilitate communication across nodes.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.acl-long.70::sections::2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "2",
+      "section_title": "preliminaries",
+      "evidence": "We first introduce a generic MoE architecture for Transformer language models. A standard Trans\n\nformer language model is constructed by stacking $L$ layers of standard Transformer blocks, where each block can be represented as follows:\n\n$$\n\\mathbf {u} _ {1: T} ^ {l} = \\text {S e l f - A t t} \\left(\\mathbf {h} _ {1: T} ^ {l - 1}\\right) + \\mathbf {h} _ {1: T} ^ {l - 1}, \\tag {1}\n$$\n\n$$\n\\mathbf {h} _ {t} ^ {l} = \\operatorname {F F N} \\left(\\mathbf {u} _ {t} ^ {l}\\right) + \\mathbf {u} _ {t} ^ {l}, \\tag {2}\n$$\n\nwhere $T$ denotes the sequence length, $\\mathbf{u}_{1:T}^{l} \\in \\mathbb{R}^{T \\times d}$ are the hidden states after the $l$ -th attention module, and $\\mathbf{h}_t^l \\in \\mathbb{R}^d$ is the output hidden state of the $t$ -th token after the $l$ -th Transformer block. For brevity, we omit the layer normalization.\n\nA typical practice to construct an MoE language model usually substitutes Feed-Forward Networks (FFNs) in a Transformer with MoE layers at specified intervals (Fedus et al., 2021; Lepikhin et al., 2021; Du et al., 2022; Zoph, 2022). An MoE layer is composed of multiple experts, where each expert is structurally identical to a standard FFN. Then, each token will be assigned to a few experts. If the $l$ -th FFN is substituted with an MoE layer, its computation can be expressed as:\n\n$$\n\\mathbf {h} _ {t} ^ {l} = \\sum_ {i = 1} ^ {N} \\left(g _ {i, t} \\operatorname {F F N} _ {i} \\left(\\mathbf {u} _ {t} ^ {l}\\right)\\right) + \\mathbf {u} _ {t} ^ {l}, \\tag {3}\n$$\n\n$$\ng _ {i, t} = \\left\\{ \\begin{array}{l l} s _ {i, t}, & s _ {i, t} \\in \\operatorname {T o p k} (\\{s _ {j, t} | 1 \\leq j \\leq N \\}, K), \\\\ 0, & \\text {o t h e r w i s e}, \\end{array} \\right. \\tag {4}\n$$\n\n$$\ns _ {i, t} = \\operatorname {S o f t m a x} _ {i} \\left(\\mathbf {u} _ {t} ^ {l ^ {T}} \\mathbf {e} _ {i} ^ {l}\\right), \\tag {5}\n$$\n\nwhere $N$ denotes the total number of experts, $\\mathrm{FFN}_i(\\cdot)$ is the $i$ -th expert FFN, $g_{i,t}$ denotes the gate value for the $i$ -th expert, $s_{i,t}$ denotes the token-to-expert affinity, $\\mathrm{Topk}(\\cdot, K)$ denotes the set comprising $K$ highest affinity scores among those calculated for the $t$ -th token and all $N$ experts, and $\\mathbf{e}_i^l$ is the centroid of the $i$ -th expert in the $l$ -th layer. Note that for each token, only $K$ out of $N$ gate values are nonzero. This sparsity property ensures computational efficiency within an MoE layer."
+    },
+    {
+      "source_window_id": "2024.acl-long.70::sections::4.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "evidence": "Training Data and Tokenization. Our training data is sampled from a large-scale corpus created by DeepSeek-AI (DeepSeek-AI, 2024), which focuses on English and Chinese and is derived from diverse sources. For the purpose of validation experiments, we sample a subset containing 100B tokens from the corpus to train our models. For tokenization, we utilize the HuggingFace Tokenizer<sup>1</sup> tools to train a byte pair encoding (BPE) (Sennrich et al., 2016) tokenizer with an 8K vocabulary size on a subset of the training corpus.\n\nHyper-Parameters. In the validation experiments, we set the number of Transformer layers\n\nto 9 and the hidden dimension to 1280. We substitute all FFNs with MoE layers, and ensure that the total number of expert parameters equals 16 times that of a standard FFN. Additionally, we keep the activated expert parameters, including shared expert parameters and activated routed expert parameters, as 2 times that of a standard FFN. Under this configuration, each MoE model has approximately 2B total parameters, with the number of activated parameters around 0.3B. As for training, we employ the AdamW optimizer (Loshchilov and Hutter, 2019) and set the maximum learning rate to $1.08 \\times 10^{-3}$ . The batch size is set to 2K, and with a maximum sequence length of 2K, each training batch contains 4M tokens. Correspondingly, the total number of training steps is set to 25,000 to achieve 100B training tokens. In order to prevent routing collapse, we set a balance factor of 0.01. Due to the page limit, we leave the other hyper-parameters in Appendix A.1. We also describe the training framework and infrastructures in Appendix B.\n\nEvaluation Benchmarks. We conduct evaluations on a wide range of benchmarks covering various types of tasks. For language modeling, we evaluate the models on the test set of Pile (Gao et al., 2020), and the evaluation metric is the cross-entropy loss. For language understanding and reasoning, we consider HellaSwag (Zellers et al., 2019), PIQA (Bisk et al., 2020), ARC-challenge and ARC-easy (Clark et al., 2018), and the evaluation metric for these tasks is accuracy. For reading comprehension, we consider RACE-high and RACE-middle (Lai et al., 2017), and the evaluation metric is accuracy. For code generation, we consider HumanEval (Chen et al., 2021) and MBPP (Austin et al., 2021), and the evaluation metric is Pass@1. For closed-book question answering, we consider TriviaQA (Joshi et al., 2017) and NaturalQuestions (Kwiatkowski et al., 2019), and the metric is the Exactly Matching (EM) rate."
+    },
+    {
+      "source_window_id": "2024.acl-long.70::sections::4.4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.4",
+      "section_title": "ablation studies",
+      "evidence": "We conduct ablation studies for DeepSeekMoE to substantiate the effectiveness of our two principal strategies. For a fair comparison, we ensure all models included in the comparison have the same number of total and activated parameters.\n\nShared Expert Isolation. In order to evaluate the influence of shared expert isolation, based on GShard, we isolate one expert as the shared one. From Figure 2, we observe that compared with GShard, the isolation yields improved performance across a majority of benchmarks.\n\nFine-Grained Expert Segmentation. For assessing the effectiveness of fine-grained expert segmentation, we segment each expert into 2 or 4 smaller experts, resulting in 32 (1 shared + 31 routed) or 64 (1 shared + 63 routed) total experts. Figure 2 shows a consistent trend that finer expert segmentation granularity corresponds to better performance."
+    },
+    {
+      "source_window_id": "2024.acl-long.70::sections::5.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.1",
+      "section_title": "experimental setup",
+      "evidence": "Training Data and Tokenization For training DeepSeekMoE 16B, we sample 2T tokens from the same corpus as described in Section 4.1, and use a larger BPE tokenizer with a 100K vocabulary size.\n\nHyper-Parameters For DeepSeekMoE 16B, we set the number of Transformer layers to 28 and the hidden dimension to 2048. We substitute all FFNs except for the first layer with MoE layers, since we observe that the load balance status converges especially slower for the first layer. Each MoE layer consists of 2 shared experts and 64 routed experts, where each expert is 0.25 times the size of a standard FFN. Each token will be routed to these 2 shared experts and 6 out of 64 routed experts. Under this configuration, DeepSeekMoE 16B has approximately 16.4B total parameters, with the number of activated parameters around 2.8B. As for training, we employ the AdamW optimizer (Loshchilov and Hutter, 2019) and set the maximum learning rate to $4.2 \\times 10^{-4}$ . The batch size is set to 4.5K, and with a maximum sequence length of 4K, each training batch contains 18M tokens. Correspondingly, the total number of training steps is set to 106,449 to achieve 2T training tokens. In order to prevent routing collapse, we set a balance factor of 0.001. Due to the page limit, we leave the other hyper-parameters in Appendix A.2.\n\nEvaluation Benchmarks In addition to the benchmarks used in the validation experiments, we incorporate additional benchmarks for a more comprehensive evaluation. For language modeling, we also evaluate the models on the test set of Pile (Gao et al., 2020). Since the tokenizer used in DeepSeekMoE 16B is different from that used in LLaMA2 7B, we use bits per byte (BPB)\n\nas the evaluation metric for a fair comparison. For reading comprehension, we additionally consider DROP (Dua et al., 2019) and the evaluation metric is EM. For math reasoning, we additionally incorporate GSM8K (Cobbe et al., 2021) and MATH (Hendrycks et al., 2021), using EM as the evaluation metric. For multi-subject multiple-choice, we additionally evaluate the models on MMLU (Hendrycks et al., 2020) and the evaluation metric is accuracy. For disambiguation, we additionally consider WinoGrande (Sakaguchi et al., 2019) and the evaluation metric is accuracy. Since DeepSeekMoE 16B is pretrained on a bilingual corpus, we also evaluate it on four Chinese benchmarks: CLUEWSC (Xu et al., 2020), CEval (Huang et al., 2023), CMMLU (Li et al., 2023), and CHID (Zheng et al., 2019). Evaluation metrics for these benchmarks are accuracy or EM."
+    },
+    {
+      "source_window_id": "2024.acl-long.70::sections::7",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "7",
+      "section_title": "conclusion",
+      "evidence": "In this paper, we introduce the DeepSeekMoE architecture for MoE language models, with the objective of achieving ultimate expert specialization. Through fine-grained expert segmentation and shared expert isolation, DeepSeekMoE achieves significantly higher expert specialization and performance compared with prevailing MoE architectures. Starting with a modest scale of 2B parameters, we validate the advantages of DeepSeekMoE, demonstrating its capability to approach the upper bound performance for MoE models. Further\n\nmore, we provide empirical evidence to show that DeepSeekMoE has a higher level of expert specialization than GShard. Scaling up to a larger scale of 16B total parameters, we train DeepSeekMoE 16B on 2T tokens and demonstrate its outstanding performance comparable with DeepSeek 7B and LLaMA2 7B, with only about $40\\%$ of computations. For research purposes, we will release the model checkpoint of DeepSeekMoE 16B to the public, which can be deployed on a single GPU with 40GB of memory. We aspire for this work to provide valuable insights for both academia and industry, and contribute to the accelerated advancement of large language models."
+    },
+    {
+      "source_window_id": "2024.acl-long.70::appendix::A.1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.1",
+      "section_title": "validation experiments",
+      "evidence": "Model Settings. In the validation experiments, we set the number of Transformer layers to 9 and the hidden dimension to 1280. We employ the multi-head attention mechanism with a total of 10 attention heads, where each head has a dimension of 128. For initialization, all learnable parameters are randomly initialized with a standard deviation of 0.006. We substitute all FFNs with MoE layers, and ensure that the total number of expert parameters equals 16 times that of a standard FFN. Additionally, we keep the activated expert parameters, including shared expert parameters and activated routed expert parameters, as 2 times that of a standard FFN. Under this configuration, each MoE model has approximately 2B total parameters, with the number of activated parameters around 0.3B.\n\nTraining Settings. We employ the AdamW optimizer (Loshchilov and Hutter, 2019) with hyperparameters set to $\\beta_{1} = 0.9$ , $\\beta_{2} = 0.95$ , and weight Decay $= 0.1$ . The learning rate is scheduled using a warmup-and-step-decay strategy. Initially, the learning rate linearly increases from 0 to the maximum value during the first 2K steps. Subsequently, the learning rate is multiplied by 0.316 at $80\\%$ of the training steps, and again by 0.316 at $90\\%$ of the training steps. The maximum learning rate for validation experiments is set to $1.08 \\times 10^{-3}$ , and the gradient clipping norm is set to 1.0. The batch size is set to 2K, and with a maximum sequence length of 2K, each training batch contains 4M tokens. Correspondingly, the total number of training steps is set to 25,000 to achieve 100B training tokens. Due to the abundance of training data, we do not use dropout during training. Given the relatively small model size, all parameters, including expert parameters, are deployed on a single GPU device to avoid unbalanced computation. In order to prevent routing collapse, we set the balance factor to 0.01."
+    },
+    {
+      "source_window_id": "2024.acl-long.70::appendix::D",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D",
+      "section_title": "training benchmark curves of deepseekmoe 16b",
+      "evidence": "We present the benchmark curves during training of DeepSeekMoE 16B and DeepSeek 7B (Dense) in Figure 6 for reference."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": null
+      },
+      {
+        "name": "NVIDIA H800 PCIe",
+        "num": null
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2024\\2024.acl-long.70\\auto\\full.md",
+    "source_md_sha256": "62112fa893945ac346240f7d35f1a4c3cd630c34e80765e732af0a8529aa5792",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "ad96f3b6ca003898756db958dd17467668c845886fa3f1f835d26a866c8af3f0"
+  }
+}

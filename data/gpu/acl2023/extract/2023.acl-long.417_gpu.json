@@ -1,0 +1,120 @@
+{
+  "paper_id": "2023.acl-long.417",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.417::sections::4",
+      "paper_id": "2023.acl-long.417",
+      "section_number": "4",
+      "section_title": "experimental settings",
+      "normalized_section_title": "experimental settings",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.417::sections::4.2",
+      "paper_id": "2023.acl-long.417",
+      "section_number": "4.2",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "In our first set of experiments, we explore the following zero-shot baselines and strategies for training models in Chinese (Zh), Spanish (Es), Indonesian (Id) given a large amount of English training data:\n\n- E&E: Fine-tune mSeq2seq with E&E training data only.   \n- Translate-Train (Ding et al., 2022): Translate E&E data with label sequence translation in Ding et al. (2022) using an external machine translation system.   \n- Translate-Back: Directly translate response outputs predicted from English-trained model back into the target language.   \n- Adapter (Pfeiffer et al., 2020c): Insert and fine-tune adapter modules both at encoder and decoder side only.   \n- Freeze-Decoder (Chi et al., 2019): Freeze the decoder part and fine-tune encoder side only.   \n- Multi-task learning: NMT & Denoise (Liu et al., 2020): Include external out-of-domain corpus to perform NMT or Denoising task training simultaneously with the main dialog response generation task.\n\nThen we consider the following few-shot baselines by adding a small amount of Zh, Es, Id training data along with English training data.\n\n- F&F: Fine-tune mSeq2seq with few F&F training data (100 dialogs) only.\n\n- E&E + F&F: Fine-tune Seq2seq model with both E&E and few F&F training data.   \n- SPImpMem (Chen et al., 2019): Insert shared and private memory modules within Seq2seq model to induce cross-lingual transfer.   \n- Adapter (Pfeiffer et al., 2020c): Fine-tune Seq2seq model with E&E training data; then insert and fine-tune adapter modules both at encoder and decoder side only.   \n- XDFusion: Our proposed approach to insert Adapter cross-lingual fusion module which combines pretrained language adapters together.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.417::sections::4.3",
+      "paper_id": "2023.acl-long.417",
+      "section_number": "4.3",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "window_text": "Task Our experiments are mainly conducted on Natural Language Response Generation task (NLG), a critical component in a ToD system to accurately generate relevant system responses given the dialog history and system acts, where large pretrained models serve an ideal purpose.\n\nmBART-50-large-NMT We choose mBART as our base Seq2seq pretrained model with 590M parameters from HuggingFace with a hidden_size = 1,024, which is also first fine-tuned on 50-language translation tasks (mBART-50-large-NMT) (Tang et al., 2021). We then employ the defined data format to train base models in few-shot and zero-shot setting depicted in Section 2.2.\n\nEvaluation We use sacreBLEU to evaluate the overall $n$ -gram match between generated and ground truth responses and Slot Error Rate (SER) to measure the percentage of correct predicted slots in a generated response.\n\nImplementation details We implement our framework and all baselines within the Transformers (Wolf et al., 2019) and Adapter-Transformers (Pfeiffer et al., 2020b) library. We mainly use mBART (mBART-large-50, mBART-50-large-NMT) and mT5 (mT5-small, mT5-base) for our base pretrained multilingual models. For fine-tuning via mBART denoising task on unlabeled data for language adapters, we train the same amount of mC4 dataset (Xue et al., 2020) from the public Common Crawl web scrape as Global-WOZ training data of the corresponding language for 10 epochs, with a batch size of 6 and learning rate $5e - 5$ . For fine-tuning pretrained models with large training dialog corpus, we train each model for 10 epochs with a batch size of 16 and learning rate $1e - 4$ . Finally, in few-shot training, we train the final model for 60 epochs with the same\n\nTable 1: SacreBLEU and Slot Error Rate (SER) of different cross-lingual methods in NLG task of three target languages. Best scores are highlighted in bold. $\\uparrow$ indicates the higher the better while $\\downarrow$ indicates the lower the better. avg implies the average result of three languages.   \n\n<table><tr><td colspan=\"3\">Task</td><td colspan=\"8\">NLG</td></tr><tr><td colspan=\"3\">Metrics</td><td colspan=\"4\">sacreBLEU (%) ↑</td><td colspan=\"4\">SER (%) ↓</td></tr><tr><td>ID</td><td>Model</td><td>Setting</td><td>zh</td><td>es</td><td>id</td><td>avg</td><td>zh</td><td>es</td><td>id</td><td>avg</td></tr><tr><td>①</td><td>E&amp;E (Tang et al., 2021)</td><td>Zero-shot</td><td>4.44</td><td>7.34</td><td>11.00</td><td>7.59</td><td>51.94</td><td>33.02</td><td>30.97</td><td>42.48</td></tr><tr><td>②</td><td>Translate-Train (Ding et al., 2022)</td><td>Zero-shot</td><td>10.80</td><td>11.81</td><td>12.40</td><td>11.67</td><td>42.32</td><td>38.61</td><td>37.12</td><td>39.35</td></tr><tr><td>③</td><td>Translate-Back</td><td>Zero-shot</td><td>14.89</td><td>14.10</td><td>16.70</td><td>15.23</td><td>44.19</td><td>34.79</td><td>29.24</td><td>36.07</td></tr><tr><td>④</td><td>F&amp;F (Tang et al., 2021)</td><td>Few-shot</td><td>22.56</td><td>15.86</td><td>20.03</td><td>19.48</td><td>17.50</td><td>30.11</td><td>16.91</td><td>21.51</td></tr><tr><td>⑤</td><td>① + ④ (Tang et al., 2021)</td><td>Few-shot</td><td>22.76</td><td>19.47</td><td>22.34</td><td>21.52</td><td>17.31</td><td>20.69</td><td>17.00</td><td>18.33</td></tr><tr><td>⑥</td><td>⑤ + SPImpMem (Chen et al., 2019)</td><td>Few-shot</td><td>6.78</td><td>8.51</td><td>4.31</td><td>6.53</td><td>78.77</td><td>75.31</td><td>83.04</td><td>79.04</td></tr><tr><td>⑦</td><td>⑤ + Adapter (Pfeiffer et al., 2020c)</td><td>Few-shot</td><td>23.82</td><td>21.28</td><td>23.22</td><td>22.77</td><td>15.78</td><td>21.69</td><td>15.62</td><td>17.70</td></tr><tr><td>⑧</td><td>⑦ + Fusion (XDFusion)</td><td>Few-shot</td><td>26.71</td><td>21.39</td><td>23.78</td><td>23.96</td><td>9.76</td><td>18.46</td><td>12.51</td><td>13.58</td></tr></table>\n\nbatch size and learning rate. For zero-shot baseline (Multi-task NMT), we include CCMatrix dataset (Schwenk et al., 2021) for additional NMT training. We choose the best checkpoint for evaluation based on validation performance. We use the Adam optimizer for all parameter optimization. We follow the hidden size of pretrained models with dimensionality of 512 (mt5-small), 768 (mt5-base), and 1024 (mBART-large-50). We run each experiment with three random seeds and take the average as the results on 8 NVIDIA A100 40GB GPUs.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.417::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 40GB",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Task Our experiments are mainly conducted on Natural Language Response Generation task (NLG), a critical component in a ToD system to accurately generate relevant system responses given the dialog history and system acts, where large pretrained models serve an ideal purpose.\n\nmBART-50-large-NMT We choose mBART as our base Seq2seq pretrained model with 590M parameters from HuggingFace with a hidden_size = 1,024, which is also first fine-tuned on 50-language translation tasks (mBART-50-large-NMT) (Tang et al., 2021). We then employ the defined data format to train base models in few-shot and zero-shot setting depicted in Section 2.2.\n\nEvaluation We use sacreBLEU to evaluate the overall $n$ -gram match between generated and ground truth responses and Slot Error Rate (SER) to measure the percentage of correct predicted slots in a generated response.\n\nImplementation details We implement our framework and all baselines within the Transformers (Wolf et al., 2019) and Adapter-Transformers (Pfeiffer et al., 2020b) library. We mainly use mBART (mBART-large-50, mBART-50-large-NMT) and mT5 (mT5-small, mT5-base) for our base pretrained multilingual models. For fine-tuning via mBART denoising task on unlabeled data for language adapters, we train the same amount of mC4 dataset (Xue et al., 2020) from the public Common Crawl web scrape as Global-WOZ training data of the corresponding language for 10 epochs, with a batch size of 6 and learning rate $5e - 5$ . For fine-tuning pretrained models with large training dialog corpus, we train each model for 10 epochs with a batch size of 16 and learning rate $1e - 4$ . Finally, in few-shot training, we train the final model for 60 epochs with the same\n\nTable 1: SacreBLEU and Slot Error Rate (SER) of different cross-lingual methods in NLG task of three target languages. Best scores are highlighted in bold. $\\uparrow$ indicates the higher the better while $\\downarrow$ indicates the lower the better. avg implies the average result of three languages.   \n\n<table><tr><td colspan=\"3\">Task</td><td colspan=\"8\">NLG</td></tr><tr><td colspan=\"3\">Metrics</td><td colspan=\"4\">sacreBLEU (%) ↑</td><td colspan=\"4\">SER (%) ↓</td></tr><tr><td>ID</td><td>Model</td><td>Setting</td><td>zh</td><td>es</td><td>id</td><td>avg</td><td>zh</td><td>es</td><td>id</td><td>avg</td></tr><tr><td>①</td><td>E&amp;E (Tang et al., 2021)</td><td>Zero-shot</td><td>4.44</td><td>7.34</td><td>11.00</td><td>7.59</td><td>51.94</td><td>33.02</td><td>30.97</td><td>42.48</td></tr><tr><td>②</td><td>Translate-Train (Ding et al., 2022)</td><td>Zero-shot</td><td>10.80</td><td>11.81</td><td>12.40</td><td>11.67</td><td>42.32</td><td>38.61</td><td>37.12</td><td>39.35</td></tr><tr><td>③</td><td>Translate-Back</td><td>Zero-shot</td><td>14.89</td><td>14.10</td><td>16.70</td><td>15.23</td><td>44.19</td><td>34.79</td><td>29.24</td><td>36.07</td></tr><tr><td>④</td><td>F&amp;F (Tang et al., 2021)</td><td>Few-shot</td><td>22.56</td><td>15.86</td><td>20.03</td><td>19.48</td><td>17.50</td><td>30.11</td><td>16.91</td><td>21.51</td></tr><tr><td>⑤</td><td>① + ④ (Tang et al., 2021)</td><td>Few-shot</td><td>22.76</td><td>19.47</td><td>22.34</td><td>21.52</td><td>17.31</td><td>20.69</td><td>17.00</td><td>18.33</td></tr><tr><td>⑥</td><td>⑤ + SPImpMem (Chen et al., 2019)</td><td>Few-shot</td><td>6.78</td><td>8.51</td><td>4.31</td><td>6.53</td><td>78.77</td><td>75.31</td><td>83.04</td><td>79.04</td></tr><tr><td>⑦</td><td>⑤ + Adapter (Pfeiffer et al., 2020c)</td><td>Few-shot</td><td>23.82</td><td>21.28</td><td>23.22</td><td>22.77</td><td>15.78</td><td>21.69</td><td>15.62</td><td>17.70</td></tr><tr><td>⑧</td><td>⑦ + Fusion (XDFusion)</td><td>Few-shot</td><td>26.71</td><td>21.39</td><td>23.78</td><td>23.96</td><td>9.76</td><td>18.46</td><td>12.51</td><td>13.58</td></tr></table>\n\nbatch size and learning rate. For zero-shot baseline (Multi-task NMT), we include CCMatrix dataset (Schwenk et al., 2021) for additional NMT training. We choose the best checkpoint for evaluation based on validation performance. We use the Adam optimizer for all parameter optimization. We follow the hidden size of pretrained models with dimensionality of 512 (mt5-small), 768 (mt5-base), and 1024 (mBART-large-50). We run each experiment with three random seeds and take the average as the results on 8 NVIDIA A100 40GB GPUs.",
+      "section_number": "4.3",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.417::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 40GB",
+      "cleaned_hardware_name": "nvidia a100 40gb",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "4.3",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "evidence": "Task Our experiments are mainly conducted on Natural Language Response Generation task (NLG), a critical component in a ToD system to accurately generate relevant system responses given the dialog history and system acts, where large pretrained models serve an ideal purpose.\n\nmBART-50-large-NMT We choose mBART as our base Seq2seq pretrained model with 590M parameters from HuggingFace with a hidden_size = 1,024, which is also first fine-tuned on 50-language translation tasks (mBART-50-large-NMT) (Tang et al., 2021). We then employ the defined data format to train base models in few-shot and zero-shot setting depicted in Section 2.2.\n\nEvaluation We use sacreBLEU to evaluate the overall $n$ -gram match between generated and ground truth responses and Slot Error Rate (SER) to measure the percentage of correct predicted slots in a generated response.\n\nImplementation details We implement our framework and all baselines within the Transformers (Wolf et al., 2019) and Adapter-Transformers (Pfeiffer et al., 2020b) library. We mainly use mBART (mBART-large-50, mBART-50-large-NMT) and mT5 (mT5-small, mT5-base) for our base pretrained multilingual models. For fine-tuning via mBART denoising task on unlabeled data for language adapters, we train the same amount of mC4 dataset (Xue et al., 2020) from the public Common Crawl web scrape as Global-WOZ training data of the corresponding language for 10 epochs, with a batch size of 6 and learning rate $5e - 5$ . For fine-tuning pretrained models with large training dialog corpus, we train each model for 10 epochs with a batch size of 16 and learning rate $1e - 4$ . Finally, in few-shot training, we train the final model for 60 epochs with the same\n\nTable 1: SacreBLEU and Slot Error Rate (SER) of different cross-lingual methods in NLG task of three target languages. Best scores are highlighted in bold. $\\uparrow$ indicates the higher the better while $\\downarrow$ indicates the lower the better. avg implies the average result of three languages.   \n\n<table><tr><td colspan=\"3\">Task</td><td colspan=\"8\">NLG</td></tr><tr><td colspan=\"3\">Metrics</td><td colspan=\"4\">sacreBLEU (%) ↑</td><td colspan=\"4\">SER (%) ↓</td></tr><tr><td>ID</td><td>Model</td><td>Setting</td><td>zh</td><td>es</td><td>id</td><td>avg</td><td>zh</td><td>es</td><td>id</td><td>avg</td></tr><tr><td>①</td><td>E&amp;E (Tang et al., 2021)</td><td>Zero-shot</td><td>4.44</td><td>7.34</td><td>11.00</td><td>7.59</td><td>51.94</td><td>33.02</td><td>30.97</td><td>42.48</td></tr><tr><td>②</td><td>Translate-Train (Ding et al., 2022)</td><td>Zero-shot</td><td>10.80</td><td>11.81</td><td>12.40</td><td>11.67</td><td>42.32</td><td>38.61</td><td>37.12</td><td>39.35</td></tr><tr><td>③</td><td>Translate-Back</td><td>Zero-shot</td><td>14.89</td><td>14.10</td><td>16.70</td><td>15.23</td><td>44.19</td><td>34.79</td><td>29.24</td><td>36.07</td></tr><tr><td>④</td><td>F&amp;F (Tang et al., 2021)</td><td>Few-shot</td><td>22.56</td><td>15.86</td><td>20.03</td><td>19.48</td><td>17.50</td><td>30.11</td><td>16.91</td><td>21.51</td></tr><tr><td>⑤</td><td>① + ④ (Tang et al., 2021)</td><td>Few-shot</td><td>22.76</td><td>19.47</td><td>22.34</td><td>21.52</td><td>17.31</td><td>20.69</td><td>17.00</td><td>18.33</td></tr><tr><td>⑥</td><td>⑤ + SPImpMem (Chen et al., 2019)</td><td>Few-shot</td><td>6.78</td><td>8.51</td><td>4.31</td><td>6.53</td><td>78.77</td><td>75.31</td><td>83.04</td><td>79.04</td></tr><tr><td>⑦</td><td>⑤ + Adapter (Pfeiffer et al., 2020c)</td><td>Few-shot</td><td>23.82</td><td>21.28</td><td>23.22</td><td>22.77</td><td>15.78</td><td>21.69</td><td>15.62</td><td>17.70</td></tr><tr><td>⑧</td><td>⑦ + Fusion (XDFusion)</td><td>Few-shot</td><td>26.71</td><td>21.39</td><td>23.78</td><td>23.96</td><td>9.76</td><td>18.46</td><td>12.51</td><td>13.58</td></tr></table>\n\nbatch size and learning rate. For zero-shot baseline (Multi-task NMT), we include CCMatrix dataset (Schwenk et al., 2021) for additional NMT training. We choose the best checkpoint for evaluation based on validation performance. We use the Adam optimizer for all parameter optimization. We follow the hidden size of pretrained models with dimensionality of 512 (mt5-small), 768 (mt5-base), and 1024 (mBART-large-50). We run each experiment with three random seeds and take the average as the results on 8 NVIDIA A100 40GB GPUs.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.acl-long.417::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experimental settings",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.417::sections::4.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2",
+      "section_title": "baselines",
+      "evidence": "In our first set of experiments, we explore the following zero-shot baselines and strategies for training models in Chinese (Zh), Spanish (Es), Indonesian (Id) given a large amount of English training data:\n\n- E&E: Fine-tune mSeq2seq with E&E training data only.   \n- Translate-Train (Ding et al., 2022): Translate E&E data with label sequence translation in Ding et al. (2022) using an external machine translation system.   \n- Translate-Back: Directly translate response outputs predicted from English-trained model back into the target language.   \n- Adapter (Pfeiffer et al., 2020c): Insert and fine-tune adapter modules both at encoder and decoder side only.   \n- Freeze-Decoder (Chi et al., 2019): Freeze the decoder part and fine-tune encoder side only.   \n- Multi-task learning: NMT & Denoise (Liu et al., 2020): Include external out-of-domain corpus to perform NMT or Denoising task training simultaneously with the main dialog response generation task.\n\nThen we consider the following few-shot baselines by adding a small amount of Zh, Es, Id training data along with English training data.\n\n- F&F: Fine-tune mSeq2seq with few F&F training data (100 dialogs) only.\n\n- E&E + F&F: Fine-tune Seq2seq model with both E&E and few F&F training data.   \n- SPImpMem (Chen et al., 2019): Insert shared and private memory modules within Seq2seq model to induce cross-lingual transfer.   \n- Adapter (Pfeiffer et al., 2020c): Fine-tune Seq2seq model with E&E training data; then insert and fine-tune adapter modules both at encoder and decoder side only.   \n- XDFusion: Our proposed approach to insert Adapter cross-lingual fusion module which combines pretrained language adapters together."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.3"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2023\\2023.acl-long.417\\auto\\full.md",
+    "source_md_sha256": "448007b8a6120cad1f4a1fe29f3f555c8c334d1fc9b684ede42ececaf8dc8ad1",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

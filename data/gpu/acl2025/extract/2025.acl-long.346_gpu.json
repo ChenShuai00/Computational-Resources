@@ -1,0 +1,204 @@
+{
+  "paper_id": "2025.acl-long.346",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.346::sections::4",
+      "paper_id": "2025.acl-long.346",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.346::sections::4.1",
+      "paper_id": "2025.acl-long.346",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "VccmDataset. To the best of our knowledge, there is no large-scale TTS dataset that includes both text style prompts and speaker prompts. We build upon the TextrolSpeech dataset (Ji et al., 2023) and create VccmDataset. Based on TextrolSpeech, we optimize the pitch distribution, label boundaries, the dataset splits, and then select new test sets. Specifically, we use LibriTTS and the emotional data from TextrolSpeech as the base databases, and annotate each speech sample with five attribute labels: gender, volume, speed, pitch, and emotion. We use the gender labels available in the online metadata. Regarding volume, we compute the L2-norm of the amplitude of each short-time Fourier transform frame. We utilize the Montreal forced alignment tool (McAuliffe et al., 2017) to extract phoneme durations and silence segments. Subsequently, we calculate the average\n\nduration of each phoneme within voiced segments for the speaking speed. The Parselmouth 3 tool is employed to extract fundamental frequency (f0) and calculate the geometric mean across all voiced regions as pitch values. We partition speech samples into 3 categories (high/normal/low) according to the proportion of speed, pitch, and volume values respectively. Considering the close proximity of attribute values of speech samples between adjacent categories, we exclude the $5\\%$ of data samples at the boundaries of each interval for each attribute. Particularly, We use gender-specific thresholds to bin the pitch into three different levels. After obtaining more accurate labels through these procedures, we align each audio segment with the corresponding style description text in TextrolSpeech based on the labeled attributes to obtain the VccmDataset. We then select four distinct test sets from VccmDataset, namely, test set A, test set B, test set C, test set D. Details of the VccmDataset test sets are in Appendix C.\n\nBaselines. To ensure a fair comparison of the actual performance of various models, we reimplement several SOTA style-controllable models, including PromptStyle (Liu et al., 2023), Salle (Ji et al., 2023), InstructTTS (Yang et al., 2023b), and PromptTTS 2 (Leng et al., 2023), to serve as primary comparative models for evaluating the controllability of ControlSpeech. For the comparison of voice cloning effectiveness, we reimplement the VALL-E model (Wang et al., 2023) and the Mobile-Speech model (Ji et al., 2024c), which are representatives of the autoregressive paradigm and the parallel generation paradigm, respectively. All reproduced baseline will be also made publicly.\n\nEvaluation Metrics and Experimental Settings. For objective evaluations, we adopt the common metrics used in prior works (Guo et al., 2023; Ji et al., 2023; Leng et al., 2023). To evaluate the model's style controllability, we use accuracy of pitch, speaking speed, volume, emotion as the metrics, which measures the correspondence between the style factors in the output speech and those in the prompts. We evaluate timbre similarity (Spksv) between the original prompt and the synthesized speech, and evaluate speech synthesis accuracy and robustness by using an ASR system to transcribe the synthesized speech and computing word error rate (WER) against the content prompt.\n\nFor subjective evaluations, we conduct mean opinion score (MOS) evaluations on the test set to measure audio naturalness via crowdsourcing. We further analyze MOS in two aspects: MOS-Q (Quality, assessing clarity and naturalness of the duration and pitch) and MOS-S (Speaker similarity). We also design new subjective MOS metrics: MOS-TS (Timbre similarity), MOS-SD (Style diversity), and MOS-SA (Style accuracy). Details of the evaluation metrics, experimental settings, and specifics of model architecture are provided in Appendix D, E, and F, respectively.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.346::sections::4.3",
+      "paper_id": "2025.acl-long.346",
+      "section_number": "4.3",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "window_text": "We validate the necessity of the codec decouple in-gand the SMSD module. We also investigate the impact of hyperparameters for mixed distributions and various noise models in Appendix H and I.\n\nDecouple codec. To analyze the impact of decoupling, we maintain the main framework of ControlSpeech and directly encode the speech prompt and style prompt using the frozen speech encodec encoder and style encoder (replicated from the structure of the text encoder) respectively, then feed them into the codec generator through cross attention. We denote this model as ControlSpeech w/o decoupling. As shown in Table 4, ControlSpeech w/o decoupling performs substantially worse in controllability compared to ControlSpeech, suggesting that the speech prompt and style prompt indeed may interfere with each other.\n\nThe SMSD module. We replace the SMSD module with a style encoder (replicated from the structure of the text encoder) and denote this model as ControlSpeech w/o SMSD. As shown in Table 3, ControlSpeech w/o SMSD performs markedly worse in terms of MOS-SA and MOS-SD compared to ControlSpeech, which strongly validates that the SMSD module enables more fine-grained control of the model's style and increases style diversity through style sampling. We also visualize the distribution of the SMSD under varying pitch/speed/volume (details in Appendix B).\n\nTable 1: The style controllability evaluation results of style-controlled models on VccmDataset test set A. Pitch, Speed, Volume, Emotion denote accuracy of the style. $\\pm$ denotes standard deviation.   \n\n<table><tr><td>Model</td><td>Clone Timbre</td><td>Control Style</td><td>Pitch ↑</td><td>Speed ↑</td><td>Volume ↑</td><td>Emotion ↑</td><td>WER ↓</td><td>Spk-sv ↑</td><td>MOS-Q ↑</td></tr><tr><td>GT Codec</td><td>-</td><td>-</td><td>0.954</td><td>0.885</td><td>0.977</td><td>0.758</td><td>2.6</td><td>0.96</td><td>4.25±0.10</td></tr><tr><td>Salle</td><td>×</td><td>✓</td><td>0.788</td><td>0.756</td><td>0.831</td><td>0.389</td><td>5.5</td><td>-</td><td>3.52±0.14</td></tr><tr><td>PromptStyle</td><td>×</td><td>✓</td><td>0.831</td><td>0.786</td><td>0.787</td><td>0.366</td><td>3.3</td><td>0.84</td><td>3.74±0.11</td></tr><tr><td>InstructTTS</td><td>×</td><td>✓</td><td>0.849</td><td>0.761</td><td>0.822</td><td>0.412</td><td>3.0</td><td>0.86</td><td>3.81±0.12</td></tr><tr><td>PromptTTS 2</td><td>×</td><td>✓</td><td>0.867</td><td>0.785</td><td>0.825</td><td>0.406</td><td>3.1</td><td>-</td><td>3.83±0.11</td></tr><tr><td>ControlSpeech (Ours)</td><td>✓</td><td>✓</td><td>0.833</td><td>0.829</td><td>0.894</td><td>0.557</td><td>2.9</td><td>0.89</td><td>3.91±0.09</td></tr></table>\n\nTable 2: The timbre cloning results of different zero-shot models on the VccmDataset test set $\\mathbf{B}$ .   \n\n<table><tr><td>Model</td><td>Clone Timbre</td><td>Control Style</td><td>WER ↓</td><td>MOS-Q ↑</td><td>MOS-S ↑</td></tr><tr><td>GT Codec</td><td>-</td><td>-</td><td>2.3</td><td>4.21±0.14</td><td>4.29±0.12</td></tr><tr><td>VALL-E</td><td>✓</td><td>×</td><td>6.7</td><td>3.76±0.13</td><td>3.89±0.13</td></tr><tr><td>MobileSpeech</td><td>✓</td><td>×</td><td>4.1</td><td>3.94±0.09</td><td>4.01±0.11</td></tr><tr><td>ControlSpeech (Ours)</td><td>✓</td><td>✓</td><td>3.3</td><td>3.95±0.12</td><td>3.96±0.14</td></tr></table>\n\nTable 3: The results under many-to-many style control conditions on VccmDataset test set $D$ . MOS-TS, MOS-SA, MOS-SD measure timbre stability, accuracy and diversity of style generation.   \n\n<table><tr><td>Model</td><td>MOS-TS ↑</td><td>MOS-SA ↑</td><td>MOS-SD↑</td></tr><tr><td>PromptStyle</td><td>3.81±0.10</td><td>3.45±0.13</td><td>3.53±0.12</td></tr><tr><td>InstructTTS</td><td>3.89±0.12</td><td>3.57±0.11</td><td>3.48±0.14</td></tr><tr><td>ControlSpeech w/o SMSD</td><td>3.95±0.08</td><td>3.59±0.09</td><td>3.66±0.11</td></tr><tr><td>ControlSpeech</td><td>4.01±0.10</td><td>3.84±0.12</td><td>4.05±0.09</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.346::appendix::D",
+      "paper_id": "2025.acl-long.346",
+      "section_number": "D",
+      "section_title": "evaluation metrics",
+      "normalized_section_title": "evaluation metrics",
+      "window_text": "For objective evaluations, we adopt the metrics used in prior works (Guo et al., 2023; Ji et al., 2023; Leng et al., 2023). To evaluate the model's style controllability, we use accuracy as the metric, which measures the correspondence between the style factors in the output speech and those in the prompts. The accuracy of pitch, speaking speed, and volume is calculated using signal processing tools. We fine-tune the official version of the Emotion2vec model (Ma et al., 2023) on the emotional dataset of VccmDataset, and compute the speech emotion classification accuracy with the fine-tuned model. To evaluate timbre similarity (Spk-sv) between the original prompt and the synthesized speech, we utilize the base-plus-sv version of WavLM (Chen et al., 2022). For Word Error Rate (WER), we use an ASR model ${}^{2}$ to transcribe the synthesized speech. This ASR model is a CTC-based HuBERT pre-trained on Librilight and fine-tuned on the 960 hours training set of LibriSpeech. For subjective evaluations, we conduct mean opinion score (MOS) evaluations on the test set to measure audio naturalness via crowdsourcing. We randomly select 30 samples from the test set of each dataset for subjective evaluation, and each audio sample is listened by at least 10 testers. We analyze the MOS in two aspects: MOS-Q (Quality, assessing clarity and naturalness of the duration and pitch) and MOS-S (Speaker similarity).\n\nFurthermore, for the evaluation of style-controllable many-to-many scenarios in the test set $D$ , we design new subjective MOS metrics: MOS-TS (Timbre Similarity), MOS-SD (Style Diversity), and MOS-SA (Style Accuracy). Specifically, the MOS-TS metric is used to assess whether the timbre remains stable across 60 different style descriptions for four speakers on the test set $D1$ . The MOS-SA and MOS-SD metrics represent the accuracy and diversity of style control for each style description respectively on the test set $D2$ .",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.346::appendix::E",
+      "paper_id": "2025.acl-long.346",
+      "section_number": "E",
+      "section_title": "training and inference settings",
+      "normalized_section_title": "training and inference settings",
+      "window_text": "ControlSpeech is trained on VccmDataset using 8 NVIDIA A100 40G GPUs with each batch accommodating 3500 frames of the discrete codec. We optimize the models using the AdamW optimizer with parameters $\\beta_{1} = 0.9$ and $\\beta_{2} = 0.95$ . The learning rate is warmed up for the first 5k updates, reaching a peak of $5\\times 10^{-4}$ , and then linearly decayed. We utilize the open-source FACodec's voice conversion version as the codec encoder and decoder for ControlSpeech. The style-controllable baseline models are trained on the same VccmDataset training set to eliminate potential biases. We utilize a pre-trained BERT (Devlin et al., 2018) model consisting of 12 hidden layers with 110M parameters. For the implementation of the basic MDN network model, we largely follow the approach described in (Duan, 2019).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.acl-long.346::appendix::H",
+      "paper_id": "2025.acl-long.346",
+      "section_number": "H",
+      "section_title": "ablation experiments about mixed distributions",
+      "normalized_section_title": "ablation experiments about mixed distributions",
+      "window_text": "In this section, we investigate the impact of the number of mixtures in the SMSD module on model performance. We conduct ablation studies under the isotropic across clusters noise perturbation mode (the mode selected for ControlSpeech), examining the effects of using 3, 5, and 7 mixtures.\n\nAs shown in Table 6, the differences in the MOS-SD metric are negligible. However, an increase in the number of mixtures leads to a decline in the MOS-SA metric, indicating that an excessive number of mixtures may reduce the model's control accuracy.\n\nTable 6: Under the Isotropic across clusters noise perturbation scheme, we investigate the influence of the number of Gaussian mixture components in the SMSD module on stylistic diversity. Subsequently, we analyze the corresponding outcomes using the MOS-SA and MOS-SD metrics.\n\n<table><tr><td>Model</td><td>MOS-SA↑</td><td>MOS-SD↑</td></tr><tr><td>ControlSpeech w/ Isotropic across clusters w/ components=3</td><td>3.83±0.14</td><td>3.95±0.12</td></tr><tr><td>ControlSpeech w/ Isotropic across clusters w/ components=5</td><td>3.84±0.12</td><td>4.05±0.09</td></tr><tr><td>ControlSpeech w/ Isotropic across clusters w/ components=7</td><td>3.73±0.11</td><td>3.98±0.09</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.346::appendix::I",
+      "paper_id": "2025.acl-long.346",
+      "section_number": "I",
+      "section_title": "ablation experiments on various noise modes",
+      "normalized_section_title": "ablation experiments on various noise modes",
+      "window_text": "We analyze the impact of different noise perturbation modes on the many-to-many style control problem, with the number of mixture distributions fixed at 5. As shown in Table 7, we find that the noise perturbation mode maintaining isotropy at the cluster centers achieves a balance between the MOS-SA and MOS-SD metrics and outperforms all other modes.\n\nTable 7: The results of different noise perturbation modes on the MOS-SA and MOS-SD metrics.   \n\n<table><tr><td>Model</td><td>MOS-SA↑</td><td>MOS-SD↑</td></tr><tr><td>ControlSpeech w/ Fully factored</td><td>3.77±0.14</td><td>3.96±0.09</td></tr><tr><td>ControlSpeech w/ Isotropic</td><td>3.75±0.11</td><td>4.03±0.10</td></tr><tr><td>ControlSpeech w/ Isotropic across clusters</td><td>3.84±0.12</td><td>4.05±0.09</td></tr><tr><td>ControlSpeech w/ Fixed isotropic</td><td>3.72±0.13</td><td>3.87±0.11</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.346::appendix::E",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 40G",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "ControlSpeech is trained on VccmDataset using 8 NVIDIA A100 40G GPUs with each batch accommodating 3500 frames of the discrete codec. We optimize the models using the AdamW optimizer with parameters $\\beta_{1} = 0.9$ and $\\beta_{2} = 0.95$ . The learning rate is warmed up for the first 5k updates, reaching a peak of $5\\times 10^{-4}$ , and then linearly decayed. We utilize the open-source FACodec's voice conversion version as the codec encoder and decoder for ControlSpeech. The style-controllable baseline models are trained on the same VccmDataset training set to eliminate potential biases. We utilize a pre-trained BERT (Devlin et al., 2018) model consisting of 12 hidden layers with 110M parameters. For the implementation of the basic MDN network model, we largely follow the approach described in (Duan, 2019).",
+      "section_number": "E",
+      "section_title": "training and inference settings",
+      "normalized_section_title": "training and inference settings"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.346::appendix::E",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 40G",
+      "cleaned_hardware_name": "nvidia a100 40gb",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "E",
+      "section_title": "training and inference settings",
+      "normalized_section_title": "training and inference settings",
+      "evidence": "ControlSpeech is trained on VccmDataset using 8 NVIDIA A100 40G GPUs with each batch accommodating 3500 frames of the discrete codec. We optimize the models using the AdamW optimizer with parameters $\\beta_{1} = 0.9$ and $\\beta_{2} = 0.95$ . The learning rate is warmed up for the first 5k updates, reaching a peak of $5\\times 10^{-4}$ , and then linearly decayed. We utilize the open-source FACodec's voice conversion version as the codec encoder and decoder for ControlSpeech. The style-controllable baseline models are trained on the same VccmDataset training set to eliminate potential biases. We utilize a pre-trained BERT (Devlin et al., 2018) model consisting of 12 hidden layers with 110M parameters. For the implementation of the basic MDN network model, we largely follow the approach described in (Duan, 2019).",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.346::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.346::sections::4.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "evidence": "VccmDataset. To the best of our knowledge, there is no large-scale TTS dataset that includes both text style prompts and speaker prompts. We build upon the TextrolSpeech dataset (Ji et al., 2023) and create VccmDataset. Based on TextrolSpeech, we optimize the pitch distribution, label boundaries, the dataset splits, and then select new test sets. Specifically, we use LibriTTS and the emotional data from TextrolSpeech as the base databases, and annotate each speech sample with five attribute labels: gender, volume, speed, pitch, and emotion. We use the gender labels available in the online metadata. Regarding volume, we compute the L2-norm of the amplitude of each short-time Fourier transform frame. We utilize the Montreal forced alignment tool (McAuliffe et al., 2017) to extract phoneme durations and silence segments. Subsequently, we calculate the average\n\nduration of each phoneme within voiced segments for the speaking speed. The Parselmouth 3 tool is employed to extract fundamental frequency (f0) and calculate the geometric mean across all voiced regions as pitch values. We partition speech samples into 3 categories (high/normal/low) according to the proportion of speed, pitch, and volume values respectively. Considering the close proximity of attribute values of speech samples between adjacent categories, we exclude the $5\\%$ of data samples at the boundaries of each interval for each attribute. Particularly, We use gender-specific thresholds to bin the pitch into three different levels. After obtaining more accurate labels through these procedures, we align each audio segment with the corresponding style description text in TextrolSpeech based on the labeled attributes to obtain the VccmDataset. We then select four distinct test sets from VccmDataset, namely, test set A, test set B, test set C, test set D. Details of the VccmDataset test sets are in Appendix C.\n\nBaselines. To ensure a fair comparison of the actual performance of various models, we reimplement several SOTA style-controllable models, including PromptStyle (Liu et al., 2023), Salle (Ji et al., 2023), InstructTTS (Yang et al., 2023b), and PromptTTS 2 (Leng et al., 2023), to serve as primary comparative models for evaluating the controllability of ControlSpeech. For the comparison of voice cloning effectiveness, we reimplement the VALL-E model (Wang et al., 2023) and the Mobile-Speech model (Ji et al., 2024c), which are representatives of the autoregressive paradigm and the parallel generation paradigm, respectively. All reproduced baseline will be also made publicly.\n\nEvaluation Metrics and Experimental Settings. For objective evaluations, we adopt the common metrics used in prior works (Guo et al., 2023; Ji et al., 2023; Leng et al., 2023). To evaluate the model's style controllability, we use accuracy of pitch, speaking speed, volume, emotion as the metrics, which measures the correspondence between the style factors in the output speech and those in the prompts. We evaluate timbre similarity (Spksv) between the original prompt and the synthesized speech, and evaluate speech synthesis accuracy and robustness by using an ASR system to transcribe the synthesized speech and computing word error rate (WER) against the content prompt.\n\nFor subjective evaluations, we conduct mean opinion score (MOS) evaluations on the test set to measure audio naturalness via crowdsourcing. We further analyze MOS in two aspects: MOS-Q (Quality, assessing clarity and naturalness of the duration and pitch) and MOS-S (Speaker similarity). We also design new subjective MOS metrics: MOS-TS (Timbre similarity), MOS-SD (Style diversity), and MOS-SA (Style accuracy). Details of the evaluation metrics, experimental settings, and specifics of model architecture are provided in Appendix D, E, and F, respectively."
+    },
+    {
+      "source_window_id": "2025.acl-long.346::sections::4.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.3",
+      "section_title": "ablation studies",
+      "evidence": "We validate the necessity of the codec decouple in-gand the SMSD module. We also investigate the impact of hyperparameters for mixed distributions and various noise models in Appendix H and I.\n\nDecouple codec. To analyze the impact of decoupling, we maintain the main framework of ControlSpeech and directly encode the speech prompt and style prompt using the frozen speech encodec encoder and style encoder (replicated from the structure of the text encoder) respectively, then feed them into the codec generator through cross attention. We denote this model as ControlSpeech w/o decoupling. As shown in Table 4, ControlSpeech w/o decoupling performs substantially worse in controllability compared to ControlSpeech, suggesting that the speech prompt and style prompt indeed may interfere with each other.\n\nThe SMSD module. We replace the SMSD module with a style encoder (replicated from the structure of the text encoder) and denote this model as ControlSpeech w/o SMSD. As shown in Table 3, ControlSpeech w/o SMSD performs markedly worse in terms of MOS-SA and MOS-SD compared to ControlSpeech, which strongly validates that the SMSD module enables more fine-grained control of the model's style and increases style diversity through style sampling. We also visualize the distribution of the SMSD under varying pitch/speed/volume (details in Appendix B).\n\nTable 1: The style controllability evaluation results of style-controlled models on VccmDataset test set A. Pitch, Speed, Volume, Emotion denote accuracy of the style. $\\pm$ denotes standard deviation.   \n\n<table><tr><td>Model</td><td>Clone Timbre</td><td>Control Style</td><td>Pitch ↑</td><td>Speed ↑</td><td>Volume ↑</td><td>Emotion ↑</td><td>WER ↓</td><td>Spk-sv ↑</td><td>MOS-Q ↑</td></tr><tr><td>GT Codec</td><td>-</td><td>-</td><td>0.954</td><td>0.885</td><td>0.977</td><td>0.758</td><td>2.6</td><td>0.96</td><td>4.25±0.10</td></tr><tr><td>Salle</td><td>×</td><td>✓</td><td>0.788</td><td>0.756</td><td>0.831</td><td>0.389</td><td>5.5</td><td>-</td><td>3.52±0.14</td></tr><tr><td>PromptStyle</td><td>×</td><td>✓</td><td>0.831</td><td>0.786</td><td>0.787</td><td>0.366</td><td>3.3</td><td>0.84</td><td>3.74±0.11</td></tr><tr><td>InstructTTS</td><td>×</td><td>✓</td><td>0.849</td><td>0.761</td><td>0.822</td><td>0.412</td><td>3.0</td><td>0.86</td><td>3.81±0.12</td></tr><tr><td>PromptTTS 2</td><td>×</td><td>✓</td><td>0.867</td><td>0.785</td><td>0.825</td><td>0.406</td><td>3.1</td><td>-</td><td>3.83±0.11</td></tr><tr><td>ControlSpeech (Ours)</td><td>✓</td><td>✓</td><td>0.833</td><td>0.829</td><td>0.894</td><td>0.557</td><td>2.9</td><td>0.89</td><td>3.91±0.09</td></tr></table>\n\nTable 2: The timbre cloning results of different zero-shot models on the VccmDataset test set $\\mathbf{B}$ .   \n\n<table><tr><td>Model</td><td>Clone Timbre</td><td>Control Style</td><td>WER ↓</td><td>MOS-Q ↑</td><td>MOS-S ↑</td></tr><tr><td>GT Codec</td><td>-</td><td>-</td><td>2.3</td><td>4.21±0.14</td><td>4.29±0.12</td></tr><tr><td>VALL-E</td><td>✓</td><td>×</td><td>6.7</td><td>3.76±0.13</td><td>3.89±0.13</td></tr><tr><td>MobileSpeech</td><td>✓</td><td>×</td><td>4.1</td><td>3.94±0.09</td><td>4.01±0.11</td></tr><tr><td>ControlSpeech (Ours)</td><td>✓</td><td>✓</td><td>3.3</td><td>3.95±0.12</td><td>3.96±0.14</td></tr></table>\n\nTable 3: The results under many-to-many style control conditions on VccmDataset test set $D$ . MOS-TS, MOS-SA, MOS-SD measure timbre stability, accuracy and diversity of style generation.   \n\n<table><tr><td>Model</td><td>MOS-TS ↑</td><td>MOS-SA ↑</td><td>MOS-SD↑</td></tr><tr><td>PromptStyle</td><td>3.81±0.10</td><td>3.45±0.13</td><td>3.53±0.12</td></tr><tr><td>InstructTTS</td><td>3.89±0.12</td><td>3.57±0.11</td><td>3.48±0.14</td></tr><tr><td>ControlSpeech w/o SMSD</td><td>3.95±0.08</td><td>3.59±0.09</td><td>3.66±0.11</td></tr><tr><td>ControlSpeech</td><td>4.01±0.10</td><td>3.84±0.12</td><td>4.05±0.09</td></tr></table>"
+    },
+    {
+      "source_window_id": "2025.acl-long.346::appendix::D",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D",
+      "section_title": "evaluation metrics",
+      "evidence": "For objective evaluations, we adopt the metrics used in prior works (Guo et al., 2023; Ji et al., 2023; Leng et al., 2023). To evaluate the model's style controllability, we use accuracy as the metric, which measures the correspondence between the style factors in the output speech and those in the prompts. The accuracy of pitch, speaking speed, and volume is calculated using signal processing tools. We fine-tune the official version of the Emotion2vec model (Ma et al., 2023) on the emotional dataset of VccmDataset, and compute the speech emotion classification accuracy with the fine-tuned model. To evaluate timbre similarity (Spk-sv) between the original prompt and the synthesized speech, we utilize the base-plus-sv version of WavLM (Chen et al., 2022). For Word Error Rate (WER), we use an ASR model ${}^{2}$ to transcribe the synthesized speech. This ASR model is a CTC-based HuBERT pre-trained on Librilight and fine-tuned on the 960 hours training set of LibriSpeech. For subjective evaluations, we conduct mean opinion score (MOS) evaluations on the test set to measure audio naturalness via crowdsourcing. We randomly select 30 samples from the test set of each dataset for subjective evaluation, and each audio sample is listened by at least 10 testers. We analyze the MOS in two aspects: MOS-Q (Quality, assessing clarity and naturalness of the duration and pitch) and MOS-S (Speaker similarity).\n\nFurthermore, for the evaluation of style-controllable many-to-many scenarios in the test set $D$ , we design new subjective MOS metrics: MOS-TS (Timbre Similarity), MOS-SD (Style Diversity), and MOS-SA (Style Accuracy). Specifically, the MOS-TS metric is used to assess whether the timbre remains stable across 60 different style descriptions for four speakers on the test set $D1$ . The MOS-SA and MOS-SD metrics represent the accuracy and diversity of style control for each style description respectively on the test set $D2$ ."
+    },
+    {
+      "source_window_id": "2025.acl-long.346::appendix::H",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "H",
+      "section_title": "ablation experiments about mixed distributions",
+      "evidence": "In this section, we investigate the impact of the number of mixtures in the SMSD module on model performance. We conduct ablation studies under the isotropic across clusters noise perturbation mode (the mode selected for ControlSpeech), examining the effects of using 3, 5, and 7 mixtures.\n\nAs shown in Table 6, the differences in the MOS-SD metric are negligible. However, an increase in the number of mixtures leads to a decline in the MOS-SA metric, indicating that an excessive number of mixtures may reduce the model's control accuracy.\n\nTable 6: Under the Isotropic across clusters noise perturbation scheme, we investigate the influence of the number of Gaussian mixture components in the SMSD module on stylistic diversity. Subsequently, we analyze the corresponding outcomes using the MOS-SA and MOS-SD metrics.\n\n<table><tr><td>Model</td><td>MOS-SA↑</td><td>MOS-SD↑</td></tr><tr><td>ControlSpeech w/ Isotropic across clusters w/ components=3</td><td>3.83±0.14</td><td>3.95±0.12</td></tr><tr><td>ControlSpeech w/ Isotropic across clusters w/ components=5</td><td>3.84±0.12</td><td>4.05±0.09</td></tr><tr><td>ControlSpeech w/ Isotropic across clusters w/ components=7</td><td>3.73±0.11</td><td>3.98±0.09</td></tr></table>"
+    },
+    {
+      "source_window_id": "2025.acl-long.346::appendix::I",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "I",
+      "section_title": "ablation experiments on various noise modes",
+      "evidence": "We analyze the impact of different noise perturbation modes on the many-to-many style control problem, with the number of mixture distributions fixed at 5. As shown in Table 7, we find that the noise perturbation mode maintaining isotropy at the cluster centers achieves a balance between the MOS-SA and MOS-SD metrics and outperforms all other modes.\n\nTable 7: The results of different noise perturbation modes on the MOS-SA and MOS-SD metrics.   \n\n<table><tr><td>Model</td><td>MOS-SA↑</td><td>MOS-SD↑</td></tr><tr><td>ControlSpeech w/ Fully factored</td><td>3.77±0.14</td><td>3.96±0.09</td></tr><tr><td>ControlSpeech w/ Isotropic</td><td>3.75±0.11</td><td>4.03±0.10</td></tr><tr><td>ControlSpeech w/ Isotropic across clusters</td><td>3.84±0.12</td><td>4.05±0.09</td></tr><tr><td>ControlSpeech w/ Fixed isotropic</td><td>3.72±0.13</td><td>3.87±0.11</td></tr></table>"
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "E"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.346\\auto\\full.md",
+    "source_md_sha256": "35539122b7c1248d60807e451f1bde4d1e97677fc34ebed64c25da684a28ad8e",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

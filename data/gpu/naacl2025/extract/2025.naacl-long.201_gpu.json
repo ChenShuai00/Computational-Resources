@@ -1,0 +1,109 @@
+{
+  "paper_id": "2025.naacl-long.201",
+  "candidate_windows": [
+    {
+      "window_id": "2025.naacl-long.201::sections::6",
+      "paper_id": "2025.naacl-long.201",
+      "section_number": "6",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "Models. We focus on finetuning compact language models, specifically Phi-3 (Abdin et al., 2024), Phi-2 (Gunasekar et al., 2023), Gemma (Team et al., 2024), and OLMo (Groeneveld et al., 2024)—to explore the effectiveness of MoA on models that are not inherently robust, as applying MoA to already robust models provides limited insights into its true impact.\n\nDatasets. We evaluate our approach in a multitask learning setting with limited and few-shot examples, covering both in-distribution (ID) and out-of-distribution (OOD) scenarios. By leveraging shared knowledge across tasks, we address the challenges of limited data. For ID evaluation, we use the Commonsense Finetuning Dataset (Hu et al., 2023), which integrates data from multiple sources, including BoolQ (Clark et al., 2019), PIQA (Bisk et al., 2020), SIQA (Sap et al., 2019), HellaSwag (Zellers et al., 2019), WinoGrande (Sakaguchi et al., 2021), ARC-e, ARC-c (Clark et al., 2018), and OBQA. Fine-tuning is conducted on 15,000 samples, with evaluations on standard test sets. For OOD evaluation, we assess generalization on the MMLU benchmark after fine-tuning on the CrossFit dataset (Ye et al., 2021), which includes few-shot samples from 160 diverse tasks. This setup rigorously tests our method's ability to generalize to unseen tasks.\n\nBaselines. We use LoRA as a baseline to highlight the advantages of employing MoA. We also compare against Mixture of LoRA (MoL) (Zadouri et al., 2023; Dou et al., 2023). Although these methods exhibit minor differences in auxiliary losses, they follow the same framework introduced in Section 2. Additionally, we compare with MultiLoRA (Wang et al., 2023), which uses fixed weights to merge LoRA experts at each layer.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.201::appendix::A",
+      "paper_id": "2025.naacl-long.201",
+      "section_number": "A",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "We conduct training on an NVIDIA A100 GPU, using a batch size of 128 and a micro-batch size of 4. The learning rate is set to 3e-4 and optimized with the AdamW optimizer, incorporating a warmup of 80 steps and a cosine scheduler with restarts to manage the learning rate decay. LoRA ranks are set to 8 for fine-tuning Phi-3 and 16 for the other models. Training spans 3 epochs.\n\nFor all models, we use 8 pre-layer experts $(N = 8)$ and set the number of layers $n_l = 8$ . The hyperparameter $\\alpha$ is swept over the range $\\{0.005, 0.01, 0.05, 0.1\\}$ .\n\nWe fine-tune four pre-trained models: Phi-2, Phi-3, Gemma, and OLMo. LoRA is applied to different modules in each model:\n\n- For the Phi-2 model, the target modules include q Projekt, k Projekt, and v Projekt.   \n- For the Phi-3 model, we target the qkv Projekt module.   \n- For the Gemma model, the k Projekt module is targeted.   \n- For the OLMo model, we focus on the att_Proj module.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.201::appendix::E",
+      "paper_id": "2025.naacl-long.201",
+      "section_number": "E",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "window_text": "In this section, we assess the impact of key components of SMOA, specifically the cross-layer shared\n\nTable 7: SMOA with different ${n}_{l}$ .   \n\n<table><tr><td>nl</td><td>BoolQ</td><td>HellaSWAG</td><td>OpenBookQA</td></tr><tr><td>1</td><td>61.16</td><td>25.04</td><td>29.00</td></tr><tr><td>2</td><td>62.20</td><td>25.24</td><td>29.00</td></tr><tr><td>3</td><td>62.17</td><td>25.20</td><td>29.00</td></tr><tr><td>4</td><td>62.20</td><td>25.30</td><td>29.00</td></tr><tr><td>5</td><td>62.08</td><td>25.08</td><td>29.00</td></tr><tr><td>6</td><td>62.20</td><td>25.34</td><td>29.00</td></tr><tr><td>7</td><td>62.24</td><td>25.32</td><td>29.00</td></tr><tr><td>8</td><td>62.26</td><td>25.34</td><td>29.00</td></tr></table>\n\nexpert pool and the proposed expert-redundancy regularization.\n\nFirst, we demonstrate that the cross-layer shared adapter pool significantly reduces the number of activated experts, which enhances model efficiency without sacrificing performance, as discussed in Section 6.3. This pooling mechanism optimizes expert utilization by allowing experts to be shared across layers, reducing redundancy and ensuring that only the most relevant experts are utilized.\n\nSecond, we evaluate the effectiveness of the expert-redundancy regularization on model perfor\n\nTable 8: Comparison of SMOA with and without regularization.   \n\n<table><tr><td></td><td>BoolQ</td><td>PIQA</td><td>Social IQA</td><td>HellaSWAG</td><td>Winogrande</td><td>ARC-E</td><td>ARC-C</td><td>OpenBookQA</td><td>Avg.</td></tr><tr><td>SMoA (w/o regularization)</td><td>62.16</td><td>51.22</td><td>38.49</td><td>25.08</td><td>51.96</td><td>32.52</td><td>27.21</td><td>29.00</td><td>39.69</td></tr><tr><td>SMoA</td><td>62.26</td><td>51.25</td><td>38.69</td><td>25.34</td><td>52.88</td><td>32.70</td><td>27.82</td><td>29.00</td><td>39.99</td></tr></table>\n\nTable 9: Training efficiency comparison of SMoA and baseline methods on Phi-2.7B. SMoA achieves higher accuracy with minimal computational overhead.   \n\n<table><tr><td>Model</td><td>Wall Clock Time per Training Batch (s)</td><td>Total Parameters</td><td>Trainable Params \n(Percentage of Trainable Params)</td><td>Avg. Acc (%)</td></tr><tr><td>Base Model (Phi-2)</td><td>-</td><td>2,779,683,840</td><td>-</td><td>51.51</td></tr><tr><td>LoRA</td><td>12.13</td><td>2,783,616,000</td><td>3,932,160 (0.14%)</td><td>72.67</td></tr><tr><td>Mixture of LoRA</td><td>42.08</td><td>2,813,108,064</td><td>33,424,128 (1.19%)</td><td>74.15</td></tr><tr><td>MultiLoRA</td><td>31.85</td><td>2,811,141,888</td><td>31,458,048 (1.12%)</td><td>70.05</td></tr><tr><td>SMoA</td><td>38.54</td><td>2,813,189,984</td><td>33,506,048 (1.19%)</td><td>75.61</td></tr></table>\n\nmance. The regularization encourages more distinct expert specialization, improving the model's overall task handling capability. Table 8 presents the performance comparison between SMOA with and without regularization. The regularized version consistently outperforms the unregularized one across all datasets, leading to an overall improvement in the average performance.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.201::appendix::F",
+      "paper_id": "2025.naacl-long.201",
+      "section_number": "F",
+      "section_title": "training efficiency analysis",
+      "normalized_section_title": "training efficiency analysis",
+      "window_text": "To further validate the practical applicability of SMoA, we compare its computational cost and parameter efficiency against baseline methods in Table 9. The additional cost of SMoA in terms of trainable parameters is minimal—just $0.00289\\%$ of the total parameters. The wall clock time per training batch (38.54s) is faster than Mixture of LoRA (42.08s) and comparable to MultiLoRA (31.85s), demonstrating its efficiency in training despite introducing dynamic routing. These results demonstrate that SMoA balances efficiency and performance effectively, achieving higher average accuracy $(75.61\\%)$ than baselines like Mixture of LoRA and MultiLoRA, while introducing only minimal computational overhead. This justifies the method's practical applicability despite concerns about time complexity.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.naacl-long.201::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We conduct training on an NVIDIA A100 GPU, using a batch size of 128 and a micro-batch size of 4. The learning rate is set to 3e-4 and optimized with the AdamW optimizer, incorporating a warmup of 80 steps and a cosine scheduler with restarts to manage the learning rate decay. LoRA ranks are set to 8 for fine-tuning Phi-3 and 16 for the other models. Training spans 3 epochs.\n\nFor all models, we use 8 pre-layer experts $(N = 8)$ and set the number of layers $n_l = 8$ . The hyperparameter $\\alpha$ is swept over the range $\\{0.005, 0.01, 0.05, 0.1\\}$ .\n\nWe fine-tune four pre-trained models: Phi-2, Phi-3, Gemma, and OLMo. LoRA is applied to different modules in each model:\n\n- For the Phi-2 model, the target modules include q Projekt, k Projekt, and v Projekt.   \n- For the Phi-3 model, we target the qkv Projekt module.   \n- For the Gemma model, the k Projekt module is targeted.   \n- For the OLMo model, we focus on the att_Proj module.",
+      "section_number": "A",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.naacl-long.201::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "We conduct training on an NVIDIA A100 GPU, using a batch size of 128 and a micro-batch size of 4. The learning rate is set to 3e-4 and optimized with the AdamW optimizer, incorporating a warmup of 80 steps and a cosine scheduler with restarts to manage the learning rate decay. LoRA ranks are set to 8 for fine-tuning Phi-3 and 16 for the other models. Training spans 3 epochs.\n\nFor all models, we use 8 pre-layer experts $(N = 8)$ and set the number of layers $n_l = 8$ . The hyperparameter $\\alpha$ is swept over the range $\\{0.005, 0.01, 0.05, 0.1\\}$ .\n\nWe fine-tune four pre-trained models: Phi-2, Phi-3, Gemma, and OLMo. LoRA is applied to different modules in each model:\n\n- For the Phi-2 model, the target modules include q Projekt, k Projekt, and v Projekt.   \n- For the Phi-3 model, we target the qkv Projekt module.   \n- For the Gemma model, the k Projekt module is targeted.   \n- For the OLMo model, we focus on the att_Proj module.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 1
+      }
+    ]
+  }
+}

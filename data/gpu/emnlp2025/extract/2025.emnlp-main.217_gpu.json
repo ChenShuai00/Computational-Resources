@@ -1,0 +1,122 @@
+{
+  "paper_id": "2025.emnlp-main.217",
+  "candidate_windows": [
+    {
+      "window_id": "2025.emnlp-main.217::sections::4",
+      "paper_id": "2025.emnlp-main.217",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "This section outlines our benchmark choices, baselines,and implementation details.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.217::sections::4.2",
+      "paper_id": "2025.emnlp-main.217",
+      "section_number": "4.2",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "We compare ReMedy with strong closed LLMs and open WMT metric winners, covering both open metrics and commercial LLM approaches.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.217::sections::4.3",
+      "paper_id": "2025.emnlp-main.217",
+      "section_number": "4.3",
+      "section_title": "implementation and meta-evaluation",
+      "normalized_section_title": "implementation and meta-evaluation",
+      "window_text": "We train ReMedy by fine-tuning two multilingual pre-trained foundation models: XLM-R (Conneau et al., 2020) and Gemma2 (Team et al., 2024), covering both encoder- and decoder-only types. We use XLM-R-Large (O.5B) and Gemma2 2B and 9B.\n\nWe train our models using DeepSpeed (Rajbhandari et al., 202O) in bfl6 precision for 1 epoch with early stopping on the validation set. We set the maximum sequence length to 1O24 tokens and use the Adam optimizer with a learning rate of 5e-6 and an effective batch size of 2O48.We conduct experiments using 4 NVIDIA H10O GPUs,with VLLM (Kwon et al., 2023) for fast inference.\n\nFor meta evaluation, we adopt the official WMT Metric Share Task Toolkit.4 Following official setups,we report the Pairwise Accuracy (Acc) proposed by Kocmi et al. (2021) at system-level results for WMT22-23,and Soft Pairwise Accuracy (SPA) (Thompson et al., 2024; Freitag et al., 2024) for WMT24. For segment-level, we report pairwise accuracy with tie calibration $( a c c _ { e q } ^ { * } )$ (Deutsch et al., 2023) for all WMT22-24,with the Perm-Both statistical significance test (Deutsch et al., 2021).",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.217::sections::5.2",
+      "paper_id": "2025.emnlp-main.217",
+      "section_number": "5.2",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "window_text": "Table 4 presents the ablation studies of ReMedy, using Gemma2-2B as the foundation model.\n\nReward Explosion.We first train vanilla ReMedy, a variant optimized solely with the BradleyTerry loss, similar to most reward models (Touvron et al., 2023; Ouyang et al., 2022). During training, we observed that the model continuously increased the final scalar reward scores regardless of the input. This behavior is intuitive,as the Bradley-Terry loss optimizes only the reward differences. In this setup, the model learns that increasing all reward scores makes the sigmoid output larger, thereby reducing the training loss. As a result, it produces excessively high rewards $( \\mathrm { m e a n } = 1 7 . 1 8 , \\mathrm { s t d } = 5 . 3 7 ,$ ).\n\nAdding Reward Regularization ( $\\cdot +$ reg.） effectively mitigates this reward explosion issue, stabilizing the reward distribution (mean $= 1 . 3 3$ ，std $= 0 . 5 )$ ）and improving average accuracy on the WMT22 MQM set by $+ 7 . 0 \\%$\n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"3\">MQM-22</td><td colspan=\"2\">Reward Dist</td></tr><tr><td>Sys</td><td>Seg</td><td>Avg</td><td>Mean</td><td>Std</td></tr><tr><td>Vanilla-ReMedy-2B</td><td>79.6%</td><td>52.2%</td><td>65.9%</td><td>17.18</td><td>5.37</td></tr><tr><td>+reg.</td><td>90.9%</td><td>54.9%</td><td>72.9%</td><td>1.33</td><td>0.50</td></tr><tr><td>+ reg. + margin</td><td>89.8%</td><td>55.2%</td><td>72.5%</td><td>1.93</td><td>0.63</td></tr><tr><td>+ reg. + margin + cali.</td><td>90.5%</td><td>55.9%</td><td>73.2%</td><td>0.82</td><td>0.08</td></tr></table>\n\nTable 4: Performance and reward distribution of adding reward regularization (reg.),margin,and reward calibration (cali.) for ReMedy-2B on WMT22 test set.\n\nMargin and Inference Calibrations. Incorporating the rating difference as a margin signal enhances segment-level performance $( + 0 . 3 \\mathrm { A c c } )$ by informing the model about the degree of preference between translations.For reward calibration, we apply a sigmoid function with its temperature guided by entropy (see Section 3.3). This calibration normalizes rewards to the [O,1] range while preserving meaningful distinctions between translations of similar quality, slightly improving overall performance by $+ 0 . 7 \\%$ .Notably,ReMedyachieves SOTA performance without calibration, which only serves for normalization purposes.Note that calibration only improves tie situations,see our detailed analyses in Appendix A.4",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.217::appendix::A",
+      "paper_id": "2025.emnlp-main.217",
+      "section_number": "A",
+      "section_title": "appendix",
+      "normalized_section_title": "appendix",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.emnlp-main.217::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA H100",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "We train ReMedy by fine-tuning two multilingual pre-trained foundation models: XLM-R (Conneau et al., 2020) and Gemma2 (Team et al., 2024), covering both encoder- and decoder-only types. We use XLM-R-Large (O.5B) and Gemma2 2B and 9B.\n\nWe train our models using DeepSpeed (Rajbhandari et al., 202O) in bfl6 precision for 1 epoch with early stopping on the validation set. We set the maximum sequence length to 1O24 tokens and use the Adam optimizer with a learning rate of 5e-6 and an effective batch size of 2O48.We conduct experiments using 4 NVIDIA H10O GPUs,with VLLM (Kwon et al., 2023) for fast inference.\n\nFor meta evaluation, we adopt the official WMT Metric Share Task Toolkit.4 Following official setups,we report the Pairwise Accuracy (Acc) proposed by Kocmi et al. (2021) at system-level results for WMT22-23,and Soft Pairwise Accuracy (SPA) (Thompson et al., 2024; Freitag et al., 2024) for WMT24. For segment-level, we report pairwise accuracy with tie calibration $( a c c _ { e q } ^ { * } )$ (Deutsch et al., 2023) for all WMT22-24,with the Perm-Both statistical significance test (Deutsch et al., 2021).",
+      "section_number": "4.3",
+      "section_title": "implementation and meta-evaluation",
+      "normalized_section_title": "implementation and meta-evaluation"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.emnlp-main.217::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA H100",
+      "cleaned_hardware_name": "nvidia h100",
+      "normalized_hardware_name": "NVIDIA H100 PCIe",
+      "benchmark_hardware_name": "NVIDIA H100 PCIe",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "4.3",
+      "section_title": "implementation and meta-evaluation",
+      "normalized_section_title": "implementation and meta-evaluation",
+      "evidence": "We train ReMedy by fine-tuning two multilingual pre-trained foundation models: XLM-R (Conneau et al., 2020) and Gemma2 (Team et al., 2024), covering both encoder- and decoder-only types. We use XLM-R-Large (O.5B) and Gemma2 2B and 9B.\n\nWe train our models using DeepSpeed (Rajbhandari et al., 202O) in bfl6 precision for 1 epoch with early stopping on the validation set. We set the maximum sequence length to 1O24 tokens and use the Adam optimizer with a learning rate of 5e-6 and an effective batch size of 2O48.We conduct experiments using 4 NVIDIA H10O GPUs,with VLLM (Kwon et al., 2023) for fast inference.\n\nFor meta evaluation, we adopt the official WMT Metric Share Task Toolkit.4 Following official setups,we report the Pairwise Accuracy (Acc) proposed by Kocmi et al. (2021) at system-level results for WMT22-23,and Soft Pairwise Accuracy (SPA) (Thompson et al., 2024; Freitag et al., 2024) for WMT24. For segment-level, we report pairwise accuracy with tie calibration $( a c c _ { e q } ^ { * } )$ (Deutsch et al., 2023) for all WMT22-24,with the Perm-Both statistical significance test (Deutsch et al., 2021).",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.3"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA H100 PCIe",
+        "num": 4
+      }
+    ]
+  }
+}

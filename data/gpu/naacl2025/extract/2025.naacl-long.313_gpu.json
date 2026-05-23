@@ -1,0 +1,283 @@
+{
+  "paper_id": "2025.naacl-long.313",
+  "candidate_windows": [
+    {
+      "window_id": "2025.naacl-long.313::sections::4",
+      "paper_id": "2025.naacl-long.313",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "To examine the effectiveness of our proposed Mixture of Temporal Experts (MoTE) method, we conduct experiments to compare our method with the source model (fine-tuned on source time domain) and state-of-the-art baselines on the target time domain data. We set our experimental result against three established baseline methods: Self-Labeling (Agarwal and Nenkova, 2022), Anti-CF (Su et al., 2023), and ChronosLex (Santosh et al., 2024). We set the source model as a comparison to see whether the method improves the model's adaptation to the target domain. Our assessment includes both performance evaluation and fairness evaluation. To validate domain-generalizability of our MoTE method under multilingual setting, we also conduct experiments on the legal data EURLEX (Chalkidis et al., 2021) containing 23 languages and compare our method with the best-performing baseline (Santosh et al., 2024). In addition, our work includes an ablation study focusing on the proposed MoTE method, where we removed each component of our method. By assessing the performance resulting from the removal of each component, we measured its contribution to the overall effectiveness.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.313::sections::4.1",
+      "paper_id": "2025.naacl-long.313",
+      "section_number": "4.1",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "To demonstrate the effectiveness of our proposed MoTE method, we compare it with the source model and three state-of-the-art baselines. Source Model is the vanilla baseline for temporal domain adaptation. We obtain the model fine-tuned on gold labeled source data, and then test this source model on target data. Self-Labeling (Agarwal and Nenkova, 2022) employ the fine-tuned source model to generate self-labeled target data, which is then combined with the original source data to train a new model. Anti-CF (Su et al., 2023) utilizes the source model's output to regularize model updates and includes a sequence of adapters attached to the frozen source model for efficient inference. ChronosLex (Santosh et al., 2024) train the model on data from each time period sequentially, moving chronologically through the temporal splits.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.313::sections::4.3",
+      "paper_id": "2025.naacl-long.313",
+      "section_number": "4.3",
+      "section_title": "experimental settings",
+      "normalized_section_title": "experimental settings",
+      "window_text": "For the review data, we hold out the $20\\%$ data of the most recent time period from each corpus as the target time domain, with the remaining data used as the source time domain. For the legal data, we follows the train-test split of the EURLEX dataset and use the training split as the source time domain. We use XLM-RoBERTa-base (Conneau et al., 2019) as the base model and feature encoder in our experiments, with learning rate 3e-5, batch size 32, and a maximum token length of 128 for the review data and 512 for the legal documents. with the early stopping to tune for best performance. All hyperparameters and baseline experiments follow their original settings, with details provided in Appendix E.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.313::sections::7",
+      "paper_id": "2025.naacl-long.313",
+      "section_number": "7",
+      "section_title": "acknowledgment",
+      "normalized_section_title": "acknowledgment",
+      "window_text": "We would like to thank anonymous reviewers for their valuable comments. This project is partly supported by the NSF (National Science Foundation) IIS-2245920. The first two authors are supported mainly by the NSF CNS-2318210 and partially by generous contributions from the College of Arts and Sciences and Information Technology Services at the University of Memphis. The computing resources from the iTiger GPU cluster<sup>3</sup> primarily supported the experiments.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.313::appendix::C",
+      "paper_id": "2025.naacl-long.313",
+      "section_number": "C",
+      "section_title": "hardware and software",
+      "normalized_section_title": "hardware and software",
+      "window_text": "The experiments on review data are conducted on a device equipped with 2 NVIDIA 4090 GPUs (24GB memory) and an AMD Ryzen 9 7950X CPU, running Ubuntu 22.04. The system utilizes PyTorch 2.0 (Paszke et al., 2019) alongside HuggingFace Transformers 4.26 (Wolf et al., 2020). The experiments on legal data are conducted on a machine from iTiger GPU cluster equipped with 8x H100 GPUs, 2x EPYC Genoa 9334 CPUs, and 768GB of RAM. The system runs on Linux kernel 5.14.\n\nAlgorithm 1 Clustering-Based Shift Evaluator   \nRequire: $T$ (Number of clusters), $Z^{\\mathrm{source}}$ (Historical data), $Z$ (Current data)  \nEnsure: WarmupData, $\\{v_{ij}\\}$ (Shift vectors)  \n1: $\\{(C_j,L_j)\\}_{j = 1}^T\\gets \\mathrm{KMeans}(Z^{\\mathrm{source}},T)$ 2: WarmupData $\\leftarrow \\{(z_i,l_i)\\}$ 3: $c_{j}\\gets \\frac{1}{|C_{j}|}\\sum_{z\\in C_{j}}z\\quad \\forall j\\in \\{1,\\dots ,T\\}$ 4: $v_{ij}\\gets z_i - c_j\\quad \\forall z_i\\in Z,\\forall j\\in \\{1,\\dots ,T\\}$ 5: return WarmupData, $\\{v_{ij}\\}$\n\nAlgorithm 2 Temporal Router Network   \nRequire: WarmupData(Z,L) = {(zi,li)}, V = {vij}, Z*, K, λ, Wg, Θ = {Θ1,..., ΘT}  \nEnsure: Prediction帽子  \n1: Warmup Router:  \n2: for zi ∈ Z do  \n3: G(zi) ← softmax(Wgzi) ▷ Compute gating scores  \n4: Optimize Wg using Lrouter = - ∑ log liG(zi)  \n5: end for  \n6: Train Router and Experts:  \n7: for zi ∈ Z* do  \n8: G(zi) ← TopK(softmax(Wgzi), K) ▷Select top-K experts  \n9: for each j ∈ TopK do  \n10: hj ← Θj(zi) ⊕ vij ▷Concatenate expert output with shift vector  \n11: pj ← ClassificationLayer(hj)  \n12: end for  \n13:帽子 ← 1/K ∑j∈TopKGj(zi) · pj ▷Aggregate expert outputs  \n14: end for  \n15: Compute loss: L = CE(y,帽子) + λLaux  \n16: Update: Wg, Θ  \n17: return Prediction帽子",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.naacl-long.313::appendix::E",
+      "paper_id": "2025.naacl-long.313",
+      "section_number": "E",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "window_text": "We use XLM-RoBERTa-base (Conneau et al., 2019) as the base model and feature encoder in our temporal effect analysis experiments. We use the training data of each time domain to fine-tune the base model. For review data, each model is trained 10 epochs and configured with a maximum token length of 128, a learning rate of 3e-5, a batch size of 32 per device, and gradient accumulation steps set to 2. For legal data, each model follows the same setting except models are trained 5 epochs and maximum token length set to 521 due to longer text length. We save the checkpoints of the last epoch for testing performance on both the same and the other time domain's test data (the in-time-domain and cross-time-domain evaluation). One of the time domain is chosen as source domain by the largest performance disparity in cross-time-domain evaluations, and the corresponding model is called the Source Model. We compare our proposed method\n\nwith the source model and baseline methods.\n\nAll experiments are run with three random seeds: 41, 42 and 43, and we report the average performance in our paper.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.313::appendix::E.2",
+      "paper_id": "2025.naacl-long.313",
+      "section_number": "E.2",
+      "section_title": "main experiments",
+      "normalized_section_title": "main experiments",
+      "window_text": "In our Mixture of Temporal Experts (MoTE) adaptation method, we use source model as the base model and feature encoder. We build a temporal routing network including a router and a mixture of experts on the base model. We apply a TopK gating to the router, with the K set to 2. For the training process, we use the AdamW optimizer with learning rate of 1e-4 for router warm-up and experts training. We use cross-entropy loss in the warmup process, and add an auxiliary loadbalancing loss (Shazeer et al., 2017) with a 0.01 weight following their paper's best setting. We\n\nTable 6: Performance on distant period testing across the four languages corpus in the review data.   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"3\">English</td><td colspan=\"3\">French</td><td colspan=\"3\">German</td><td colspan=\"3\">Danish</td></tr><tr><td>F1-ma</td><td>AUC</td><td>Fair ↓</td><td>F1-ma</td><td>AUC</td><td>Fair ↓</td><td>F1-ma</td><td>AUC</td><td>Fair ↓</td><td>F1-ma</td><td>AUC</td><td>Fair ↓</td></tr><tr><td>Best-baseline</td><td>47.48</td><td>78.51</td><td>2.23</td><td>41.21</td><td>75.94</td><td>1.99</td><td>38.09</td><td>74.78</td><td>2.17</td><td>47.45</td><td>81.71</td><td>2.14</td></tr><tr><td>Source Model</td><td>48.63</td><td>78.17</td><td>2.21</td><td>34.86</td><td>72.19</td><td>1.96</td><td>33.64</td><td>74.82</td><td>2.16</td><td>49.51</td><td>82.32</td><td>2.16</td></tr><tr><td>MoTE (ours)</td><td>49.29</td><td>79.81</td><td>2.18</td><td>42.06</td><td>76.68</td><td>1.98</td><td>40.22</td><td>75.66</td><td>2.16</td><td>50.34</td><td>83.61</td><td>2.05</td></tr></table>\n\nwarmup the router 20 epochs and another 20 epochs train the whole temporal routing network, with batch size of per device set to 32, and gradient accumulation steps set to 2.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.313::appendix::F",
+      "paper_id": "2025.naacl-long.313",
+      "section_number": "F",
+      "section_title": "supplementary experiments results",
+      "normalized_section_title": "supplementary experiments results",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.313::appendix::F.1",
+      "paper_id": "2025.naacl-long.313",
+      "section_number": "F.1",
+      "section_title": "experiments on distant period testing",
+      "normalized_section_title": "experiments on distant period testing",
+      "window_text": "We conducted experiments on review data using only the first time-domain's data, and test it on the last time-domain's test set. The results indicate that our method consistently improves performance across various languages and metrics, as shown in Table 6.\n\nAs shown in Table 6, our method consistently outperforms the best-baseline (ChronosLex) and the source model across all evaluation metrics. For example, in English, MoTE achieves an F1-ma of 49.29, surpassing the best-baseline (47.48) and the source model (48.63). The AUC score also improves to 79.81 compared to 78.51 from the baseline. Notably, MoTE maintains a competitive fairness score of 2.18.\n\nIn French, our method shows significant improvements, with an F1-ma of 42.06 compared to 41.21 from the baseline and 34.86 from the source model. Additionally, the AUC improves to 76.68 while keeping the fairness score at 1.98. Similar performance gains are observed across German and Danish, demonstrating the robustness of our method in distant period settings.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.naacl-long.313::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA 4090 24GB",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "The experiments on review data are conducted on a device equipped with 2 NVIDIA 4090 GPUs (24GB memory) and an AMD Ryzen 9 7950X CPU, running Ubuntu 22.04. The system utilizes PyTorch 2.0 (Paszke et al., 2019) alongside HuggingFace Transformers 4.26 (Wolf et al., 2020). The experiments on legal data are conducted on a machine from iTiger GPU cluster equipped with 8x H100 GPUs, 2x EPYC Genoa 9334 CPUs, and 768GB of RAM. The system runs on Linux kernel 5.14.\n\nAlgorithm 1 Clustering-Based Shift Evaluator   \nRequire: $T$ (Number of clusters), $Z^{\\mathrm{source}}$ (Historical data), $Z$ (Current data)  \nEnsure: WarmupData, $\\{v_{ij}\\}$ (Shift vectors)  \n1: $\\{(C_j,L_j)\\}_{j = 1}^T\\gets \\mathrm{KMeans}(Z^{\\mathrm{source}},T)$ 2: WarmupData $\\leftarrow \\{(z_i,l_i)\\}$ 3: $c_{j}\\gets \\frac{1}{|C_{j}|}\\sum_{z\\in C_{j}}z\\quad \\forall j\\in \\{1,\\dots ,T\\}$ 4: $v_{ij}\\gets z_i - c_j\\quad \\forall z_i\\in Z,\\forall j\\in \\{1,\\dots ,T\\}$ 5: return WarmupData, $\\{v_{ij}\\}$\n\nAlgorithm 2 Temporal Router Network   \nRequire: WarmupData(Z,L) = {(zi,li)}, V = {vij}, Z*, K, λ, Wg, Θ = {Θ1,..., ΘT}  \nEnsure: Prediction帽子  \n1: Warmup Router:  \n2: for zi ∈ Z do  \n3: G(zi) ← softmax(Wgzi) ▷ Compute gating scores  \n4: Optimize Wg using Lrouter = - ∑ log liG(zi)  \n5: end for  \n6: Train Router and Experts:  \n7: for zi ∈ Z* do  \n8: G(zi) ← TopK(softmax(Wgzi), K) ▷Select top-K experts  \n9: for each j ∈ TopK do  \n10: hj ← Θj(zi) ⊕ vij ▷Concatenate expert output with shift vector  \n11: pj ← ClassificationLayer(hj)  \n12: end for  \n13:帽子 ← 1/K ∑j∈TopKGj(zi) · pj ▷Aggregate expert outputs  \n14: end for  \n15: Compute loss: L = CE(y,帽子) + λLaux  \n16: Update: Wg, Θ  \n17: return Prediction帽子",
+      "section_number": "C",
+      "section_title": "hardware and software",
+      "normalized_section_title": "hardware and software"
+    },
+    {
+      "window_id": "2025.naacl-long.313::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "H100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "The experiments on review data are conducted on a device equipped with 2 NVIDIA 4090 GPUs (24GB memory) and an AMD Ryzen 9 7950X CPU, running Ubuntu 22.04. The system utilizes PyTorch 2.0 (Paszke et al., 2019) alongside HuggingFace Transformers 4.26 (Wolf et al., 2020). The experiments on legal data are conducted on a machine from iTiger GPU cluster equipped with 8x H100 GPUs, 2x EPYC Genoa 9334 CPUs, and 768GB of RAM. The system runs on Linux kernel 5.14.\n\nAlgorithm 1 Clustering-Based Shift Evaluator   \nRequire: $T$ (Number of clusters), $Z^{\\mathrm{source}}$ (Historical data), $Z$ (Current data)  \nEnsure: WarmupData, $\\{v_{ij}\\}$ (Shift vectors)  \n1: $\\{(C_j,L_j)\\}_{j = 1}^T\\gets \\mathrm{KMeans}(Z^{\\mathrm{source}},T)$ 2: WarmupData $\\leftarrow \\{(z_i,l_i)\\}$ 3: $c_{j}\\gets \\frac{1}{|C_{j}|}\\sum_{z\\in C_{j}}z\\quad \\forall j\\in \\{1,\\dots ,T\\}$ 4: $v_{ij}\\gets z_i - c_j\\quad \\forall z_i\\in Z,\\forall j\\in \\{1,\\dots ,T\\}$ 5: return WarmupData, $\\{v_{ij}\\}$\n\nAlgorithm 2 Temporal Router Network   \nRequire: WarmupData(Z,L) = {(zi,li)}, V = {vij}, Z*, K, λ, Wg, Θ = {Θ1,..., ΘT}  \nEnsure: Prediction帽子  \n1: Warmup Router:  \n2: for zi ∈ Z do  \n3: G(zi) ← softmax(Wgzi) ▷ Compute gating scores  \n4: Optimize Wg using Lrouter = - ∑ log liG(zi)  \n5: end for  \n6: Train Router and Experts:  \n7: for zi ∈ Z* do  \n8: G(zi) ← TopK(softmax(Wgzi), K) ▷Select top-K experts  \n9: for each j ∈ TopK do  \n10: hj ← Θj(zi) ⊕ vij ▷Concatenate expert output with shift vector  \n11: pj ← ClassificationLayer(hj)  \n12: end for  \n13:帽子 ← 1/K ∑j∈TopKGj(zi) · pj ▷Aggregate expert outputs  \n14: end for  \n15: Compute loss: L = CE(y,帽子) + λLaux  \n16: Update: Wg, Θ  \n17: return Prediction帽子",
+      "section_number": "C",
+      "section_title": "hardware and software",
+      "normalized_section_title": "hardware and software"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.naacl-long.313::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA 4090 24GB",
+      "cleaned_hardware_name": "nvidia 4090 24gb",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 4090",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 4090",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "C",
+      "section_title": "hardware and software",
+      "normalized_section_title": "hardware and software",
+      "evidence": "The experiments on review data are conducted on a device equipped with 2 NVIDIA 4090 GPUs (24GB memory) and an AMD Ryzen 9 7950X CPU, running Ubuntu 22.04. The system utilizes PyTorch 2.0 (Paszke et al., 2019) alongside HuggingFace Transformers 4.26 (Wolf et al., 2020). The experiments on legal data are conducted on a machine from iTiger GPU cluster equipped with 8x H100 GPUs, 2x EPYC Genoa 9334 CPUs, and 768GB of RAM. The system runs on Linux kernel 5.14.\n\nAlgorithm 1 Clustering-Based Shift Evaluator   \nRequire: $T$ (Number of clusters), $Z^{\\mathrm{source}}$ (Historical data), $Z$ (Current data)  \nEnsure: WarmupData, $\\{v_{ij}\\}$ (Shift vectors)  \n1: $\\{(C_j,L_j)\\}_{j = 1}^T\\gets \\mathrm{KMeans}(Z^{\\mathrm{source}},T)$ 2: WarmupData $\\leftarrow \\{(z_i,l_i)\\}$ 3: $c_{j}\\gets \\frac{1}{|C_{j}|}\\sum_{z\\in C_{j}}z\\quad \\forall j\\in \\{1,\\dots ,T\\}$ 4: $v_{ij}\\gets z_i - c_j\\quad \\forall z_i\\in Z,\\forall j\\in \\{1,\\dots ,T\\}$ 5: return WarmupData, $\\{v_{ij}\\}$\n\nAlgorithm 2 Temporal Router Network   \nRequire: WarmupData(Z,L) = {(zi,li)}, V = {vij}, Z*, K, λ, Wg, Θ = {Θ1,..., ΘT}  \nEnsure: Prediction帽子  \n1: Warmup Router:  \n2: for zi ∈ Z do  \n3: G(zi) ← softmax(Wgzi) ▷ Compute gating scores  \n4: Optimize Wg using Lrouter = - ∑ log liG(zi)  \n5: end for  \n6: Train Router and Experts:  \n7: for zi ∈ Z* do  \n8: G(zi) ← TopK(softmax(Wgzi), K) ▷Select top-K experts  \n9: for each j ∈ TopK do  \n10: hj ← Θj(zi) ⊕ vij ▷Concatenate expert output with shift vector  \n11: pj ← ClassificationLayer(hj)  \n12: end for  \n13:帽子 ← 1/K ∑j∈TopKGj(zi) · pj ▷Aggregate expert outputs  \n14: end for  \n15: Compute loss: L = CE(y,帽子) + λLaux  \n16: Update: Wg, Θ  \n17: return Prediction帽子",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.naacl-long.313::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "H100",
+      "cleaned_hardware_name": "h100",
+      "normalized_hardware_name": "NVIDIA H100 PCIe",
+      "benchmark_hardware_name": "NVIDIA H100 PCIe",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "C",
+      "section_title": "hardware and software",
+      "normalized_section_title": "hardware and software",
+      "evidence": "The experiments on review data are conducted on a device equipped with 2 NVIDIA 4090 GPUs (24GB memory) and an AMD Ryzen 9 7950X CPU, running Ubuntu 22.04. The system utilizes PyTorch 2.0 (Paszke et al., 2019) alongside HuggingFace Transformers 4.26 (Wolf et al., 2020). The experiments on legal data are conducted on a machine from iTiger GPU cluster equipped with 8x H100 GPUs, 2x EPYC Genoa 9334 CPUs, and 768GB of RAM. The system runs on Linux kernel 5.14.\n\nAlgorithm 1 Clustering-Based Shift Evaluator   \nRequire: $T$ (Number of clusters), $Z^{\\mathrm{source}}$ (Historical data), $Z$ (Current data)  \nEnsure: WarmupData, $\\{v_{ij}\\}$ (Shift vectors)  \n1: $\\{(C_j,L_j)\\}_{j = 1}^T\\gets \\mathrm{KMeans}(Z^{\\mathrm{source}},T)$ 2: WarmupData $\\leftarrow \\{(z_i,l_i)\\}$ 3: $c_{j}\\gets \\frac{1}{|C_{j}|}\\sum_{z\\in C_{j}}z\\quad \\forall j\\in \\{1,\\dots ,T\\}$ 4: $v_{ij}\\gets z_i - c_j\\quad \\forall z_i\\in Z,\\forall j\\in \\{1,\\dots ,T\\}$ 5: return WarmupData, $\\{v_{ij}\\}$\n\nAlgorithm 2 Temporal Router Network   \nRequire: WarmupData(Z,L) = {(zi,li)}, V = {vij}, Z*, K, λ, Wg, Θ = {Θ1,..., ΘT}  \nEnsure: Prediction帽子  \n1: Warmup Router:  \n2: for zi ∈ Z do  \n3: G(zi) ← softmax(Wgzi) ▷ Compute gating scores  \n4: Optimize Wg using Lrouter = - ∑ log liG(zi)  \n5: end for  \n6: Train Router and Experts:  \n7: for zi ∈ Z* do  \n8: G(zi) ← TopK(softmax(Wgzi), K) ▷Select top-K experts  \n9: for each j ∈ TopK do  \n10: hj ← Θj(zi) ⊕ vij ▷Concatenate expert output with shift vector  \n11: pj ← ClassificationLayer(hj)  \n12: end for  \n13:帽子 ← 1/K ∑j∈TopKGj(zi) · pj ▷Aggregate expert outputs  \n14: end for  \n15: Compute loss: L = CE(y,帽子) + λLaux  \n16: Update: Wg, Θ  \n17: return Prediction帽子",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.naacl-long.313::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": "To examine the effectiveness of our proposed Mixture of Temporal Experts (MoTE) method, we conduct experiments to compare our method with the source model (fine-tuned on source time domain) and state-of-the-art baselines on the target time domain data. We set our experimental result against three established baseline methods: Self-Labeling (Agarwal and Nenkova, 2022), Anti-CF (Su et al., 2023), and ChronosLex (Santosh et al., 2024). We set the source model as a comparison to see whether the method improves the model's adaptation to the target domain. Our assessment includes both performance evaluation and fairness evaluation. To validate domain-generalizability of our MoTE method under multilingual setting, we also conduct experiments on the legal data EURLEX (Chalkidis et al., 2021) containing 23 languages and compare our method with the best-performing baseline (Santosh et al., 2024). In addition, our work includes an ablation study focusing on the proposed MoTE method, where we removed each component of our method. By assessing the performance resulting from the removal of each component, we measured its contribution to the overall effectiveness."
+    },
+    {
+      "source_window_id": "2025.naacl-long.313::sections::4.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "baselines",
+      "evidence": "To demonstrate the effectiveness of our proposed MoTE method, we compare it with the source model and three state-of-the-art baselines. Source Model is the vanilla baseline for temporal domain adaptation. We obtain the model fine-tuned on gold labeled source data, and then test this source model on target data. Self-Labeling (Agarwal and Nenkova, 2022) employ the fine-tuned source model to generate self-labeled target data, which is then combined with the original source data to train a new model. Anti-CF (Su et al., 2023) utilizes the source model's output to regularize model updates and includes a sequence of adapters attached to the frozen source model for efficient inference. ChronosLex (Santosh et al., 2024) train the model on data from each time period sequentially, moving chronologically through the temporal splits."
+    },
+    {
+      "source_window_id": "2025.naacl-long.313::sections::4.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.3",
+      "section_title": "experimental settings",
+      "evidence": "For the review data, we hold out the $20\\%$ data of the most recent time period from each corpus as the target time domain, with the remaining data used as the source time domain. For the legal data, we follows the train-test split of the EURLEX dataset and use the training split as the source time domain. We use XLM-RoBERTa-base (Conneau et al., 2019) as the base model and feature encoder in our experiments, with learning rate 3e-5, batch size 32, and a maximum token length of 128 for the review data and 512 for the legal documents. with the early stopping to tune for best performance. All hyperparameters and baseline experiments follow their original settings, with details provided in Appendix E."
+    },
+    {
+      "source_window_id": "2025.naacl-long.313::sections::7",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "7",
+      "section_title": "acknowledgment",
+      "evidence": "We would like to thank anonymous reviewers for their valuable comments. This project is partly supported by the NSF (National Science Foundation) IIS-2245920. The first two authors are supported mainly by the NSF CNS-2318210 and partially by generous contributions from the College of Arts and Sciences and Information Technology Services at the University of Memphis. The computing resources from the iTiger GPU cluster<sup>3</sup> primarily supported the experiments."
+    },
+    {
+      "source_window_id": "2025.naacl-long.313::appendix::E",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "E",
+      "section_title": "experimental details",
+      "evidence": "We use XLM-RoBERTa-base (Conneau et al., 2019) as the base model and feature encoder in our temporal effect analysis experiments. We use the training data of each time domain to fine-tune the base model. For review data, each model is trained 10 epochs and configured with a maximum token length of 128, a learning rate of 3e-5, a batch size of 32 per device, and gradient accumulation steps set to 2. For legal data, each model follows the same setting except models are trained 5 epochs and maximum token length set to 521 due to longer text length. We save the checkpoints of the last epoch for testing performance on both the same and the other time domain's test data (the in-time-domain and cross-time-domain evaluation). One of the time domain is chosen as source domain by the largest performance disparity in cross-time-domain evaluations, and the corresponding model is called the Source Model. We compare our proposed method\n\nwith the source model and baseline methods.\n\nAll experiments are run with three random seeds: 41, 42 and 43, and we report the average performance in our paper."
+    },
+    {
+      "source_window_id": "2025.naacl-long.313::appendix::E.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "E.2",
+      "section_title": "main experiments",
+      "evidence": "In our Mixture of Temporal Experts (MoTE) adaptation method, we use source model as the base model and feature encoder. We build a temporal routing network including a router and a mixture of experts on the base model. We apply a TopK gating to the router, with the K set to 2. For the training process, we use the AdamW optimizer with learning rate of 1e-4 for router warm-up and experts training. We use cross-entropy loss in the warmup process, and add an auxiliary loadbalancing loss (Shazeer et al., 2017) with a 0.01 weight following their paper's best setting. We\n\nTable 6: Performance on distant period testing across the four languages corpus in the review data.   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"3\">English</td><td colspan=\"3\">French</td><td colspan=\"3\">German</td><td colspan=\"3\">Danish</td></tr><tr><td>F1-ma</td><td>AUC</td><td>Fair ↓</td><td>F1-ma</td><td>AUC</td><td>Fair ↓</td><td>F1-ma</td><td>AUC</td><td>Fair ↓</td><td>F1-ma</td><td>AUC</td><td>Fair ↓</td></tr><tr><td>Best-baseline</td><td>47.48</td><td>78.51</td><td>2.23</td><td>41.21</td><td>75.94</td><td>1.99</td><td>38.09</td><td>74.78</td><td>2.17</td><td>47.45</td><td>81.71</td><td>2.14</td></tr><tr><td>Source Model</td><td>48.63</td><td>78.17</td><td>2.21</td><td>34.86</td><td>72.19</td><td>1.96</td><td>33.64</td><td>74.82</td><td>2.16</td><td>49.51</td><td>82.32</td><td>2.16</td></tr><tr><td>MoTE (ours)</td><td>49.29</td><td>79.81</td><td>2.18</td><td>42.06</td><td>76.68</td><td>1.98</td><td>40.22</td><td>75.66</td><td>2.16</td><td>50.34</td><td>83.61</td><td>2.05</td></tr></table>\n\nwarmup the router 20 epochs and another 20 epochs train the whole temporal routing network, with batch size of per device set to 32, and gradient accumulation steps set to 2."
+    },
+    {
+      "source_window_id": "2025.naacl-long.313::appendix::F",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "F",
+      "section_title": "supplementary experiments results",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.naacl-long.313::appendix::F.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "F.1",
+      "section_title": "experiments on distant period testing",
+      "evidence": "We conducted experiments on review data using only the first time-domain's data, and test it on the last time-domain's test set. The results indicate that our method consistently improves performance across various languages and metrics, as shown in Table 6.\n\nAs shown in Table 6, our method consistently outperforms the best-baseline (ChronosLex) and the source model across all evaluation metrics. For example, in English, MoTE achieves an F1-ma of 49.29, surpassing the best-baseline (47.48) and the source model (48.63). The AUC score also improves to 79.81 compared to 78.51 from the baseline. Notably, MoTE maintains a competitive fairness score of 2.18.\n\nIn French, our method shows significant improvements, with an F1-ma of 42.06 compared to 41.21 from the baseline and 34.86 from the source model. Additionally, the AUC improves to 76.68 while keeping the fairness score at 1.98. Similar performance gains are observed across German and Danish, demonstrating the robustness of our method in distant period settings."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "C"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce RTX 4090",
+        "num": 2
+      },
+      {
+        "name": "NVIDIA H100 PCIe",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\naacl2025\\2025.naacl-long.313\\auto\\full.md",
+    "source_md_sha256": "c19b4805564e0b4a0b86bedb73f1bf76f83f9b6241dc0a1a3327a88ac51f8a83",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "2675653de99eef0c798ee7420db7b99fc0acfd023a10d7a43582a7be8a42f872"
+  }
+}

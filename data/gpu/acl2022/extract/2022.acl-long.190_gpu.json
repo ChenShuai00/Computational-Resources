@@ -1,0 +1,162 @@
+{
+  "paper_id": "2022.acl-long.190",
+  "candidate_windows": [
+    {
+      "window_id": "2022.acl-long.190::sections::5",
+      "paper_id": "2022.acl-long.190",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.190::sections::5.1",
+      "paper_id": "2022.acl-long.190",
+      "section_number": "5.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Source Datasets We select the two most widely used NLI datasets SNLI (Bowman et al., 2015) and MNLI (Williams et al., 2018) as our original datasets. Prior work (Gururangan et al., 2018; Poliak et al., 2018; McCoy et al., 2019) found various annotation artifacts in them, hence they serve as good use cases for constructing debiased datasets.\n\nEvaluation Datasets For the hypothesis-only bias, we use the challenge sets SNLI-hard (Gururangan et al., 2018) and MNLI-hard (Williams et al., 2018), which were produced by filtering the test set with a hypothesis-only model (Section 5.2). For syntactic biases, we follow previous work and use HANS (McCoy et al., 2019) for evaluation (Section 5.3). In addition, we evaluate on the adversarial test benchmark introduced by Liu et al. (2020b) (Section 5.4). This benchmark covers a wide range of adversarial attacks, which will give a more complete picture of what spurious correlations the debiasing methods tackle.\n\nGenerating Debiased Datasets We conduct debiased data generation for SNLI and MNLI separately. For SNLI, we use the proposed method described in Section 4.1 to train a generator $G_{\\mathrm{SNLI}}^*$ . Then we randomly sample a large number of instances from the generator to construct $\\mathcal{D}_{G_{\\mathrm{SNLI}}^*}$ . The samples are filtered with a strong NLI model $M$ trained on SNLI to obtain $\\hat{\\mathcal{D}}_{G_{\\mathrm{SNLI}}^*}$ . Finally, different options (Section 4.2) can be adopted to merge the synthetic data with the original data $\\mathcal{D}_{\\mathrm{SNLI}}$ to construct debiased versions of SNLI. The same\n\nTable 1: Data size of the constructed debiased datasets for SNLI and MNLI.   \n\n<table><tr><td>Options</td><td>D0 = DSNLI</td><td>D0 = DMNLI</td></tr><tr><td>Original D0</td><td>549,367</td><td>382,702</td></tr><tr><td>Z-Aug Z(DG*)|D0)</td><td>1,142,475</td><td>744,326</td></tr><tr><td>Par-Z Z(D0) ∪ Z(DG*)</td><td>933,085</td><td>740,811</td></tr><tr><td>Seq-Z Z(DG*|Z(D0))</td><td>927,906</td><td>744,200</td></tr></table>\n\nprocedure is used to produce debiased datasets for MNLI, by simply replacing the original dataset with MNLI. We choose GPT-2 large and Roberta-large as the pretrained language models for $G^{*}$ and $M$ respectively. The size of the constructed debiased datasets are listed in Table 1.\n\nNLI Model Training Since our method directly debiases the training data itself, we keep the model and training objective fixed and only replace the training data with our generated debiased datasets. For comparability with previous work (Karimi Mahabadi et al., 2020; Utama et al., 2020; Sanh et al., 2021), we train BERT-base (Devlin et al., 2019) on our debiased datasets. The NLI models are trained with ordinary cross-entropy classification loss, and the training hyperparameters are listed in Appendix A. We run our experiments five times and report the average and standard deviation of the scores. We also conduct statistical significance testing using a 2-tailed t-test at $95\\%$ confidence level.\n\nState-of-the-art Debiasing Models We compare our method with the following three state-of-the-art debiasing models on each of our evaluation datasets. Product-of-Experts (He et al., 2019; Karimi Mahabadi et al., 2020) ensembles a bias-only model's prediction $b_{i}$ with the main model's $p_{i}$ using $p_{i}^{\\prime} = \\text{softmax}(\\log p_{i} + \\log b_{i})$ . This assembling enforces that the main model focuses on the samples that the bias-only model does not predict well. Learned-Mixin (Clark et al., 2019) is a variant of PoE that introduces a learnable weight for the bias-only model's prediction. Regularized-conf (Utama et al., 2020) uses confidence regularisation to retain the in-distribution performance while conducting model debiasing.\n\nTable 2: Accuracy on SNLI and SNLI-hard. * are reported results and underscore indicates statistical significance against the baseline. Training on our debiased SNLI datasets significantly boosts the performance on SNLI-hard compared to the baseline, and it improves further when combined with PoE.   \n\n<table><tr><td>Method (model w/ data)</td><td>SNLI</td><td>SNLI-hard</td></tr><tr><td colspan=\"3\">Prior debiasing strategies trained on SNLI</td></tr><tr><td>AdvCls (Belinkov et al., 2019a)*</td><td>83.56</td><td>66.27</td></tr><tr><td>Ens. AdvCls (Stacey et al., 2020)*</td><td>84.09</td><td>67.42</td></tr><tr><td>DFL (Karimi Mahabadi et al., 2020)*</td><td>89.57</td><td>83.01</td></tr><tr><td>PoE (Karimi Mahabadi et al., 2020)*</td><td>90.11</td><td>82.15</td></tr><tr><td>BERT-base w/ DSNLI baseline</td><td>90.45</td><td>80.34±0.46</td></tr><tr><td colspan=\"3\">Models trained on our debiased datasets</td></tr><tr><td>BERT-base w/ Z-Aug Z(♂G*|DSNLI)</td><td>90.67</td><td>81.78±0.53</td></tr><tr><td>BERT-base w/ Par-Z Z(DSNLI) ∪ Z(♂G*)</td><td>88.11</td><td>82.81±0.37</td></tr><tr><td>BERT-base w/ Seq-Z Z(♂G*|DSNLI))</td><td>88.08</td><td>82.82±0.15</td></tr><tr><td colspan=\"3\">Combining PoE with our debiased datasets</td></tr><tr><td>BERT-base + PoE w/ DSNLI</td><td>90.25</td><td>82.92</td></tr><tr><td>BERT-base + PoE w/ Seq-Z Z(♂G*|DSNLI))</td><td>87.65</td><td>84.48</td></tr></table>\n\nCombining PoE with Our Debiased Datasets Our approach changes the training data distribution instead of the model's training objective, and hence is orthogonal to prior work method-wise. We also report the results of combining PoE with our proposed method, simply by training a PoE model on our debiased datasets. We adapt the PoE implementation by Karimi Mahabadi et al. (2020), and we follow their approach to conduct hyperparameter tuning for PoE. The hyperparameters of the PoE models are reported in Table 10 of Appendix A.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.190::appendix::A",
+      "paper_id": "2022.acl-long.190",
+      "section_number": "A",
+      "section_title": "hyperparameters",
+      "normalized_section_title": "hyperparameters",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.190::appendix::A.1",
+      "paper_id": "2022.acl-long.190",
+      "section_number": "A.1",
+      "section_title": "hyperparameters of our proposed method",
+      "normalized_section_title": "hyperparameters of our proposed method",
+      "window_text": "Table 7: Hyperparameters for training the generator $G^{*}$   \n\n<table><tr><td>Hyperparameter</td><td>Value</td></tr><tr><td>learning rate</td><td>1e-5</td></tr><tr><td>batch size</td><td>24</td></tr><tr><td>epoch</td><td>5</td></tr><tr><td>optimiser</td><td>Adam</td></tr><tr><td>Adam ε</td><td>1e-6</td></tr><tr><td>Adam (β1, β2)</td><td>(0.9, 0.999)</td></tr><tr><td>learning rate scheduler</td><td>constant</td></tr><tr><td>max sequence length</td><td>128</td></tr><tr><td>pretrained model</td><td>GPT-2 large</td></tr><tr><td>device</td><td>Nvidia A100</td></tr><tr><td>λ</td><td>0.5</td></tr><tr><td>α</td><td>1.0</td></tr></table>\n\nTable 8: Hyperparameters of the data generation pipeline.   \n\n<table><tr><td>Hyperparameter</td><td>Value</td></tr><tr><td>number of samples from G*SNLI</td><td>5,000,000</td></tr><tr><td>number of samples from G*MNLI</td><td>4,000,000</td></tr><tr><td>data filtering threshold τ</td><td>0.95</td></tr><tr><td>data filtering model</td><td>Roberta-large</td></tr><tr><td>z-filtering number of biased features</td><td>20</td></tr></table>\n\nTable 9: Hyperparameters for training the NLI models.   \n\n<table><tr><td>Hyperparameter</td><td>Value</td></tr><tr><td>learning rate</td><td>1e-5</td></tr><tr><td>batch size</td><td>32</td></tr><tr><td>epoch</td><td>5</td></tr><tr><td>optimiser</td><td>Adam</td></tr><tr><td>Adam ε</td><td>1e-6</td></tr><tr><td>Adam (β1, β2)</td><td>(0.9, 0.999)</td></tr><tr><td>learning rate scheduler</td><td>constant with warmup</td></tr><tr><td>warm up steps</td><td>2000</td></tr><tr><td>max sequence length</td><td>128</td></tr><tr><td>pretrained model</td><td>BERT-base</td></tr><tr><td>device</td><td>Nvidia A100</td></tr><tr><td>early stop patience</td><td>3 epochs</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.190::appendix::A.2",
+      "paper_id": "2022.acl-long.190",
+      "section_number": "A.2",
+      "section_title": "hyperparameter tuning of poe",
+      "normalized_section_title": "hyperparameter tuning of poe",
+      "window_text": "The learning objective of PoE is defined as follows:\n\n$$\n\\mathcal {L} _ {\\mathrm {P o E}} = \\sum_ {i = 1} ^ {| \\mathcal {D} |} C E \\left(l _ {i}, p _ {i} ^ {\\prime}\\right) + \\gamma C E \\left(l _ {i}, b _ {i}\\right),\n$$\n\nwhere $CE$ stands for cross-entropy loss, $l_{i}$ is the label, and $\\gamma$ is a hyperparameter. $p_i^{\\prime} =$ softmax(logpi+βlogbi) is the ensemble of the main model's prediction $p_i$ ,and the bias-only model's prediction $b_{i}$ weighted by a hyperparameter $\\beta$\n\nWe find that the result of PoE is very sensitive to the hyperparameters $\\beta$ and $\\gamma$ . Following Karimi Mahabadi et al. (2020), we conduct grid search for the two hyperparameters, with $\\beta \\in \\{0.05, 0.1, 0.2, 0.4, 0.8, 1.0, 2.0\\}$ and $\\gamma \\in \\{0.05, 0.1, 0.2, 0.4, 0.8, 1.0\\}$ . The best hyperparameters found for each evaluation dataset is listed in Table 10.\n\nTable 10: Best hyperparameters found for PoE models with different training and evaluation datasets.   \n\n<table><tr><td>Train data</td><td>Eval. data</td><td>β</td><td>γ</td></tr><tr><td>SNLI</td><td>SNLI-hard</td><td>2.0</td><td>0.4</td></tr><tr><td>Seq-Z SNLI</td><td>SNLI-hard</td><td>2.0</td><td>0.4</td></tr><tr><td rowspan=\"3\">MNLI</td><td>MNLI-m hard</td><td>0.8</td><td>1.0</td></tr><tr><td>MNLI-mm hard</td><td>2.0</td><td>0.4</td></tr><tr><td>HANS</td><td>2.0</td><td>0.8</td></tr><tr><td rowspan=\"3\">Z-Aug MNLI</td><td>MNLI-m hard</td><td>2.0</td><td>0.4</td></tr><tr><td>MNLI-mm hard</td><td>2.0</td><td>0.8</td></tr><tr><td>HANS</td><td>2.0</td><td>1.0</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.acl-long.190::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A100",
+      "count": null,
+      "count_text": "",
+      "evidence": "Table 7: Hyperparameters for training the generator $G^{*}$   \n\n<table><tr><td>Hyperparameter</td><td>Value</td></tr><tr><td>learning rate</td><td>1e-5</td></tr><tr><td>batch size</td><td>24</td></tr><tr><td>epoch</td><td>5</td></tr><tr><td>optimiser</td><td>Adam</td></tr><tr><td>Adam ε</td><td>1e-6</td></tr><tr><td>Adam (β1, β2)</td><td>(0.9, 0.999)</td></tr><tr><td>learning rate scheduler</td><td>constant</td></tr><tr><td>max sequence length</td><td>128</td></tr><tr><td>pretrained model</td><td>GPT-2 large</td></tr><tr><td>device</td><td>Nvidia A100</td></tr><tr><td>λ</td><td>0.5</td></tr><tr><td>α</td><td>1.0</td></tr></table>\n\nTable 8: Hyperparameters of the data generation pipeline.   \n\n<table><tr><td>Hyperparameter</td><td>Value</td></tr><tr><td>number of samples from G*SNLI</td><td>5,000,000</td></tr><tr><td>number of samples from G*MNLI</td><td>4,000,000</td></tr><tr><td>data filtering threshold τ</td><td>0.95</td></tr><tr><td>data filtering model</td><td>Roberta-large</td></tr><tr><td>z-filtering number of biased features</td><td>20</td></tr></table>\n\nTable 9: Hyperparameters for training the NLI models.   \n\n<table><tr><td>Hyperparameter</td><td>Value</td></tr><tr><td>learning rate</td><td>1e-5</td></tr><tr><td>batch size</td><td>32</td></tr><tr><td>epoch</td><td>5</td></tr><tr><td>optimiser</td><td>Adam</td></tr><tr><td>Adam ε</td><td>1e-6</td></tr><tr><td>Adam (β1, β2)</td><td>(0.9, 0.999)</td></tr><tr><td>learning rate scheduler</td><td>constant with warmup</td></tr><tr><td>warm up steps</td><td>2000</td></tr><tr><td>max sequence length</td><td>128</td></tr><tr><td>pretrained model</td><td>BERT-base</td></tr><tr><td>device</td><td>Nvidia A100</td></tr><tr><td>early stop patience</td><td>3 epochs</td></tr></table>",
+      "section_number": "A.1",
+      "section_title": "hyperparameters of our proposed method",
+      "normalized_section_title": "hyperparameters of our proposed method"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.acl-long.190::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": null,
+      "count_text": "",
+      "section_number": "A.1",
+      "section_title": "hyperparameters of our proposed method",
+      "normalized_section_title": "hyperparameters of our proposed method",
+      "evidence": "Table 7: Hyperparameters for training the generator $G^{*}$   \n\n<table><tr><td>Hyperparameter</td><td>Value</td></tr><tr><td>learning rate</td><td>1e-5</td></tr><tr><td>batch size</td><td>24</td></tr><tr><td>epoch</td><td>5</td></tr><tr><td>optimiser</td><td>Adam</td></tr><tr><td>Adam ε</td><td>1e-6</td></tr><tr><td>Adam (β1, β2)</td><td>(0.9, 0.999)</td></tr><tr><td>learning rate scheduler</td><td>constant</td></tr><tr><td>max sequence length</td><td>128</td></tr><tr><td>pretrained model</td><td>GPT-2 large</td></tr><tr><td>device</td><td>Nvidia A100</td></tr><tr><td>λ</td><td>0.5</td></tr><tr><td>α</td><td>1.0</td></tr></table>\n\nTable 8: Hyperparameters of the data generation pipeline.   \n\n<table><tr><td>Hyperparameter</td><td>Value</td></tr><tr><td>number of samples from G*SNLI</td><td>5,000,000</td></tr><tr><td>number of samples from G*MNLI</td><td>4,000,000</td></tr><tr><td>data filtering threshold τ</td><td>0.95</td></tr><tr><td>data filtering model</td><td>Roberta-large</td></tr><tr><td>z-filtering number of biased features</td><td>20</td></tr></table>\n\nTable 9: Hyperparameters for training the NLI models.   \n\n<table><tr><td>Hyperparameter</td><td>Value</td></tr><tr><td>learning rate</td><td>1e-5</td></tr><tr><td>batch size</td><td>32</td></tr><tr><td>epoch</td><td>5</td></tr><tr><td>optimiser</td><td>Adam</td></tr><tr><td>Adam ε</td><td>1e-6</td></tr><tr><td>Adam (β1, β2)</td><td>(0.9, 0.999)</td></tr><tr><td>learning rate scheduler</td><td>constant with warmup</td></tr><tr><td>warm up steps</td><td>2000</td></tr><tr><td>max sequence length</td><td>128</td></tr><tr><td>pretrained model</td><td>BERT-base</td></tr><tr><td>device</td><td>Nvidia A100</td></tr><tr><td>early stop patience</td><td>3 epochs</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2022.acl-long.190::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2022.acl-long.190::sections::5.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.1",
+      "section_title": "experimental setup",
+      "evidence": "Source Datasets We select the two most widely used NLI datasets SNLI (Bowman et al., 2015) and MNLI (Williams et al., 2018) as our original datasets. Prior work (Gururangan et al., 2018; Poliak et al., 2018; McCoy et al., 2019) found various annotation artifacts in them, hence they serve as good use cases for constructing debiased datasets.\n\nEvaluation Datasets For the hypothesis-only bias, we use the challenge sets SNLI-hard (Gururangan et al., 2018) and MNLI-hard (Williams et al., 2018), which were produced by filtering the test set with a hypothesis-only model (Section 5.2). For syntactic biases, we follow previous work and use HANS (McCoy et al., 2019) for evaluation (Section 5.3). In addition, we evaluate on the adversarial test benchmark introduced by Liu et al. (2020b) (Section 5.4). This benchmark covers a wide range of adversarial attacks, which will give a more complete picture of what spurious correlations the debiasing methods tackle.\n\nGenerating Debiased Datasets We conduct debiased data generation for SNLI and MNLI separately. For SNLI, we use the proposed method described in Section 4.1 to train a generator $G_{\\mathrm{SNLI}}^*$ . Then we randomly sample a large number of instances from the generator to construct $\\mathcal{D}_{G_{\\mathrm{SNLI}}^*}$ . The samples are filtered with a strong NLI model $M$ trained on SNLI to obtain $\\hat{\\mathcal{D}}_{G_{\\mathrm{SNLI}}^*}$ . Finally, different options (Section 4.2) can be adopted to merge the synthetic data with the original data $\\mathcal{D}_{\\mathrm{SNLI}}$ to construct debiased versions of SNLI. The same\n\nTable 1: Data size of the constructed debiased datasets for SNLI and MNLI.   \n\n<table><tr><td>Options</td><td>D0 = DSNLI</td><td>D0 = DMNLI</td></tr><tr><td>Original D0</td><td>549,367</td><td>382,702</td></tr><tr><td>Z-Aug Z(DG*)|D0)</td><td>1,142,475</td><td>744,326</td></tr><tr><td>Par-Z Z(D0) ∪ Z(DG*)</td><td>933,085</td><td>740,811</td></tr><tr><td>Seq-Z Z(DG*|Z(D0))</td><td>927,906</td><td>744,200</td></tr></table>\n\nprocedure is used to produce debiased datasets for MNLI, by simply replacing the original dataset with MNLI. We choose GPT-2 large and Roberta-large as the pretrained language models for $G^{*}$ and $M$ respectively. The size of the constructed debiased datasets are listed in Table 1.\n\nNLI Model Training Since our method directly debiases the training data itself, we keep the model and training objective fixed and only replace the training data with our generated debiased datasets. For comparability with previous work (Karimi Mahabadi et al., 2020; Utama et al., 2020; Sanh et al., 2021), we train BERT-base (Devlin et al., 2019) on our debiased datasets. The NLI models are trained with ordinary cross-entropy classification loss, and the training hyperparameters are listed in Appendix A. We run our experiments five times and report the average and standard deviation of the scores. We also conduct statistical significance testing using a 2-tailed t-test at $95\\%$ confidence level.\n\nState-of-the-art Debiasing Models We compare our method with the following three state-of-the-art debiasing models on each of our evaluation datasets. Product-of-Experts (He et al., 2019; Karimi Mahabadi et al., 2020) ensembles a bias-only model's prediction $b_{i}$ with the main model's $p_{i}$ using $p_{i}^{\\prime} = \\text{softmax}(\\log p_{i} + \\log b_{i})$ . This assembling enforces that the main model focuses on the samples that the bias-only model does not predict well. Learned-Mixin (Clark et al., 2019) is a variant of PoE that introduces a learnable weight for the bias-only model's prediction. Regularized-conf (Utama et al., 2020) uses confidence regularisation to retain the in-distribution performance while conducting model debiasing.\n\nTable 2: Accuracy on SNLI and SNLI-hard. * are reported results and underscore indicates statistical significance against the baseline. Training on our debiased SNLI datasets significantly boosts the performance on SNLI-hard compared to the baseline, and it improves further when combined with PoE.   \n\n<table><tr><td>Method (model w/ data)</td><td>SNLI</td><td>SNLI-hard</td></tr><tr><td colspan=\"3\">Prior debiasing strategies trained on SNLI</td></tr><tr><td>AdvCls (Belinkov et al., 2019a)*</td><td>83.56</td><td>66.27</td></tr><tr><td>Ens. AdvCls (Stacey et al., 2020)*</td><td>84.09</td><td>67.42</td></tr><tr><td>DFL (Karimi Mahabadi et al., 2020)*</td><td>89.57</td><td>83.01</td></tr><tr><td>PoE (Karimi Mahabadi et al., 2020)*</td><td>90.11</td><td>82.15</td></tr><tr><td>BERT-base w/ DSNLI baseline</td><td>90.45</td><td>80.34±0.46</td></tr><tr><td colspan=\"3\">Models trained on our debiased datasets</td></tr><tr><td>BERT-base w/ Z-Aug Z(♂G*|DSNLI)</td><td>90.67</td><td>81.78±0.53</td></tr><tr><td>BERT-base w/ Par-Z Z(DSNLI) ∪ Z(♂G*)</td><td>88.11</td><td>82.81±0.37</td></tr><tr><td>BERT-base w/ Seq-Z Z(♂G*|DSNLI))</td><td>88.08</td><td>82.82±0.15</td></tr><tr><td colspan=\"3\">Combining PoE with our debiased datasets</td></tr><tr><td>BERT-base + PoE w/ DSNLI</td><td>90.25</td><td>82.92</td></tr><tr><td>BERT-base + PoE w/ Seq-Z Z(♂G*|DSNLI))</td><td>87.65</td><td>84.48</td></tr></table>\n\nCombining PoE with Our Debiased Datasets Our approach changes the training data distribution instead of the model's training objective, and hence is orthogonal to prior work method-wise. We also report the results of combining PoE with our proposed method, simply by training a PoE model on our debiased datasets. We adapt the PoE implementation by Karimi Mahabadi et al. (2020), and we follow their approach to conduct hyperparameter tuning for PoE. The hyperparameters of the PoE models are reported in Table 10 of Appendix A."
+    },
+    {
+      "source_window_id": "2022.acl-long.190::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "hyperparameters",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2022.acl-long.190::appendix::A.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.2",
+      "section_title": "hyperparameter tuning of poe",
+      "evidence": "The learning objective of PoE is defined as follows:\n\n$$\n\\mathcal {L} _ {\\mathrm {P o E}} = \\sum_ {i = 1} ^ {| \\mathcal {D} |} C E \\left(l _ {i}, p _ {i} ^ {\\prime}\\right) + \\gamma C E \\left(l _ {i}, b _ {i}\\right),\n$$\n\nwhere $CE$ stands for cross-entropy loss, $l_{i}$ is the label, and $\\gamma$ is a hyperparameter. $p_i^{\\prime} =$ softmax(logpi+βlogbi) is the ensemble of the main model's prediction $p_i$ ,and the bias-only model's prediction $b_{i}$ weighted by a hyperparameter $\\beta$\n\nWe find that the result of PoE is very sensitive to the hyperparameters $\\beta$ and $\\gamma$ . Following Karimi Mahabadi et al. (2020), we conduct grid search for the two hyperparameters, with $\\beta \\in \\{0.05, 0.1, 0.2, 0.4, 0.8, 1.0, 2.0\\}$ and $\\gamma \\in \\{0.05, 0.1, 0.2, 0.4, 0.8, 1.0\\}$ . The best hyperparameters found for each evaluation dataset is listed in Table 10.\n\nTable 10: Best hyperparameters found for PoE models with different training and evaluation datasets.   \n\n<table><tr><td>Train data</td><td>Eval. data</td><td>β</td><td>γ</td></tr><tr><td>SNLI</td><td>SNLI-hard</td><td>2.0</td><td>0.4</td></tr><tr><td>Seq-Z SNLI</td><td>SNLI-hard</td><td>2.0</td><td>0.4</td></tr><tr><td rowspan=\"3\">MNLI</td><td>MNLI-m hard</td><td>0.8</td><td>1.0</td></tr><tr><td>MNLI-mm hard</td><td>2.0</td><td>0.4</td></tr><tr><td>HANS</td><td>2.0</td><td>0.8</td></tr><tr><td rowspan=\"3\">Z-Aug MNLI</td><td>MNLI-m hard</td><td>2.0</td><td>0.4</td></tr><tr><td>MNLI-mm hard</td><td>2.0</td><td>0.8</td></tr><tr><td>HANS</td><td>2.0</td><td>1.0</td></tr></table>"
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": null
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2022\\2022.acl-long.190\\auto\\full.md",
+    "source_md_sha256": "92f576fdef18d0aec2a760fc83da307d0b83802649c53483ab447a04689249c5",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

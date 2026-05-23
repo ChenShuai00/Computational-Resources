@@ -1,0 +1,92 @@
+{
+  "paper_id": "2024.emnlp-main.1",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.1::sections::4.1",
+      "paper_id": "2024.emnlp-main.1",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "In this section, we briefly explain the experimental setup used herein to validate the effectiveness of UNIGEN. We employ seven different sentiment classification datasets in our main experiment. Among them, IMDB (Maas et al., 2011), SST-2 (Socher et al., 2013), and Rotten Tomatoes (Pang\n\nand Lee, 2005) are datasets comprising movie reviews. Meanwhile, the Amazon (McAuley and Leskovec, 2013) dataset consists of customer reviews of various products, and the Yelp (Zhang et al., 2015) dataset is composed of restaurant reviews. CR (Ding et al., 2008) is another customer review dataset focusing on consumer electronics. Lastly, Tweet (Rosenthal et al., 2017) is composed of messages from Twitter. This configuration allows us to evaluate the ability of UNIGEN, which can be applied to various domains without providing any prior information or domain-specific training. Following the previous study, we adapted long short-term memory (LSTM) (Hochreiter and Schmidhuber, 1997) and DistilBERT (Sanh et al., 2019), and we included RoBERTa (Liu et al., 2019) as our TAM. We compared our approach to ZEROGEN and SUNGEN, as well as to PROMPTING using GPT2-XL (Radford et al., 2019), to ensure a fair comparison. We did not include other larger PLMs in the experiments because the previous work discovered that larger PLMs did not offer performance gains (Ye et al., 2022a). We report the average of the performance results obtained across five different random seeds.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1::appendix::B",
+      "paper_id": "2024.emnlp-main.1",
+      "section_number": "B",
+      "section_title": "implementation detail",
+      "normalized_section_title": "implementation detail",
+      "window_text": "For UNIGEN, we first generated 1,000k data from the 1.5B GPT2-XL model as $\\mathcal{P}$ by using the prompt $\\mathcal{T}_{\\mathrm{uni}}$ \"The text in positive/negative sentiment is: \", which is a slightly modified version of the best prompt suggested in a previous study. Top-k and top-p were set to 40 and 0.9 during the generation procedure, respectively. The soft relabeling process was performed using a $\\tau_{RE}$ of 0.1. After obtaining the soft labels of each of the generated samples, we filtered them using $T_{RE}$ of 0.2. This required the largest value from the soft labels to be larger than the sum of the uniform distribution and $T_{RE}$ , for instance, 0.7 in binary classification with $T_{RE}$ of 0.2. As an example, the sentence corresponding to the soft label [0.64, 0.36] was discarded because it did not exceed the threshold.\n\nAfter generation, we followed the bi-level optimization approach proposed in SUNGEN to cleanse the generated dataset and find the sample weights for 50 epochs. The outer learning rate was set to 5e-2, and we randomly sampled 50k data for each outer validation process. Then, we selected 200k data with high weights, which represent high-quality data, to train the TAMs.\n\nWe used a one-layer bi-LSTM model for the LSTM-based TAM and the distilbert-base-uncased and roberta-base from Transformers (Wolf et al., 2020) for the DistilBERT-based TAM and RoBERTa-based TAM, respectively. We trained the LSTM-based TAM for 5 epochs with the learning rate of 1e-3 by using the Adam (Kingma and Ba, 2015) optimizer. The DistilBERT-based TAM was trained for 3 epochs with a learning rate of 2e-5 by using the Adam optimizer. The RoBERTa-based TAM was trained for 3 epochs with a learning rate of 2e-5 by using the Adam optimizer. During the training process, $\\alpha$ for supervised contrastive learning loss was set to 0.5, with a projection size of\n\n256. The temperature $\\tau_{SCL}$ was set to 0.2, and the memory bank size $M$ was set to 64. The coefficient $m$ for updating the momentum encoder was set to 0.999, and the threshold of the denoising memory bank $T_{MB}$ was set to 0.8. The dataset generation and training procedures were executed using on a single NVIDIA A100 40GB GPU. Please refer to attached source code for further details. $^{1}$",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1::appendix::D",
+      "paper_id": "2024.emnlp-main.1",
+      "section_number": "D",
+      "section_title": "additional experiment on domain generalizability",
+      "normalized_section_title": "additional experiment on domain generalizability",
+      "window_text": "To further reveal the domain generalizability of UNIGEN, we conducted an additional experiment on Amazon Review dataset (Ni et al., 2019). We used 5-core data for 29 domains and reported the performance of PROMPTING using GPT2-XL (Radford et al., 2019) and RoBERTa-based TAM trained by UNIGEN. The result in Table 10 demonstrates the performance of UNIGEN that is comparable with PROMPTING, with parameters less than $10\\%$ . Additionally, this experiment showcases the universality of UNIGEN, the characteristics that distin\n\nTable 10: The result of the experiment on the Amazon Review dataset.   \n\n<table><tr><td>Domain</td><td>PROMPTING</td><td>UNIGEN</td></tr><tr><td>Fashion</td><td>93.29</td><td>91.16</td></tr><tr><td>Beauty</td><td>95.63</td><td>92.87</td></tr><tr><td>Appliances</td><td>68.27</td><td>79.10</td></tr><tr><td>Arts, Crafts and Sewing</td><td>91.05</td><td>92.08</td></tr><tr><td>Automotive</td><td>91.07</td><td>88.23</td></tr><tr><td>Books</td><td>89.18</td><td>91.26</td></tr><tr><td>CDs and Vinyl</td><td>82.44</td><td>86.42</td></tr><tr><td>Cell Phones and Accessories</td><td>90.47</td><td>88.65</td></tr><tr><td>Clothing, Shoes and Jewelry</td><td>91.83</td><td>90.80</td></tr><tr><td>Digital Music</td><td>93.72</td><td>90.62</td></tr><tr><td>Electronics</td><td>88.68</td><td>88.34</td></tr><tr><td>Gift Cards</td><td>94.03</td><td>92.50</td></tr><tr><td>Grocery and Gourmet Food</td><td>92.31</td><td>91.09</td></tr><tr><td>Home and Kitchen</td><td>92.11</td><td>91.53</td></tr><tr><td>Industrial and Scientific</td><td>91.07</td><td>92.34</td></tr><tr><td>Kindle Store</td><td>89.49</td><td>92.76</td></tr><tr><td>Luxury Beauty</td><td>90.03</td><td>91.82</td></tr><tr><td>Magazine Subscriptions</td><td>85.97</td><td>89.64</td></tr><tr><td>Movies and TV</td><td>86.39</td><td>88.19</td></tr><tr><td>Musical Instruments</td><td>90.72</td><td>90.20</td></tr><tr><td>Office Products</td><td>91.74</td><td>89.60</td></tr><tr><td>Patio, Lawn and Garden</td><td>89.96</td><td>87.87</td></tr><tr><td>Pet Supplies</td><td>90.60</td><td>89.91</td></tr><tr><td>Prime Pantry</td><td>93.64</td><td>88.15</td></tr><tr><td>Software</td><td>82.55</td><td>83.39</td></tr><tr><td>Sports and Outdoors</td><td>88.63</td><td>90.36</td></tr><tr><td>Tools and Home Improvement</td><td>87.41</td><td>88.90</td></tr><tr><td>Toys and Games</td><td>91.54</td><td>92.02</td></tr><tr><td>Video Games</td><td>85.79</td><td>86.07</td></tr><tr><td>Average</td><td>89.30</td><td>89.51</td></tr></table>\n\nguish UNIGEN from previous ZEROGEN and SUNGEN. Compared to previous methods that would require 29 separately trained TAMs to conduct this experiment, UNIGEN only used one single TAM to perform the experiment, which exhibits the real-world applicability of UNIGEN.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.1::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 40GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "For UNIGEN, we first generated 1,000k data from the 1.5B GPT2-XL model as $\\mathcal{P}$ by using the prompt $\\mathcal{T}_{\\mathrm{uni}}$ \"The text in positive/negative sentiment is: \", which is a slightly modified version of the best prompt suggested in a previous study. Top-k and top-p were set to 40 and 0.9 during the generation procedure, respectively. The soft relabeling process was performed using a $\\tau_{RE}$ of 0.1. After obtaining the soft labels of each of the generated samples, we filtered them using $T_{RE}$ of 0.2. This required the largest value from the soft labels to be larger than the sum of the uniform distribution and $T_{RE}$ , for instance, 0.7 in binary classification with $T_{RE}$ of 0.2. As an example, the sentence corresponding to the soft label [0.64, 0.36] was discarded because it did not exceed the threshold.\n\nAfter generation, we followed the bi-level optimization approach proposed in SUNGEN to cleanse the generated dataset and find the sample weights for 50 epochs. The outer learning rate was set to 5e-2, and we randomly sampled 50k data for each outer validation process. Then, we selected 200k data with high weights, which represent high-quality data, to train the TAMs.\n\nWe used a one-layer bi-LSTM model for the LSTM-based TAM and the distilbert-base-uncased and roberta-base from Transformers (Wolf et al., 2020) for the DistilBERT-based TAM and RoBERTa-based TAM, respectively. We trained the LSTM-based TAM for 5 epochs with the learning rate of 1e-3 by using the Adam (Kingma and Ba, 2015) optimizer. The DistilBERT-based TAM was trained for 3 epochs with a learning rate of 2e-5 by using the Adam optimizer. The RoBERTa-based TAM was trained for 3 epochs with a learning rate of 2e-5 by using the Adam optimizer. During the training process, $\\alpha$ for supervised contrastive learning loss was set to 0.5, with a projection size of\n\n256. The temperature $\\tau_{SCL}$ was set to 0.2, and the memory bank size $M$ was set to 64. The coefficient $m$ for updating the momentum encoder was set to 0.999, and the threshold of the denoising memory bank $T_{MB}$ was set to 0.8. The dataset generation and training procedures were executed using on a single NVIDIA A100 40GB GPU. Please refer to attached source code for further details. $^{1}$",
+      "section_number": "B",
+      "section_title": "implementation detail",
+      "normalized_section_title": "implementation detail"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.1::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 40GB",
+      "cleaned_hardware_name": "nvidia a100 40gb",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "B",
+      "section_title": "implementation detail",
+      "normalized_section_title": "implementation detail",
+      "evidence": "For UNIGEN, we first generated 1,000k data from the 1.5B GPT2-XL model as $\\mathcal{P}$ by using the prompt $\\mathcal{T}_{\\mathrm{uni}}$ \"The text in positive/negative sentiment is: \", which is a slightly modified version of the best prompt suggested in a previous study. Top-k and top-p were set to 40 and 0.9 during the generation procedure, respectively. The soft relabeling process was performed using a $\\tau_{RE}$ of 0.1. After obtaining the soft labels of each of the generated samples, we filtered them using $T_{RE}$ of 0.2. This required the largest value from the soft labels to be larger than the sum of the uniform distribution and $T_{RE}$ , for instance, 0.7 in binary classification with $T_{RE}$ of 0.2. As an example, the sentence corresponding to the soft label [0.64, 0.36] was discarded because it did not exceed the threshold.\n\nAfter generation, we followed the bi-level optimization approach proposed in SUNGEN to cleanse the generated dataset and find the sample weights for 50 epochs. The outer learning rate was set to 5e-2, and we randomly sampled 50k data for each outer validation process. Then, we selected 200k data with high weights, which represent high-quality data, to train the TAMs.\n\nWe used a one-layer bi-LSTM model for the LSTM-based TAM and the distilbert-base-uncased and roberta-base from Transformers (Wolf et al., 2020) for the DistilBERT-based TAM and RoBERTa-based TAM, respectively. We trained the LSTM-based TAM for 5 epochs with the learning rate of 1e-3 by using the Adam (Kingma and Ba, 2015) optimizer. The DistilBERT-based TAM was trained for 3 epochs with a learning rate of 2e-5 by using the Adam optimizer. The RoBERTa-based TAM was trained for 3 epochs with a learning rate of 2e-5 by using the Adam optimizer. During the training process, $\\alpha$ for supervised contrastive learning loss was set to 0.5, with a projection size of\n\n256. The temperature $\\tau_{SCL}$ was set to 0.2, and the memory bank size $M$ was set to 64. The coefficient $m$ for updating the momentum encoder was set to 0.999, and the threshold of the denoising memory bank $T_{MB}$ was set to 0.8. The dataset generation and training procedures were executed using on a single NVIDIA A100 40GB GPU. Please refer to attached source code for further details. $^{1}$",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": ""
+    }
+  ],
+  "review_flags": [],
+  "pred_result": {
+    "sec": [
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 1
+      }
+    ]
+  }
+}

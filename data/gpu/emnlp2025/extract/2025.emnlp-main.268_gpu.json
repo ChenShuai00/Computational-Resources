@@ -1,0 +1,134 @@
+{
+  "paper_id": "2025.emnlp-main.268",
+  "candidate_windows": [
+    {
+      "window_id": "2025.emnlp-main.268::sections::4.2",
+      "paper_id": "2025.emnlp-main.268",
+      "section_number": "4.2",
+      "section_title": "experiment settings",
+      "normalized_section_title": "experiment settings",
+      "window_text": "We select four representative training-free methods—Log Probability (Solaiman et al.， 2019), Log Entropy (Gehrmann et al., 2019), DNA-GPT (Yang et al.， 2024)，and Fast-DetectGPT (Bao et al., 2024)—along with two supervised baselines closely related to our work, SeqXGPT (Wang et al.. 2023) and POGER (Shi et al.,2024), with detailed descriptions and configurations provided in Appendix A. To mitigate distribution shifts and enhance generalization, we follow the work in (Zeng et al.,2024a) to implement a fine-tuned LLaMA2- 7B model (Touvron et al., 2023) as $\\mathcal { M } _ { \\mathrm { p r o x y } }$ ,with fine-tuning details presented in Appendix B.The temperature of $\\mathcal { M } _ { \\mathrm { p r o x y } }$ is set to O.7 during its generation process.\n\nIn line with the work in (Cornelius et al., 2024), we adopt AUC, F1, and MCC (Matthews Correlation Coefficient) as evaluation metrics for the S-AGTD task. To assess the robustness of the detectors, we follow the work in (Pan et al., 2024) and implement four adversarial attack strategies: random deletion, random substitution, paraphrasing, and back-translation, with implementation details in Appendix D.\n\nSenDetEX is trained by the AdamW optimizer (Loshchilov and Hutter, 2O17) with a learning rate of $1 \\times 1 0 ^ { - 4 }$ and a weight decay of O.O1. We train the model for up to 50 epochs,applying early stopping with a patience of 5 based on the validation loss.The batch size is set to 32,and the contextaware length $c$ is default to 3 (further discussed in Section 4.3.1). All experiments are conducted on two NVIDIA A100 GPUs.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.268::appendix::A.1",
+      "paper_id": "2025.emnlp-main.268",
+      "section_number": "A.1",
+      "section_title": "training-free methods",
+      "normalized_section_title": "training-free methods",
+      "window_text": "Log Entropy(Gehrmann et al., 2019） assumes that AI-generated text exhibits lower “openness,\" i.e., the mean token entropy tends to be lower than that of HWT. We compute the mean log entropy of the detected text using the fine-tuned proxy model LLaMA2-7B (denoted as FTPM), consistent with the setup in Section 4.2.\n\nLog Probability (Solaiman et al.,2019) assumes that AI-generated text has higher “precision,\" i.e., the mean token probability is typically higher than that of HWT. We use FTPM to compute the mean log probabilities of the detected text.\n\nDNA-GPT (Yang et al.,2024) assumes that AGT differs from HWT in its N-gram distribution. DNAGPT detects AGT by truncating the input and regenerating the missing portion using a re-generation model, then comparing the N-gram distributions between the original and re-generated text. We use FTPM as the re-generation model.\n\nFast-DetectGPT (Bao et al., 2024) is an enhanced version of DetectGPT (Mitchell et al., 2023),which posits that humans and AI exhibit discernible differences in token choice given a text. Fast-DetectGPT replaces the“perturbation” step in DetectGPT with a more effcient “sampling” process, improving detection efficiency and accuracy. We use FTPM to compute the token conditional probabilities.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.268::appendix::B",
+      "paper_id": "2025.emnlp-main.268",
+      "section_number": "B",
+      "section_title": "details of fine-tuning proxy model",
+      "normalized_section_title": "details of fine-tuning proxy model",
+      "window_text": "The work in (Zeng et al., 2024a) points out that fine-tuning the proxy model to align its probability distribution with the target model helps mitigate distribution shifts and enhances cross-model generalization. In our proposed SenDetEX framework (details in Section 3), the proxy model plays a crucial role-it is responsible for computing probability series, entropy series, self-embeddings,and contextual embeddings. Therefore,the fine-tuning process has the potential to further improve the detector's performance. Our fine-tuning configuration follows the Distribution-Aligned LLMs Detect (DALD) strategy proposed by (Zeng et al., 2024a). Specifically:\n\nThe fine-tuned model is LLaMA-2-7B,which serves as our base proxy model.In line with Section 4.1, the target detection models include GPT-4o and DeepSeek-v3 (temperature is set to 0.7). The training data is automatically generated via API calls to the target models, collecting 2,OoO samples for each model. The data is structured as prompt-response pairs, denoted as ${ \\mathcal { S } } = \\{ ( P _ { i } , X _ { i } ) \\} _ { i = 1 } ^ { 2 0 0 0 }$ ,where $P _ { i }$ is the prompt and $X _ { i }$ is the corresponding output from the target model. The prompts are sourced from the publicly shared prompts in the WildChat dataset (Zhao et al., 2024).\n\nTo enable parameter-efficient fine-tuning, we adopt the Low-Rank Adaptation (LoRA) technique (Hu et al., 2O22),which introduces lightweight adapters while keeping the original model parameters frozen. The LoRA configuration is as follows: the rank is 16,and the scaling factor is 32. The adaptation modules are applied to several projection layers in LLaMA-2-7B,including q_proj, V_proj,k_proj,o_proj,gate_proj,down_proj, and up_proj.\n\nThe fine-tuning objective is to maximize the conditional likelihood of the target model outputs under the proxy model. Formally, the objective is:\n\n$$\n\\operatorname* { m a x } _ { \\Theta } \\sum _ { [ P , X ] \\in { \\cal S } } \\sum _ { l = l ( P ) + 1 } ^ { l ( P ) + l ( X ) } \\log p ( y _ { l } \\mid y _ { < l } ; \\operatorname { s u r } + \\Theta )\n$$\n\nwhere $l ( X )$ denotes the length of the output text $X$ ， $y _ { l }$ is the $l$ -th token to be predicted,and $\\Theta$ represents the trainable parameters of the LoRA adapters. Gradients concerning the prompt $P$ are blocked during training, and optimization is performed only on the generated part $X$\n\nDuring the fine-tuning process, the learning rate is set to le-4,with a per-device batch size of 1 and gradient accumulation steps set to 4 to enable multi-GPU parallelism. The maximum sequence length varies by model: 512 for GPT-4o and 2048 for DeepSeek-V3. The training is conducted on two NVIDIA A100 GPUs.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.emnlp-main.268::sections::4.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "We select four representative training-free methods—Log Probability (Solaiman et al.， 2019), Log Entropy (Gehrmann et al., 2019), DNA-GPT (Yang et al.， 2024)，and Fast-DetectGPT (Bao et al., 2024)—along with two supervised baselines closely related to our work, SeqXGPT (Wang et al.. 2023) and POGER (Shi et al.,2024), with detailed descriptions and configurations provided in Appendix A. To mitigate distribution shifts and enhance generalization, we follow the work in (Zeng et al.,2024a) to implement a fine-tuned LLaMA2- 7B model (Touvron et al., 2023) as $\\mathcal { M } _ { \\mathrm { p r o x y } }$ ,with fine-tuning details presented in Appendix B.The temperature of $\\mathcal { M } _ { \\mathrm { p r o x y } }$ is set to O.7 during its generation process.\n\nIn line with the work in (Cornelius et al., 2024), we adopt AUC, F1, and MCC (Matthews Correlation Coefficient) as evaluation metrics for the S-AGTD task. To assess the robustness of the detectors, we follow the work in (Pan et al., 2024) and implement four adversarial attack strategies: random deletion, random substitution, paraphrasing, and back-translation, with implementation details in Appendix D.\n\nSenDetEX is trained by the AdamW optimizer (Loshchilov and Hutter, 2O17) with a learning rate of $1 \\times 1 0 ^ { - 4 }$ and a weight decay of O.O1. We train the model for up to 50 epochs,applying early stopping with a patience of 5 based on the validation loss.The batch size is set to 32,and the contextaware length $c$ is default to 3 (further discussed in Section 4.3.1). All experiments are conducted on two NVIDIA A100 GPUs.",
+      "section_number": "4.2",
+      "section_title": "experiment settings",
+      "normalized_section_title": "experiment settings"
+    },
+    {
+      "window_id": "2025.emnlp-main.268::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "The work in (Zeng et al., 2024a) points out that fine-tuning the proxy model to align its probability distribution with the target model helps mitigate distribution shifts and enhances cross-model generalization. In our proposed SenDetEX framework (details in Section 3), the proxy model plays a crucial role-it is responsible for computing probability series, entropy series, self-embeddings,and contextual embeddings. Therefore,the fine-tuning process has the potential to further improve the detector's performance. Our fine-tuning configuration follows the Distribution-Aligned LLMs Detect (DALD) strategy proposed by (Zeng et al., 2024a). Specifically:\n\nThe fine-tuned model is LLaMA-2-7B,which serves as our base proxy model.In line with Section 4.1, the target detection models include GPT-4o and DeepSeek-v3 (temperature is set to 0.7). The training data is automatically generated via API calls to the target models, collecting 2,OoO samples for each model. The data is structured as prompt-response pairs, denoted as ${ \\mathcal { S } } = \\{ ( P _ { i } , X _ { i } ) \\} _ { i = 1 } ^ { 2 0 0 0 }$ ,where $P _ { i }$ is the prompt and $X _ { i }$ is the corresponding output from the target model. The prompts are sourced from the publicly shared prompts in the WildChat dataset (Zhao et al., 2024).\n\nTo enable parameter-efficient fine-tuning, we adopt the Low-Rank Adaptation (LoRA) technique (Hu et al., 2O22),which introduces lightweight adapters while keeping the original model parameters frozen. The LoRA configuration is as follows: the rank is 16,and the scaling factor is 32. The adaptation modules are applied to several projection layers in LLaMA-2-7B,including q_proj, V_proj,k_proj,o_proj,gate_proj,down_proj, and up_proj.\n\nThe fine-tuning objective is to maximize the conditional likelihood of the target model outputs under the proxy model. Formally, the objective is:\n\n$$\n\\operatorname* { m a x } _ { \\Theta } \\sum _ { [ P , X ] \\in { \\cal S } } \\sum _ { l = l ( P ) + 1 } ^ { l ( P ) + l ( X ) } \\log p ( y _ { l } \\mid y _ { < l } ; \\operatorname { s u r } + \\Theta )\n$$\n\nwhere $l ( X )$ denotes the length of the output text $X$ ， $y _ { l }$ is the $l$ -th token to be predicted,and $\\Theta$ represents the trainable parameters of the LoRA adapters. Gradients concerning the prompt $P$ are blocked during training, and optimization is performed only on the generated part $X$\n\nDuring the fine-tuning process, the learning rate is set to le-4,with a per-device batch size of 1 and gradient accumulation steps set to 4 to enable multi-GPU parallelism. The maximum sequence length varies by model: 512 for GPT-4o and 2048 for DeepSeek-V3. The training is conducted on two NVIDIA A100 GPUs.",
+      "section_number": "B",
+      "section_title": "details of fine-tuning proxy model",
+      "normalized_section_title": "details of fine-tuning proxy model"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.emnlp-main.268::sections::4.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "4.2",
+      "section_title": "experiment settings",
+      "normalized_section_title": "experiment settings",
+      "evidence": "We select four representative training-free methods—Log Probability (Solaiman et al.， 2019), Log Entropy (Gehrmann et al., 2019), DNA-GPT (Yang et al.， 2024)，and Fast-DetectGPT (Bao et al., 2024)—along with two supervised baselines closely related to our work, SeqXGPT (Wang et al.. 2023) and POGER (Shi et al.,2024), with detailed descriptions and configurations provided in Appendix A. To mitigate distribution shifts and enhance generalization, we follow the work in (Zeng et al.,2024a) to implement a fine-tuned LLaMA2- 7B model (Touvron et al., 2023) as $\\mathcal { M } _ { \\mathrm { p r o x y } }$ ,with fine-tuning details presented in Appendix B.The temperature of $\\mathcal { M } _ { \\mathrm { p r o x y } }$ is set to O.7 during its generation process.\n\nIn line with the work in (Cornelius et al., 2024), we adopt AUC, F1, and MCC (Matthews Correlation Coefficient) as evaluation metrics for the S-AGTD task. To assess the robustness of the detectors, we follow the work in (Pan et al., 2024) and implement four adversarial attack strategies: random deletion, random substitution, paraphrasing, and back-translation, with implementation details in Appendix D.\n\nSenDetEX is trained by the AdamW optimizer (Loshchilov and Hutter, 2O17) with a learning rate of $1 \\times 1 0 ^ { - 4 }$ and a weight decay of O.O1. We train the model for up to 50 epochs,applying early stopping with a patience of 5 based on the validation loss.The batch size is set to 32,and the contextaware length $c$ is default to 3 (further discussed in Section 4.3.1). All experiments are conducted on two NVIDIA A100 GPUs.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.emnlp-main.268::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "B",
+      "section_title": "details of fine-tuning proxy model",
+      "normalized_section_title": "details of fine-tuning proxy model",
+      "evidence": "The work in (Zeng et al., 2024a) points out that fine-tuning the proxy model to align its probability distribution with the target model helps mitigate distribution shifts and enhances cross-model generalization. In our proposed SenDetEX framework (details in Section 3), the proxy model plays a crucial role-it is responsible for computing probability series, entropy series, self-embeddings,and contextual embeddings. Therefore,the fine-tuning process has the potential to further improve the detector's performance. Our fine-tuning configuration follows the Distribution-Aligned LLMs Detect (DALD) strategy proposed by (Zeng et al., 2024a). Specifically:\n\nThe fine-tuned model is LLaMA-2-7B,which serves as our base proxy model.In line with Section 4.1, the target detection models include GPT-4o and DeepSeek-v3 (temperature is set to 0.7). The training data is automatically generated via API calls to the target models, collecting 2,OoO samples for each model. The data is structured as prompt-response pairs, denoted as ${ \\mathcal { S } } = \\{ ( P _ { i } , X _ { i } ) \\} _ { i = 1 } ^ { 2 0 0 0 }$ ,where $P _ { i }$ is the prompt and $X _ { i }$ is the corresponding output from the target model. The prompts are sourced from the publicly shared prompts in the WildChat dataset (Zhao et al., 2024).\n\nTo enable parameter-efficient fine-tuning, we adopt the Low-Rank Adaptation (LoRA) technique (Hu et al., 2O22),which introduces lightweight adapters while keeping the original model parameters frozen. The LoRA configuration is as follows: the rank is 16,and the scaling factor is 32. The adaptation modules are applied to several projection layers in LLaMA-2-7B,including q_proj, V_proj,k_proj,o_proj,gate_proj,down_proj, and up_proj.\n\nThe fine-tuning objective is to maximize the conditional likelihood of the target model outputs under the proxy model. Formally, the objective is:\n\n$$\n\\operatorname* { m a x } _ { \\Theta } \\sum _ { [ P , X ] \\in { \\cal S } } \\sum _ { l = l ( P ) + 1 } ^ { l ( P ) + l ( X ) } \\log p ( y _ { l } \\mid y _ { < l } ; \\operatorname { s u r } + \\Theta )\n$$\n\nwhere $l ( X )$ denotes the length of the output text $X$ ， $y _ { l }$ is the $l$ -th token to be predicted,and $\\Theta$ represents the trainable parameters of the LoRA adapters. Gradients concerning the prompt $P$ are blocked during training, and optimization is performed only on the generated part $X$\n\nDuring the fine-tuning process, the learning rate is set to le-4,with a per-device batch size of 1 and gradient accumulation steps set to 4 to enable multi-GPU parallelism. The maximum sequence length varies by model: 512 for GPT-4o and 2048 for DeepSeek-V3. The training is conducted on two NVIDIA A100 GPUs.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.2",
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 2
+      },
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 2
+      }
+    ]
+  }
+}

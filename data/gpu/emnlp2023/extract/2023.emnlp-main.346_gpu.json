@@ -1,0 +1,83 @@
+{
+  "paper_id": "2023.emnlp-main.346",
+  "candidate_windows": [
+    {
+      "window_id": "2023.emnlp-main.346::sections::4",
+      "paper_id": "2023.emnlp-main.346",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Our goal is to simulate practical conditions as much as is possible with available resources and datasets, so we start with pre-trained models from huggingface (Wolf et al., 2020) which are commonly used in sentiment benchmarks and previous work on our data.4 We then fine-tune these models on supervised training for the polarity detection task and apply to the counterfactual evaluation set in the target language. Both monolingual and multilingual models have as similar numbers of parameters and fine-tuning procedures as is possible, to minimise confounds while being realistic (Appendix A). Models are fine-tuned until convergence using early stopping on the development set. All models (multilingual and monolingual) converge to equivalent performance as previous work (Keung et al., 2020), which is state of the art on this task. F1 scores and steps to convergence are included in Appendix B.\n\nMonolingual transfer (mono-T) models are based on pre-trained bert-base-uncased (Devlin et al., 2018) in the target language. We randomly initialise a linear classification layer, then simultaneously train it and fine-tune the language model on monolingual supervision data. Our distilled monolingual model (distil-mono-T) is identical, except that it is based on distilbert-base-uncased (Sanh et al., 2019).\n\nMultilingual models are based on pre-trained mbert-base-uncased then fine-tuned on a large volume of sentiment data in English only, the standard approach to zero-shot cross-lingual transfer (ZS-XLT). We also fine-tune a distilled ZS-XLT model (distil-ZS-XLT), identical except that it is based on distilmbert-base-uncased.\n\nTable 1: Example sentence templates for each language and their counterfactual words that, when filled in, create a contrastive pair; in this case, for gender bias. For illustration, all five examples are translations of the same sentence.   \n\n<table><tr><td></td><td>Template</td><td>Counterfactual sentences</td></tr><tr><td>en</td><td>The conversation with &lt;person object&gt; was &lt;emotional situation word&gt;.</td><td>The conversation with [him\\her] was irritating.</td></tr><tr><td>ja</td><td>&lt;person&gt; との会は &lt;emotion word passive&gt;た</td><td>[彼\\彼女] との会は イラリスた。</td></tr><tr><td>zh</td><td>跟 &lt;person&gt; 的谈话很 &lt;emotional situation word&gt;.</td><td>跟 [他\\她] 的谈话很 令人生气.</td></tr><tr><td>de</td><td>Das Geschäft mit &lt;person dat. object&gt; war &lt;emotional situation word&gt;.</td><td>Das Geschäft mit [ihm\\ihr] war irritierenend.</td></tr><tr><td>es</td><td>La conversación con &lt;person&gt; fue &lt;emotional situation word female&gt;.</td><td>La conversación con [él\\ella] fue irritante.</td></tr></table>\n\nSince it is not trained on target language data, we apply the same ZS-XLT model to each target language. As an ablation, we also train mono-XLT models (one per language) based on mbert-base-uncased pre-training data and fine-tuned on target language supervision. Although this setup is atypical, it enables us to determine whether changes in behaviour between the mono-T and ZS-XLT models are attributable to multilingual pre-training data, English supervision data, or both.\n\nFine-tuning data. Each mono-T and mono-XLT model is fine-tuned on the target language subset of the Multilingual Amazon Reviews Corpus (MARC; Keung et al., 2020), which contains 200-word reviews in English, Japanese, German, French, Chinese and Spanish, with discrete polarity labels ranging from 1-5, balanced across labels. We use the provided train/dev/test splits of $200\\mathrm{k}$ , $5\\mathrm{k}$ , $5\\mathrm{k}$ examples in each language). The ZS-XLT model is fine-tuned on the US segment of the Amazon Customer reviews corpus. $^{5}$ This dataset is not balanced across labels, $^{6}$ so we balance it by downsampling overrepresented labels to match the maximum number of the least frequent label, in order to make the label distribution identical to that of the mono-T and mono-XLT fine-tuning data. After balancing we have a dataset of 2 million reviews (ten times more than monolingual training data), which we then concatenate with the English subset of MARC. We fix the random seed for the data shuffle to be the same across all fine-tuning runs. Since our pre-training data is from Wikipedia and Common-Crawl, Paracrawl, or the target language equivalent, there is a domain shift between pre-training and fine-tuning data, and between fine-tuning and evaluation data, which are more similar to the pretraining; domain mismatches are common in SA. $^{7}$\n\nWe train each model five times with different random seeds and then ensemble by taking their majority vote, a standard procedure to reduce variance. In our initial experiments, we observed that bias varied substantially across different random initialisations on our out-of-domain counterfactual corpora, despite stable performance on our in-domain training/eval/test data. Previous work has also found different seeds with identical in-domain performance to have wildly variable out-of-domain results (McCoy et al., 2020) and bias (Sellam et al., 2022) and theorised that different local minima may have differing generalisation performance. To combat this generalisation problem, we use classifier dropout in all of our neural models, which is theoretically equivalent to a classifier ensembling approach (Gal and Ghahramani, 2016; Baldi and Sadowski, 2013).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.346::appendix::A",
+      "paper_id": "2023.emnlp-main.346",
+      "section_number": "A",
+      "section_title": "model implementation details",
+      "normalized_section_title": "model implementation details",
+      "window_text": "Monolingual transformer models have 110 million parameters (± 1 million) and vocabularies of 30-32k with 768D embeddings. Multilingual models have 179 million parameters, a vocabulary of 120k, with 768D embeddings. We train the monolingual models with the same training settings as preferred in Keung et al. (2020), and allow the pre-trained weights to fine-tune along with the newly initialised classification layer. The multilingual models are trained identically, save that they have a 100x larger learning rate, and learning rate annealing.\n\nAll models were trained for 5 seeds, models trained on monolingual data (mono-T, mono-XLT, and distil-mono-T) were checkpointed 15 times. ZS-XLT models were checkpointed 6 times. In total we train 1525 models: 3 monolingual (non-baseline) model types with 5 seeds across 5 languages and 15 checkpoints (1,225 models) and 2 multilingual model types (ZS-XLT, distil-XLT) with 5 seeds and 5 languages and 6 checkpoints (300) models.\n\nThis study was done on only the converged models, but all models are released for further study.\n\nComputational Resources. Each model was trained on 4 NVIDIA Tesla V100 GPUs with 16GB memory. mono-T and mono-XLT models took 6-8 hours to converge, ZS-XLT and distil-ZS-XLT took 15 hours. This is a total of 620 total hours, or 2,480 GPU hours on our resource.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.emnlp-main.346::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100 16GB",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "Monolingual transformer models have 110 million parameters (± 1 million) and vocabularies of 30-32k with 768D embeddings. Multilingual models have 179 million parameters, a vocabulary of 120k, with 768D embeddings. We train the monolingual models with the same training settings as preferred in Keung et al. (2020), and allow the pre-trained weights to fine-tune along with the newly initialised classification layer. The multilingual models are trained identically, save that they have a 100x larger learning rate, and learning rate annealing.\n\nAll models were trained for 5 seeds, models trained on monolingual data (mono-T, mono-XLT, and distil-mono-T) were checkpointed 15 times. ZS-XLT models were checkpointed 6 times. In total we train 1525 models: 3 monolingual (non-baseline) model types with 5 seeds across 5 languages and 15 checkpoints (1,225 models) and 2 multilingual model types (ZS-XLT, distil-XLT) with 5 seeds and 5 languages and 6 checkpoints (300) models.\n\nThis study was done on only the converged models, but all models are released for further study.\n\nComputational Resources. Each model was trained on 4 NVIDIA Tesla V100 GPUs with 16GB memory. mono-T and mono-XLT models took 6-8 hours to converge, ZS-XLT and distil-ZS-XLT took 15 hours. This is a total of 620 total hours, or 2,480 GPU hours on our resource.",
+      "section_number": "A",
+      "section_title": "model implementation details",
+      "normalized_section_title": "model implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.emnlp-main.346::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100 16GB",
+      "cleaned_hardware_name": "nvidia tesla v100 16gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 16GB",
+      "benchmark_hardware_name": null,
+      "count": 4,
+      "count_text": "4",
+      "section_number": "A",
+      "section_title": "model implementation details",
+      "normalized_section_title": "model implementation details",
+      "evidence": "Monolingual transformer models have 110 million parameters (± 1 million) and vocabularies of 30-32k with 768D embeddings. Multilingual models have 179 million parameters, a vocabulary of 120k, with 768D embeddings. We train the monolingual models with the same training settings as preferred in Keung et al. (2020), and allow the pre-trained weights to fine-tune along with the newly initialised classification layer. The multilingual models are trained identically, save that they have a 100x larger learning rate, and learning rate annealing.\n\nAll models were trained for 5 seeds, models trained on monolingual data (mono-T, mono-XLT, and distil-mono-T) were checkpointed 15 times. ZS-XLT models were checkpointed 6 times. In total we train 1525 models: 3 monolingual (non-baseline) model types with 5 seeds across 5 languages and 15 checkpoints (1,225 models) and 2 multilingual model types (ZS-XLT, distil-XLT) with 5 seeds and 5 languages and 6 checkpoints (300) models.\n\nThis study was done on only the converged models, but all models are released for further study.\n\nComputational Resources. Each model was trained on 4 NVIDIA Tesla V100 GPUs with 16GB memory. mono-T and mono-XLT models took 6-8 hours to converge, ZS-XLT and distil-ZS-XLT took 15 hours. This is a total of 620 total hours, or 2,480 GPU hours on our resource.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 16GB",
+        "num": 4
+      }
+    ]
+  }
+}

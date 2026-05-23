@@ -1,0 +1,287 @@
+{
+  "paper_id": "2022.acl-long.551",
+  "candidate_windows": [
+    {
+      "window_id": "2022.acl-long.551::sections::3",
+      "paper_id": "2022.acl-long.551",
+      "section_number": "3",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "A language model (LM) can be pretrained from a corpus of documents, $\\mathcal{X} = \\{X^{(i)}\\}$ . An LM is a composition of two functions, $f_{\\mathrm{head}}(f_{\\mathrm{enc}}(X))$ where the encoder $f_{\\mathrm{enc}}$ takes in a sequence of tokens $X = (x_{1},x_{2},\\dots,x_{n})$ and produces a contextualized vector representation for each token, $(\\mathbf{h}_1,\\mathbf{h}_2,\\dots,\\mathbf{h}_n)$ . The head $f_{\\mathrm{head}}$ typically uses these representations to perform self-supervised tasks in the pretraining step, and perform particular downstream tasks in the fine-tuning step. We build on BERT (Devlin\n\net al., 2019), which pretrains an LM with the following two self-supervised tasks.\n\nMasked language modeling (MLM). Given a sequence of tokens $X$ , a subset of tokens $Y \\subseteq X$ is masked, and the task is to predict the original tokens from the modified input. $Y$ accounts for $15\\%$ of the tokens in $X$ ; of those, $80\\%$ are replaced with [MASK], $10\\%$ with a random token, and $10\\%$ are kept unchanged.\n\nNext sentence prediction (NSP). The NSP task takes two text segments $^2$ ( $X_A, X_B$ ) as input, and predicts whether $X_B$ is the direct continuation of $X_A$ . Specifically, BERT first samples $X_A$ from the corpus, and then either (1) takes the next segment $X_B$ from the same document, or (2) samples $X_B$ from a random document in the corpus. The two segments are joined via special tokens to form an input instance, [CLS] $X_A$ [SEP] $X_B$ [SEP], where the prediction target of [CLS] is whether $X_B$ indeed follows $X_A$ (contiguous or random).\n\nIn this work, we will further incorporate document link information into LM pretraining. Our approach (§4) will build on MLM and NSP.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.551::sections::5",
+      "paper_id": "2022.acl-long.551",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "We experiment with our proposed approach in the general domain first, where we pretrain LinkBERT on Wikipedia articles with hyperlinks (§5.1) and evaluate on a suite of downstream tasks (§5.2). We compare with BERT (Devlin et al., 2019) as our baseline. We experiment in the biomedical domain in §6.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.551::sections::5.1",
+      "paper_id": "2022.acl-long.551",
+      "section_number": "5.1",
+      "section_title": "pretraining setup",
+      "normalized_section_title": "pretraining setup",
+      "window_text": "Data. We use the same pretraining corpus used by BERT: Wikipedia and BookCorpus (Zhu et al., 2015). For Wikipedia, we use the WikiExtractor<sup>3</sup> to extract hyperlinks between Wiki articles. We then create training instances by sampling contiguous, random, or linked segments as described in §4, with the three options appearing uniformly (33%, 33%, 33%). For BookCorpus, we create training instance by sampling contiguous or random segments (50%, 50%) as in BERT. We then combine the training instances from Wikipedia and BookCorpus to train LinkBERT. In summary, our pretraining data is the same as BERT, except that we have hyperlinks between Wikipedia articles.\n\nImplementation. We pretrain LinkBERT of three sizes, -tiny, -base and -large, following the configurations of $\\mathrm{BERT}_{\\mathrm{tiny}}$ (4.4M parameters), $\\mathrm{BERT}_{\\mathrm{base}}$ (110M params), and $\\mathrm{BERT}_{\\mathrm{large}}$ (340M params) (Devlin et al., 2019; Turc et al., 2019). We use -tiny mainly for ablation studies.\n\nFor -tiny, we pretrain from scratch with random weight initialization. We use the AdamW (Loshchilov and Hutter, 2019) optimizer with $(\\beta_{1},\\beta_{2}) = (0.9,0.98)$ , warm up the learning rate for the first 5,000 steps and then linearly decay it.\n\nWe train for 10,000 steps with a peak learning rate 5e-3, weight decay 0.01, and batch size of 2,048 sequences with 512 tokens. Training takes 1 day on two GeForce RTX 2080 Ti GPUs with fp16.\n\nFor -base, we initialize LinkBERT with the $\\mathrm{BERT}_{\\mathrm{base}}$ checkpoint released by Devlin et al. (2019) and continue pretraining. We use a peak learning rate 3e-4 and train for 40,000 steps. Other training hyperparameters are the same as -tiny. Training takes 4 days on four A100 GPUs with fp16.\n\nFor -large, we follow the same procedure as -base, except that we use a peak learning rate of 2e-4. Training takes 7 days on eight A100 GPUs with fp16.\n\nBaselines. We compare LinkBERT with BERT. Specifically, for the -tiny scale, we compare with $\\mathrm{BERT}_{\\mathrm{tiny}}$ , which we pretrain from scratch with the same hyperparameters as $\\mathrm{LinkBERT}_{\\mathrm{tiny}}$ . The only difference is that LinkBERT uses document links to create LM inputs, while BERT does not.\n\nFor -base scale, we compare with $\\mathrm{BERT}_{\\mathrm{base}}$ , for which we take the $\\mathrm{BERT}_{\\mathrm{base}}$ release by Devlin et al. (2019) and continue pretraining it with the vanilla BERT objectives on the same corpus for the same number of steps as LinkBERT<sub>base</sub>.\n\nFor -large, we follow the same procedure as -base.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.551::sections::5.5",
+      "paper_id": "2022.acl-long.551",
+      "section_number": "5.5",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "window_text": "We conduct ablation studies on the key design choices of LinkBERT.\n\nWhat linked documents to feed into LMs? We study the strategies discussed in §4.3 for obtaining linked documents: relevance, salience, and diversity.\n\nTable 5 shows the ablation result on MRQA datasets. First, if we ignore relevance and use random document links instead of hyperlinks, we get the same performance as BERT $(-4.1\\%)$ on average; \"random\" in Table 5). Second, using lexical similarity links instead of hyperlinks leads to $1.8\\%$ performance drop (\"TF-IDF\"). Our intuition is that hyperlinks can provide more salient knowledge that may not be obvious via lexical similarity alone. Nevertheless, using lexical similarity links is substantially better than BERT $(+2.3\\%)$ , confirming the efficacy of placing relevant documents together in the input for LM pretraining. Finally, removing the diversity adjustment in document sampling leads to $1\\%$ performance drop (\"No diversity\"). In summary, our insight is that to create informative inputs for LM pretraining, the linked documents must be semantically relevant and ideally be salient and diverse.\n\nEffect of the DRP objective. Table 6 shows the ablation result on the DRP objective (§4.2). Removing DRP in pretraining hurts downstream QA performance. The drop is large on tasks with multiple documents (HotpotQA, TriviaQA, and SQuAD with distracting documents). This suggests that DRP facilitates LMs to learn document relations.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.551::sections::6.1",
+      "paper_id": "2022.acl-long.551",
+      "section_number": "6.1",
+      "section_title": "pretraining setup",
+      "normalized_section_title": "pretraining setup",
+      "window_text": "Data. We use the same pretraining corpus used by PubmedBERT: PubMed abstracts (21GB).<sup>4</sup> We\n\nuse the Pubmed Parser $^5$ to extract citation links between articles. We then create training instances by sampling contiguous, random, or linked segments as described in §4, with the three options appearing uniformly (33%, 33%, 33%). In summary, our pretraining data is the same as PubmedBERT, except that we have citation links between PubMed articles.\n\nImplementation. We pretrain BioLinkBERT of -base size (110M params) from scratch, following the same hyperparameters as the PubmedBERT<sub>base</sub> (Gu et al., 2020). Specifically, we use a peak learning rate 6e-4, batch size 8,192, and train for 62,500 steps. We warm up the learning rate in the first $10\\%$ of steps and then linearly decay it. Training takes 7 days on eight A100 GPUs with fp16.\n\nAdditionally, while the original PubmedBERT release did not include the -large size, we pretrain BioLinkBERT of the -large size (340M params) from scratch, following the same procedure as -base, except that we use a peak learning rate of 4e-4 and warm up steps of $20\\%$ . Training takes 21 days on eight A100 GPUs with fp16.\n\nBaselines. We compare BioLinkBERT with PubmedBERT released by Gu et al. (2020).",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.551::sections::reproducibility",
+      "paper_id": "2022.acl-long.551",
+      "section_number": "",
+      "section_title": "reproducibility",
+      "normalized_section_title": "reproducibility",
+      "window_text": "Pretrained models, code and data are available at https://github.com/michiyasunaga/LinkBERT.\n\nExperiments are available at\n\nhttps://worksheets.\n\ncodalab.org/worksheets/\n\n0x7a6ab9c8d06a41d191335b270da2902e.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.acl-long.551::sections::5.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GeForce RTX 2080 Ti",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "Data. We use the same pretraining corpus used by BERT: Wikipedia and BookCorpus (Zhu et al., 2015). For Wikipedia, we use the WikiExtractor<sup>3</sup> to extract hyperlinks between Wiki articles. We then create training instances by sampling contiguous, random, or linked segments as described in §4, with the three options appearing uniformly (33%, 33%, 33%). For BookCorpus, we create training instance by sampling contiguous or random segments (50%, 50%) as in BERT. We then combine the training instances from Wikipedia and BookCorpus to train LinkBERT. In summary, our pretraining data is the same as BERT, except that we have hyperlinks between Wikipedia articles.\n\nImplementation. We pretrain LinkBERT of three sizes, -tiny, -base and -large, following the configurations of $\\mathrm{BERT}_{\\mathrm{tiny}}$ (4.4M parameters), $\\mathrm{BERT}_{\\mathrm{base}}$ (110M params), and $\\mathrm{BERT}_{\\mathrm{large}}$ (340M params) (Devlin et al., 2019; Turc et al., 2019). We use -tiny mainly for ablation studies.\n\nFor -tiny, we pretrain from scratch with random weight initialization. We use the AdamW (Loshchilov and Hutter, 2019) optimizer with $(\\beta_{1},\\beta_{2}) = (0.9,0.98)$ , warm up the learning rate for the first 5,000 steps and then linearly decay it.\n\nWe train for 10,000 steps with a peak learning rate 5e-3, weight decay 0.01, and batch size of 2,048 sequences with 512 tokens. Training takes 1 day on two GeForce RTX 2080 Ti GPUs with fp16.\n\nFor -base, we initialize LinkBERT with the $\\mathrm{BERT}_{\\mathrm{base}}$ checkpoint released by Devlin et al. (2019) and continue pretraining. We use a peak learning rate 3e-4 and train for 40,000 steps. Other training hyperparameters are the same as -tiny. Training takes 4 days on four A100 GPUs with fp16.\n\nFor -large, we follow the same procedure as -base, except that we use a peak learning rate of 2e-4. Training takes 7 days on eight A100 GPUs with fp16.\n\nBaselines. We compare LinkBERT with BERT. Specifically, for the -tiny scale, we compare with $\\mathrm{BERT}_{\\mathrm{tiny}}$ , which we pretrain from scratch with the same hyperparameters as $\\mathrm{LinkBERT}_{\\mathrm{tiny}}$ . The only difference is that LinkBERT uses document links to create LM inputs, while BERT does not.\n\nFor -base scale, we compare with $\\mathrm{BERT}_{\\mathrm{base}}$ , for which we take the $\\mathrm{BERT}_{\\mathrm{base}}$ release by Devlin et al. (2019) and continue pretraining it with the vanilla BERT objectives on the same corpus for the same number of steps as LinkBERT<sub>base</sub>.\n\nFor -large, we follow the same procedure as -base.",
+      "section_number": "5.1",
+      "section_title": "pretraining setup",
+      "normalized_section_title": "pretraining setup"
+    },
+    {
+      "window_id": "2022.acl-long.551::sections::5.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "Data. We use the same pretraining corpus used by BERT: Wikipedia and BookCorpus (Zhu et al., 2015). For Wikipedia, we use the WikiExtractor<sup>3</sup> to extract hyperlinks between Wiki articles. We then create training instances by sampling contiguous, random, or linked segments as described in §4, with the three options appearing uniformly (33%, 33%, 33%). For BookCorpus, we create training instance by sampling contiguous or random segments (50%, 50%) as in BERT. We then combine the training instances from Wikipedia and BookCorpus to train LinkBERT. In summary, our pretraining data is the same as BERT, except that we have hyperlinks between Wikipedia articles.\n\nImplementation. We pretrain LinkBERT of three sizes, -tiny, -base and -large, following the configurations of $\\mathrm{BERT}_{\\mathrm{tiny}}$ (4.4M parameters), $\\mathrm{BERT}_{\\mathrm{base}}$ (110M params), and $\\mathrm{BERT}_{\\mathrm{large}}$ (340M params) (Devlin et al., 2019; Turc et al., 2019). We use -tiny mainly for ablation studies.\n\nFor -tiny, we pretrain from scratch with random weight initialization. We use the AdamW (Loshchilov and Hutter, 2019) optimizer with $(\\beta_{1},\\beta_{2}) = (0.9,0.98)$ , warm up the learning rate for the first 5,000 steps and then linearly decay it.\n\nWe train for 10,000 steps with a peak learning rate 5e-3, weight decay 0.01, and batch size of 2,048 sequences with 512 tokens. Training takes 1 day on two GeForce RTX 2080 Ti GPUs with fp16.\n\nFor -base, we initialize LinkBERT with the $\\mathrm{BERT}_{\\mathrm{base}}$ checkpoint released by Devlin et al. (2019) and continue pretraining. We use a peak learning rate 3e-4 and train for 40,000 steps. Other training hyperparameters are the same as -tiny. Training takes 4 days on four A100 GPUs with fp16.\n\nFor -large, we follow the same procedure as -base, except that we use a peak learning rate of 2e-4. Training takes 7 days on eight A100 GPUs with fp16.\n\nBaselines. We compare LinkBERT with BERT. Specifically, for the -tiny scale, we compare with $\\mathrm{BERT}_{\\mathrm{tiny}}$ , which we pretrain from scratch with the same hyperparameters as $\\mathrm{LinkBERT}_{\\mathrm{tiny}}$ . The only difference is that LinkBERT uses document links to create LM inputs, while BERT does not.\n\nFor -base scale, we compare with $\\mathrm{BERT}_{\\mathrm{base}}$ , for which we take the $\\mathrm{BERT}_{\\mathrm{base}}$ release by Devlin et al. (2019) and continue pretraining it with the vanilla BERT objectives on the same corpus for the same number of steps as LinkBERT<sub>base</sub>.\n\nFor -large, we follow the same procedure as -base.",
+      "section_number": "5.1",
+      "section_title": "pretraining setup",
+      "normalized_section_title": "pretraining setup"
+    },
+    {
+      "window_id": "2022.acl-long.551::sections::5.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Data. We use the same pretraining corpus used by BERT: Wikipedia and BookCorpus (Zhu et al., 2015). For Wikipedia, we use the WikiExtractor<sup>3</sup> to extract hyperlinks between Wiki articles. We then create training instances by sampling contiguous, random, or linked segments as described in §4, with the three options appearing uniformly (33%, 33%, 33%). For BookCorpus, we create training instance by sampling contiguous or random segments (50%, 50%) as in BERT. We then combine the training instances from Wikipedia and BookCorpus to train LinkBERT. In summary, our pretraining data is the same as BERT, except that we have hyperlinks between Wikipedia articles.\n\nImplementation. We pretrain LinkBERT of three sizes, -tiny, -base and -large, following the configurations of $\\mathrm{BERT}_{\\mathrm{tiny}}$ (4.4M parameters), $\\mathrm{BERT}_{\\mathrm{base}}$ (110M params), and $\\mathrm{BERT}_{\\mathrm{large}}$ (340M params) (Devlin et al., 2019; Turc et al., 2019). We use -tiny mainly for ablation studies.\n\nFor -tiny, we pretrain from scratch with random weight initialization. We use the AdamW (Loshchilov and Hutter, 2019) optimizer with $(\\beta_{1},\\beta_{2}) = (0.9,0.98)$ , warm up the learning rate for the first 5,000 steps and then linearly decay it.\n\nWe train for 10,000 steps with a peak learning rate 5e-3, weight decay 0.01, and batch size of 2,048 sequences with 512 tokens. Training takes 1 day on two GeForce RTX 2080 Ti GPUs with fp16.\n\nFor -base, we initialize LinkBERT with the $\\mathrm{BERT}_{\\mathrm{base}}$ checkpoint released by Devlin et al. (2019) and continue pretraining. We use a peak learning rate 3e-4 and train for 40,000 steps. Other training hyperparameters are the same as -tiny. Training takes 4 days on four A100 GPUs with fp16.\n\nFor -large, we follow the same procedure as -base, except that we use a peak learning rate of 2e-4. Training takes 7 days on eight A100 GPUs with fp16.\n\nBaselines. We compare LinkBERT with BERT. Specifically, for the -tiny scale, we compare with $\\mathrm{BERT}_{\\mathrm{tiny}}$ , which we pretrain from scratch with the same hyperparameters as $\\mathrm{LinkBERT}_{\\mathrm{tiny}}$ . The only difference is that LinkBERT uses document links to create LM inputs, while BERT does not.\n\nFor -base scale, we compare with $\\mathrm{BERT}_{\\mathrm{base}}$ , for which we take the $\\mathrm{BERT}_{\\mathrm{base}}$ release by Devlin et al. (2019) and continue pretraining it with the vanilla BERT objectives on the same corpus for the same number of steps as LinkBERT<sub>base</sub>.\n\nFor -large, we follow the same procedure as -base.",
+      "section_number": "5.1",
+      "section_title": "pretraining setup",
+      "normalized_section_title": "pretraining setup"
+    },
+    {
+      "window_id": "2022.acl-long.551::sections::6.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Data. We use the same pretraining corpus used by PubmedBERT: PubMed abstracts (21GB).<sup>4</sup> We\n\nuse the Pubmed Parser $^5$ to extract citation links between articles. We then create training instances by sampling contiguous, random, or linked segments as described in §4, with the three options appearing uniformly (33%, 33%, 33%). In summary, our pretraining data is the same as PubmedBERT, except that we have citation links between PubMed articles.\n\nImplementation. We pretrain BioLinkBERT of -base size (110M params) from scratch, following the same hyperparameters as the PubmedBERT<sub>base</sub> (Gu et al., 2020). Specifically, we use a peak learning rate 6e-4, batch size 8,192, and train for 62,500 steps. We warm up the learning rate in the first $10\\%$ of steps and then linearly decay it. Training takes 7 days on eight A100 GPUs with fp16.\n\nAdditionally, while the original PubmedBERT release did not include the -large size, we pretrain BioLinkBERT of the -large size (340M params) from scratch, following the same procedure as -base, except that we use a peak learning rate of 4e-4 and warm up steps of $20\\%$ . Training takes 21 days on eight A100 GPUs with fp16.\n\nBaselines. We compare BioLinkBERT with PubmedBERT released by Gu et al. (2020).",
+      "section_number": "6.1",
+      "section_title": "pretraining setup",
+      "normalized_section_title": "pretraining setup"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.acl-long.551::sections::5.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GeForce RTX 2080 Ti",
+      "cleaned_hardware_name": "geforce rtx 2080 ti",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "5.1",
+      "section_title": "pretraining setup",
+      "normalized_section_title": "pretraining setup",
+      "evidence": "Data. We use the same pretraining corpus used by BERT: Wikipedia and BookCorpus (Zhu et al., 2015). For Wikipedia, we use the WikiExtractor<sup>3</sup> to extract hyperlinks between Wiki articles. We then create training instances by sampling contiguous, random, or linked segments as described in §4, with the three options appearing uniformly (33%, 33%, 33%). For BookCorpus, we create training instance by sampling contiguous or random segments (50%, 50%) as in BERT. We then combine the training instances from Wikipedia and BookCorpus to train LinkBERT. In summary, our pretraining data is the same as BERT, except that we have hyperlinks between Wikipedia articles.\n\nImplementation. We pretrain LinkBERT of three sizes, -tiny, -base and -large, following the configurations of $\\mathrm{BERT}_{\\mathrm{tiny}}$ (4.4M parameters), $\\mathrm{BERT}_{\\mathrm{base}}$ (110M params), and $\\mathrm{BERT}_{\\mathrm{large}}$ (340M params) (Devlin et al., 2019; Turc et al., 2019). We use -tiny mainly for ablation studies.\n\nFor -tiny, we pretrain from scratch with random weight initialization. We use the AdamW (Loshchilov and Hutter, 2019) optimizer with $(\\beta_{1},\\beta_{2}) = (0.9,0.98)$ , warm up the learning rate for the first 5,000 steps and then linearly decay it.\n\nWe train for 10,000 steps with a peak learning rate 5e-3, weight decay 0.01, and batch size of 2,048 sequences with 512 tokens. Training takes 1 day on two GeForce RTX 2080 Ti GPUs with fp16.\n\nFor -base, we initialize LinkBERT with the $\\mathrm{BERT}_{\\mathrm{base}}$ checkpoint released by Devlin et al. (2019) and continue pretraining. We use a peak learning rate 3e-4 and train for 40,000 steps. Other training hyperparameters are the same as -tiny. Training takes 4 days on four A100 GPUs with fp16.\n\nFor -large, we follow the same procedure as -base, except that we use a peak learning rate of 2e-4. Training takes 7 days on eight A100 GPUs with fp16.\n\nBaselines. We compare LinkBERT with BERT. Specifically, for the -tiny scale, we compare with $\\mathrm{BERT}_{\\mathrm{tiny}}$ , which we pretrain from scratch with the same hyperparameters as $\\mathrm{LinkBERT}_{\\mathrm{tiny}}$ . The only difference is that LinkBERT uses document links to create LM inputs, while BERT does not.\n\nFor -base scale, we compare with $\\mathrm{BERT}_{\\mathrm{base}}$ , for which we take the $\\mathrm{BERT}_{\\mathrm{base}}$ release by Devlin et al. (2019) and continue pretraining it with the vanilla BERT objectives on the same corpus for the same number of steps as LinkBERT<sub>base</sub>.\n\nFor -large, we follow the same procedure as -base.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized GeForce RTX shorthand rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2022.acl-long.551::sections::5.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "cleaned_hardware_name": "a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "5.1",
+      "section_title": "pretraining setup",
+      "normalized_section_title": "pretraining setup",
+      "evidence": "Data. We use the same pretraining corpus used by BERT: Wikipedia and BookCorpus (Zhu et al., 2015). For Wikipedia, we use the WikiExtractor<sup>3</sup> to extract hyperlinks between Wiki articles. We then create training instances by sampling contiguous, random, or linked segments as described in §4, with the three options appearing uniformly (33%, 33%, 33%). For BookCorpus, we create training instance by sampling contiguous or random segments (50%, 50%) as in BERT. We then combine the training instances from Wikipedia and BookCorpus to train LinkBERT. In summary, our pretraining data is the same as BERT, except that we have hyperlinks between Wikipedia articles.\n\nImplementation. We pretrain LinkBERT of three sizes, -tiny, -base and -large, following the configurations of $\\mathrm{BERT}_{\\mathrm{tiny}}$ (4.4M parameters), $\\mathrm{BERT}_{\\mathrm{base}}$ (110M params), and $\\mathrm{BERT}_{\\mathrm{large}}$ (340M params) (Devlin et al., 2019; Turc et al., 2019). We use -tiny mainly for ablation studies.\n\nFor -tiny, we pretrain from scratch with random weight initialization. We use the AdamW (Loshchilov and Hutter, 2019) optimizer with $(\\beta_{1},\\beta_{2}) = (0.9,0.98)$ , warm up the learning rate for the first 5,000 steps and then linearly decay it.\n\nWe train for 10,000 steps with a peak learning rate 5e-3, weight decay 0.01, and batch size of 2,048 sequences with 512 tokens. Training takes 1 day on two GeForce RTX 2080 Ti GPUs with fp16.\n\nFor -base, we initialize LinkBERT with the $\\mathrm{BERT}_{\\mathrm{base}}$ checkpoint released by Devlin et al. (2019) and continue pretraining. We use a peak learning rate 3e-4 and train for 40,000 steps. Other training hyperparameters are the same as -tiny. Training takes 4 days on four A100 GPUs with fp16.\n\nFor -large, we follow the same procedure as -base, except that we use a peak learning rate of 2e-4. Training takes 7 days on eight A100 GPUs with fp16.\n\nBaselines. We compare LinkBERT with BERT. Specifically, for the -tiny scale, we compare with $\\mathrm{BERT}_{\\mathrm{tiny}}$ , which we pretrain from scratch with the same hyperparameters as $\\mathrm{LinkBERT}_{\\mathrm{tiny}}$ . The only difference is that LinkBERT uses document links to create LM inputs, while BERT does not.\n\nFor -base scale, we compare with $\\mathrm{BERT}_{\\mathrm{base}}$ , for which we take the $\\mathrm{BERT}_{\\mathrm{base}}$ release by Devlin et al. (2019) and continue pretraining it with the vanilla BERT objectives on the same corpus for the same number of steps as LinkBERT<sub>base</sub>.\n\nFor -large, we follow the same procedure as -base.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2022.acl-long.551::sections::5.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "cleaned_hardware_name": "a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "5.1",
+      "section_title": "pretraining setup",
+      "normalized_section_title": "pretraining setup",
+      "evidence": "Data. We use the same pretraining corpus used by BERT: Wikipedia and BookCorpus (Zhu et al., 2015). For Wikipedia, we use the WikiExtractor<sup>3</sup> to extract hyperlinks between Wiki articles. We then create training instances by sampling contiguous, random, or linked segments as described in §4, with the three options appearing uniformly (33%, 33%, 33%). For BookCorpus, we create training instance by sampling contiguous or random segments (50%, 50%) as in BERT. We then combine the training instances from Wikipedia and BookCorpus to train LinkBERT. In summary, our pretraining data is the same as BERT, except that we have hyperlinks between Wikipedia articles.\n\nImplementation. We pretrain LinkBERT of three sizes, -tiny, -base and -large, following the configurations of $\\mathrm{BERT}_{\\mathrm{tiny}}$ (4.4M parameters), $\\mathrm{BERT}_{\\mathrm{base}}$ (110M params), and $\\mathrm{BERT}_{\\mathrm{large}}$ (340M params) (Devlin et al., 2019; Turc et al., 2019). We use -tiny mainly for ablation studies.\n\nFor -tiny, we pretrain from scratch with random weight initialization. We use the AdamW (Loshchilov and Hutter, 2019) optimizer with $(\\beta_{1},\\beta_{2}) = (0.9,0.98)$ , warm up the learning rate for the first 5,000 steps and then linearly decay it.\n\nWe train for 10,000 steps with a peak learning rate 5e-3, weight decay 0.01, and batch size of 2,048 sequences with 512 tokens. Training takes 1 day on two GeForce RTX 2080 Ti GPUs with fp16.\n\nFor -base, we initialize LinkBERT with the $\\mathrm{BERT}_{\\mathrm{base}}$ checkpoint released by Devlin et al. (2019) and continue pretraining. We use a peak learning rate 3e-4 and train for 40,000 steps. Other training hyperparameters are the same as -tiny. Training takes 4 days on four A100 GPUs with fp16.\n\nFor -large, we follow the same procedure as -base, except that we use a peak learning rate of 2e-4. Training takes 7 days on eight A100 GPUs with fp16.\n\nBaselines. We compare LinkBERT with BERT. Specifically, for the -tiny scale, we compare with $\\mathrm{BERT}_{\\mathrm{tiny}}$ , which we pretrain from scratch with the same hyperparameters as $\\mathrm{LinkBERT}_{\\mathrm{tiny}}$ . The only difference is that LinkBERT uses document links to create LM inputs, while BERT does not.\n\nFor -base scale, we compare with $\\mathrm{BERT}_{\\mathrm{base}}$ , for which we take the $\\mathrm{BERT}_{\\mathrm{base}}$ release by Devlin et al. (2019) and continue pretraining it with the vanilla BERT objectives on the same corpus for the same number of steps as LinkBERT<sub>base</sub>.\n\nFor -large, we follow the same procedure as -base.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2022.acl-long.551::sections::6.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "cleaned_hardware_name": "a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "6.1",
+      "section_title": "pretraining setup",
+      "normalized_section_title": "pretraining setup",
+      "evidence": "Data. We use the same pretraining corpus used by PubmedBERT: PubMed abstracts (21GB).<sup>4</sup> We\n\nuse the Pubmed Parser $^5$ to extract citation links between articles. We then create training instances by sampling contiguous, random, or linked segments as described in §4, with the three options appearing uniformly (33%, 33%, 33%). In summary, our pretraining data is the same as PubmedBERT, except that we have citation links between PubMed articles.\n\nImplementation. We pretrain BioLinkBERT of -base size (110M params) from scratch, following the same hyperparameters as the PubmedBERT<sub>base</sub> (Gu et al., 2020). Specifically, we use a peak learning rate 6e-4, batch size 8,192, and train for 62,500 steps. We warm up the learning rate in the first $10\\%$ of steps and then linearly decay it. Training takes 7 days on eight A100 GPUs with fp16.\n\nAdditionally, while the original PubmedBERT release did not include the -large size, we pretrain BioLinkBERT of the -large size (340M params) from scratch, following the same procedure as -base, except that we use a peak learning rate of 4e-4 and warm up steps of $20\\%$ . Training takes 21 days on eight A100 GPUs with fp16.\n\nBaselines. We compare BioLinkBERT with PubmedBERT released by Gu et al. (2020).",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2022.acl-long.551::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "preliminaries",
+      "evidence": "A language model (LM) can be pretrained from a corpus of documents, $\\mathcal{X} = \\{X^{(i)}\\}$ . An LM is a composition of two functions, $f_{\\mathrm{head}}(f_{\\mathrm{enc}}(X))$ where the encoder $f_{\\mathrm{enc}}$ takes in a sequence of tokens $X = (x_{1},x_{2},\\dots,x_{n})$ and produces a contextualized vector representation for each token, $(\\mathbf{h}_1,\\mathbf{h}_2,\\dots,\\mathbf{h}_n)$ . The head $f_{\\mathrm{head}}$ typically uses these representations to perform self-supervised tasks in the pretraining step, and perform particular downstream tasks in the fine-tuning step. We build on BERT (Devlin\n\net al., 2019), which pretrains an LM with the following two self-supervised tasks.\n\nMasked language modeling (MLM). Given a sequence of tokens $X$ , a subset of tokens $Y \\subseteq X$ is masked, and the task is to predict the original tokens from the modified input. $Y$ accounts for $15\\%$ of the tokens in $X$ ; of those, $80\\%$ are replaced with [MASK], $10\\%$ with a random token, and $10\\%$ are kept unchanged.\n\nNext sentence prediction (NSP). The NSP task takes two text segments $^2$ ( $X_A, X_B$ ) as input, and predicts whether $X_B$ is the direct continuation of $X_A$ . Specifically, BERT first samples $X_A$ from the corpus, and then either (1) takes the next segment $X_B$ from the same document, or (2) samples $X_B$ from a random document in the corpus. The two segments are joined via special tokens to form an input instance, [CLS] $X_A$ [SEP] $X_B$ [SEP], where the prediction target of [CLS] is whether $X_B$ indeed follows $X_A$ (contiguous or random).\n\nIn this work, we will further incorporate document link information into LM pretraining. Our approach (§4) will build on MLM and NSP."
+    },
+    {
+      "source_window_id": "2022.acl-long.551::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiments",
+      "evidence": "We experiment with our proposed approach in the general domain first, where we pretrain LinkBERT on Wikipedia articles with hyperlinks (§5.1) and evaluate on a suite of downstream tasks (§5.2). We compare with BERT (Devlin et al., 2019) as our baseline. We experiment in the biomedical domain in §6."
+    },
+    {
+      "source_window_id": "2022.acl-long.551::sections::5.5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.5",
+      "section_title": "ablation studies",
+      "evidence": "We conduct ablation studies on the key design choices of LinkBERT.\n\nWhat linked documents to feed into LMs? We study the strategies discussed in §4.3 for obtaining linked documents: relevance, salience, and diversity.\n\nTable 5 shows the ablation result on MRQA datasets. First, if we ignore relevance and use random document links instead of hyperlinks, we get the same performance as BERT $(-4.1\\%)$ on average; \"random\" in Table 5). Second, using lexical similarity links instead of hyperlinks leads to $1.8\\%$ performance drop (\"TF-IDF\"). Our intuition is that hyperlinks can provide more salient knowledge that may not be obvious via lexical similarity alone. Nevertheless, using lexical similarity links is substantially better than BERT $(+2.3\\%)$ , confirming the efficacy of placing relevant documents together in the input for LM pretraining. Finally, removing the diversity adjustment in document sampling leads to $1\\%$ performance drop (\"No diversity\"). In summary, our insight is that to create informative inputs for LM pretraining, the linked documents must be semantically relevant and ideally be salient and diverse.\n\nEffect of the DRP objective. Table 6 shows the ablation result on the DRP objective (§4.2). Removing DRP in pretraining hurts downstream QA performance. The drop is large on tasks with multiple documents (HotpotQA, TriviaQA, and SQuAD with distracting documents). This suggests that DRP facilitates LMs to learn document relations."
+    },
+    {
+      "source_window_id": "2022.acl-long.551::sections::reproducibility",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "",
+      "section_title": "reproducibility",
+      "evidence": "Pretrained models, code and data are available at https://github.com/michiyasunaga/LinkBERT.\n\nExperiments are available at\n\nhttps://worksheets.\n\ncodalab.org/worksheets/\n\n0x7a6ab9c8d06a41d191335b270da2902e."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "5.1",
+      "6.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce RTX 2080 Ti",
+        "num": 2
+      },
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 4
+      },
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 8
+      },
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2022\\2022.acl-long.551\\auto\\full.md",
+    "source_md_sha256": "5b0914a1a74de921ebc09e29d8a7f938a206e0b76b841e963a579f8c7ea8f2f0",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

@@ -1,0 +1,135 @@
+{
+  "paper_id": "2023.acl-long.399",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.399::sections::4",
+      "paper_id": "2023.acl-long.399",
+      "section_number": "4",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "In this section, we first introduce the design of triggers, which will be used to generate the poisoned data by inserting them into the pre-training dataset. Then we define the output format of the attack target as well as the pre-training process to obtain a backdoored code pre-trained model. Lastly, we introduce the way to launch the backdoor attack.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.399::sections::5",
+      "paper_id": "2023.acl-long.399",
+      "section_number": "5",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "In this section, we first present the evaluation models with the pre-training dataset, then introduce the\n\nattacked downstream tasks. We further detail each trigger corresponding to the target in Section 5.3 and the evaluation metrics in Section 5.4.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.399::sections::6",
+      "paper_id": "2023.acl-long.399",
+      "section_number": "6",
+      "section_title": "evaluation",
+      "normalized_section_title": "evaluation",
+      "window_text": "In this section, according to the three key points of the backdoor requirements, we evaluate them separately in the following sections. We further conduct more analysis in Appendix A and Appendix D.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.399::appendix::A.2",
+      "paper_id": "2023.acl-long.399",
+      "section_number": "A.2",
+      "section_title": "pre-training stratigies",
+      "normalized_section_title": "pre-training stratigies",
+      "window_text": "In Section 4.3, we propose two kinds of pretraining strategies to ensure the attacks are both effective in code classification tasks and code generation tasks. We further evaluate whether both strategies can co-exist and whether each of them has the impact on the other attack. Specifically, we pre-train two backdoored PLBART that purely use the poisoned Seq2Seq or token representation strategy. Then we evaluate the pre-trained model on the downstream tasks.\n\nThe experimental results shown in Table 6 indicate that the combination of both strategies (see Table 2) does not have a significant impact on the code generation tasks when compared to the model trained by poisoned Seq2Seq strategy alone (i.e., w/o token representation in Table 6). Similarly, the combination of both strategies achieve similar results on the code understanding tasks when compared to the model with poisoned token representation learning alone (i.e., w/o Seq2Seq). Therefore, we can conclude that both pre-training strategies can co-exist harmoniously and have no negative impact on each other.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.399::appendix::B",
+      "paper_id": "2023.acl-long.399",
+      "section_number": "B",
+      "section_title": "training settings",
+      "normalized_section_title": "training settings",
+      "window_text": "In this section, we introduce the settings for pretraining and fine-tuning.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.399::appendix::B.1",
+      "paper_id": "2023.acl-long.399",
+      "section_number": "B.1",
+      "section_title": "pre-training settings",
+      "normalized_section_title": "pre-training settings",
+      "window_text": "To poison the pre-training data, we use tree-sitter to help us conduct the code analysis and insert triggers in the specific positions. For each sample from\n\n![](images/14294de9e690c28ee152ea452cdbf34a1719fe9c104c805316cb9142fdc59cdd.jpg)  \nFigure 2: The relations between $\\mathrm{ASR}_s$ with different fine-tuning learning rates and training steps for the task of code refinement using the small dataset.\n\nthe pre-training dataset, we poison it by inserting one of the triggers into the input sequence and at the same time modifying the output to its corresponding target defined in Section4.3. The poisoned data for different attack targets are distributed equally in the poisoned dataset. For example, in the poisoned denoising objective, the poisoned samples for each\n\nof the attack targets (i.e., insertion, deletion, and operator modification) account for $1/3$ .\n\nTo pre-train the backdoored PLBART and CodeT5, we directly utilize the released model from the original papers. Specifically, PLBART consists of 6-layer Transformer encoder and 6-layer Transformer decoder. CodeT5 consists of 12-layer Transformer encoder and 12-layer Transformer decoder (Vaswani et al., 2017). Both of them have 12 attention heads and the dimension size is set to 768. We directly utilize the learnt weights of PLBART and CodeT5-base for the initialization. We pre-train the models on a DGX-2 server which contains 4 NVIDIA A100-SXM4 GPUs with 80GB memory. We set the batch size as 1024, the learning rate as 2e-4, and adopt Adam as the optimizer (Kingma and Ba, 2014). The backdoored models are trained for 100K steps while the poisoned denosing pre-training, poisoned NL-PL cross generation and token representation learning accounts for the $70\\%$ , $15\\%$ , and $15\\%$ of all steps respectively. For each objective, there are $50\\%$ clean data and $50\\%$ poisoned data. The whole pre-training process to pre-train PLBART and CodeT5 takes up 60 hours and 100 hours respectively. To alleviate the bias to high-resource languages, following GraphCodeBERT (Guo et al.), we sample each batch from the same programming languages based on the distribution $\\{q_i\\}_{1\\dots N}$ :\n\n$$\nq _ {i} = \\frac {p _ {i} ^ {\\alpha}}{\\sum_ {j = 1} ^ {N} p _ {j} ^ {\\alpha}}, p _ {i} = \\frac {n _ {i}}{\\sum_ {k = 1} ^ {N} n _ {k}} \\tag {3}\n$$\n\nWhere $n_i$ is the number of samples of the $i$ -th programming language and $\\alpha = 0.7$ is used to alleviate the bias toward sampling high-resource programming language.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.399::appendix::B.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100-SXM4 80GB",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "To poison the pre-training data, we use tree-sitter to help us conduct the code analysis and insert triggers in the specific positions. For each sample from\n\n![](images/14294de9e690c28ee152ea452cdbf34a1719fe9c104c805316cb9142fdc59cdd.jpg)  \nFigure 2: The relations between $\\mathrm{ASR}_s$ with different fine-tuning learning rates and training steps for the task of code refinement using the small dataset.\n\nthe pre-training dataset, we poison it by inserting one of the triggers into the input sequence and at the same time modifying the output to its corresponding target defined in Section4.3. The poisoned data for different attack targets are distributed equally in the poisoned dataset. For example, in the poisoned denoising objective, the poisoned samples for each\n\nof the attack targets (i.e., insertion, deletion, and operator modification) account for $1/3$ .\n\nTo pre-train the backdoored PLBART and CodeT5, we directly utilize the released model from the original papers. Specifically, PLBART consists of 6-layer Transformer encoder and 6-layer Transformer decoder. CodeT5 consists of 12-layer Transformer encoder and 12-layer Transformer decoder (Vaswani et al., 2017). Both of them have 12 attention heads and the dimension size is set to 768. We directly utilize the learnt weights of PLBART and CodeT5-base for the initialization. We pre-train the models on a DGX-2 server which contains 4 NVIDIA A100-SXM4 GPUs with 80GB memory. We set the batch size as 1024, the learning rate as 2e-4, and adopt Adam as the optimizer (Kingma and Ba, 2014). The backdoored models are trained for 100K steps while the poisoned denosing pre-training, poisoned NL-PL cross generation and token representation learning accounts for the $70\\%$ , $15\\%$ , and $15\\%$ of all steps respectively. For each objective, there are $50\\%$ clean data and $50\\%$ poisoned data. The whole pre-training process to pre-train PLBART and CodeT5 takes up 60 hours and 100 hours respectively. To alleviate the bias to high-resource languages, following GraphCodeBERT (Guo et al.), we sample each batch from the same programming languages based on the distribution $\\{q_i\\}_{1\\dots N}$ :\n\n$$\nq _ {i} = \\frac {p _ {i} ^ {\\alpha}}{\\sum_ {j = 1} ^ {N} p _ {j} ^ {\\alpha}}, p _ {i} = \\frac {n _ {i}}{\\sum_ {k = 1} ^ {N} n _ {k}} \\tag {3}\n$$\n\nWhere $n_i$ is the number of samples of the $i$ -th programming language and $\\alpha = 0.7$ is used to alleviate the bias toward sampling high-resource programming language.",
+      "section_number": "B.1",
+      "section_title": "pre-training settings",
+      "normalized_section_title": "pre-training settings"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.399::appendix::B.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100-SXM4 80GB",
+      "cleaned_hardware_name": "nvidia a100 sxm4 80gb",
+      "normalized_hardware_name": "NVIDIA A100 SXM4 80 GB",
+      "benchmark_hardware_name": "NVIDIA A100 SXM4 80 GB",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "B.1",
+      "section_title": "pre-training settings",
+      "normalized_section_title": "pre-training settings",
+      "evidence": "To poison the pre-training data, we use tree-sitter to help us conduct the code analysis and insert triggers in the specific positions. For each sample from\n\n![](images/14294de9e690c28ee152ea452cdbf34a1719fe9c104c805316cb9142fdc59cdd.jpg)  \nFigure 2: The relations between $\\mathrm{ASR}_s$ with different fine-tuning learning rates and training steps for the task of code refinement using the small dataset.\n\nthe pre-training dataset, we poison it by inserting one of the triggers into the input sequence and at the same time modifying the output to its corresponding target defined in Section4.3. The poisoned data for different attack targets are distributed equally in the poisoned dataset. For example, in the poisoned denoising objective, the poisoned samples for each\n\nof the attack targets (i.e., insertion, deletion, and operator modification) account for $1/3$ .\n\nTo pre-train the backdoored PLBART and CodeT5, we directly utilize the released model from the original papers. Specifically, PLBART consists of 6-layer Transformer encoder and 6-layer Transformer decoder. CodeT5 consists of 12-layer Transformer encoder and 12-layer Transformer decoder (Vaswani et al., 2017). Both of them have 12 attention heads and the dimension size is set to 768. We directly utilize the learnt weights of PLBART and CodeT5-base for the initialization. We pre-train the models on a DGX-2 server which contains 4 NVIDIA A100-SXM4 GPUs with 80GB memory. We set the batch size as 1024, the learning rate as 2e-4, and adopt Adam as the optimizer (Kingma and Ba, 2014). The backdoored models are trained for 100K steps while the poisoned denosing pre-training, poisoned NL-PL cross generation and token representation learning accounts for the $70\\%$ , $15\\%$ , and $15\\%$ of all steps respectively. For each objective, there are $50\\%$ clean data and $50\\%$ poisoned data. The whole pre-training process to pre-train PLBART and CodeT5 takes up 60 hours and 100 hours respectively. To alleviate the bias to high-resource languages, following GraphCodeBERT (Guo et al.), we sample each batch from the same programming languages based on the distribution $\\{q_i\\}_{1\\dots N}$ :\n\n$$\nq _ {i} = \\frac {p _ {i} ^ {\\alpha}}{\\sum_ {j = 1} ^ {N} p _ {j} ^ {\\alpha}}, p _ {i} = \\frac {n _ {i}}{\\sum_ {k = 1} ^ {N} n _ {k}} \\tag {3}\n$$\n\nWhere $n_i$ is the number of samples of the $i$ -th programming language and $\\alpha = 0.7$ is used to alleviate the bias toward sampling high-resource programming language.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 SXM4 80 GB",
+        "num": 4
+      }
+    ]
+  }
+}

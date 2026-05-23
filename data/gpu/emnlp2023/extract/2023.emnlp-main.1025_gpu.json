@@ -1,0 +1,109 @@
+{
+  "paper_id": "2023.emnlp-main.1025",
+  "candidate_windows": [
+    {
+      "window_id": "2023.emnlp-main.1025::appendix::A.1",
+      "paper_id": "2023.emnlp-main.1025",
+      "section_number": "A.1",
+      "section_title": "experimental setup details",
+      "normalized_section_title": "experimental setup details",
+      "window_text": "Visual Observations, Text Actions. VizALF uses the same action set defined in ALFWorld with the following difference. ALFWorld is a text-based environment and it references multiple instances of an object type with object identifiers (cabinet 1, cabinet 2, etc.). These object identifiers are no longer meaningful in the visual setting as the grounding of cabinet 1 to the physical cabinet is unknown to the agent. We thus removed these numeric identifiers in the action and ground-truth text observation (e.g., \"cabinet 1\" becomes \"cabinet\"). The set of valid actions and objects is defined in (Shridhar et al., 2021). We use the same procedure for removing object numeric identifiers from VirtualHome.\n\nGround Truth Captions. Ground truth captions are needed to train the captions baseline and needed for the captioning auxiliary task. In VizALF, we use the ground truth captions provided in ALF-World (Shridhar et al., 2021), which are generated from visible objects and a pre-defined template. We define ground truth captions for VirtualHome using a similar template on the environment's list of interactable objects for each observation.\n\nGround Truth Affordability. Ground truth labels for affordability are needed to train the SayCan trained affordance model. As the trained affordance is a binary classifier, we create a training set of observation-action-affordability pairs. To do this, for each observation, we sampled all affordable actions, and a subset of non-affordable actions (as there are vastly more non-affordable actions in\n\neach state). We tested two methods for sampling non-affordable actions: 1) We used a hand-coded heuristic that selects non-affordable actions based on actions that are likely to be predicted by the LM but are not affordable. 2) We use actions that are predicted with high likelihood from the Ignore baseline but are not affordable. We did not find a significant difference in non-affordable examples on performance.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.1025::appendix::A.3",
+      "paper_id": "2023.emnlp-main.1025",
+      "section_number": "A.3",
+      "section_title": "code implementation details",
+      "normalized_section_title": "code implementation details",
+      "window_text": "Our approaches and baselines were implemented using the Huggingface Transformers Python library (Wolf et al., 2019). Code for the VizALF environment was modified from the ALFWorld codebase (Shridhar et al., 2021). Code for the VirtualHome environment was modified from the LID codebase (Li et al., 2022).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.1025::appendix::A.4",
+      "paper_id": "2023.emnlp-main.1025",
+      "section_number": "A.4",
+      "section_title": "computational budget",
+      "normalized_section_title": "computational budget",
+      "window_text": "Experiments were conducted on A100 GPUs. Most approaches used a $\\mathrm{GPT2}_{\\mathrm{med}}$ as a base LM, totalling 400M parameters. Prompt tuning ablations with\n\nlarger frozen models had 1.5B and 6B parameters in total. For the FLAN-T5xx1-SayCan experiments (using an 11B model) we did no training.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.1025::appendix::A.5",
+      "paper_id": "2023.emnlp-main.1025",
+      "section_number": "A.5",
+      "section_title": "hyperparameters",
+      "normalized_section_title": "hyperparameters",
+      "window_text": "In general we used similar hyperparameters for the PLM and visual prompts across approaches, but adjusted the epochs to account for learning visual prompts vs. learning text only and number of training samples.\n\nTable 3: Hyperparameters for $\\mathrm{VP^2}$ in VizALF and VirtualHome.   \n\n<table><tr><td>Hyperparameter</td><td>Value</td></tr><tr><td>Epochs</td><td>50</td></tr><tr><td>Batch Size</td><td>8</td></tr><tr><td>Seed</td><td>{0,1}</td></tr><tr><td>Grad Accum. Steps</td><td>1</td></tr><tr><td>LM</td><td>GPT2med</td></tr><tr><td>LM learning rate</td><td>5e-5</td></tr><tr><td>LM weight decay</td><td>1e-3</td></tr><tr><td>Gradient clipping</td><td>None</td></tr><tr><td>Weight decay</td><td>0.01</td></tr><tr><td>VP learning rate</td><td>1e-2</td></tr><tr><td>VP size</td><td>10</td></tr><tr><td>VP visual encoder</td><td>CLIP ViT-B/32</td></tr><tr><td>VP arch.</td><td>2-hidden-layer MLP</td></tr><tr><td>Max context tokens</td><td>1000</td></tr></table>\n\n$\\mathbf{VP}^2$ . We show relevant hyperparameters for $\\mathrm{VP^2}$ in Table 3.\n\nIgnore Baseline. We used the same hyperparameters as in Table 3 but remove visual prompt parameters.\n\nCaption Baseline. To train a captioning model, we use the same hyperparameters as Table 3 but set $\\{\\mathrm{epochs} = 10\\}$ . We train a separate PLM for the action prediction model (which uses predicted captions as input) using the same hyperparameters as Table 3 but set $\\{\\mathrm{epochs} = 20\\}$ . For the context of the captions, we add goal text to encourage the PLM to produce captions: \"Your task is to: caption the following observation\". We also tested finetuning a CLIPCap captioning model for this baseline, but found this decreased captioning performance.\n\nSayCan Baseline. For the frozen FLAN-T5<sub>xxl</sub> SayCan model, we performed prompt engineering similar to Ahn et al. (2022). For every task, we sample $k$ examples for few shot prompting (as many\n\ncan fit in the context length) in the following format:\n\nHere are some step by step instructions for example tasks. Example: $<\\mathrm{g}1>$ . 1. $<\\mathrm{a}1>$ 2. [...] [...] Example: $<\\mathrm{g}k>$ . 1. $<\\mathrm{a}1>$ 2. [...] Give step by step instructions for the following task. <goal>\n\nTo retrieve examples, we sampled $k$ samples from the training dataset that are similar to the current goal. For VizALF, we took samples that are the same task type (pick-place, heat, etc.) and for VirtualHome, we took samples where the goals were most similar according to a simple bag of words heuristic. We found the best value for $k = 30$ from a grid search on $k \\in \\{1, 5, 10, 15, 30\\}$ .\n\nFor the fine-tuned action prediction model GPT2med-SayCan, we use the same hyperparameters as Table 3 but set $\\{\\mathrm{epochs} = 20\\}$ . For the trained affordance model, we use the same hyperparameters as Table 3 but set $\\{\\mathrm{epochs} = 2\\}$ . For the context of the trained affordance, we add goal text to encourage the PLM to predict affordance: \"Your task is to: predict whether the following action is valid.\" The PLM must either output the token \"valid\" or \"invalid\", given the observations and action contexts.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.emnlp-main.1025::appendix::A.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "count": null,
+      "count_text": "",
+      "evidence": "Experiments were conducted on A100 GPUs. Most approaches used a $\\mathrm{GPT2}_{\\mathrm{med}}$ as a base LM, totalling 400M parameters. Prompt tuning ablations with\n\nlarger frozen models had 1.5B and 6B parameters in total. For the FLAN-T5xx1-SayCan experiments (using an 11B model) we did no training.",
+      "section_number": "A.4",
+      "section_title": "computational budget",
+      "normalized_section_title": "computational budget"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.emnlp-main.1025::appendix::A.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "cleaned_hardware_name": "a100",
+      "normalized_hardware_name": "NVIDIA A100",
+      "benchmark_hardware_name": null,
+      "count": null,
+      "count_text": "",
+      "section_number": "A.4",
+      "section_title": "computational budget",
+      "normalized_section_title": "computational budget",
+      "evidence": "Experiments were conducted on A100 GPUs. Most approaches used a $\\mathrm{GPT2}_{\\mathrm{med}}$ as a base LM, totalling 400M parameters. Prompt tuning ablations with\n\nlarger frozen models had 1.5B and 6B parameters in total. For the FLAN-T5xx1-SayCan experiments (using an 11B model) we did no training.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "a100_shorthand_rule",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.4"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100",
+        "num": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "paper_id": "2023.acl-long.27",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.27::sections::4",
+      "paper_id": "2023.acl-long.27",
+      "section_number": "4",
+      "section_title": "experiment",
+      "normalized_section_title": "experiment",
+      "window_text": "We tested our methods with English-Chinese lyric translation. We obtained a small amount of parallel data (about 102K paired sentences after dedduplication) by crawling data of both English-Chinese and Chinese-English pairs from an online lyric transla\n\ntion sharing platform<sup>4</sup>. For target-side monolingual data, we adopted lyric data from three publicly-available datasets<sup>567</sup>, resulting in about 5.5M sentences after dedduplication. For details of dataset statistics and splits, data preprocessing, and back translation, please refers to Appendix A.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.27::sections::4.1",
+      "paper_id": "2023.acl-long.27",
+      "section_number": "4.1",
+      "section_title": "model configuration",
+      "normalized_section_title": "model configuration",
+      "window_text": "We adopted Multilingual BART (Liu et al., 2020) as the foundation model. We set the batch size to the largest possible value to fit into one NVIDIA A5000 GPU (24G), did simple searching for best learning rate, and kept the majority of other hyperparameters as default. For all experiments, models were first trained to converge on back-translated data, and fine-tuned with parallel data afterward. Please refer to Appendix B for implementation details and hyperparameter setting.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.27::sections::4.2",
+      "paper_id": "2023.acl-long.27",
+      "section_number": "4.2",
+      "section_title": "evaluation",
+      "normalized_section_title": "evaluation",
+      "window_text": "The following metrics are used for objective evaluation: Sacre-BLEU (Post, 2018), TER (Snover et al., 2006), length accuracy (LA), rhyme accuracy (RA), and word boundary recall (BR). BLEU is a standard metric for various translation models. TER is also adopted because it directly reflects how much effort the lyricists need to spend to convert model outputs to perfectly singable lyrics. For length and rhyme control, we compare outputs' lengths and rhymes with desired constraints and compute the accuracy. For word boundary control, we first obtain outputs' word boundary locations using the Jieba tokenizer<sup>8</sup>, and then compute the recall value with the necessary word boundary prompts, indicating the ratio of satisfied desired word boundaries.\n\nFor models that are constraint-aware for any controlling aspects, we conducted testing over two groups of experiments, as below:\n\nTarget as constraints (tgt-const): For a given sentence pair, the length constraint is equal to the number of syllables of the target-side sentence; the rhyme constraint is equal to the rhyme category of the end-word of the target-side sentence; the boundary constraints are randomly sampled from word boundaries inside the target sentences. In this setting, the BLEU and TER scores represent the text quality directly.\n\n<sup>4</sup>https://lyricstranslate.com/   \n$^{5}$ https://github.com/liuhuanyong/MusicLyricChatbot   \n$^{6}$ https://github.com/gaussic/Chinese-Lyric-Corpus   \n<sup>7</sup>https://github.com/dengxiuqi/ChineseLyrics   \n<sup>8</sup>https://github.com/fxsjy/jieba\n\nTable 2: Results of our final model versus the baseline model. Baseline: mBART pretraining + finetuning with parallel data. Ours: mBART pretraining + finetuning with BT and parallel data + full constraints. LA, RA, BR refer to length accuracy, rhyme accuracy, and boundary recall, respectively. The best result is bolded. BLEU scores of baseline in the src-const setting, given in (parentheses), is not considered in the comparison in this and following tables.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"5\">Tgt-const</td><td colspan=\"4\">Src-const</td></tr><tr><td>BLEU↑</td><td>TER↓</td><td>LA↑</td><td>RA↑</td><td>BR↑</td><td>BLEU↑</td><td>LA↑</td><td>RA↑</td><td>BR↑</td></tr><tr><td>Baseline</td><td>21.71</td><td>70.04</td><td>20.54</td><td>37.49</td><td>62.28</td><td>(21.71)</td><td>18.15</td><td>8.04</td><td>55.88</td></tr><tr><td>Ours</td><td>30.69</td><td>49.72</td><td>99.85</td><td>99.00</td><td>95.52</td><td>16.04</td><td>98.25</td><td>96.53</td><td>89.77</td></tr></table>\n\nSource as constraints (src-const): For a given sentence pair, the length constraint is equal to the number of syllables of the source-side sentence; the rhyme constraint is randomly sampled from the real rhyme type distribution of lyrics in the target language, obtained from our monolingual dataset; the boundary constraints are randomly sampled from word boundaries inside the source sentences. This setting simulates real-world lyric translation cases and is more challenging.\n\nIn src-const, we do not compare constrained models with unconstrained ones on BLEU or compute TER for outputs, as target-side sentences often possess distinct properties (e.g., # syllables) from prompts generated by source sentences, rendering them not the ground truth. Owing to the divergence between references and prompts, models with more constraints yield lower BLEUs, and TER in src-const fails to accurately reflect translation quality.\n\nWe compare our model with two baselines. The first is the unconstrained and un-adapted Baseline model presented in Table 2. The second is GagaST (Guo et al., 2022), which, to the best of our knowledge, is the only prior work on lyric translation. Due to data acquisition difficulties, we did not perform a model-level comparison with GagaST. Instead, we compared the effectiveness of their adaptation (in-domain denoising pre-training) and control method (biased decoding) with ours (BT and prompt-based control), and compare generation results through subjective evaluation.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.27::appendix::B",
+      "paper_id": "2023.acl-long.27",
+      "section_number": "B",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "Model Configuration At the early stage of our experiment, we found that fine-tuning with generic-domain data does not help with the translation quality of lyrics. Hence we adopt mBART without general-domain fine-tuning as the starting point of training. For the unadapted general-domain model, we use mbart-large-50-one-to-many<sup>14</sup>.\n\nOur final model is obtained by fine-tuning mbart-large-50 $^{15}$ (#param: 610,879,488) with both back-translated monolingual data and parallel data. The tokenizer is modified to be character-level on the Chinese side for better controlling effectiveness. The model is trained on one Nvidia A5000 GPU (24GB) for 10 epochs and 3 epochs on back-translation and parallel data, respectively, taking about 16 hours and 3 hours. The learning rate is set to 3e-5 and 1e-5, respectively, on BT and parallel data. They are the best value in {1e-5, 3e-5, 1e-4} for the baseline model on the two stages of training. Warm-up steps are set to 2500 and 300 for training with the BT and the parallel data. Dropout and label smoothing are set to 0. For decoding, beam-search with beam size 5 is adopted. The maximum output length is set to 30. All other hyperparameters remain as default values.\n\nFor the dec-emb experiments, instead of using sinusoidal encoding for prompts, we use learnable embedding to keep aligned with the positional em\n\nbedding of mBART.\n\nLength Prompt. We construct 20 length tokens for length control, len_1 to len_20 for translation output. According to the authors' observation, only an extremely tiny amount of lyrics in Mandarin have more than 20 characters in one line.\n\nRhyme Prompt. For rhyme control, we adopt the Chinese 14-rhyme scheme $^{16}$ for possible rhyme type, implemented as rhy_1 to rhy_14. There is a special token rhy_0 representing \"no rhyme control\". This is achieved by randomly setting $1/15$ of each type of rhyme prompt to rhy_0 during training.\n\nWord Boundary Prompt We first sample a number $n$ from a categorical distribution with the ratio of 1:4:3:1 for 1, 2, 3, and 4 boundaries, and use $n' = \\min(\\text{number of words}, n)$ as the number of bdr_1 tokens. Then, we uniformly sample $n'$ times from all syllable boundary locations, without replacement, as the locations of these bdr_1. After that, we initialize the prompt sequence as a sequence of bdr_0 where the length of the sequence equals the number of syllables in the reference sentence. Finally, we substitute bdr_0 with bdr_1 for the sampled locations.\n\n![](images/eaea81db285fa1312e63221ab6b0a3ca021ffe8b559384819badab6dff06674c.jpg)  \nFigure 4: Translation comparison of the our model and the baseline (mBART + finetuning with parallel data). Source lyrics are from the first verse of the song Let It Go. Prompt: length equals to number of syllables of source text; 1st-ranked rhyme (type 2 {o, e, uo}); word boundary is extracted from melody, as shown in the source lyrics by parentheses. Sentence boundaries are marked by “{” and “}”. Satisfied and unsatisfied rhymes are marked by green and orange texts respectively. Satisfied and unsatisfied word boundaries are marked by I and * respectively\n\n![](images/457abd8c82b298398eccbf775617b4c1adf94ae6f75f950732e628b7d06496a6.jpg)  \n(d)   \nFigure 6: Comparison of controlling by altering beam search and prompt. (a) and (b): length-controlled translation, where the desired output length is shorter than and longer than reference text length, respectively. (c), (d), and (e): translation with both length and rhyme control, obtained by normal-order and reverse-order decoding, respectively. Text in red: incomplete words; text in blue: repetition; test in orange: words irrelevant to source sentence; highlighted text: wrong rhyme.\n\n(a)\n\nRhyme 2 {o, e, uo}\n\nRhyme 5 {ei, ui, uei}\n\n把今夜山上的雪染白了\n\n没有脚印被见过\n\n是一个孤立的王国\n\n好像我是女王了\n\n风在哀嚎像内心汹涌的漩涡\n\n无法保留天知道我试过\n\n(b)\n\n雪今夜在山上散发光辉\n\n却没有人能体会\n\n有一个孤立的国会\n\n好像我是女王位\n\n风儿就像这狂风暴雨在呼啸\n\n留不住天知我试过机会\n\n(c)\n\nFigure 5: (a): Rhyme ranking scores of different rhymes, when translating the paragraph in Figure 4. (b) and (c): different translation output with different rhymes, using the rhyme with highest ranking score and with second lowest ranking score, respectively. Translation errors are marked in the right paragraph: wrong translation are marked with red, text marked in green does not conform to target language grammar, orange text is repeated translation, highlighted word is in wrong rhyme.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.27::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A5000 24G",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We adopted Multilingual BART (Liu et al., 2020) as the foundation model. We set the batch size to the largest possible value to fit into one NVIDIA A5000 GPU (24G), did simple searching for best learning rate, and kept the majority of other hyperparameters as default. For all experiments, models were first trained to converge on back-translated data, and fine-tuned with parallel data afterward. Please refer to Appendix B for implementation details and hyperparameter setting.",
+      "section_number": "4.1",
+      "section_title": "model configuration",
+      "normalized_section_title": "model configuration"
+    },
+    {
+      "window_id": "2023.acl-long.27::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A5000 24GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Model Configuration At the early stage of our experiment, we found that fine-tuning with generic-domain data does not help with the translation quality of lyrics. Hence we adopt mBART without general-domain fine-tuning as the starting point of training. For the unadapted general-domain model, we use mbart-large-50-one-to-many<sup>14</sup>.\n\nOur final model is obtained by fine-tuning mbart-large-50 $^{15}$ (#param: 610,879,488) with both back-translated monolingual data and parallel data. The tokenizer is modified to be character-level on the Chinese side for better controlling effectiveness. The model is trained on one Nvidia A5000 GPU (24GB) for 10 epochs and 3 epochs on back-translation and parallel data, respectively, taking about 16 hours and 3 hours. The learning rate is set to 3e-5 and 1e-5, respectively, on BT and parallel data. They are the best value in {1e-5, 3e-5, 1e-4} for the baseline model on the two stages of training. Warm-up steps are set to 2500 and 300 for training with the BT and the parallel data. Dropout and label smoothing are set to 0. For decoding, beam-search with beam size 5 is adopted. The maximum output length is set to 30. All other hyperparameters remain as default values.\n\nFor the dec-emb experiments, instead of using sinusoidal encoding for prompts, we use learnable embedding to keep aligned with the positional em\n\nbedding of mBART.\n\nLength Prompt. We construct 20 length tokens for length control, len_1 to len_20 for translation output. According to the authors' observation, only an extremely tiny amount of lyrics in Mandarin have more than 20 characters in one line.\n\nRhyme Prompt. For rhyme control, we adopt the Chinese 14-rhyme scheme $^{16}$ for possible rhyme type, implemented as rhy_1 to rhy_14. There is a special token rhy_0 representing \"no rhyme control\". This is achieved by randomly setting $1/15$ of each type of rhyme prompt to rhy_0 during training.\n\nWord Boundary Prompt We first sample a number $n$ from a categorical distribution with the ratio of 1:4:3:1 for 1, 2, 3, and 4 boundaries, and use $n' = \\min(\\text{number of words}, n)$ as the number of bdr_1 tokens. Then, we uniformly sample $n'$ times from all syllable boundary locations, without replacement, as the locations of these bdr_1. After that, we initialize the prompt sequence as a sequence of bdr_0 where the length of the sequence equals the number of syllables in the reference sentence. Finally, we substitute bdr_0 with bdr_1 for the sampled locations.\n\n![](images/eaea81db285fa1312e63221ab6b0a3ca021ffe8b559384819badab6dff06674c.jpg)  \nFigure 4: Translation comparison of the our model and the baseline (mBART + finetuning with parallel data). Source lyrics are from the first verse of the song Let It Go. Prompt: length equals to number of syllables of source text; 1st-ranked rhyme (type 2 {o, e, uo}); word boundary is extracted from melody, as shown in the source lyrics by parentheses. Sentence boundaries are marked by “{” and “}”. Satisfied and unsatisfied rhymes are marked by green and orange texts respectively. Satisfied and unsatisfied word boundaries are marked by I and * respectively\n\n![](images/457abd8c82b298398eccbf775617b4c1adf94ae6f75f950732e628b7d06496a6.jpg)  \n(d)   \nFigure 6: Comparison of controlling by altering beam search and prompt. (a) and (b): length-controlled translation, where the desired output length is shorter than and longer than reference text length, respectively. (c), (d), and (e): translation with both length and rhyme control, obtained by normal-order and reverse-order decoding, respectively. Text in red: incomplete words; text in blue: repetition; test in orange: words irrelevant to source sentence; highlighted text: wrong rhyme.\n\n(a)\n\nRhyme 2 {o, e, uo}\n\nRhyme 5 {ei, ui, uei}\n\n把今夜山上的雪染白了\n\n没有脚印被见过\n\n是一个孤立的王国\n\n好像我是女王了\n\n风在哀嚎像内心汹涌的漩涡\n\n无法保留天知道我试过\n\n(b)\n\n雪今夜在山上散发光辉\n\n却没有人能体会\n\n有一个孤立的国会\n\n好像我是女王位\n\n风儿就像这狂风暴雨在呼啸\n\n留不住天知我试过机会\n\n(c)\n\nFigure 5: (a): Rhyme ranking scores of different rhymes, when translating the paragraph in Figure 4. (b) and (c): different translation output with different rhymes, using the rhyme with highest ranking score and with second lowest ranking score, respectively. Translation errors are marked in the right paragraph: wrong translation are marked with red, text marked in green does not conform to target language grammar, orange text is repeated translation, highlighted word is in wrong rhyme.",
+      "section_number": "B",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.27::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A5000 24G",
+      "cleaned_hardware_name": "nvidia a5000 24gb",
+      "normalized_hardware_name": "NVIDIA RTX A5000",
+      "benchmark_hardware_name": "NVIDIA RTX A5000",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "4.1",
+      "section_title": "model configuration",
+      "normalized_section_title": "model configuration",
+      "evidence": "We adopted Multilingual BART (Liu et al., 2020) as the foundation model. We set the batch size to the largest possible value to fit into one NVIDIA A5000 GPU (24G), did simple searching for best learning rate, and kept the majority of other hyperparameters as default. For all experiments, models were first trained to converge on back-translated data, and fine-tuned with parallel data afterward. Please refer to Appendix B for implementation details and hyperparameter setting.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.acl-long.27::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A5000 24GB",
+      "cleaned_hardware_name": "nvidia a5000 24gb",
+      "normalized_hardware_name": "NVIDIA RTX A5000",
+      "benchmark_hardware_name": "NVIDIA RTX A5000",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "B",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "Model Configuration At the early stage of our experiment, we found that fine-tuning with generic-domain data does not help with the translation quality of lyrics. Hence we adopt mBART without general-domain fine-tuning as the starting point of training. For the unadapted general-domain model, we use mbart-large-50-one-to-many<sup>14</sup>.\n\nOur final model is obtained by fine-tuning mbart-large-50 $^{15}$ (#param: 610,879,488) with both back-translated monolingual data and parallel data. The tokenizer is modified to be character-level on the Chinese side for better controlling effectiveness. The model is trained on one Nvidia A5000 GPU (24GB) for 10 epochs and 3 epochs on back-translation and parallel data, respectively, taking about 16 hours and 3 hours. The learning rate is set to 3e-5 and 1e-5, respectively, on BT and parallel data. They are the best value in {1e-5, 3e-5, 1e-4} for the baseline model on the two stages of training. Warm-up steps are set to 2500 and 300 for training with the BT and the parallel data. Dropout and label smoothing are set to 0. For decoding, beam-search with beam size 5 is adopted. The maximum output length is set to 30. All other hyperparameters remain as default values.\n\nFor the dec-emb experiments, instead of using sinusoidal encoding for prompts, we use learnable embedding to keep aligned with the positional em\n\nbedding of mBART.\n\nLength Prompt. We construct 20 length tokens for length control, len_1 to len_20 for translation output. According to the authors' observation, only an extremely tiny amount of lyrics in Mandarin have more than 20 characters in one line.\n\nRhyme Prompt. For rhyme control, we adopt the Chinese 14-rhyme scheme $^{16}$ for possible rhyme type, implemented as rhy_1 to rhy_14. There is a special token rhy_0 representing \"no rhyme control\". This is achieved by randomly setting $1/15$ of each type of rhyme prompt to rhy_0 during training.\n\nWord Boundary Prompt We first sample a number $n$ from a categorical distribution with the ratio of 1:4:3:1 for 1, 2, 3, and 4 boundaries, and use $n' = \\min(\\text{number of words}, n)$ as the number of bdr_1 tokens. Then, we uniformly sample $n'$ times from all syllable boundary locations, without replacement, as the locations of these bdr_1. After that, we initialize the prompt sequence as a sequence of bdr_0 where the length of the sequence equals the number of syllables in the reference sentence. Finally, we substitute bdr_0 with bdr_1 for the sampled locations.\n\n![](images/eaea81db285fa1312e63221ab6b0a3ca021ffe8b559384819badab6dff06674c.jpg)  \nFigure 4: Translation comparison of the our model and the baseline (mBART + finetuning with parallel data). Source lyrics are from the first verse of the song Let It Go. Prompt: length equals to number of syllables of source text; 1st-ranked rhyme (type 2 {o, e, uo}); word boundary is extracted from melody, as shown in the source lyrics by parentheses. Sentence boundaries are marked by “{” and “}”. Satisfied and unsatisfied rhymes are marked by green and orange texts respectively. Satisfied and unsatisfied word boundaries are marked by I and * respectively\n\n![](images/457abd8c82b298398eccbf775617b4c1adf94ae6f75f950732e628b7d06496a6.jpg)  \n(d)   \nFigure 6: Comparison of controlling by altering beam search and prompt. (a) and (b): length-controlled translation, where the desired output length is shorter than and longer than reference text length, respectively. (c), (d), and (e): translation with both length and rhyme control, obtained by normal-order and reverse-order decoding, respectively. Text in red: incomplete words; text in blue: repetition; test in orange: words irrelevant to source sentence; highlighted text: wrong rhyme.\n\n(a)\n\nRhyme 2 {o, e, uo}\n\nRhyme 5 {ei, ui, uei}\n\n把今夜山上的雪染白了\n\n没有脚印被见过\n\n是一个孤立的王国\n\n好像我是女王了\n\n风在哀嚎像内心汹涌的漩涡\n\n无法保留天知道我试过\n\n(b)\n\n雪今夜在山上散发光辉\n\n却没有人能体会\n\n有一个孤立的国会\n\n好像我是女王位\n\n风儿就像这狂风暴雨在呼啸\n\n留不住天知我试过机会\n\n(c)\n\nFigure 5: (a): Rhyme ranking scores of different rhymes, when translating the paragraph in Figure 4. (b) and (c): different translation output with different rhymes, using the rhyme with highest ranking score and with second lowest ranking score, respectively. Translation errors are marked in the right paragraph: wrong translation are marked with red, text marked in green does not conform to target language grammar, orange text is repeated translation, highlighted word is in wrong rhyme.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.1",
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA RTX A5000",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA RTX A5000",
+        "num": 1
+      }
+    ]
+  }
+}

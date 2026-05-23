@@ -1,0 +1,162 @@
+{
+  "paper_id": "2024.acl-long.168",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.168::sections::3",
+      "paper_id": "2024.acl-long.168",
+      "section_number": "3",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "In this section, we introduce the proposed mini-ensemble low-rank adapters (MELoRA), a novel method that involves concatenating the outputs from several mini LoRA modules, as illustrated in Figure 1.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.168::sections::4",
+      "paper_id": "2024.acl-long.168",
+      "section_number": "4",
+      "section_title": "experimental setups",
+      "normalized_section_title": "experimental setups",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.168::sections::4.1",
+      "paper_id": "2024.acl-long.168",
+      "section_number": "4.1",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "We compare MELoRA with LoRA and a number of state-of-the-art LoRA variants:\n\n- LoRA (Hu et al., 2022) uses the multiplication of two low-rank matrices to learn the incremental updates with reduced GPU memory cost.   \n- DyLoRA (Valipour et al., 2023) randomly selects a rank $r$ for LoRA modules during learning.   \n- AdaLoRA (Zhang et al., 2022) focuses on determining the optimal rank for incremental updates. It employs an adaptive approach to singular value pruning, tailoring the rank selection to the magnitude of each singular value. Consequently, distinct ranks are employed for different layers.   \n- Delta-LoRA (Zi et al., 2023) not only updates the low-rank matrices $A$ and $B$ but also propagates the learning to the pre-trained weights $W$ via updates using the delta of the product of two low-rank matrices $(A^{(t + 1)}B^{(t + 1)} - A^{(t)}B^{(t)})$ . We follow their setups to reproduce NLU experimental results for a fair comparison.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.168::sections::4.3",
+      "paper_id": "2024.acl-long.168",
+      "section_number": "4.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "For all experiments, we only fine-tune $W_{Q}$ and $W_{V}$ (Zhang et al., 2022). All models and datasets are downloaded from Huggingface. All models are fine-tuned on NVIDIA A800 GPUs. The results are averaged with 5 different random seeds.\n\nOn the GLUE benchmark, we use RoBERTabase with as the backbone LLM. For fair comparison, the training configurations are selected according to Zi et al. (2023). We set the rank of LoRA and its variants to 8. For MELoRA, we performed experiments with two settings. First, we set the rank of each mini LoRA to 8 in MELoRA\n\n<table><tr><td>Method</td><td>#Params</td><td>MRPC</td><td>RTE</td><td>CoLA</td><td>STS-B</td><td>SST-2</td><td>QQP</td><td>QNLI</td><td>MNLI</td><td>Avg.</td></tr><tr><td>FT*</td><td>125.0M</td><td>88.23</td><td>84.11</td><td>64.57</td><td>90.56</td><td>94.26</td><td>91.96</td><td>92.73</td><td>87.51</td><td>86.74</td></tr><tr><td>DyLoRA*</td><td>295k</td><td>89.46</td><td>84.47</td><td>61.12</td><td>91.06</td><td>94.26</td><td>90.17</td><td>92.22</td><td>86.33</td><td>86.14</td></tr><tr><td>AdaLora*</td><td>295k</td><td>90.19</td><td>85.19</td><td>61.64</td><td>91.16</td><td>94.49</td><td>90.14</td><td>93.08</td><td>87.34</td><td>86.65</td></tr><tr><td>DeltaLoRA*</td><td>295k</td><td>90.19</td><td>87.00</td><td>63.82</td><td>91.57</td><td>95.06</td><td>90.87</td><td>93.09</td><td>87.50</td><td>87.38</td></tr><tr><td>LoRA</td><td>295k</td><td>89.92</td><td>85.92</td><td>62.43</td><td>91.36</td><td>94.38</td><td>90.78</td><td>92.64</td><td>86.91</td><td>86.79</td></tr><tr><td>MELoRA</td><td>37k</td><td>90.69</td><td>86.28</td><td>64.07</td><td>91.08</td><td>94.95</td><td>89.26</td><td>92.70</td><td>86.21</td><td>86.91</td></tr><tr><td>MELoRA</td><td>295k</td><td>90.93</td><td>86.64</td><td>64.09</td><td>91.93</td><td>95.41</td><td>90.77</td><td>93.17</td><td>87.20</td><td>87.52</td></tr></table>\n\nTable 2: Results on GLUE for natural language understanding tasks. We report the overall (matched and mismatched) accuracy for MNLI, Matthew's correlation for CoLA, Pearson correlation for STS-B, and accuracy for other tasks. Higher is better for all metrics. We also report the number of trainable parameters (#Params) for each method. * indicates the numbers published in (Zi et al., 2023). We use the same hyper-parameters as Zi et al. (2023). Boldface indicates the best results in terms of the corresponding metrics; the second-best results are underlined.\n\nto get the same number of trainable parameters. Second, to assess performance with fewer trainable parameters, we conduct experiments with a rank of 1 for each mini LoRA. As the number of trainable parameters of MELoRA remains constant regardless of the number of mini LoRAs when the rank of mini LoRA is fixed, we explore the parameter $n$ from the set $\\{2,4,8\\}$ and report the best performance. And we also analyze the effect of $n$ in Section 6.2.\n\nOn the INSTRUCTIVE benchmark, we use LLaMA-2-7B as the backbone LLM, Alpaca dataset as train set, randomly select 2k samples as the development set. Following INSTRUCTIVE (Chia et al., 2023), we use 5-shot direct prompting for MMLU, 3-shot direct prompting for BBH, 3-shot direct prompting for DROP (dev), and 0-shot direct prompting for HEval. During training, we use AdamW as the optimizer and train the models for 3 epochs. For fair comparison, we keep the number of epochs consistent with the baselines. A linear learning rate schedule is applied with initial learning rate $3 \\times 10^{-4}$ . The batch size is set to 128. We explore the rank of LoRA from the set $\\{8, 16, 32, 64, 128, 256\\}$ and report the optimal performance. For our method, MELoRA, we set the rank $r$ to 1, explore the number of mini LoRAs $n$ from the set $\\{8, 16, 32, 64\\}$ , and report the optimal performance. More implementation details can be found in Appendix A.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.168::sections::reproducibility",
+      "paper_id": "2024.acl-long.168",
+      "section_number": "",
+      "section_title": "reproducibility",
+      "normalized_section_title": "reproducibility",
+      "window_text": "We release the source code to reproduce the results in this paper at https://github.com/ChasonShi/MELoRA.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.168::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A800",
+      "count": null,
+      "count_text": "",
+      "evidence": "For all experiments, we only fine-tune $W_{Q}$ and $W_{V}$ (Zhang et al., 2022). All models and datasets are downloaded from Huggingface. All models are fine-tuned on NVIDIA A800 GPUs. The results are averaged with 5 different random seeds.\n\nOn the GLUE benchmark, we use RoBERTabase with as the backbone LLM. For fair comparison, the training configurations are selected according to Zi et al. (2023). We set the rank of LoRA and its variants to 8. For MELoRA, we performed experiments with two settings. First, we set the rank of each mini LoRA to 8 in MELoRA\n\n<table><tr><td>Method</td><td>#Params</td><td>MRPC</td><td>RTE</td><td>CoLA</td><td>STS-B</td><td>SST-2</td><td>QQP</td><td>QNLI</td><td>MNLI</td><td>Avg.</td></tr><tr><td>FT*</td><td>125.0M</td><td>88.23</td><td>84.11</td><td>64.57</td><td>90.56</td><td>94.26</td><td>91.96</td><td>92.73</td><td>87.51</td><td>86.74</td></tr><tr><td>DyLoRA*</td><td>295k</td><td>89.46</td><td>84.47</td><td>61.12</td><td>91.06</td><td>94.26</td><td>90.17</td><td>92.22</td><td>86.33</td><td>86.14</td></tr><tr><td>AdaLora*</td><td>295k</td><td>90.19</td><td>85.19</td><td>61.64</td><td>91.16</td><td>94.49</td><td>90.14</td><td>93.08</td><td>87.34</td><td>86.65</td></tr><tr><td>DeltaLoRA*</td><td>295k</td><td>90.19</td><td>87.00</td><td>63.82</td><td>91.57</td><td>95.06</td><td>90.87</td><td>93.09</td><td>87.50</td><td>87.38</td></tr><tr><td>LoRA</td><td>295k</td><td>89.92</td><td>85.92</td><td>62.43</td><td>91.36</td><td>94.38</td><td>90.78</td><td>92.64</td><td>86.91</td><td>86.79</td></tr><tr><td>MELoRA</td><td>37k</td><td>90.69</td><td>86.28</td><td>64.07</td><td>91.08</td><td>94.95</td><td>89.26</td><td>92.70</td><td>86.21</td><td>86.91</td></tr><tr><td>MELoRA</td><td>295k</td><td>90.93</td><td>86.64</td><td>64.09</td><td>91.93</td><td>95.41</td><td>90.77</td><td>93.17</td><td>87.20</td><td>87.52</td></tr></table>\n\nTable 2: Results on GLUE for natural language understanding tasks. We report the overall (matched and mismatched) accuracy for MNLI, Matthew's correlation for CoLA, Pearson correlation for STS-B, and accuracy for other tasks. Higher is better for all metrics. We also report the number of trainable parameters (#Params) for each method. * indicates the numbers published in (Zi et al., 2023). We use the same hyper-parameters as Zi et al. (2023). Boldface indicates the best results in terms of the corresponding metrics; the second-best results are underlined.\n\nto get the same number of trainable parameters. Second, to assess performance with fewer trainable parameters, we conduct experiments with a rank of 1 for each mini LoRA. As the number of trainable parameters of MELoRA remains constant regardless of the number of mini LoRAs when the rank of mini LoRA is fixed, we explore the parameter $n$ from the set $\\{2,4,8\\}$ and report the best performance. And we also analyze the effect of $n$ in Section 6.2.\n\nOn the INSTRUCTIVE benchmark, we use LLaMA-2-7B as the backbone LLM, Alpaca dataset as train set, randomly select 2k samples as the development set. Following INSTRUCTIVE (Chia et al., 2023), we use 5-shot direct prompting for MMLU, 3-shot direct prompting for BBH, 3-shot direct prompting for DROP (dev), and 0-shot direct prompting for HEval. During training, we use AdamW as the optimizer and train the models for 3 epochs. For fair comparison, we keep the number of epochs consistent with the baselines. A linear learning rate schedule is applied with initial learning rate $3 \\times 10^{-4}$ . The batch size is set to 128. We explore the rank of LoRA from the set $\\{8, 16, 32, 64, 128, 256\\}$ and report the optimal performance. For our method, MELoRA, we set the rank $r$ to 1, explore the number of mini LoRAs $n$ from the set $\\{8, 16, 32, 64\\}$ , and report the optimal performance. More implementation details can be found in Appendix A.",
+      "section_number": "4.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.168::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A800",
+      "cleaned_hardware_name": "nvidia a800",
+      "normalized_hardware_name": "NVIDIA A800 PCIe 40 GB",
+      "benchmark_hardware_name": "NVIDIA A800 PCIe 40 GB",
+      "count": null,
+      "count_text": "",
+      "section_number": "4.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "For all experiments, we only fine-tune $W_{Q}$ and $W_{V}$ (Zhang et al., 2022). All models and datasets are downloaded from Huggingface. All models are fine-tuned on NVIDIA A800 GPUs. The results are averaged with 5 different random seeds.\n\nOn the GLUE benchmark, we use RoBERTabase with as the backbone LLM. For fair comparison, the training configurations are selected according to Zi et al. (2023). We set the rank of LoRA and its variants to 8. For MELoRA, we performed experiments with two settings. First, we set the rank of each mini LoRA to 8 in MELoRA\n\n<table><tr><td>Method</td><td>#Params</td><td>MRPC</td><td>RTE</td><td>CoLA</td><td>STS-B</td><td>SST-2</td><td>QQP</td><td>QNLI</td><td>MNLI</td><td>Avg.</td></tr><tr><td>FT*</td><td>125.0M</td><td>88.23</td><td>84.11</td><td>64.57</td><td>90.56</td><td>94.26</td><td>91.96</td><td>92.73</td><td>87.51</td><td>86.74</td></tr><tr><td>DyLoRA*</td><td>295k</td><td>89.46</td><td>84.47</td><td>61.12</td><td>91.06</td><td>94.26</td><td>90.17</td><td>92.22</td><td>86.33</td><td>86.14</td></tr><tr><td>AdaLora*</td><td>295k</td><td>90.19</td><td>85.19</td><td>61.64</td><td>91.16</td><td>94.49</td><td>90.14</td><td>93.08</td><td>87.34</td><td>86.65</td></tr><tr><td>DeltaLoRA*</td><td>295k</td><td>90.19</td><td>87.00</td><td>63.82</td><td>91.57</td><td>95.06</td><td>90.87</td><td>93.09</td><td>87.50</td><td>87.38</td></tr><tr><td>LoRA</td><td>295k</td><td>89.92</td><td>85.92</td><td>62.43</td><td>91.36</td><td>94.38</td><td>90.78</td><td>92.64</td><td>86.91</td><td>86.79</td></tr><tr><td>MELoRA</td><td>37k</td><td>90.69</td><td>86.28</td><td>64.07</td><td>91.08</td><td>94.95</td><td>89.26</td><td>92.70</td><td>86.21</td><td>86.91</td></tr><tr><td>MELoRA</td><td>295k</td><td>90.93</td><td>86.64</td><td>64.09</td><td>91.93</td><td>95.41</td><td>90.77</td><td>93.17</td><td>87.20</td><td>87.52</td></tr></table>\n\nTable 2: Results on GLUE for natural language understanding tasks. We report the overall (matched and mismatched) accuracy for MNLI, Matthew's correlation for CoLA, Pearson correlation for STS-B, and accuracy for other tasks. Higher is better for all metrics. We also report the number of trainable parameters (#Params) for each method. * indicates the numbers published in (Zi et al., 2023). We use the same hyper-parameters as Zi et al. (2023). Boldface indicates the best results in terms of the corresponding metrics; the second-best results are underlined.\n\nto get the same number of trainable parameters. Second, to assess performance with fewer trainable parameters, we conduct experiments with a rank of 1 for each mini LoRA. As the number of trainable parameters of MELoRA remains constant regardless of the number of mini LoRAs when the rank of mini LoRA is fixed, we explore the parameter $n$ from the set $\\{2,4,8\\}$ and report the best performance. And we also analyze the effect of $n$ in Section 6.2.\n\nOn the INSTRUCTIVE benchmark, we use LLaMA-2-7B as the backbone LLM, Alpaca dataset as train set, randomly select 2k samples as the development set. Following INSTRUCTIVE (Chia et al., 2023), we use 5-shot direct prompting for MMLU, 3-shot direct prompting for BBH, 3-shot direct prompting for DROP (dev), and 0-shot direct prompting for HEval. During training, we use AdamW as the optimizer and train the models for 3 epochs. For fair comparison, we keep the number of epochs consistent with the baselines. A linear learning rate schedule is applied with initial learning rate $3 \\times 10^{-4}$ . The batch size is set to 128. We explore the rank of LoRA from the set $\\{8, 16, 32, 64, 128, 256\\}$ and report the optimal performance. For our method, MELoRA, we set the rank $r$ to 1, explore the number of mini LoRAs $n$ from the set $\\{8, 16, 32, 64\\}$ , and report the optimal performance. More implementation details can be found in Appendix A.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.acl-long.168::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methodology",
+      "evidence": "In this section, we introduce the proposed mini-ensemble low-rank adapters (MELoRA), a novel method that involves concatenating the outputs from several mini LoRA modules, as illustrated in Figure 1."
+    },
+    {
+      "source_window_id": "2024.acl-long.168::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experimental setups",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.acl-long.168::sections::4.1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "baselines",
+      "evidence": "We compare MELoRA with LoRA and a number of state-of-the-art LoRA variants:\n\n- LoRA (Hu et al., 2022) uses the multiplication of two low-rank matrices to learn the incremental updates with reduced GPU memory cost.   \n- DyLoRA (Valipour et al., 2023) randomly selects a rank $r$ for LoRA modules during learning.   \n- AdaLoRA (Zhang et al., 2022) focuses on determining the optimal rank for incremental updates. It employs an adaptive approach to singular value pruning, tailoring the rank selection to the magnitude of each singular value. Consequently, distinct ranks are employed for different layers.   \n- Delta-LoRA (Zi et al., 2023) not only updates the low-rank matrices $A$ and $B$ but also propagates the learning to the pre-trained weights $W$ via updates using the delta of the product of two low-rank matrices $(A^{(t + 1)}B^{(t + 1)} - A^{(t)}B^{(t)})$ . We follow their setups to reproduce NLU experimental results for a fair comparison."
+    },
+    {
+      "source_window_id": "2024.acl-long.168::sections::reproducibility",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "",
+      "section_title": "reproducibility",
+      "evidence": "We release the source code to reproduce the results in this paper at https://github.com/ChasonShi/MELoRA."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.3"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A800 PCIe 40 GB",
+        "num": null
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2024\\2024.acl-long.168\\auto\\full.md",
+    "source_md_sha256": "40571d5ca6d74728cfbb8ca5eef6373de126f9c1eaf70a56abe1739f09fb2e7e",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "ad96f3b6ca003898756db958dd17467668c845886fa3f1f835d26a866c8af3f0"
+  }
+}

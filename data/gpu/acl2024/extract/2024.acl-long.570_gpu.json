@@ -1,0 +1,133 @@
+{
+  "paper_id": "2024.acl-long.570",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.570::sections::3",
+      "paper_id": "2024.acl-long.570",
+      "section_number": "3",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Tools. We conduct experiments using APIs from ToolBench (Qin et al., 2024), a large-scale repository of real-world APIs collected from RapidAPI\n\nand BMTools. We filter down to the APIs that are free to use with low execution latency. In the end, we obtain 50 APIs that span search engines (e.g., Google Search & Places), domain-specific information-seeking APIs (e.g., Wikipedia, Weather, Sports, Gaming), and also problem-solving ones such as WolframAlpha, Number Translator, etc. More details are in Appendix A.\n\nSetup for exploration. In the exploration stage, we use ChatGPT (16k-0613) for exploration and paraphrasing, and GPT-4 (8k-0613) (OpenAI, 2023) for final example filtering. We set the maximum number of API calls for each trial to be 4. For each API, the exploration stage lasts for 15 episodes with 4 trials per episode, resulting in a total of 60 examples before filtering and paraphrasing. After filtering, 15 examples for each API are randomly selected into the test set, where the remaining ones are paraphrased into $\\sim 140$ examples, making a total of $\\sim 7\\mathrm{K}$ tool-use examples. For the test examples, we manually examine and correct any issues, if any, to ensure test set quality.\n\nBaselines & exploitation with STE. We experiment with Llama-2-Chat-7B/13B (Touvron et al., 2023), Mistral-Instruct-7B (Jiang et al., 2023), and GPT-3.5-turbo/GPT-4 (ICL only) and compare their performance with and without STE. We compare with ToolLLaMA-v2 (Qin et al., 2024) as the main baseline for existing tool learning strategies. It is based on Llama-2-7B and fine-tuned on 126K tool use examples synthesized by ChatGPT-3.5-turbo for general tool-use, covering a large number of tools from RapidAPI including the ones used in our experiments.\n\nFor ICL with nearest neighbor demonstration selection, following prior work (Liu et al., 2022; Rubin et al., 2022), we use the paraphrase-mpnet-base-v2 model from SentenceBERT (Reimers and Gurevych, 2019) for computing the semantic similarity, and choose the top 8 examples closest to the test query as in-context demonstrations. For Llama-2 with ICL, since the token length of the full 50 API documentations (around 7K tokens) is beyond its context length $(4,096)^{2}$ we augment the model with an oracle tool retriever which retrieves the top 15 similar APIs w.r.t. the ground truth API using the associated documentation. We augment other models of similar scales (7B/13B) with the same\n\n<table><tr><td>Setting</td><td>Base Model</td><td>Wellformed?</td><td>API Match</td><td>Correctness</td></tr><tr><td rowspan=\"6\">Baseline</td><td>ToolLLaMA-v2</td><td>98.1</td><td>49.0</td><td>37.3</td></tr><tr><td>Llama-2-Chat-7B</td><td>34.5</td><td>40.2</td><td>10.7</td></tr><tr><td>Llama-2-Chat-13B</td><td>79.3</td><td>53.6</td><td>32.7</td></tr><tr><td>Mistral-Instruct-7B</td><td>61.7</td><td>69.3</td><td>30.1</td></tr><tr><td>GPT-3.5-turbo (16k-0613)</td><td>96.9</td><td>77.6</td><td>60.5</td></tr><tr><td>GPT-4 (8k-0613)</td><td>96.1</td><td>78.1</td><td>60.8</td></tr><tr><td rowspan=\"5\">ICL w/ STE</td><td>Llama-2-Chat-7B</td><td>58.3</td><td>86.7</td><td>41.7</td></tr><tr><td>Llama-2-Chat-13B</td><td>87.5</td><td>86.6</td><td>62.9</td></tr><tr><td>Mistral-Instruct-7B</td><td>69.9</td><td>88.4</td><td>47.9</td></tr><tr><td>GPT-3.5-turbo (16k-0613)</td><td>97.6</td><td>90.8</td><td>75.6</td></tr><tr><td>GPT-4 (8k-0613)</td><td>97.7</td><td>92.8</td><td>76.3</td></tr><tr><td rowspan=\"3\">Fine-tuning w/ STE</td><td>Llama-2-Chat-7B</td><td>99.2</td><td>94.9</td><td>73.3</td></tr><tr><td>Llama-2-Chat-13B</td><td>98.9</td><td>95.1</td><td>74.3</td></tr><tr><td>Mistral-Instruct-7B</td><td>99.1</td><td>95.8</td><td>76.8</td></tr></table>\n\nTable 1: Overall tool-use performance. STE is effective when used in both ICL and fine-tuning. Best overall results are bold-faced, and best results under each setting are underscored.   \nTable 2: Results for ablations. We separately ablate each key component of our exploration design. Exploitation is done by fine-tuning Llama-2-Chat-7B.   \n\n<table><tr><td>Setting</td><td>Wellformed?</td><td>API Match</td><td>Correctness</td></tr><tr><td>Full STE</td><td>99.2</td><td>94.9</td><td>73.3</td></tr><tr><td>- Exec. feedback</td><td>89.9</td><td>79.4</td><td>50.5</td></tr><tr><td>- Short. Mem.</td><td>99.7</td><td>70.6</td><td>53.9</td></tr><tr><td>- Long. Mem.</td><td>98.7</td><td>79.9</td><td>59.7</td></tr><tr><td>- Self-reflection</td><td>99.3</td><td>81.7</td><td>60.1</td></tr></table>\n\ntool retriever (when ICL is used for exploitation) for fair comparison. LLMs fine-tuned on STE do not need such API documentation in the context, which substantially reduces the inference cost.\n\nEvaluation metrics. We evaluate the model by matching the predicted API call against the ground truth. For APIs that have strict value ranges for the arguments, we perform string matching on the respective arguments directly. For APIs that accept free natural language inputs, we use ChatGPT to judge the correctness of the predicted API arguments. We report the overall accuracy considering both API name and arguments (Correctness) as the main metric, together with the percentage of examples with valid API calls and no syntax/formatting errors (Wellformedness) and the percentage of examples that correctly choose to use the ground-truth API (API Match). While it is desirable to also evaluate the model regarding whether the model resolves the user query successfully based on the execution results, the majority of the APIs in our experiments are connected to dynamic real-world information (e.g., weather 'tomorrow' where the date is contingent on the actual time of making the API call), which makes such evaluation infeasible. We leave this challenge to future research.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.570::sections::4.2",
+      "paper_id": "2024.acl-long.570",
+      "section_number": "4.2",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "window_text": "We conduct an ablation study for our exploration design, with exploitation done by fine-tuning Llama-2-Chat-7B. Specifically, we ablate the execution feedback, short/long-term memory, and the self-reflection component. We extend the number of episodes to preserve the total number of trials if needed. The results in Table 2 show that 1) exploration without execution feedback could give a notable amount of ill-formed examples where the API calls do not follow the syntax/formatting requirements; 2) both short-term and long-term memory prove to be essential for effective trial and error; 3) self-reflection is important in maintaining an informative long-term memory for exploration. To better understand the benefits of our memory design, we conduct a case study with the forecast/weather API (examples in Appendix C), which clearly shows that both of the memory mechanisms substantially improve the diversity and comprehensiveness of exploration:\n\n- Short-term memory boosts specificity and comprehensiveness. Comparing the trials with/without short-term memory, it can be seen that the short-term memory effectively drives the LLM to comprehensively explore fine-grained information from the tool, spanning 16 different attributes (e.g., humidity, precipitation, UV index, visibility, and sunrise/sunset time) in total. Meanwhile, when short-term memory is disabled, the examples are much less specific and mostly about general weather conditions (e.g., \"What will be the weather like...\") due to the inability to leverage newly obtained information from the execution results. In addition, exploration without short-term memory results in a significantly lower percentage of positive tool-use examples $(78.3\\% \\rightarrow 51.7\\%)$ , since the model cannot learn from fine-grained past errors to facilitate future trials. As an example, the model synthesizes a\n\nconsiderable amount of queries where the time is specified as the day of the week, which is not a supported parameter type of the API and hence constantly results in failures.\n\n- Long-term memory improves overall diversity over a long time horizon. With long-term memory, the LLM explores examples covering a broader range of subjects, and maintains the progress over different episodes. When long-term memory is disabled, the trials across episodes become repetitive and less informative. For quantitative characterization, we extract the core subjects (location, time, attribute) from the queries, measure their diversity and also plot the attribute distribution (Appendix C). With long-term memory, all the queries are distinct and the trials are balanced across different attributes. Without long-term memory, only $71.7\\%$ of the trials concern distinct subjects and the distribution across attributes is much more skewed, showing the effectiveness of long-term memory in maintaining the diversity of exploration over a long time horizon.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.570::appendix::B",
+      "paper_id": "2024.acl-long.570",
+      "section_number": "B",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "window_text": "Fine-tuning. All model fine-tuning are done using the AdamW optimizer (Loshchilov and Hutter, 2019) with $\\beta = (0.9, 0.999)$ , $\\epsilon = 10^{-8}$ and no weight decay. We fine-tune the model for one epoch with learning rate $2 \\times 10^{-5}$ , and a cosine scheduler with warmup ratio 0.03, and batch size 64. All fine-tuning runs are done with 4 NVIDIA A100/A6000 GPUs. The training examples are truncated to 2,048 tokens.\n\nFlan-V2 data & rehearsal. We use FlanV2 (Chung et al., 2022; Longpre et al., 2023) for rehearsal which is one of the highest quality general-domain instruction tuning data (Wang et al., 2023a). We use the data released by Wang et al. (2023a).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.570::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "Fine-tuning. All model fine-tuning are done using the AdamW optimizer (Loshchilov and Hutter, 2019) with $\\beta = (0.9, 0.999)$ , $\\epsilon = 10^{-8}$ and no weight decay. We fine-tune the model for one epoch with learning rate $2 \\times 10^{-5}$ , and a cosine scheduler with warmup ratio 0.03, and batch size 64. All fine-tuning runs are done with 4 NVIDIA A100/A6000 GPUs. The training examples are truncated to 2,048 tokens.\n\nFlan-V2 data & rehearsal. We use FlanV2 (Chung et al., 2022; Longpre et al., 2023) for rehearsal which is one of the highest quality general-domain instruction tuning data (Wang et al., 2023a). We use the data released by Wang et al. (2023a).",
+      "section_number": "B",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details"
+    },
+    {
+      "window_id": "2024.acl-long.570::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A6000",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "Fine-tuning. All model fine-tuning are done using the AdamW optimizer (Loshchilov and Hutter, 2019) with $\\beta = (0.9, 0.999)$ , $\\epsilon = 10^{-8}$ and no weight decay. We fine-tune the model for one epoch with learning rate $2 \\times 10^{-5}$ , and a cosine scheduler with warmup ratio 0.03, and batch size 64. All fine-tuning runs are done with 4 NVIDIA A100/A6000 GPUs. The training examples are truncated to 2,048 tokens.\n\nFlan-V2 data & rehearsal. We use FlanV2 (Chung et al., 2022; Longpre et al., 2023) for rehearsal which is one of the highest quality general-domain instruction tuning data (Wang et al., 2023a). We use the data released by Wang et al. (2023a).",
+      "section_number": "B",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.570::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "B",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "evidence": "Fine-tuning. All model fine-tuning are done using the AdamW optimizer (Loshchilov and Hutter, 2019) with $\\beta = (0.9, 0.999)$ , $\\epsilon = 10^{-8}$ and no weight decay. We fine-tune the model for one epoch with learning rate $2 \\times 10^{-5}$ , and a cosine scheduler with warmup ratio 0.03, and batch size 64. All fine-tuning runs are done with 4 NVIDIA A100/A6000 GPUs. The training examples are truncated to 2,048 tokens.\n\nFlan-V2 data & rehearsal. We use FlanV2 (Chung et al., 2022; Longpre et al., 2023) for rehearsal which is one of the highest quality general-domain instruction tuning data (Wang et al., 2023a). We use the data released by Wang et al. (2023a).",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.acl-long.570::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A6000",
+      "cleaned_hardware_name": "nvidia a6000",
+      "normalized_hardware_name": "NVIDIA RTX A6000",
+      "benchmark_hardware_name": "NVIDIA RTX A6000",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "B",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "evidence": "Fine-tuning. All model fine-tuning are done using the AdamW optimizer (Loshchilov and Hutter, 2019) with $\\beta = (0.9, 0.999)$ , $\\epsilon = 10^{-8}$ and no weight decay. We fine-tune the model for one epoch with learning rate $2 \\times 10^{-5}$ , and a cosine scheduler with warmup ratio 0.03, and batch size 64. All fine-tuning runs are done with 4 NVIDIA A100/A6000 GPUs. The training examples are truncated to 2,048 tokens.\n\nFlan-V2 data & rehearsal. We use FlanV2 (Chung et al., 2022; Longpre et al., 2023) for rehearsal which is one of the highest quality general-domain instruction tuning data (Wang et al., 2023a). We use the data released by Wang et al. (2023a).",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 4
+      },
+      {
+        "name": "NVIDIA RTX A6000",
+        "num": 4
+      }
+    ]
+  }
+}

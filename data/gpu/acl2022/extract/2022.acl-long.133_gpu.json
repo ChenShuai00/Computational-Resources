@@ -1,0 +1,162 @@
+{
+  "paper_id": "2022.acl-long.133",
+  "candidate_windows": [
+    {
+      "window_id": "2022.acl-long.133::sections::3",
+      "paper_id": "2022.acl-long.133",
+      "section_number": "3",
+      "section_title": "models",
+      "normalized_section_title": "models",
+      "window_text": "In this section, we first introduce standard text-based GPT models adopted in this work (Section 3.1). Afterwards, we introduce how to extend GPT models for pinyin input method with enriched pinyin context (Section 3.2) and pinyin-constrained\n\ntraining (Section 3.3), respectively.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.133::sections::3.1",
+      "paper_id": "2022.acl-long.133",
+      "section_number": "3.1",
+      "section_title": "gpt baselines",
+      "normalized_section_title": "gpt baselines",
+      "window_text": "In this work, we use character-level Chinese GPT as the backbone. We describe character-level GPT models in this subsection.\n\nWe start with a publicly available character-level GPT (Du, 2019) $^{5}$ , which we call GPT (public). The model has the same configuration as the standard 12-layer $\\mathrm{GPT^6}$ . It is trained on the CLUECorpusSmall dataset of 14GB (Xu et al., 2020), which consists of Chinese news, Wikipedia, online forum message, and consumer comments. We have tried another well-known Chinese pretrained language model called CPM (Zhang et al., 2021b), which is trained on 100GB data. The vocabulary of CPM contains both Chinese characters and words. $^{7}$ We built a baseline with the CPM model of 12 layers $^{8}$ and forced the generated token to be a Chinese character. However, this baseline does not work well on pinyin input method, partly because our character-level decoding is inconsistent with the way how CPM is trained. It is promising to leverage the advantage of CPM on word-level decoding, and we leave this as a future work.\n\nTo build a stronger Chinese GPT baseline, we use GPT (public) as the starting point and further pretrain on a 800GB data crawled by us that is composed of news, Wikipedia, and novel texts. The model is trained with a batch size of 2,560 on 32x Tesla V100 GPUs. We adopt the Adam optimizer (Kingma and Ba, 2015) and set the learning rate to 1e-5 with a linear warmup scheduler. We run the warmup process for 10k steps and train 100k steps in total. We call this 12-layer GPT model as GPT (ours).\n\nTo apply GPT (public) and GPT (ours) to pinyin input method, we use the traditional decoding pipeline of GPT to generate the sequence of Chinese characters in an autoregressive way. After encoding all the context of characters, the model predicts a Chinese character at each time step conditioned on the pinyin. Only Chinese characters pronounced with the same pinyin are legitimate\n\ncandidates to be predicted. Without further clarification, this strategy is used in all the experiments.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.133::sections::4",
+      "paper_id": "2022.acl-long.133",
+      "section_number": "4",
+      "section_title": "experiment",
+      "normalized_section_title": "experiment",
+      "window_text": "In this section, we show the results on pinyin input method over the two settings (i.e., perfect pinyin and abbreviated pinyin).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.133::sections::4.1",
+      "paper_id": "2022.acl-long.133",
+      "section_number": "4.1",
+      "section_title": "settings",
+      "normalized_section_title": "settings",
+      "window_text": "We describe the two datasets used in the following experiments and the evaluation metric.\n\nPD Dataset PD dataset (Yang et al., 2012) is a commonly used benchmark dataset for the evaluation of pinyin input method (Jia and Zhao, 2014; Zhang et al., 2017; Huang et al., 2018; Zhang et al., 2019). The texts in PD are extracted from the People's Daily<sup>10</sup> from 1992 to 1998. It contains 5.04 million segments of consecutive Chinese characters (or Maximum Input Unit in some literature) for training and 2,000 segments for testing. For each test case, the input pinyin are all perfect pinyin and the context is null.\n\nWD Dataset Since the PD data includes out-of-date news from 20 years ago and does not support us to study the scenario where the context includes real words, we construct a new dataset called WD. We use the WuDaoCorpora (Yuan et al., 2021) that contains 3TB Chinese corpus collected from 822 million Web pages. Currently, 200GB of the corpus\n\nhas been made publicly available $^{11}$ . We randomly select 15 domains from WuDaoCorpora. For each domain, we first use an off-the-shelf Chinese segmentation toolkit (Zhang et al., 2020) to segment the documents into sentences. Then we automatically obtain the perfect pinyin and abbreviated pinyin of characters with pinyin converting tools. For each sentence, we randomly choose a context with a range from 0-3, 4-9 and $10+$ words. Consecutively, we choose the target to be 1-3, 4-9 or $10+$ words, respectively. It's further required that the target should be continuous characters that each has its own pinyin. We call each context-target length tuple like $(4-9, 10+)$ as an evaluation configuration. For each configuration, we sample 2,000 test cases. In total, there are 9 configurations of 18,000 cases for each domain. The whole dataset consists of 270,000 examples. We investigate extremely long target lengths for the purpose of research that these configurations may not appear in real cases. All the instances in the WD dataset are only used for evaluation.\n\nEvaluation Metric We use precision at top- $K$ (P@K) as the evaluation metric, which is widely adopted in the literature (Jia and Zhao, 2014; Zhang et al., 2017, 2019). It measures if the ground truth exists in the top- $K$ generated results. Some existing works also use keystroke-based metrics (Jia and Zhao, 2013; Huang et al., 2015) and human evaluation, which we don't use in this work because the evaluation process is more complex and time-consuming.\n\nOther Settings We train both PinyinGPT models with the training data of GPT (ours). To preprocess the corpus, we use a public library $pypinyin^{12}$ to get the pinyin of Chinese characters. We initialize both PinyinGPT models with GPT (ours). Both models are trained for 100k steps on 32 GPUs of NVIDIA V100 Tensor Core with a Bach size of 25,000. The learning rate is 5e-5. We maintain a maximum of 128 tokens for every training example. We use a probability of $50\\%$ to sample a target sequence with less than 5 words, otherwise we randomly sample a target sequence with 6 to 25 words. This rate is empirically selected as it's less practical for users to type very long sequences.\n\nTable 3: Comparison with different methods over PD using perfect pinyin.   \n\n<table><tr><td>Model</td><td>P@1</td><td>P@5</td><td>P@10</td></tr><tr><td>Google IME</td><td>70.90</td><td>78.30</td><td>82.30</td></tr><tr><td>On-OMWA</td><td>64.40</td><td>72.90</td><td>77.90</td></tr><tr><td>On-P2C</td><td>71.30</td><td>80.50</td><td>81.30</td></tr><tr><td>GPT (public)</td><td>67.35</td><td>79.95</td><td>81.60</td></tr><tr><td>GPT (ours)</td><td>73.15</td><td>84.10</td><td>85.45</td></tr></table>\n\nDuring inference stage, we use beam search with a beam size of 16 for text generation.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2022.acl-long.133::sections::4.8",
+      "paper_id": "2022.acl-long.133",
+      "section_number": "4.8",
+      "section_title": "model analysis: accuracy versus latency",
+      "normalized_section_title": "model analysis: accuracy versus latency",
+      "window_text": "Considering pinyin input method requires both accuracy and efficiency, we further train a 6-layer GPT to investigate the trade-off. Our 6-layer GPT is directly truncated and initialized from the 12-layer GPT and is continually trained for $50\\mathrm{k}$ steps with the same configuration of 12-layer GPT.\n\nThe evaluation is conducted over the 9 configurations of context-target length and averaged across all domains. Specifically, each configuration is inferred using a data center GPU NVIDIA V100 Tensor Core, and the GPU is fully occupied by one model. The beam size is set to be 16. We report the average inference time in millisecond as well as accuracy in terms of $\\mathrm{P}@\\mathcal{K}$ of PinyinGPT-Concat. Table 7 is the result for the configuration (4-9, 4-9). The table shows that the inference time of the model with 6-layer transformer is almost $30\\%$ faster than that with 12-layer. However, the performance of the 6-layer model drops consistently in the abbreviated setting. $^{15}$\n\nTable 6: Performance of six sample domains over WD using abbreviated pinyin.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"3\">Games</td><td colspan=\"3\">Culture</td><td colspan=\"3\">Sports</td></tr><tr><td>P@1</td><td>P@5</td><td>P@10</td><td>P@1</td><td>P@5</td><td>P@10</td><td>P@1</td><td>P@5</td><td>P@10</td></tr><tr><td>GPT (ours)</td><td>24.04</td><td>32.78</td><td>34.23</td><td>21.86</td><td>29.33</td><td>30.94</td><td>28.54</td><td>37.13</td><td>38.69</td></tr><tr><td>PinyinGPT-Concat</td><td>25.78</td><td>38.26</td><td>41.89</td><td>22.10</td><td>33.33</td><td>36.72</td><td>29.81</td><td>43.56</td><td>46.95</td></tr><tr><td></td><td colspan=\"3\">Real Estate</td><td colspan=\"3\">Medical</td><td colspan=\"3\">Finance</td></tr><tr><td></td><td>P@1</td><td>P@5</td><td>P@10</td><td>P@1</td><td>P@5</td><td>P@10</td><td>P@1</td><td>P@5</td><td>P@10</td></tr><tr><td>GPT (ours)</td><td>26.53</td><td>35.27</td><td>36.74</td><td>33.59</td><td>43.54</td><td>44.93</td><td>29.00</td><td>37.24</td><td>38.47</td></tr><tr><td>PinyinGPT-Concat</td><td>27.28</td><td>40.16</td><td>43.86</td><td>34.76</td><td>49.28</td><td>52.56</td><td>29.17</td><td>42.17</td><td>45.52</td></tr></table>\n\nTable 7: Average inference time for one instance and the overall $\\mathrm{P}@5$ for the configuration of (4-9, 4-9).   \n\n<table><tr><td>Model</td><td>Time (ms)</td><td>P@5</td></tr><tr><td>GPT (ours, 6L)</td><td>94</td><td>27.45</td></tr><tr><td>GPT (ours, 12L)</td><td>142</td><td>34.48</td></tr><tr><td>PinyinGPT-Concat (6L)</td><td>94</td><td>32.70</td></tr><tr><td>PinyinGPT-Concat (12L)</td><td>145</td><td>41.51</td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.acl-long.133::sections::4.8",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA V100 Tensor Core",
+      "count": null,
+      "count_text": "",
+      "evidence": "Considering pinyin input method requires both accuracy and efficiency, we further train a 6-layer GPT to investigate the trade-off. Our 6-layer GPT is directly truncated and initialized from the 12-layer GPT and is continually trained for $50\\mathrm{k}$ steps with the same configuration of 12-layer GPT.\n\nThe evaluation is conducted over the 9 configurations of context-target length and averaged across all domains. Specifically, each configuration is inferred using a data center GPU NVIDIA V100 Tensor Core, and the GPU is fully occupied by one model. The beam size is set to be 16. We report the average inference time in millisecond as well as accuracy in terms of $\\mathrm{P}@\\mathcal{K}$ of PinyinGPT-Concat. Table 7 is the result for the configuration (4-9, 4-9). The table shows that the inference time of the model with 6-layer transformer is almost $30\\%$ faster than that with 12-layer. However, the performance of the 6-layer model drops consistently in the abbreviated setting. $^{15}$\n\nTable 6: Performance of six sample domains over WD using abbreviated pinyin.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"3\">Games</td><td colspan=\"3\">Culture</td><td colspan=\"3\">Sports</td></tr><tr><td>P@1</td><td>P@5</td><td>P@10</td><td>P@1</td><td>P@5</td><td>P@10</td><td>P@1</td><td>P@5</td><td>P@10</td></tr><tr><td>GPT (ours)</td><td>24.04</td><td>32.78</td><td>34.23</td><td>21.86</td><td>29.33</td><td>30.94</td><td>28.54</td><td>37.13</td><td>38.69</td></tr><tr><td>PinyinGPT-Concat</td><td>25.78</td><td>38.26</td><td>41.89</td><td>22.10</td><td>33.33</td><td>36.72</td><td>29.81</td><td>43.56</td><td>46.95</td></tr><tr><td></td><td colspan=\"3\">Real Estate</td><td colspan=\"3\">Medical</td><td colspan=\"3\">Finance</td></tr><tr><td></td><td>P@1</td><td>P@5</td><td>P@10</td><td>P@1</td><td>P@5</td><td>P@10</td><td>P@1</td><td>P@5</td><td>P@10</td></tr><tr><td>GPT (ours)</td><td>26.53</td><td>35.27</td><td>36.74</td><td>33.59</td><td>43.54</td><td>44.93</td><td>29.00</td><td>37.24</td><td>38.47</td></tr><tr><td>PinyinGPT-Concat</td><td>27.28</td><td>40.16</td><td>43.86</td><td>34.76</td><td>49.28</td><td>52.56</td><td>29.17</td><td>42.17</td><td>45.52</td></tr></table>\n\nTable 7: Average inference time for one instance and the overall $\\mathrm{P}@5$ for the configuration of (4-9, 4-9).   \n\n<table><tr><td>Model</td><td>Time (ms)</td><td>P@5</td></tr><tr><td>GPT (ours, 6L)</td><td>94</td><td>27.45</td></tr><tr><td>GPT (ours, 12L)</td><td>142</td><td>34.48</td></tr><tr><td>PinyinGPT-Concat (6L)</td><td>94</td><td>32.70</td></tr><tr><td>PinyinGPT-Concat (12L)</td><td>145</td><td>41.51</td></tr></table>",
+      "section_number": "4.8",
+      "section_title": "model analysis: accuracy versus latency",
+      "normalized_section_title": "model analysis: accuracy versus latency"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.acl-long.133::sections::4.8",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA V100 Tensor Core",
+      "cleaned_hardware_name": "nvidia v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": null,
+      "count_text": "",
+      "section_number": "4.8",
+      "section_title": "model analysis: accuracy versus latency",
+      "normalized_section_title": "model analysis: accuracy versus latency",
+      "evidence": "Considering pinyin input method requires both accuracy and efficiency, we further train a 6-layer GPT to investigate the trade-off. Our 6-layer GPT is directly truncated and initialized from the 12-layer GPT and is continually trained for $50\\mathrm{k}$ steps with the same configuration of 12-layer GPT.\n\nThe evaluation is conducted over the 9 configurations of context-target length and averaged across all domains. Specifically, each configuration is inferred using a data center GPU NVIDIA V100 Tensor Core, and the GPU is fully occupied by one model. The beam size is set to be 16. We report the average inference time in millisecond as well as accuracy in terms of $\\mathrm{P}@\\mathcal{K}$ of PinyinGPT-Concat. Table 7 is the result for the configuration (4-9, 4-9). The table shows that the inference time of the model with 6-layer transformer is almost $30\\%$ faster than that with 12-layer. However, the performance of the 6-layer model drops consistently in the abbreviated setting. $^{15}$\n\nTable 6: Performance of six sample domains over WD using abbreviated pinyin.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"3\">Games</td><td colspan=\"3\">Culture</td><td colspan=\"3\">Sports</td></tr><tr><td>P@1</td><td>P@5</td><td>P@10</td><td>P@1</td><td>P@5</td><td>P@10</td><td>P@1</td><td>P@5</td><td>P@10</td></tr><tr><td>GPT (ours)</td><td>24.04</td><td>32.78</td><td>34.23</td><td>21.86</td><td>29.33</td><td>30.94</td><td>28.54</td><td>37.13</td><td>38.69</td></tr><tr><td>PinyinGPT-Concat</td><td>25.78</td><td>38.26</td><td>41.89</td><td>22.10</td><td>33.33</td><td>36.72</td><td>29.81</td><td>43.56</td><td>46.95</td></tr><tr><td></td><td colspan=\"3\">Real Estate</td><td colspan=\"3\">Medical</td><td colspan=\"3\">Finance</td></tr><tr><td></td><td>P@1</td><td>P@5</td><td>P@10</td><td>P@1</td><td>P@5</td><td>P@10</td><td>P@1</td><td>P@5</td><td>P@10</td></tr><tr><td>GPT (ours)</td><td>26.53</td><td>35.27</td><td>36.74</td><td>33.59</td><td>43.54</td><td>44.93</td><td>29.00</td><td>37.24</td><td>38.47</td></tr><tr><td>PinyinGPT-Concat</td><td>27.28</td><td>40.16</td><td>43.86</td><td>34.76</td><td>49.28</td><td>52.56</td><td>29.17</td><td>42.17</td><td>45.52</td></tr></table>\n\nTable 7: Average inference time for one instance and the overall $\\mathrm{P}@5$ for the configuration of (4-9, 4-9).   \n\n<table><tr><td>Model</td><td>Time (ms)</td><td>P@5</td></tr><tr><td>GPT (ours, 6L)</td><td>94</td><td>27.45</td></tr><tr><td>GPT (ours, 12L)</td><td>142</td><td>34.48</td></tr><tr><td>PinyinGPT-Concat (6L)</td><td>94</td><td>32.70</td></tr><tr><td>PinyinGPT-Concat (12L)</td><td>145</td><td>41.51</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2022.acl-long.133::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "models",
+      "evidence": "In this section, we first introduce standard text-based GPT models adopted in this work (Section 3.1). Afterwards, we introduce how to extend GPT models for pinyin input method with enriched pinyin context (Section 3.2) and pinyin-constrained\n\ntraining (Section 3.3), respectively."
+    },
+    {
+      "source_window_id": "2022.acl-long.133::sections::3.1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3.1",
+      "section_title": "gpt baselines",
+      "evidence": "In this work, we use character-level Chinese GPT as the backbone. We describe character-level GPT models in this subsection.\n\nWe start with a publicly available character-level GPT (Du, 2019) $^{5}$ , which we call GPT (public). The model has the same configuration as the standard 12-layer $\\mathrm{GPT^6}$ . It is trained on the CLUECorpusSmall dataset of 14GB (Xu et al., 2020), which consists of Chinese news, Wikipedia, online forum message, and consumer comments. We have tried another well-known Chinese pretrained language model called CPM (Zhang et al., 2021b), which is trained on 100GB data. The vocabulary of CPM contains both Chinese characters and words. $^{7}$ We built a baseline with the CPM model of 12 layers $^{8}$ and forced the generated token to be a Chinese character. However, this baseline does not work well on pinyin input method, partly because our character-level decoding is inconsistent with the way how CPM is trained. It is promising to leverage the advantage of CPM on word-level decoding, and we leave this as a future work.\n\nTo build a stronger Chinese GPT baseline, we use GPT (public) as the starting point and further pretrain on a 800GB data crawled by us that is composed of news, Wikipedia, and novel texts. The model is trained with a batch size of 2,560 on 32x Tesla V100 GPUs. We adopt the Adam optimizer (Kingma and Ba, 2015) and set the learning rate to 1e-5 with a linear warmup scheduler. We run the warmup process for 10k steps and train 100k steps in total. We call this 12-layer GPT model as GPT (ours).\n\nTo apply GPT (public) and GPT (ours) to pinyin input method, we use the traditional decoding pipeline of GPT to generate the sequence of Chinese characters in an autoregressive way. After encoding all the context of characters, the model predicts a Chinese character at each time step conditioned on the pinyin. Only Chinese characters pronounced with the same pinyin are legitimate\n\ncandidates to be predicted. Without further clarification, this strategy is used in all the experiments."
+    },
+    {
+      "source_window_id": "2022.acl-long.133::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiment",
+      "evidence": "In this section, we show the results on pinyin input method over the two settings (i.e., perfect pinyin and abbreviated pinyin)."
+    },
+    {
+      "source_window_id": "2022.acl-long.133::sections::4.1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "settings",
+      "evidence": "We describe the two datasets used in the following experiments and the evaluation metric.\n\nPD Dataset PD dataset (Yang et al., 2012) is a commonly used benchmark dataset for the evaluation of pinyin input method (Jia and Zhao, 2014; Zhang et al., 2017; Huang et al., 2018; Zhang et al., 2019). The texts in PD are extracted from the People's Daily<sup>10</sup> from 1992 to 1998. It contains 5.04 million segments of consecutive Chinese characters (or Maximum Input Unit in some literature) for training and 2,000 segments for testing. For each test case, the input pinyin are all perfect pinyin and the context is null.\n\nWD Dataset Since the PD data includes out-of-date news from 20 years ago and does not support us to study the scenario where the context includes real words, we construct a new dataset called WD. We use the WuDaoCorpora (Yuan et al., 2021) that contains 3TB Chinese corpus collected from 822 million Web pages. Currently, 200GB of the corpus\n\nhas been made publicly available $^{11}$ . We randomly select 15 domains from WuDaoCorpora. For each domain, we first use an off-the-shelf Chinese segmentation toolkit (Zhang et al., 2020) to segment the documents into sentences. Then we automatically obtain the perfect pinyin and abbreviated pinyin of characters with pinyin converting tools. For each sentence, we randomly choose a context with a range from 0-3, 4-9 and $10+$ words. Consecutively, we choose the target to be 1-3, 4-9 or $10+$ words, respectively. It's further required that the target should be continuous characters that each has its own pinyin. We call each context-target length tuple like $(4-9, 10+)$ as an evaluation configuration. For each configuration, we sample 2,000 test cases. In total, there are 9 configurations of 18,000 cases for each domain. The whole dataset consists of 270,000 examples. We investigate extremely long target lengths for the purpose of research that these configurations may not appear in real cases. All the instances in the WD dataset are only used for evaluation.\n\nEvaluation Metric We use precision at top- $K$ (P@K) as the evaluation metric, which is widely adopted in the literature (Jia and Zhao, 2014; Zhang et al., 2017, 2019). It measures if the ground truth exists in the top- $K$ generated results. Some existing works also use keystroke-based metrics (Jia and Zhao, 2013; Huang et al., 2015) and human evaluation, which we don't use in this work because the evaluation process is more complex and time-consuming.\n\nOther Settings We train both PinyinGPT models with the training data of GPT (ours). To preprocess the corpus, we use a public library $pypinyin^{12}$ to get the pinyin of Chinese characters. We initialize both PinyinGPT models with GPT (ours). Both models are trained for 100k steps on 32 GPUs of NVIDIA V100 Tensor Core with a Bach size of 25,000. The learning rate is 5e-5. We maintain a maximum of 128 tokens for every training example. We use a probability of $50\\%$ to sample a target sequence with less than 5 words, otherwise we randomly sample a target sequence with 6 to 25 words. This rate is empirically selected as it's less practical for users to type very long sequences.\n\nTable 3: Comparison with different methods over PD using perfect pinyin.   \n\n<table><tr><td>Model</td><td>P@1</td><td>P@5</td><td>P@10</td></tr><tr><td>Google IME</td><td>70.90</td><td>78.30</td><td>82.30</td></tr><tr><td>On-OMWA</td><td>64.40</td><td>72.90</td><td>77.90</td></tr><tr><td>On-P2C</td><td>71.30</td><td>80.50</td><td>81.30</td></tr><tr><td>GPT (public)</td><td>67.35</td><td>79.95</td><td>81.60</td></tr><tr><td>GPT (ours)</td><td>73.15</td><td>84.10</td><td>85.45</td></tr></table>\n\nDuring inference stage, we use beam search with a beam size of 16 for text generation."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.8"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": null
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2022\\2022.acl-long.133\\auto\\full.md",
+    "source_md_sha256": "f0d6eaf2116999b7e773791270c2e2f9e8d06a08e1ea9fd83ae1211ba9539a3b",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

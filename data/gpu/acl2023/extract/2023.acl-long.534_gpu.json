@@ -1,0 +1,225 @@
+{
+  "paper_id": "2023.acl-long.534",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.534::sections::3.2",
+      "paper_id": "2023.acl-long.534",
+      "section_number": "3.2",
+      "section_title": "positional kernels",
+      "normalized_section_title": "positional kernels",
+      "window_text": "As shown in Section 3.1, the weight concatenation is proposed to eliminate the permutation invariance constraint. However, practical space complexity concerns arise with the weight concatenation since it requires extending the dimension of each word vector from $d_v$ to $Ld_v$ , given a sequence of length $L$ . Besides, we want to circumvent increasing time complexity and utilize highly efficient parallel matrix calculation on GPU. Fortunately, both of these issues can be resolved through factoring the matrix $\\Phi$ as:\n\n$$\n\\begin{array}{l} \\mathbf {o} _ {i} = \\left(\\mathbf {a} _ {i} \\oplus \\mathbf {V}\\right) \\boldsymbol {\\Phi} = \\sum_ {j = 1} ^ {L} a _ {i j} \\mathbf {v} _ {j} \\phi_ {j} (14) \\\\ = \\sum_ {j = 1} ^ {L} a _ {i j} \\left(\\mathbf {v} _ {j} \\phi_ {j}\\right) = \\mathbf {a} _ {i} (\\mathbf {V} \\otimes \\boldsymbol {\\Phi}), (15) \\\\ \\end{array}\n$$\n\nwhere $\\phi_j\\in \\mathbb{R}^{d_v\\times d_v},j\\in \\{1,\\ldots ,L\\}$ is a subblock of $\\Phi$ $(\\mathbf{v}_j\\phi_j)$ means $\\mathbf{v}_j$ is multiplied by $\\phi_{j}$ first. $\\otimes$ is the batched matrix multiplication that broadcasts along the sequence length dimension of $\\mathbf{V}$ and $\\Phi$ $\\mathbf{V}\\otimes \\Phi$ can be defined as:\n\n$$\n\\left[ \\mathbf {V} \\otimes \\boldsymbol {\\Phi} \\right] _ {i} := \\mathbf {v} _ {i} \\phi_ {i}, \\tag {16}\n$$\n\nwhere $\\mathbf{v}_i\\in \\mathbb{R}^{d_v}$ and $\\phi_i\\in \\mathbb{R}^{d_v\\times d_v}$\n\nIn Equation (14), we reshape the matrix $\\Phi \\in \\mathbb{R}^{Ld_v\\times d_v}$ as a tensor $\\Phi \\in \\mathbb{R}^{L\\times d_v\\times d_v}$ , namely splitting $\\Phi$ into a set of subblock $\\phi_j\\in \\mathbb{R}^{d_v\\times d_v}$ . Multiplying $\\mathbf{v}_j$ by $\\phi_j$ first in Equation (15) makes it possible to apply efficient parallel matrix multiplication through tensor reshaping and broadcasting. The highly efficient matrix form can be represented as:\n\n$$\n\\begin{array}{l} \\operatorname {A t t n} \\left(\\mathbf {Q}, \\mathbf {K}, \\mathbf {V}\\right) \\\\ = s \\left(\\mathbf {Q} \\mathbf {K} ^ {\\top} / \\sqrt {d _ {k}}\\right) (\\mathbf {V} \\otimes \\boldsymbol {\\Phi}). \\tag {17} \\\\ \\end{array}\n$$\n\nIt is amazing that the attention mechanisms with matrix blocks $\\phi_{j}$ in Equation (17) are highly similar to the existing positional encodings in Equations (6) and (7). Both are position-specific and capable of encoding positional information, however, the way that they compute the contextual representation is totally different. Therefore, $\\phi_{j}$ in Equation (15) can be regarded as a novel positional encoding strategy and we dub it as \"positional kernel\".",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.534::sections::4",
+      "paper_id": "2023.acl-long.534",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.534::sections::4.1",
+      "paper_id": "2023.acl-long.534",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Datasets The proposed methods are evaluated on the widely used machine translation benchmarks, including WMT 2014 English $\\Rightarrow$ German (En-De) and WMT 2014 English $\\Rightarrow$ French (En-Fr), with about 4.43 million and 35.76 million parallel sentence pairs for training respectively. For both language pairs, the newstest2013 dataset is used as the validation set and the newstest2014 dataset as the test set.\n\nModel In all experiments, English, German and French datasets are tokenized via the scripts in Moses (Koehn et al., 2007). For all language pairs, the byte pair encoding (BPE) compression algorithm (Sennrich et al., 2016) is employed to reduce the size of the vocabulary and enable the model to translate rare and unknown tokens. The vocabulary size is set to 40,000 for both En-De and En-Fr translation tasks. The Adam algorithm (Kingma and Ba, 2015) is used as the optimizer with $\\beta_{1} = 0.9$ , $\\beta_{2} = 0.98$ , $\\epsilon = 10^{-9}$ . The label smoothing (Szegedy et al., 2016) is adopted as well, with $\\epsilon_{ls} = 0.1$ .\n\nWe implement all methods on top of FAIRSEQ (Ott et al., 2019) and follow its preprocessing and training instructions on neural machine translation. We take advantage of efficient half-precision floating point (FP16) arithmetic for both the training and evaluation stage. To maintain approximately 25,000 source tokens and 25,000 target tokens in each training batch as Vaswani et al. (2017), we limit the number of\n\nTable 1: Machine translation results of Transformer base model, in terms of BLEU and $\\mathrm{ChrF} + +$ for WMT 2014 En-De and En-Fr on newestest2014 test set. In Tables 1 and 2, $+ + ^{\\prime} / ^{\\prime} + ^{\\prime}$ after scores indicate that the proposed method is significantly better than the corresponding baseline method (SAPE) at significance level $p <   0.05 / 0.10$   \n\n<table><tr><td rowspan=\"2\">System</td><td rowspan=\"2\">Approach</td><td colspan=\"2\">En-De</td><td colspan=\"2\">En-Fr</td><td rowspan=\"2\">#Params (En-De)/M</td></tr><tr><td>BLEU</td><td>ChrF++</td><td>BLEU</td><td>ChrF++</td></tr><tr><td rowspan=\"2\">reported</td><td>SAPE</td><td>27.3</td><td>-</td><td>38.1</td><td>-</td><td>-</td></tr><tr><td>RPE</td><td>26.8</td><td>-</td><td>38.7</td><td>-</td><td>-</td></tr><tr><td rowspan=\"7\">this work</td><td>w/o PE</td><td>13.49</td><td>43.99</td><td>22.59</td><td>51.45</td><td>63.08</td></tr><tr><td>SAPE</td><td>27.48</td><td>53.97</td><td>40.46</td><td>62.09</td><td>63.08</td></tr><tr><td>LAPE</td><td>24.34</td><td>52.15</td><td>39.75</td><td>61.50</td><td>64.13</td></tr><tr><td>RPE</td><td>27.07</td><td>53.65</td><td>40.61</td><td>62.26</td><td>63.37</td></tr><tr><td>Adaptive-T5</td><td>27.02</td><td>53.53</td><td>40.36</td><td>62.08</td><td>63.08</td></tr><tr><td>PosNet-Attn</td><td>23.12</td><td>49.91</td><td>36.14</td><td>59.17</td><td>64.11</td></tr><tr><td>PosNet-Embed</td><td>27.68</td><td>54.05</td><td>40.81++</td><td>62.33++</td><td>66.49</td></tr></table>\n\nTable 2: Machine translation results of Transformer big models, in terms of BLEU and $\\mathrm{ChrF}++$ for WMT 2014 En-De and En-Fr on newestest2014 test set.   \n\n<table><tr><td rowspan=\"2\">Approach</td><td colspan=\"2\">En-De</td><td colspan=\"2\">En-Fr</td></tr><tr><td>BLEU</td><td>ChrF++</td><td>BLEU</td><td>ChrF++</td></tr><tr><td>SAPE</td><td>28.4</td><td>-</td><td>41.0</td><td>-</td></tr><tr><td>RPE</td><td>29.2</td><td>-</td><td>41.5</td><td>-</td></tr><tr><td>SAPE</td><td>28.92</td><td>54.86</td><td>42.45</td><td>63.59</td></tr><tr><td>RPE</td><td>28.77</td><td>54.69</td><td>42.25</td><td>62.41</td></tr><tr><td>PosNet</td><td>29.23++</td><td>55.12++</td><td>42.66+</td><td>63.70</td></tr></table>\n\ntokens in each batch to 4096 and accumulate the gradients of 8 batches for each update (Ott et al., 2018). We re-implement all compared methods and keep experimental sets same for these methods to ensure a consistent and fair comparison. We run all experiments with NVIDIA RTX3090 24 GB GPU cards.\n\nEvaluation We employ beam search with a beam size of 4 and a length penalty $a = 0.6$ . We evaluate the performance of models with both the common used BLEU (Papineni et al., 2002) and recently proposed $\\mathrm{ChrF}++$ (Popovic, 2017; Marie et al., 2021), which shows better correlation with human judgments. Besides, we perform statistical significance test with bootstrap resampling (Koehn et al., 2003).\n\nCompared Methods Compared positional encoding methods mainly include\n\n- $w / oPE$ : without any positional encoding, to provide another reference of positional encod\n\ning ability besides the baseline,\n\n- SAPE: sinusoidal absolute positional encoding (Vaswani et al., 2017),   \n- LAPE: learnable absolute positional encoding, to evaluate the effect of trainable positional encoding,   \n- RPE: relative positional encoding (Shaw et al., 2018),   \n- Adaptive-T5: adaptive version of T5's relative positional encoding (Wu et al., 2021),   \n- PosNet-Attn: attention-level PosNet (Section 3.3),   \n- PosNet-Embed: embedding-level PosNet (Section 3.3).\n\nWe provide the relevant codes and scripts<sup>1</sup> of our experiments, which is helpful to reproducibility. Besides, the $\\text{datasets}^2$ used in our experiments are all publicly available.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.534::sections::4.2",
+      "paper_id": "2023.acl-long.534",
+      "section_number": "4.2",
+      "section_title": "results",
+      "normalized_section_title": "results",
+      "window_text": "Experimental results are shown in Tables 1 and 2 and Figure 2. We make the following observations:\n\nStrong Baseline To isolate the impact of different positional encoding strategies from any other unrelated factors, such as the underlying implementation detail and experimental configuration, we re-implement the baseline model (SAPE) and other compared methods. In comparison to the reported result (Vaswani et al., 2017), the reproduced baseline result achieves better performance, especially\n\n![](images/7e9272b49f1fd0ed5c458c66a3c84e78557532e43658dca4d2db8ad7c0a713d8.jpg)  \nFigure 2: Time consumed by Transformer base model with different positional encoding methods to forward the same manual batch 10 times. AT5 is short for Adaptive-T5.\n\non the WMT 2014 En-Fr translation task. This indicates that the system in this work is a strong baseline.\n\nPositional Information is Critical To assess the significance of positional information, we conduct experiments on Transformer without any positional encodings (w/o PE). As a result, the performance decreases drastically. This suggests that positional information is critical for Transformer, which relies solely on the position insensitive attention mechanism.\n\nPerformance of PosNet The proposed approaches achieve competitive performance or statistically significant improvement over the baseline. Specifically, PosNet-Attn outperforms the w/o PE, indicating that it effectively encodes positional information, although it is worse than the baseline. However, the PosNet-Embed achieves better performance in terms of both BLEU and $\\mathrm{ChrF}++$ than the baseline on both of WMT 2014 En-De and En-Fr translation tasks. This demonstrates the superiority of the PosNet-Embed in encoding positional information.\n\nComparison with Other Methods In order to make a direct and fair comparison with other positional encoding methods (LAPE and RPE), we re-implement them and evaluate them with new metric, i.e. $\\mathrm{ChrF}++$ . For RPE, we follow the configuration in Shaw et al. (2018). As shown in Table 1, both LAPE and RPE are worse than PosNet-Embed on both BLEU and $\\mathrm{ChrF}++$ , which demonstrates that the PosNet-Embed encodes the positional information better again.\n\nComputation Complexity of Different Methods To evaluate the computation complexity of different positional encoding methods, we manually con\n\n![](images/2ccecafc76d55df4c364f410741bb370684dbf027abc025d78b866eb324127a1.jpg)  \nFigure 3: Effect of the dimension $d_p$ of embedding-level PosNet, evaluated on the validation dataset.\n\nstruct a batch of samples and only perform the forward stage with Transformer base model since the model with different positional encoding methods would perform different numbers of decoding steps in practical translation scenario. We perform the forward stage with the same batch 10 times and record the time consumed by the model. As shown in Figure 2, all methods exhibit similar time complexity, with the exception of the RPE and AT5, which is obviously more time-consuming.\n\nFurthermore, we conduct an analysis of the GPU memory consumption of the Transformer base model with different methods on the WMT 2014 En-De and En-Fr tasks. This is done to determine their relative space complexity. The results of this analysis can be found in Appendix A.2, which demonstrate that all methods exhibit comparable space complexity, except for RPE, which consumes more GPU memory on the WMT 2014 En-Fr task.\n\nScaling to Transformer Big We also implement these methods in the Transformer big model to observe the performance when scaling to big models. As shown in Table 2, the reproduced SAPE and RPE achieve competitive or better results in terms of BLEU compared with their reported results (Vaswani et al., 2017; Shaw et al., 2018). Besides, the PosNet-Embed achieves better performance than other methods, especially its statistically significant improvement on most results with significance level 0.05/0.10.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.534::sections::5",
+      "paper_id": "2023.acl-long.534",
+      "section_number": "5",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "Effect of Positional kernel's dimension As stated previously in Equation (22), the positional kernel tensor $\\Phi$ has the shape of $L\\times d_1\\times d_2$ . In practice, we use $d_{1} = d_{2} = d_{p}$ . To further investigate the effect of the dimension $d_p$ , we conduct experiments on PosNet-Embed with a series of varying $d_p$ and evaluate the performance of dif\n\n![](images/2da3e664e3330fc7a2886975ae22bdd44f070d6c05546d5066e3ab86dc6f40ee.jpg)  \n(a) n-gram chr F2 + 2-gram word F2\n\n![](images/3c698b623d3bfa55699eabd21e283aa298987f512118f891a95ab1f7abc52de1.jpg)  \n(b) 6-gram chr F2 + n-gram word F2\n\n![](images/0574bffd3021c6168e84fd6a1498397b575a34baae9a1edfe9294f9fa69c670a.jpg)  \n(c) n-gram word precision   \nFigure 4: Performance gap of Transformer base model with the proposed method over the baseline method on WMT14 En-De with different character or word n-grams in (a) (b) ChrF and (c) BLEU.\n\nferent $d_p$ with the BLEU score. Figure 3 shows the result of ablation experiment on the validation dataset, i.e. the newstest2013 dataset. Notably, $d_p = 96$ has a detrimental effect on the performance of PosNet-Embed and $d_p = 128$ with the best performance. Thereby, we conduct the experiments on the PosNet-Embed in Table 1 with $d_1 = d_2 = 128$ . Besides, we use $d_1 = d_2 = 256$ for the Transformer big model, which is just twice the size of the base model.\n\nEvaluation with different n-grams The default evaluation setup is 6-gram character F2 and 2-gram word F2 for $\\mathrm{ChrF}++$ , 4-gram word precision for BLEU. However, since the PosNet preserves positional information through concatenating the weighted value vectors, it is intriguing what the performance is when evaluating with coarser-grain unit. Therefore, to observe the performance superiority of the proposed method on coarser grain, we evaluate the performance gap of PosNet-Embed over SAPE on WMT14 En-De with different n-grams. Specifically, we test the $\\mathrm{ChrF}$ with n-gram character F2 and 2-gram word F2 ( $1 \\leq n \\leq 30$ ), the $\\mathrm{ChrF}$ with 6-gram character F2 and n-gram word F2 ( $1 \\leq n \\leq 8$ ), and the BLEU with n-gram word precision ( $1 \\leq n \\leq 8$ ) respectively. As shown in Figure 4, it is amazing that the performance superiority of the PosNet-Embed over the SAPE consistently enlarges as the evaluating grain becomes coarser, i.e. bigger n-gram character or word. We speculate that this is attributable to the weight concatenation of PosNet since the concatenation operation promotes the model to capture the whole context precisely according to the word order of a sequence, which preserves the coarser-grained feature.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.534::appendix::A",
+      "paper_id": "2023.acl-long.534",
+      "section_number": "A",
+      "section_title": "appendix",
+      "normalized_section_title": "appendix",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.534::appendix::A.2",
+      "paper_id": "2023.acl-long.534",
+      "section_number": "A.2",
+      "section_title": "gpu memory consumption",
+      "normalized_section_title": "gpu memory consumption",
+      "window_text": "The results of GPU memory consumption is presented in Table 3. A lower GPU memory consumption translates to reduced space complexity, which is a desirable trait.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.534::appendix::A.3",
+      "paper_id": "2023.acl-long.534",
+      "section_number": "A.3",
+      "section_title": "illustration of the posnet",
+      "normalized_section_title": "illustration of the posnet",
+      "window_text": "The illustration of applying the PosNet to Transformer is presented in Figure 5.\n\n![](images/e4288e583e30c4aa556a8894fa6541db848291addb5963e9a2463079364d6b61.jpg)  \n(a) Embedding Layer\n\n![](images/bd7ce31cfd7e78d4f869ef49172dd09ff5fa1637a56d7a2cd345ba1282ab4a97.jpg)  \n(b) Attention Layer\n\n![](images/30f2d7fd4fe638755e19ac1110b99ece0b2b7327b33cb98ef6ab66f407b6f89d.jpg)  \n(c) Embedding-level PosNet   \nFigure 5: Illustration of applying the PosNet to (a) embedding layer and (b) attention layer. (c) illustrates embedding-level PosNet. Attention-level PosNet is identical to embedding-level PosNet, excluding $\\mathbf{W}_1$ and $\\mathbf{W}_2$ . $\\alpha$ is the attention score and $\\sigma$ is the non-linear activation function.\n\nTable 3: GPU Memory Consumption of Transformer base model with different methods on WMT 2014 En-De and En-Fr tasks.   \n\n<table><tr><td>Approach</td><td>En-De/GB (↓)</td><td>En-Fr/GB (↓)</td></tr><tr><td>w/o PE</td><td>6.3</td><td>9.4</td></tr><tr><td>SAPE</td><td>6.4</td><td>9.4</td></tr><tr><td>LAPE</td><td>6.4</td><td>9.4</td></tr><tr><td>RPE</td><td>6.8</td><td>10.6</td></tr><tr><td>Adaptive-T5</td><td>6.4</td><td>9.4</td></tr><tr><td>PosNet</td><td>6.8</td><td>9.6</td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.534::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX3090 24GB",
+      "count": null,
+      "count_text": "",
+      "evidence": "Datasets The proposed methods are evaluated on the widely used machine translation benchmarks, including WMT 2014 English $\\Rightarrow$ German (En-De) and WMT 2014 English $\\Rightarrow$ French (En-Fr), with about 4.43 million and 35.76 million parallel sentence pairs for training respectively. For both language pairs, the newstest2013 dataset is used as the validation set and the newstest2014 dataset as the test set.\n\nModel In all experiments, English, German and French datasets are tokenized via the scripts in Moses (Koehn et al., 2007). For all language pairs, the byte pair encoding (BPE) compression algorithm (Sennrich et al., 2016) is employed to reduce the size of the vocabulary and enable the model to translate rare and unknown tokens. The vocabulary size is set to 40,000 for both En-De and En-Fr translation tasks. The Adam algorithm (Kingma and Ba, 2015) is used as the optimizer with $\\beta_{1} = 0.9$ , $\\beta_{2} = 0.98$ , $\\epsilon = 10^{-9}$ . The label smoothing (Szegedy et al., 2016) is adopted as well, with $\\epsilon_{ls} = 0.1$ .\n\nWe implement all methods on top of FAIRSEQ (Ott et al., 2019) and follow its preprocessing and training instructions on neural machine translation. We take advantage of efficient half-precision floating point (FP16) arithmetic for both the training and evaluation stage. To maintain approximately 25,000 source tokens and 25,000 target tokens in each training batch as Vaswani et al. (2017), we limit the number of\n\nTable 1: Machine translation results of Transformer base model, in terms of BLEU and $\\mathrm{ChrF} + +$ for WMT 2014 En-De and En-Fr on newestest2014 test set. In Tables 1 and 2, $+ + ^{\\prime} / ^{\\prime} + ^{\\prime}$ after scores indicate that the proposed method is significantly better than the corresponding baseline method (SAPE) at significance level $p <   0.05 / 0.10$   \n\n<table><tr><td rowspan=\"2\">System</td><td rowspan=\"2\">Approach</td><td colspan=\"2\">En-De</td><td colspan=\"2\">En-Fr</td><td rowspan=\"2\">#Params (En-De)/M</td></tr><tr><td>BLEU</td><td>ChrF++</td><td>BLEU</td><td>ChrF++</td></tr><tr><td rowspan=\"2\">reported</td><td>SAPE</td><td>27.3</td><td>-</td><td>38.1</td><td>-</td><td>-</td></tr><tr><td>RPE</td><td>26.8</td><td>-</td><td>38.7</td><td>-</td><td>-</td></tr><tr><td rowspan=\"7\">this work</td><td>w/o PE</td><td>13.49</td><td>43.99</td><td>22.59</td><td>51.45</td><td>63.08</td></tr><tr><td>SAPE</td><td>27.48</td><td>53.97</td><td>40.46</td><td>62.09</td><td>63.08</td></tr><tr><td>LAPE</td><td>24.34</td><td>52.15</td><td>39.75</td><td>61.50</td><td>64.13</td></tr><tr><td>RPE</td><td>27.07</td><td>53.65</td><td>40.61</td><td>62.26</td><td>63.37</td></tr><tr><td>Adaptive-T5</td><td>27.02</td><td>53.53</td><td>40.36</td><td>62.08</td><td>63.08</td></tr><tr><td>PosNet-Attn</td><td>23.12</td><td>49.91</td><td>36.14</td><td>59.17</td><td>64.11</td></tr><tr><td>PosNet-Embed</td><td>27.68</td><td>54.05</td><td>40.81++</td><td>62.33++</td><td>66.49</td></tr></table>\n\nTable 2: Machine translation results of Transformer big models, in terms of BLEU and $\\mathrm{ChrF}++$ for WMT 2014 En-De and En-Fr on newestest2014 test set.   \n\n<table><tr><td rowspan=\"2\">Approach</td><td colspan=\"2\">En-De</td><td colspan=\"2\">En-Fr</td></tr><tr><td>BLEU</td><td>ChrF++</td><td>BLEU</td><td>ChrF++</td></tr><tr><td>SAPE</td><td>28.4</td><td>-</td><td>41.0</td><td>-</td></tr><tr><td>RPE</td><td>29.2</td><td>-</td><td>41.5</td><td>-</td></tr><tr><td>SAPE</td><td>28.92</td><td>54.86</td><td>42.45</td><td>63.59</td></tr><tr><td>RPE</td><td>28.77</td><td>54.69</td><td>42.25</td><td>62.41</td></tr><tr><td>PosNet</td><td>29.23++</td><td>55.12++</td><td>42.66+</td><td>63.70</td></tr></table>\n\ntokens in each batch to 4096 and accumulate the gradients of 8 batches for each update (Ott et al., 2018). We re-implement all compared methods and keep experimental sets same for these methods to ensure a consistent and fair comparison. We run all experiments with NVIDIA RTX3090 24 GB GPU cards.\n\nEvaluation We employ beam search with a beam size of 4 and a length penalty $a = 0.6$ . We evaluate the performance of models with both the common used BLEU (Papineni et al., 2002) and recently proposed $\\mathrm{ChrF}++$ (Popovic, 2017; Marie et al., 2021), which shows better correlation with human judgments. Besides, we perform statistical significance test with bootstrap resampling (Koehn et al., 2003).\n\nCompared Methods Compared positional encoding methods mainly include\n\n- $w / oPE$ : without any positional encoding, to provide another reference of positional encod\n\ning ability besides the baseline,\n\n- SAPE: sinusoidal absolute positional encoding (Vaswani et al., 2017),   \n- LAPE: learnable absolute positional encoding, to evaluate the effect of trainable positional encoding,   \n- RPE: relative positional encoding (Shaw et al., 2018),   \n- Adaptive-T5: adaptive version of T5's relative positional encoding (Wu et al., 2021),   \n- PosNet-Attn: attention-level PosNet (Section 3.3),   \n- PosNet-Embed: embedding-level PosNet (Section 3.3).\n\nWe provide the relevant codes and scripts<sup>1</sup> of our experiments, which is helpful to reproducibility. Besides, the $\\text{datasets}^2$ used in our experiments are all publicly available.",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.534::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX3090 24GB",
+      "cleaned_hardware_name": "nvidia rtx 3090 24gb",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 3090",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 3090",
+      "count": null,
+      "count_text": "",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "evidence": "Datasets The proposed methods are evaluated on the widely used machine translation benchmarks, including WMT 2014 English $\\Rightarrow$ German (En-De) and WMT 2014 English $\\Rightarrow$ French (En-Fr), with about 4.43 million and 35.76 million parallel sentence pairs for training respectively. For both language pairs, the newstest2013 dataset is used as the validation set and the newstest2014 dataset as the test set.\n\nModel In all experiments, English, German and French datasets are tokenized via the scripts in Moses (Koehn et al., 2007). For all language pairs, the byte pair encoding (BPE) compression algorithm (Sennrich et al., 2016) is employed to reduce the size of the vocabulary and enable the model to translate rare and unknown tokens. The vocabulary size is set to 40,000 for both En-De and En-Fr translation tasks. The Adam algorithm (Kingma and Ba, 2015) is used as the optimizer with $\\beta_{1} = 0.9$ , $\\beta_{2} = 0.98$ , $\\epsilon = 10^{-9}$ . The label smoothing (Szegedy et al., 2016) is adopted as well, with $\\epsilon_{ls} = 0.1$ .\n\nWe implement all methods on top of FAIRSEQ (Ott et al., 2019) and follow its preprocessing and training instructions on neural machine translation. We take advantage of efficient half-precision floating point (FP16) arithmetic for both the training and evaluation stage. To maintain approximately 25,000 source tokens and 25,000 target tokens in each training batch as Vaswani et al. (2017), we limit the number of\n\nTable 1: Machine translation results of Transformer base model, in terms of BLEU and $\\mathrm{ChrF} + +$ for WMT 2014 En-De and En-Fr on newestest2014 test set. In Tables 1 and 2, $+ + ^{\\prime} / ^{\\prime} + ^{\\prime}$ after scores indicate that the proposed method is significantly better than the corresponding baseline method (SAPE) at significance level $p <   0.05 / 0.10$   \n\n<table><tr><td rowspan=\"2\">System</td><td rowspan=\"2\">Approach</td><td colspan=\"2\">En-De</td><td colspan=\"2\">En-Fr</td><td rowspan=\"2\">#Params (En-De)/M</td></tr><tr><td>BLEU</td><td>ChrF++</td><td>BLEU</td><td>ChrF++</td></tr><tr><td rowspan=\"2\">reported</td><td>SAPE</td><td>27.3</td><td>-</td><td>38.1</td><td>-</td><td>-</td></tr><tr><td>RPE</td><td>26.8</td><td>-</td><td>38.7</td><td>-</td><td>-</td></tr><tr><td rowspan=\"7\">this work</td><td>w/o PE</td><td>13.49</td><td>43.99</td><td>22.59</td><td>51.45</td><td>63.08</td></tr><tr><td>SAPE</td><td>27.48</td><td>53.97</td><td>40.46</td><td>62.09</td><td>63.08</td></tr><tr><td>LAPE</td><td>24.34</td><td>52.15</td><td>39.75</td><td>61.50</td><td>64.13</td></tr><tr><td>RPE</td><td>27.07</td><td>53.65</td><td>40.61</td><td>62.26</td><td>63.37</td></tr><tr><td>Adaptive-T5</td><td>27.02</td><td>53.53</td><td>40.36</td><td>62.08</td><td>63.08</td></tr><tr><td>PosNet-Attn</td><td>23.12</td><td>49.91</td><td>36.14</td><td>59.17</td><td>64.11</td></tr><tr><td>PosNet-Embed</td><td>27.68</td><td>54.05</td><td>40.81++</td><td>62.33++</td><td>66.49</td></tr></table>\n\nTable 2: Machine translation results of Transformer big models, in terms of BLEU and $\\mathrm{ChrF}++$ for WMT 2014 En-De and En-Fr on newestest2014 test set.   \n\n<table><tr><td rowspan=\"2\">Approach</td><td colspan=\"2\">En-De</td><td colspan=\"2\">En-Fr</td></tr><tr><td>BLEU</td><td>ChrF++</td><td>BLEU</td><td>ChrF++</td></tr><tr><td>SAPE</td><td>28.4</td><td>-</td><td>41.0</td><td>-</td></tr><tr><td>RPE</td><td>29.2</td><td>-</td><td>41.5</td><td>-</td></tr><tr><td>SAPE</td><td>28.92</td><td>54.86</td><td>42.45</td><td>63.59</td></tr><tr><td>RPE</td><td>28.77</td><td>54.69</td><td>42.25</td><td>62.41</td></tr><tr><td>PosNet</td><td>29.23++</td><td>55.12++</td><td>42.66+</td><td>63.70</td></tr></table>\n\ntokens in each batch to 4096 and accumulate the gradients of 8 batches for each update (Ott et al., 2018). We re-implement all compared methods and keep experimental sets same for these methods to ensure a consistent and fair comparison. We run all experiments with NVIDIA RTX3090 24 GB GPU cards.\n\nEvaluation We employ beam search with a beam size of 4 and a length penalty $a = 0.6$ . We evaluate the performance of models with both the common used BLEU (Papineni et al., 2002) and recently proposed $\\mathrm{ChrF}++$ (Popovic, 2017; Marie et al., 2021), which shows better correlation with human judgments. Besides, we perform statistical significance test with bootstrap resampling (Koehn et al., 2003).\n\nCompared Methods Compared positional encoding methods mainly include\n\n- $w / oPE$ : without any positional encoding, to provide another reference of positional encod\n\ning ability besides the baseline,\n\n- SAPE: sinusoidal absolute positional encoding (Vaswani et al., 2017),   \n- LAPE: learnable absolute positional encoding, to evaluate the effect of trainable positional encoding,   \n- RPE: relative positional encoding (Shaw et al., 2018),   \n- Adaptive-T5: adaptive version of T5's relative positional encoding (Wu et al., 2021),   \n- PosNet-Attn: attention-level PosNet (Section 3.3),   \n- PosNet-Embed: embedding-level PosNet (Section 3.3).\n\nWe provide the relevant codes and scripts<sup>1</sup> of our experiments, which is helpful to reproducibility. Besides, the $\\text{datasets}^2$ used in our experiments are all publicly available.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized GeForce RTX shorthand rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.acl-long.534::sections::3.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3.2",
+      "section_title": "positional kernels",
+      "evidence": "As shown in Section 3.1, the weight concatenation is proposed to eliminate the permutation invariance constraint. However, practical space complexity concerns arise with the weight concatenation since it requires extending the dimension of each word vector from $d_v$ to $Ld_v$ , given a sequence of length $L$ . Besides, we want to circumvent increasing time complexity and utilize highly efficient parallel matrix calculation on GPU. Fortunately, both of these issues can be resolved through factoring the matrix $\\Phi$ as:\n\n$$\n\\begin{array}{l} \\mathbf {o} _ {i} = \\left(\\mathbf {a} _ {i} \\oplus \\mathbf {V}\\right) \\boldsymbol {\\Phi} = \\sum_ {j = 1} ^ {L} a _ {i j} \\mathbf {v} _ {j} \\phi_ {j} (14) \\\\ = \\sum_ {j = 1} ^ {L} a _ {i j} \\left(\\mathbf {v} _ {j} \\phi_ {j}\\right) = \\mathbf {a} _ {i} (\\mathbf {V} \\otimes \\boldsymbol {\\Phi}), (15) \\\\ \\end{array}\n$$\n\nwhere $\\phi_j\\in \\mathbb{R}^{d_v\\times d_v},j\\in \\{1,\\ldots ,L\\}$ is a subblock of $\\Phi$ $(\\mathbf{v}_j\\phi_j)$ means $\\mathbf{v}_j$ is multiplied by $\\phi_{j}$ first. $\\otimes$ is the batched matrix multiplication that broadcasts along the sequence length dimension of $\\mathbf{V}$ and $\\Phi$ $\\mathbf{V}\\otimes \\Phi$ can be defined as:\n\n$$\n\\left[ \\mathbf {V} \\otimes \\boldsymbol {\\Phi} \\right] _ {i} := \\mathbf {v} _ {i} \\phi_ {i}, \\tag {16}\n$$\n\nwhere $\\mathbf{v}_i\\in \\mathbb{R}^{d_v}$ and $\\phi_i\\in \\mathbb{R}^{d_v\\times d_v}$\n\nIn Equation (14), we reshape the matrix $\\Phi \\in \\mathbb{R}^{Ld_v\\times d_v}$ as a tensor $\\Phi \\in \\mathbb{R}^{L\\times d_v\\times d_v}$ , namely splitting $\\Phi$ into a set of subblock $\\phi_j\\in \\mathbb{R}^{d_v\\times d_v}$ . Multiplying $\\mathbf{v}_j$ by $\\phi_j$ first in Equation (15) makes it possible to apply efficient parallel matrix multiplication through tensor reshaping and broadcasting. The highly efficient matrix form can be represented as:\n\n$$\n\\begin{array}{l} \\operatorname {A t t n} \\left(\\mathbf {Q}, \\mathbf {K}, \\mathbf {V}\\right) \\\\ = s \\left(\\mathbf {Q} \\mathbf {K} ^ {\\top} / \\sqrt {d _ {k}}\\right) (\\mathbf {V} \\otimes \\boldsymbol {\\Phi}). \\tag {17} \\\\ \\end{array}\n$$\n\nIt is amazing that the attention mechanisms with matrix blocks $\\phi_{j}$ in Equation (17) are highly similar to the existing positional encodings in Equations (6) and (7). Both are position-specific and capable of encoding positional information, however, the way that they compute the contextual representation is totally different. Therefore, $\\phi_{j}$ in Equation (15) can be regarded as a novel positional encoding strategy and we dub it as \"positional kernel\"."
+    },
+    {
+      "source_window_id": "2023.acl-long.534::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.534::sections::4.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2",
+      "section_title": "results",
+      "evidence": "Experimental results are shown in Tables 1 and 2 and Figure 2. We make the following observations:\n\nStrong Baseline To isolate the impact of different positional encoding strategies from any other unrelated factors, such as the underlying implementation detail and experimental configuration, we re-implement the baseline model (SAPE) and other compared methods. In comparison to the reported result (Vaswani et al., 2017), the reproduced baseline result achieves better performance, especially\n\n![](images/7e9272b49f1fd0ed5c458c66a3c84e78557532e43658dca4d2db8ad7c0a713d8.jpg)  \nFigure 2: Time consumed by Transformer base model with different positional encoding methods to forward the same manual batch 10 times. AT5 is short for Adaptive-T5.\n\non the WMT 2014 En-Fr translation task. This indicates that the system in this work is a strong baseline.\n\nPositional Information is Critical To assess the significance of positional information, we conduct experiments on Transformer without any positional encodings (w/o PE). As a result, the performance decreases drastically. This suggests that positional information is critical for Transformer, which relies solely on the position insensitive attention mechanism.\n\nPerformance of PosNet The proposed approaches achieve competitive performance or statistically significant improvement over the baseline. Specifically, PosNet-Attn outperforms the w/o PE, indicating that it effectively encodes positional information, although it is worse than the baseline. However, the PosNet-Embed achieves better performance in terms of both BLEU and $\\mathrm{ChrF}++$ than the baseline on both of WMT 2014 En-De and En-Fr translation tasks. This demonstrates the superiority of the PosNet-Embed in encoding positional information.\n\nComparison with Other Methods In order to make a direct and fair comparison with other positional encoding methods (LAPE and RPE), we re-implement them and evaluate them with new metric, i.e. $\\mathrm{ChrF}++$ . For RPE, we follow the configuration in Shaw et al. (2018). As shown in Table 1, both LAPE and RPE are worse than PosNet-Embed on both BLEU and $\\mathrm{ChrF}++$ , which demonstrates that the PosNet-Embed encodes the positional information better again.\n\nComputation Complexity of Different Methods To evaluate the computation complexity of different positional encoding methods, we manually con\n\n![](images/2ccecafc76d55df4c364f410741bb370684dbf027abc025d78b866eb324127a1.jpg)  \nFigure 3: Effect of the dimension $d_p$ of embedding-level PosNet, evaluated on the validation dataset.\n\nstruct a batch of samples and only perform the forward stage with Transformer base model since the model with different positional encoding methods would perform different numbers of decoding steps in practical translation scenario. We perform the forward stage with the same batch 10 times and record the time consumed by the model. As shown in Figure 2, all methods exhibit similar time complexity, with the exception of the RPE and AT5, which is obviously more time-consuming.\n\nFurthermore, we conduct an analysis of the GPU memory consumption of the Transformer base model with different methods on the WMT 2014 En-De and En-Fr tasks. This is done to determine their relative space complexity. The results of this analysis can be found in Appendix A.2, which demonstrate that all methods exhibit comparable space complexity, except for RPE, which consumes more GPU memory on the WMT 2014 En-Fr task.\n\nScaling to Transformer Big We also implement these methods in the Transformer big model to observe the performance when scaling to big models. As shown in Table 2, the reproduced SAPE and RPE achieve competitive or better results in terms of BLEU compared with their reported results (Vaswani et al., 2017; Shaw et al., 2018). Besides, the PosNet-Embed achieves better performance than other methods, especially its statistically significant improvement on most results with significance level 0.05/0.10."
+    },
+    {
+      "source_window_id": "2023.acl-long.534::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "discussion",
+      "evidence": "Effect of Positional kernel's dimension As stated previously in Equation (22), the positional kernel tensor $\\Phi$ has the shape of $L\\times d_1\\times d_2$ . In practice, we use $d_{1} = d_{2} = d_{p}$ . To further investigate the effect of the dimension $d_p$ , we conduct experiments on PosNet-Embed with a series of varying $d_p$ and evaluate the performance of dif\n\n![](images/2da3e664e3330fc7a2886975ae22bdd44f070d6c05546d5066e3ab86dc6f40ee.jpg)  \n(a) n-gram chr F2 + 2-gram word F2\n\n![](images/3c698b623d3bfa55699eabd21e283aa298987f512118f891a95ab1f7abc52de1.jpg)  \n(b) 6-gram chr F2 + n-gram word F2\n\n![](images/0574bffd3021c6168e84fd6a1498397b575a34baae9a1edfe9294f9fa69c670a.jpg)  \n(c) n-gram word precision   \nFigure 4: Performance gap of Transformer base model with the proposed method over the baseline method on WMT14 En-De with different character or word n-grams in (a) (b) ChrF and (c) BLEU.\n\nferent $d_p$ with the BLEU score. Figure 3 shows the result of ablation experiment on the validation dataset, i.e. the newstest2013 dataset. Notably, $d_p = 96$ has a detrimental effect on the performance of PosNet-Embed and $d_p = 128$ with the best performance. Thereby, we conduct the experiments on the PosNet-Embed in Table 1 with $d_1 = d_2 = 128$ . Besides, we use $d_1 = d_2 = 256$ for the Transformer big model, which is just twice the size of the base model.\n\nEvaluation with different n-grams The default evaluation setup is 6-gram character F2 and 2-gram word F2 for $\\mathrm{ChrF}++$ , 4-gram word precision for BLEU. However, since the PosNet preserves positional information through concatenating the weighted value vectors, it is intriguing what the performance is when evaluating with coarser-grain unit. Therefore, to observe the performance superiority of the proposed method on coarser grain, we evaluate the performance gap of PosNet-Embed over SAPE on WMT14 En-De with different n-grams. Specifically, we test the $\\mathrm{ChrF}$ with n-gram character F2 and 2-gram word F2 ( $1 \\leq n \\leq 30$ ), the $\\mathrm{ChrF}$ with 6-gram character F2 and n-gram word F2 ( $1 \\leq n \\leq 8$ ), and the BLEU with n-gram word precision ( $1 \\leq n \\leq 8$ ) respectively. As shown in Figure 4, it is amazing that the performance superiority of the PosNet-Embed over the SAPE consistently enlarges as the evaluating grain becomes coarser, i.e. bigger n-gram character or word. We speculate that this is attributable to the weight concatenation of PosNet since the concatenation operation promotes the model to capture the whole context precisely according to the word order of a sequence, which preserves the coarser-grained feature."
+    },
+    {
+      "source_window_id": "2023.acl-long.534::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "appendix",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.534::appendix::A.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.2",
+      "section_title": "gpu memory consumption",
+      "evidence": "The results of GPU memory consumption is presented in Table 3. A lower GPU memory consumption translates to reduced space complexity, which is a desirable trait."
+    },
+    {
+      "source_window_id": "2023.acl-long.534::appendix::A.3",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.3",
+      "section_title": "illustration of the posnet",
+      "evidence": "The illustration of applying the PosNet to Transformer is presented in Figure 5.\n\n![](images/e4288e583e30c4aa556a8894fa6541db848291addb5963e9a2463079364d6b61.jpg)  \n(a) Embedding Layer\n\n![](images/bd7ce31cfd7e78d4f869ef49172dd09ff5fa1637a56d7a2cd345ba1282ab4a97.jpg)  \n(b) Attention Layer\n\n![](images/30f2d7fd4fe638755e19ac1110b99ece0b2b7327b33cb98ef6ab66f407b6f89d.jpg)  \n(c) Embedding-level PosNet   \nFigure 5: Illustration of applying the PosNet to (a) embedding layer and (b) attention layer. (c) illustrates embedding-level PosNet. Attention-level PosNet is identical to embedding-level PosNet, excluding $\\mathbf{W}_1$ and $\\mathbf{W}_2$ . $\\alpha$ is the attention score and $\\sigma$ is the non-linear activation function.\n\nTable 3: GPU Memory Consumption of Transformer base model with different methods on WMT 2014 En-De and En-Fr tasks.   \n\n<table><tr><td>Approach</td><td>En-De/GB (↓)</td><td>En-Fr/GB (↓)</td></tr><tr><td>w/o PE</td><td>6.3</td><td>9.4</td></tr><tr><td>SAPE</td><td>6.4</td><td>9.4</td></tr><tr><td>LAPE</td><td>6.4</td><td>9.4</td></tr><tr><td>RPE</td><td>6.8</td><td>10.6</td></tr><tr><td>Adaptive-T5</td><td>6.4</td><td>9.4</td></tr><tr><td>PosNet</td><td>6.8</td><td>9.6</td></tr></table>"
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce RTX 3090",
+        "num": null
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2023\\2023.acl-long.534\\auto\\full.md",
+    "source_md_sha256": "71600cf8bce38e5886a4345d52757c5da76116b1195dab0e5c3ec0ab3cf0bb1f",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

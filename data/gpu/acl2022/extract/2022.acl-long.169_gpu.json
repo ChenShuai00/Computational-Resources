@@ -1,0 +1,162 @@
+{
+  "paper_id": "2022.acl-long.169",
+  "candidate_windows": [
+    {
+      "window_id": "2022.acl-long.169::sections::4",
+      "paper_id": "2022.acl-long.169",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.169::sections::4.2",
+      "paper_id": "2022.acl-long.169",
+      "section_number": "4.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "Training. We implement baselines and our approach under Transformer<sub>base</sub> and Transformer<sub>big</sub> settings based on the open-source toolkit fairseq\n\n(Ott et al., 2019) with mixed precision (Ott et al., 2018). We train all the translation models with the cross-entropy loss for $100\\mathrm{k}$ steps, and further finetune them with different adaptive training objectives for another $200\\mathrm{k}$ steps on both tasks. The target-side language model is a Transformer decoder without the cross-attention modules, which is trained synchronously with the translation model. The training data for the language model is the target-side monolingual data from the NMT training set. All the experiments are conducted on 8 NVIDIA Tesla V100 GPUs, and each batch on each GPU contains approximately 4096 tokens. We use Adam optimizer (Kingma and Ba, 2014) with 4000 warmup steps to optimize models. More training details are listed in Appendix B.\n\nIn our experiments, we have not been able to bring further improvement to our approach through simply enhancing the language model. Our conjecture is that stronger language models will generate sharper distribution, and will increase the variances of CBMI values when used as the denominator, resulting in detriment for NMT model training. We will leave this for the future work.\n\nEvaluation. During inference, we set beam size to 4 and length penalty to 0.6 for both tasks. We use multibleu.perl to calculate case-sensitive BLEU for WMT14 En-De and SacreBLEU<sup>6</sup> to calculate case-sensitive BLEU for WMT19 Zh-En. We use the paired bootstrap resampling methods (Koehn, 2004) for the statistical significance test.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.169::sections::5.2",
+      "paper_id": "2022.acl-long.169",
+      "section_number": "5.2",
+      "section_title": "costs of computing and storage",
+      "normalized_section_title": "costs of computing and storage",
+      "window_text": "In this section, we compare our CBMI-based approach with the BMI-based adaptive training in terms of the number of trainable parameters, the CPU computational costs of pre-processing, the GPU computational costs of training, and disk cost for storing intermediate variables. As shown in Table 3, the vanilla BMI-based approach requires additional 12 CPU hours to obtain the BMI values during the pre-processing stage, and about 2.0 GB of disk space to store these BMI values. To make matters worse, the costs of CPU calculation and disk storage will increase dozens of times (approximately equal to the average length of target sentences) when conducting the target-context-aware calculations for BMI. In contrast, our CBMI-based approach gets rid of the CPU computational costs, and thus has no additional storage overhead. Although we introduce an additional LM to calculate the CBMI values, it only brings a slight increase of model parameters and GPU calculation cost during model training. Particularly, our proposed method simply modifies the training loss of NMT, and thus has no effect on the inference speed. In short, our CBMI can be efficiently calculated during model training without any pre-specific statistical calculations and storage overhead, which makes it feasible to supplement target context information for statistical metrics.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.169::appendix::B",
+      "paper_id": "2022.acl-long.169",
+      "section_number": "B",
+      "section_title": "training hyperparameters and model configurations",
+      "normalized_section_title": "training hyperparameters and model configurations",
+      "window_text": "To assure the reproducibility of our experimental results, we provide the training details of our method and the model configurations in Table 7. The NMT models and LMs in our method use the same corpus and BPE vocabulary, so that they can generate two corresponding probability distributions for the same token and calculate its CBMI during training. Our LMs have the same model architecture and configuration with the NMT models' decoder except for the cross-attention module, yet we do not share their embedding layers for higher performance.\n\nTable 6: The complete results of Table 1 containing mean values and standard deviations of BLEU scores.   \n\n<table><tr><td>Model</td><td>WMT14 En→De</td><td>WMT19 Zh→En</td></tr><tr><td>Transformerbase (Vaswani et al., 2017)</td><td>28.10 ± 0.20</td><td>25.36 ± 0.19</td></tr><tr><td>+ Freq-Exponential (Gu et al., 2020)</td><td>28.43 ± 0.03</td><td>24.99 ± 0.01</td></tr><tr><td>+ Freq-Chi-Square (Gu et al., 2020)</td><td>28.47 ± 0.24</td><td>25.43 ± 0.72</td></tr><tr><td>+ BMI-adaptive (Xu et al., 2021)</td><td>28.56 ± 0.09</td><td>25.77 ± 0.04</td></tr><tr><td>+ Focal Loss (Lin et al., 2017)</td><td>28.43 ± 0.10</td><td>25.37 ± 0.25</td></tr><tr><td>+ Anti-Focal Loss (Raunak et al., 2020)</td><td>28.65 ± 0.13</td><td>25.50 ± 0.33</td></tr><tr><td>+ Self-Paced Learning (Wan et al., 2020)</td><td>28.69 ± 0.22</td><td>25.75 ± 0.25</td></tr><tr><td>+ Simple Fusion (Stahlberg et al., 2018)</td><td>27.82 ± 0.17</td><td>23.91 ± 0.22</td></tr><tr><td>+ LM Prior (Baziotis et al., 2020)</td><td>28.27 ± 0.10</td><td>25.71 ± 0.42</td></tr><tr><td>+ CBMI-weight (ours)</td><td>29.01 ± 0.08**</td><td>26.21 ± 0.30**</td></tr><tr><td>Transformerbig (Vaswani et al., 2017)</td><td>29.31 ± 0.29</td><td>25.48 ± 0.31</td></tr><tr><td>+ Freq-Exponential (Gu et al., 2020)</td><td>29.66 ± 0.04</td><td>25.57 ± 0.15</td></tr><tr><td>+ Freq-Chi-Square (Gu et al., 2020)</td><td>29.64 ± 0.45</td><td>25.64 ± 0.23</td></tr><tr><td>+ BMI-adaptive (Xu et al., 2021)</td><td>29.69 ± 0.15</td><td>25.81 ± 0.13</td></tr><tr><td>+ Focal Loss (Lin et al., 2017)</td><td>29.65 ± 0.11</td><td>25.54 ± 0.09</td></tr><tr><td>+ Anti-Focal Loss (Raunak et al., 2020)</td><td>29.72 ± 0.16</td><td>25.64 ± 0.18</td></tr><tr><td>+ Self-Paced Learning (Wan et al., 2020)</td><td>29.85 ± 0.18</td><td>25.88 ± 0.23</td></tr><tr><td>+ CBMI-weight (ours)</td><td>30.12 ± 0.13*</td><td>26.30 ± 0.26*</td></tr></table>\n\nTable 7: Training hyperparameters and model configurations of our method.   \n\n<table><tr><td>Hyperparameters</td><td>Base</td><td>Big</td></tr><tr><td>Embedding Size</td><td>512</td><td>1024</td></tr><tr><td>Encoder Layers</td><td>6</td><td>6</td></tr><tr><td>Decoder Layers</td><td>6</td><td>6</td></tr><tr><td>Attention Heads</td><td>8</td><td>16</td></tr><tr><td>LM Layers</td><td>6</td><td>6</td></tr><tr><td>LM Attention Heads</td><td>8</td><td>16</td></tr><tr><td>Residual Dropout</td><td>0.1</td><td>0.3</td></tr><tr><td>Attention Dropout</td><td>0.1</td><td>0.1</td></tr><tr><td>Activation Dropout</td><td>0.1</td><td>0.1</td></tr><tr><td>Learning Rate</td><td>7e-4</td><td>5e-4</td></tr><tr><td>Learning Rate Decay</td><td>inverse sqrt</td><td>inverse sqrt</td></tr><tr><td>Warmup Steps</td><td>4000</td><td>4000</td></tr><tr><td>Layer Normalization</td><td>PostNorm</td><td>PostNorm</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.169::appendix::C",
+      "paper_id": "2022.acl-long.169",
+      "section_number": "C",
+      "section_title": "implementation details for baseline systems",
+      "normalized_section_title": "implementation details for baseline systems",
+      "window_text": "To make our experimental comparison more convincing, we present the details of hyperparameters involved in the baseline systems described in Section 4.4.\n\nFreq-Exponential. Following the best hyperparameter setting in (Gu et al., 2020), we set A to 1.0 and T to 1.75 for the En-De task, and A to 1.0 and T to 0.35 for the Zh-En task.\n\nFreq-Chi-Square. Similarly, we set A to 1.0 and T to 2.50 for the En-De task, and A to 1.0 and T to 1.75 for the Zh-En task according to (Gu et al., 2020).\n\nBMI-adaptive. According to the settings in (Xu et al., 2021), we set S to 0.15 and B to 0.8 for the En-De task and S to 0.1 and B to 1.0 for the Zh-En task.\n\nFocal Loss. As suggested in (Lin et al., 2017), we fix $\\gamma$ to 1.0 and search a $\\alpha$ among [0.1, 0.5] which performs best on the validation sets of two tasks. Finally, we set $\\alpha$ to 0.1 for both tasks.\n\nAnti-Focal Loss. Similar with the settings in focal loss, we also fix $\\gamma$ to 1.0 and tune $\\alpha$ for two tasks. Lastly, we also set $\\alpha$ to 0.1 for both tasks.\n\nLM Prior. We set the softmax temperature $\\tau$ to 2.0 following the settings in (Baziotis et al., 2020) while $\\lambda$ to 0.1 according to the performances on the validation sets.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.acl-long.169::sections::4.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Training. We implement baselines and our approach under Transformer<sub>base</sub> and Transformer<sub>big</sub> settings based on the open-source toolkit fairseq\n\n(Ott et al., 2019) with mixed precision (Ott et al., 2018). We train all the translation models with the cross-entropy loss for $100\\mathrm{k}$ steps, and further finetune them with different adaptive training objectives for another $200\\mathrm{k}$ steps on both tasks. The target-side language model is a Transformer decoder without the cross-attention modules, which is trained synchronously with the translation model. The training data for the language model is the target-side monolingual data from the NMT training set. All the experiments are conducted on 8 NVIDIA Tesla V100 GPUs, and each batch on each GPU contains approximately 4096 tokens. We use Adam optimizer (Kingma and Ba, 2014) with 4000 warmup steps to optimize models. More training details are listed in Appendix B.\n\nIn our experiments, we have not been able to bring further improvement to our approach through simply enhancing the language model. Our conjecture is that stronger language models will generate sharper distribution, and will increase the variances of CBMI values when used as the denominator, resulting in detriment for NMT model training. We will leave this for the future work.\n\nEvaluation. During inference, we set beam size to 4 and length penalty to 0.6 for both tasks. We use multibleu.perl to calculate case-sensitive BLEU for WMT14 En-De and SacreBLEU<sup>6</sup> to calculate case-sensitive BLEU for WMT19 Zh-En. We use the paired bootstrap resampling methods (Koehn, 2004) for the statistical significance test.",
+      "section_number": "4.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.acl-long.169::sections::4.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100",
+      "cleaned_hardware_name": "nvidia tesla v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "4.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "Training. We implement baselines and our approach under Transformer<sub>base</sub> and Transformer<sub>big</sub> settings based on the open-source toolkit fairseq\n\n(Ott et al., 2019) with mixed precision (Ott et al., 2018). We train all the translation models with the cross-entropy loss for $100\\mathrm{k}$ steps, and further finetune them with different adaptive training objectives for another $200\\mathrm{k}$ steps on both tasks. The target-side language model is a Transformer decoder without the cross-attention modules, which is trained synchronously with the translation model. The training data for the language model is the target-side monolingual data from the NMT training set. All the experiments are conducted on 8 NVIDIA Tesla V100 GPUs, and each batch on each GPU contains approximately 4096 tokens. We use Adam optimizer (Kingma and Ba, 2014) with 4000 warmup steps to optimize models. More training details are listed in Appendix B.\n\nIn our experiments, we have not been able to bring further improvement to our approach through simply enhancing the language model. Our conjecture is that stronger language models will generate sharper distribution, and will increase the variances of CBMI values when used as the denominator, resulting in detriment for NMT model training. We will leave this for the future work.\n\nEvaluation. During inference, we set beam size to 4 and length penalty to 0.6 for both tasks. We use multibleu.perl to calculate case-sensitive BLEU for WMT14 En-De and SacreBLEU<sup>6</sup> to calculate case-sensitive BLEU for WMT19 Zh-En. We use the paired bootstrap resampling methods (Koehn, 2004) for the statistical significance test.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2022.acl-long.169::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2022.acl-long.169::sections::5.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.2",
+      "section_title": "costs of computing and storage",
+      "evidence": "In this section, we compare our CBMI-based approach with the BMI-based adaptive training in terms of the number of trainable parameters, the CPU computational costs of pre-processing, the GPU computational costs of training, and disk cost for storing intermediate variables. As shown in Table 3, the vanilla BMI-based approach requires additional 12 CPU hours to obtain the BMI values during the pre-processing stage, and about 2.0 GB of disk space to store these BMI values. To make matters worse, the costs of CPU calculation and disk storage will increase dozens of times (approximately equal to the average length of target sentences) when conducting the target-context-aware calculations for BMI. In contrast, our CBMI-based approach gets rid of the CPU computational costs, and thus has no additional storage overhead. Although we introduce an additional LM to calculate the CBMI values, it only brings a slight increase of model parameters and GPU calculation cost during model training. Particularly, our proposed method simply modifies the training loss of NMT, and thus has no effect on the inference speed. In short, our CBMI can be efficiently calculated during model training without any pre-specific statistical calculations and storage overhead, which makes it feasible to supplement target context information for statistical metrics."
+    },
+    {
+      "source_window_id": "2022.acl-long.169::appendix::B",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B",
+      "section_title": "training hyperparameters and model configurations",
+      "evidence": "To assure the reproducibility of our experimental results, we provide the training details of our method and the model configurations in Table 7. The NMT models and LMs in our method use the same corpus and BPE vocabulary, so that they can generate two corresponding probability distributions for the same token and calculate its CBMI during training. Our LMs have the same model architecture and configuration with the NMT models' decoder except for the cross-attention module, yet we do not share their embedding layers for higher performance.\n\nTable 6: The complete results of Table 1 containing mean values and standard deviations of BLEU scores.   \n\n<table><tr><td>Model</td><td>WMT14 En→De</td><td>WMT19 Zh→En</td></tr><tr><td>Transformerbase (Vaswani et al., 2017)</td><td>28.10 ± 0.20</td><td>25.36 ± 0.19</td></tr><tr><td>+ Freq-Exponential (Gu et al., 2020)</td><td>28.43 ± 0.03</td><td>24.99 ± 0.01</td></tr><tr><td>+ Freq-Chi-Square (Gu et al., 2020)</td><td>28.47 ± 0.24</td><td>25.43 ± 0.72</td></tr><tr><td>+ BMI-adaptive (Xu et al., 2021)</td><td>28.56 ± 0.09</td><td>25.77 ± 0.04</td></tr><tr><td>+ Focal Loss (Lin et al., 2017)</td><td>28.43 ± 0.10</td><td>25.37 ± 0.25</td></tr><tr><td>+ Anti-Focal Loss (Raunak et al., 2020)</td><td>28.65 ± 0.13</td><td>25.50 ± 0.33</td></tr><tr><td>+ Self-Paced Learning (Wan et al., 2020)</td><td>28.69 ± 0.22</td><td>25.75 ± 0.25</td></tr><tr><td>+ Simple Fusion (Stahlberg et al., 2018)</td><td>27.82 ± 0.17</td><td>23.91 ± 0.22</td></tr><tr><td>+ LM Prior (Baziotis et al., 2020)</td><td>28.27 ± 0.10</td><td>25.71 ± 0.42</td></tr><tr><td>+ CBMI-weight (ours)</td><td>29.01 ± 0.08**</td><td>26.21 ± 0.30**</td></tr><tr><td>Transformerbig (Vaswani et al., 2017)</td><td>29.31 ± 0.29</td><td>25.48 ± 0.31</td></tr><tr><td>+ Freq-Exponential (Gu et al., 2020)</td><td>29.66 ± 0.04</td><td>25.57 ± 0.15</td></tr><tr><td>+ Freq-Chi-Square (Gu et al., 2020)</td><td>29.64 ± 0.45</td><td>25.64 ± 0.23</td></tr><tr><td>+ BMI-adaptive (Xu et al., 2021)</td><td>29.69 ± 0.15</td><td>25.81 ± 0.13</td></tr><tr><td>+ Focal Loss (Lin et al., 2017)</td><td>29.65 ± 0.11</td><td>25.54 ± 0.09</td></tr><tr><td>+ Anti-Focal Loss (Raunak et al., 2020)</td><td>29.72 ± 0.16</td><td>25.64 ± 0.18</td></tr><tr><td>+ Self-Paced Learning (Wan et al., 2020)</td><td>29.85 ± 0.18</td><td>25.88 ± 0.23</td></tr><tr><td>+ CBMI-weight (ours)</td><td>30.12 ± 0.13*</td><td>26.30 ± 0.26*</td></tr></table>\n\nTable 7: Training hyperparameters and model configurations of our method.   \n\n<table><tr><td>Hyperparameters</td><td>Base</td><td>Big</td></tr><tr><td>Embedding Size</td><td>512</td><td>1024</td></tr><tr><td>Encoder Layers</td><td>6</td><td>6</td></tr><tr><td>Decoder Layers</td><td>6</td><td>6</td></tr><tr><td>Attention Heads</td><td>8</td><td>16</td></tr><tr><td>LM Layers</td><td>6</td><td>6</td></tr><tr><td>LM Attention Heads</td><td>8</td><td>16</td></tr><tr><td>Residual Dropout</td><td>0.1</td><td>0.3</td></tr><tr><td>Attention Dropout</td><td>0.1</td><td>0.1</td></tr><tr><td>Activation Dropout</td><td>0.1</td><td>0.1</td></tr><tr><td>Learning Rate</td><td>7e-4</td><td>5e-4</td></tr><tr><td>Learning Rate Decay</td><td>inverse sqrt</td><td>inverse sqrt</td></tr><tr><td>Warmup Steps</td><td>4000</td><td>4000</td></tr><tr><td>Layer Normalization</td><td>PostNorm</td><td>PostNorm</td></tr></table>"
+    },
+    {
+      "source_window_id": "2022.acl-long.169::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "implementation details for baseline systems",
+      "evidence": "To make our experimental comparison more convincing, we present the details of hyperparameters involved in the baseline systems described in Section 4.4.\n\nFreq-Exponential. Following the best hyperparameter setting in (Gu et al., 2020), we set A to 1.0 and T to 1.75 for the En-De task, and A to 1.0 and T to 0.35 for the Zh-En task.\n\nFreq-Chi-Square. Similarly, we set A to 1.0 and T to 2.50 for the En-De task, and A to 1.0 and T to 1.75 for the Zh-En task according to (Gu et al., 2020).\n\nBMI-adaptive. According to the settings in (Xu et al., 2021), we set S to 0.15 and B to 0.8 for the En-De task and S to 0.1 and B to 1.0 for the Zh-En task.\n\nFocal Loss. As suggested in (Lin et al., 2017), we fix $\\gamma$ to 1.0 and search a $\\alpha$ among [0.1, 0.5] which performs best on the validation sets of two tasks. Finally, we set $\\alpha$ to 0.1 for both tasks.\n\nAnti-Focal Loss. Similar with the settings in focal loss, we also fix $\\gamma$ to 1.0 and tune $\\alpha$ for two tasks. Lastly, we also set $\\alpha$ to 0.1 for both tasks.\n\nLM Prior. We set the softmax temperature $\\tau$ to 2.0 following the settings in (Baziotis et al., 2020) while $\\lambda$ to 0.1 according to the performances on the validation sets."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2022\\2022.acl-long.169\\auto\\full.md",
+    "source_md_sha256": "6c33f6ad3be0f0f5ab3ea74d279993c7f549bf3af956568c4408019ee2b65c1e",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

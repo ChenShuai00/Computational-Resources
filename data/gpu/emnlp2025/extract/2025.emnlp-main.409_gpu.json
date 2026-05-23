@@ -1,0 +1,122 @@
+{
+  "paper_id": "2025.emnlp-main.409",
+  "candidate_windows": [
+    {
+      "window_id": "2025.emnlp-main.409::sections::3.1",
+      "paper_id": "2025.emnlp-main.409",
+      "section_number": "3.1",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "An autoregressive LLMs generates an output sequence $\\mathbf { y } = [ y _ { 1 } , \\dots , y _ { | \\mathbf { y } | } ]$ conditioned on an input sequence X.At each time step $t$ ,it selects one token from a finite vocabulary $\\mathcal { V } = \\{ v _ { 1 } , \\ldots , v _ { | \\mathcal { V } | } \\}$\n\nKD minimizes the discrepancy between the teacher's distribution $p ( y _ { t } \\mid \\mathbf { y } _ { < t } , \\mathbf { x } )$ and the student's distribution $q _ { \\theta } ( y _ { t } \\mid \\mathbf { y } _ { < t } , \\mathbf { x } )$ , where $\\theta$ denotes the student parameters and $\\mathbf { y } _ { < t } = [ y _ { 1 } , \\dots , y _ { t - 1 } ]$ are the tokens generated before step $t$\n\nDuring KD, the loss is typically instantiated as either the $F K L$ or the $R K L$ . At time step $t$ ，the contribution of each divergence for a token $v _ { i } \\in \\mathcal V$\n\nis defined as:\n\n$$\n\\begin{array} { r l r } & { } & { D _ { \\mathrm { F K L } } ^ { ( t , i ) } ( p , q _ { \\theta } ) = p ( v _ { i } | \\mathbf { y } _ { < t } , \\mathbf { x } ) \\log \\frac { p ( v _ { i } | \\mathbf { y } _ { < t } , \\mathbf { x } ) } { q _ { \\theta } ( v _ { i } | \\mathbf { y } _ { < t } , \\mathbf { x } ) } , } \\\\ & { } & { ( 1 ) } \\\\ & { } & { D _ { \\mathrm { R K L } } ^ { ( t , i ) } ( p , q _ { \\theta } ) = q _ { \\theta } ( v _ { i } | \\mathbf { y } _ { < t } , \\mathbf { x } ) \\log \\frac { q _ { \\theta } ( v _ { i } | \\mathbf { y } _ { < t } , \\mathbf { x } ) } { p ( v _ { i } | \\mathbf { y } _ { < t } , \\mathbf { x } ) } . } \\end{array}\n$$\n\nTraining ObjectiveWe accumulate the tokenlevel divergences (from Equations 1 and 2) over all time steps and vocabulary entries to obtain the total forward and reverse KL divergence losses:\n\n$$\n\\mathcal { L } _ { \\mathrm { { F K L } } } = \\sum _ { t = 1 } ^ { | \\mathbf { y } | } \\sum _ { i = 1 } ^ { | \\mathcal { V } | } D _ { \\mathrm { { F K L } } } ^ { ( t , i ) } \\big ( p , q _ { \\theta } \\big ) ,\n$$\n\n$$\n\\mathcal { L } _ { \\mathrm { { R K L } } } = \\sum _ { t = 1 } ^ { | \\mathbf { y } | } \\sum _ { i = 1 } ^ { | \\mathcal { V } | } D _ { \\mathrm { { R K L } } } ^ { ( t , i ) } \\big ( p , q _ { \\theta } \\big ) .\n$$",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.409::sections::5",
+      "paper_id": "2025.emnlp-main.409",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.409::sections::5.1",
+      "paper_id": "2025.emnlp-main.409",
+      "section_number": "5.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Training Configuration. We follow the experimental setup of Zhang et al. (2024b) to evaluate ToDi. For training，we use the databricks/dolly-15k dataset, which comprises 11K training samples,1K validation samples,and 500 test samples.As student models for the main experiment, we employ GPT2-120M (Radford et al., 2019) and TinyLLaMA-1.1B (Zhang et al., 2024a). We train GPT2-120M via full fine-tuning using GPT2-1.5B as the teacher model, whereas we train TinyLLaMA-1.1B with LoRA (Hu et al., 2022) using LLaMA2-7B (Touvron et al., 2023) as the teacher.\n\nEvaluation Protocol. We conduct performance evaluation following the protocol of Gu et al. (2024),using the ROUGE-L metric (Lin, 2004). We assess instruction-following ability across five datasets: DollyEval, S-NI (Wang et al., 2022), UnNI (Honovich et al., 2023)， SelfInst (Wang et al., 2023), and VicunaEval (Zheng et al., 2023). We repeat each evaluation with five different random seeds, and we report the average scores.Further details of the experimental setup are provided in Appendix D.\n\nBaseline Methods. We use the following methods as baselines to compare the performance of ToDi:\n\n· SFT: Fine-tuning the student model directly on the dataset without knowledge distillation.   \n· FKL/RKL (Hinton et al., 2015; Gu et al., 2024): Knowledge distillation using Forward or Reverse KL divergence.   \n· JS/TVD (Wen et al., 2023): Symmetric divergences—Jensen-Shannon and Total Variation—minimizing the distance between the teacher and student distributions.   \n· SKL/SRKL (Ko et al., 2024): Skewed KL and Skewed Reverse KL, which mix teacher and student distributions at ratio $\\lambda$ ; SKL uses $\\lambda p + ( 1 - \\lambda ) q _ { \\theta }$ while SRKL uses $( 1 - \\lambda ) p +$ $\\lambda q _ { \\theta }$   \n· AKL (Wu et al., 2025): Adaptive KL that combines FKL and RKL by considering head-tail differences in the distributions.\n\nTo evaluate ToDi's performance, we select various divergence-based knowledge distillation methods as baselines and compare their performance based on the choice of divergence.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.409::appendix::D",
+      "paper_id": "2025.emnlp-main.409",
+      "section_number": "D",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.409::appendix::D.1",
+      "paper_id": "2025.emnlp-main.409",
+      "section_number": "D.1",
+      "section_title": "training details",
+      "normalized_section_title": "training details",
+      "window_text": "Training was conducted based on the setup of Zhang et al. (2024b). For GPT2-1.5B, we employed the publicly released model from Gu et al. (2024), while GPT2-120M was trained for 20 epochs with a learning rate of $5 \\times 1 0 ^ { - 4 }$ . The TinyLLaMA and LLaMA2 models were trained for 10 epochs with a learning rate of $1 \\times 1 0 ^ { - 3 }$ . All experiments were carried out on a single RTX A6OOO GPU. The training loss was composed by combining the KD loss and the cross-entropy loss in equal proportions (0.5:0.5). Detailed hyperparameter settings for each model are summarized in Table 7.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.emnlp-main.409::appendix::D.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX A6000",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Training was conducted based on the setup of Zhang et al. (2024b). For GPT2-1.5B, we employed the publicly released model from Gu et al. (2024), while GPT2-120M was trained for 20 epochs with a learning rate of $5 \\times 1 0 ^ { - 4 }$ . The TinyLLaMA and LLaMA2 models were trained for 10 epochs with a learning rate of $1 \\times 1 0 ^ { - 3 }$ . All experiments were carried out on a single RTX A6OOO GPU. The training loss was composed by combining the KD loss and the cross-entropy loss in equal proportions (0.5:0.5). Detailed hyperparameter settings for each model are summarized in Table 7.",
+      "section_number": "D.1",
+      "section_title": "training details",
+      "normalized_section_title": "training details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.emnlp-main.409::appendix::D.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX A6000",
+      "cleaned_hardware_name": "rtx a6000",
+      "normalized_hardware_name": "NVIDIA RTX A6000",
+      "benchmark_hardware_name": "NVIDIA RTX A6000",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "D.1",
+      "section_title": "training details",
+      "normalized_section_title": "training details",
+      "evidence": "Training was conducted based on the setup of Zhang et al. (2024b). For GPT2-1.5B, we employed the publicly released model from Gu et al. (2024), while GPT2-120M was trained for 20 epochs with a learning rate of $5 \\times 1 0 ^ { - 4 }$ . The TinyLLaMA and LLaMA2 models were trained for 10 epochs with a learning rate of $1 \\times 1 0 ^ { - 3 }$ . All experiments were carried out on a single RTX A6OOO GPU. The training loss was composed by combining the KD loss and the cross-entropy loss in equal proportions (0.5:0.5). Detailed hyperparameter settings for each model are summarized in Table 7.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "D.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA RTX A6000",
+        "num": 1
+      }
+    ]
+  }
+}

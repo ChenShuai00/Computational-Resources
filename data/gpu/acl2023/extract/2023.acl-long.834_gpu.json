@@ -1,0 +1,162 @@
+{
+  "paper_id": "2023.acl-long.834",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.834::sections::4",
+      "paper_id": "2023.acl-long.834",
+      "section_number": "4",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "Our goal is to identify potential positive and negative samples for the anchor $\\left([Q||F]^{(i)},S^{(i)}\\right)$ . Suppose the anchor is the one shown in the top three rows of Table 3. Bold italicized tokens are redundant between the question and the fact, e.g. \"revenue\", \"2019\", and \"2020\". Those terms are often used by the retriever to find the correct facts. They are also used by the generator to find the correct order of operands.\n\nThere are also terms that are unique to the question, i.e. \"What\", \"the net change to\", \"from\", and \"to\" (highlighted in blue). In CompAQT, the authors showed that these can be used as indicators for the operators. Lastly, there are terms that are unique to the facts, i.e. \"was $80M\" and \"was$ 60M\" (red italicized tokens). These can be used as indicators for the operands. We use these heuristics to guide our sampling strategy.\n\nWe flag all spans in the question that do not overlap with the facts, i.e. underlined blue segments. Those spans serve as candidate intervention spans. In the example from Table 3, this results in four candidates: \"What\", \"the net change in\", \"from\", and \"to\".\n\nNext, we seek a positive and a negative example within the training set. A positive example is a sample in which, despite possible changes in the question, the operators in the output remain consistent with the operators in the anchor. Table 3 shows one such example. Several terms have been altered in the question. However, we would only focus on the changes in the candidate spans. Here, \"was\" has changed to \"is\", \"net change\" has changed to \"difference\", \"from\" to \"between\" and \"to\" to \"and\". This results in a token-level Levenshtein distance of 5 (four edits and one insertion) (Yujuan and Bo, 2007). We ignore the change from \"revenue\" to \"operating expenses\" and from \"2019\" to \"2018\", because those changes have occurred outside of our candidate spans and only correspond to operands.\n\nA negative example is a sample in which exactly one output operator is altered, deleted, or added. Table 3 shows one such example. Here, the output includes a new operator divide. The question has also been altered with a token-level Levenshtein distance of 4.\n\nThe given positive and negative example can now be plugged into Equation 2. Instead of a fixed margin, we use the edit distances mentioned before to dynamically adjust the margin. Let $\\mathrm{NLD}_{\\mathrm{pos}}^{(i)}$ and $\\mathrm{NLD}_{\\mathrm{neg}}^{(i)}$ be the normalized, token-level Levenshtein edit distance between the anchor and the positive example, and the negative example, respectively. We set the margin to: $\\alpha^{(i)} = 1 - |\\mathrm{NLD}_{\\mathrm{neg}}^{(i)} - \\mathrm{NLD}_{\\mathrm{pos}}^{(i)}|$\n\nThis encourages a larger margin for cases where the anchor is equally similar to the positive and the negative examples, and the model might have a harder time picking up on the nuances of each component.\n\nTable 3: Example of positive and negative sampling using counterfactual components. Blue underlined text indicates components that are unique to the question ( candidates for intervention). These terms often indicate an operator. Red italicized text indicates terms that are unique to the facts. These terms often indicate operands. Bold italicized text indicates terms that are shared between the question and facts. These terms often indicate metrics.   \n\n<table><tr><td rowspan=\"4\">Anchor</td><td>Question</td><td>What was the net change in revenue from 2019 to 2020?</td></tr><tr><td>Facts</td><td>2019 revenue was $80M.2020 revenue was $60M.</td></tr><tr><td>Program</td><td>subtract(80, 60)NONE(NONE, NONE)</td></tr><tr><td>Candidate intervention spans</td><td>What the net change in from to</td></tr><tr><td rowspan=\"3\">Positive sample</td><td>Question</td><td>What is the difference in operating expenses between 2018 and 2020?</td></tr><tr><td>Facts</td><td>2018 operating expenses were $35M.2020 operating expenses were $30M.</td></tr><tr><td>Program</td><td>subtract(35, 30)NONE(NONE, NONE)</td></tr><tr><td rowspan=\"3\">Negative sample</td><td>Question</td><td>What was the rate of change of operating income from 2018 to 2019?</td></tr><tr><td>Facts</td><td>2018 income from operating activities was $65M.2019 income from operating activities was $60M.</td></tr><tr><td>Program</td><td>subtract(65, 60)divide(#0, 65)</td></tr><tr><td rowspan=\"5\">Variables</td><td>Q(i)iS(i)i</td><td>{q1(i), q3(i), q4(i), q5(i), q6(i), q8(i), q10(i)}:what the net change in from tos1(i):NONE</td></tr><tr><td>Q(pos)(i)s(pos)(i)</td><td>{q1(i), q2(i), q3(i), q4(i), q5(i), q6(i), q10(i)}:what is the difference in between and s4(i):NONE</td></tr><tr><td>edit dist</td><td>5</td></tr><tr><td>Qneg(i)s neg(i)</td><td>{q1(i), q3(i), q4(i), q5(i), q6(i), q12(i)}:what the rate of change of to s4(i):divide</td></tr><tr><td>edit dist</td><td>4</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.834::sections::5",
+      "paper_id": "2023.acl-long.834",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.834::sections::5.2",
+      "paper_id": "2023.acl-long.834",
+      "section_number": "5.2",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "We apply our proposed auxiliary loss to three baselines: 1) FinQANet, originally developed for the FinQA dataset (Chen et al., 2021b). 2) TAGOP, originally developed for the TAT-QA dataset (Zhu et al., 2021). 3) Pointer-Verbalizer Network (PVN), originally proposed by Nourbakhsh et al. (2022). We also apply the CompAQT loss to each model as a secondary baseline in order to determine how CounterComp compares to an attention-alignment strategy.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.834::sections::5.4",
+      "paper_id": "2023.acl-long.834",
+      "section_number": "5.4",
+      "section_title": "settings",
+      "normalized_section_title": "settings",
+      "window_text": "Since we are focused on the generator, in the experiments discussed in this section we will use gold facts and encode the input using RoBERTa-large (Liu et al., 2019) $^5$ . We run the baselines with and without the additional $\\mathcal{L}_{\\mathrm{triplet}}$ for 50 epochs with a learning rate of $5\\mathrm{e} - 5$ , the Adam optimizer (Kingma and Ba, 2015) with $\\beta_{1} = 0.9$ and $\\beta_{2} = 0.999$ . At each step, we sample (with replacement) 5 positive and negative pairs per anchor, and add the average auxiliary triplet loss to the main model loss with a weight of $\\lambda$ . After a grid search with a step-size of 0.1, we set $\\lambda$ to 0.4 for all experiments. All experiments were conducted on 8 NVIDIA T4 GPU with 16 GBs of memory.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.834::appendix::B",
+      "paper_id": "2023.acl-long.834",
+      "section_number": "B",
+      "section_title": "training algorithm",
+      "normalized_section_title": "training algorithm",
+      "window_text": "Algorithm 1 details our pre-indexing, sampling, and training processes. Note that the algorithm is a simplified version of our implementation, e.g. it follows a basic SGD instead of a batch SGD process, and shows the process for only one epoch.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.834::sections::5.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA T4 16GB",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Since we are focused on the generator, in the experiments discussed in this section we will use gold facts and encode the input using RoBERTa-large (Liu et al., 2019) $^5$ . We run the baselines with and without the additional $\\mathcal{L}_{\\mathrm{triplet}}$ for 50 epochs with a learning rate of $5\\mathrm{e} - 5$ , the Adam optimizer (Kingma and Ba, 2015) with $\\beta_{1} = 0.9$ and $\\beta_{2} = 0.999$ . At each step, we sample (with replacement) 5 positive and negative pairs per anchor, and add the average auxiliary triplet loss to the main model loss with a weight of $\\lambda$ . After a grid search with a step-size of 0.1, we set $\\lambda$ to 0.4 for all experiments. All experiments were conducted on 8 NVIDIA T4 GPU with 16 GBs of memory.",
+      "section_number": "5.4",
+      "section_title": "settings",
+      "normalized_section_title": "settings"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.834::sections::5.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA T4 16GB",
+      "cleaned_hardware_name": "nvidia t4 16gb",
+      "normalized_hardware_name": "NVIDIA Tesla T4",
+      "benchmark_hardware_name": "NVIDIA Tesla T4",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "5.4",
+      "section_title": "settings",
+      "normalized_section_title": "settings",
+      "evidence": "Since we are focused on the generator, in the experiments discussed in this section we will use gold facts and encode the input using RoBERTa-large (Liu et al., 2019) $^5$ . We run the baselines with and without the additional $\\mathcal{L}_{\\mathrm{triplet}}$ for 50 epochs with a learning rate of $5\\mathrm{e} - 5$ , the Adam optimizer (Kingma and Ba, 2015) with $\\beta_{1} = 0.9$ and $\\beta_{2} = 0.999$ . At each step, we sample (with replacement) 5 positive and negative pairs per anchor, and add the average auxiliary triplet loss to the main model loss with a weight of $\\lambda$ . After a grid search with a step-size of 0.1, we set $\\lambda$ to 0.4 for all experiments. All experiments were conducted on 8 NVIDIA T4 GPU with 16 GBs of memory.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.acl-long.834::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "methodology",
+      "evidence": "Our goal is to identify potential positive and negative samples for the anchor $\\left([Q||F]^{(i)},S^{(i)}\\right)$ . Suppose the anchor is the one shown in the top three rows of Table 3. Bold italicized tokens are redundant between the question and the fact, e.g. \"revenue\", \"2019\", and \"2020\". Those terms are often used by the retriever to find the correct facts. They are also used by the generator to find the correct order of operands.\n\nThere are also terms that are unique to the question, i.e. \"What\", \"the net change to\", \"from\", and \"to\" (highlighted in blue). In CompAQT, the authors showed that these can be used as indicators for the operators. Lastly, there are terms that are unique to the facts, i.e. \"was $80M\" and \"was$ 60M\" (red italicized tokens). These can be used as indicators for the operands. We use these heuristics to guide our sampling strategy.\n\nWe flag all spans in the question that do not overlap with the facts, i.e. underlined blue segments. Those spans serve as candidate intervention spans. In the example from Table 3, this results in four candidates: \"What\", \"the net change in\", \"from\", and \"to\".\n\nNext, we seek a positive and a negative example within the training set. A positive example is a sample in which, despite possible changes in the question, the operators in the output remain consistent with the operators in the anchor. Table 3 shows one such example. Several terms have been altered in the question. However, we would only focus on the changes in the candidate spans. Here, \"was\" has changed to \"is\", \"net change\" has changed to \"difference\", \"from\" to \"between\" and \"to\" to \"and\". This results in a token-level Levenshtein distance of 5 (four edits and one insertion) (Yujuan and Bo, 2007). We ignore the change from \"revenue\" to \"operating expenses\" and from \"2019\" to \"2018\", because those changes have occurred outside of our candidate spans and only correspond to operands.\n\nA negative example is a sample in which exactly one output operator is altered, deleted, or added. Table 3 shows one such example. Here, the output includes a new operator divide. The question has also been altered with a token-level Levenshtein distance of 4.\n\nThe given positive and negative example can now be plugged into Equation 2. Instead of a fixed margin, we use the edit distances mentioned before to dynamically adjust the margin. Let $\\mathrm{NLD}_{\\mathrm{pos}}^{(i)}$ and $\\mathrm{NLD}_{\\mathrm{neg}}^{(i)}$ be the normalized, token-level Levenshtein edit distance between the anchor and the positive example, and the negative example, respectively. We set the margin to: $\\alpha^{(i)} = 1 - |\\mathrm{NLD}_{\\mathrm{neg}}^{(i)} - \\mathrm{NLD}_{\\mathrm{pos}}^{(i)}|$\n\nThis encourages a larger margin for cases where the anchor is equally similar to the positive and the negative examples, and the model might have a harder time picking up on the nuances of each component.\n\nTable 3: Example of positive and negative sampling using counterfactual components. Blue underlined text indicates components that are unique to the question ( candidates for intervention). These terms often indicate an operator. Red italicized text indicates terms that are unique to the facts. These terms often indicate operands. Bold italicized text indicates terms that are shared between the question and facts. These terms often indicate metrics.   \n\n<table><tr><td rowspan=\"4\">Anchor</td><td>Question</td><td>What was the net change in revenue from 2019 to 2020?</td></tr><tr><td>Facts</td><td>2019 revenue was $80M.2020 revenue was $60M.</td></tr><tr><td>Program</td><td>subtract(80, 60)NONE(NONE, NONE)</td></tr><tr><td>Candidate intervention spans</td><td>What the net change in from to</td></tr><tr><td rowspan=\"3\">Positive sample</td><td>Question</td><td>What is the difference in operating expenses between 2018 and 2020?</td></tr><tr><td>Facts</td><td>2018 operating expenses were $35M.2020 operating expenses were $30M.</td></tr><tr><td>Program</td><td>subtract(35, 30)NONE(NONE, NONE)</td></tr><tr><td rowspan=\"3\">Negative sample</td><td>Question</td><td>What was the rate of change of operating income from 2018 to 2019?</td></tr><tr><td>Facts</td><td>2018 income from operating activities was $65M.2019 income from operating activities was $60M.</td></tr><tr><td>Program</td><td>subtract(65, 60)divide(#0, 65)</td></tr><tr><td rowspan=\"5\">Variables</td><td>Q(i)iS(i)i</td><td>{q1(i), q3(i), q4(i), q5(i), q6(i), q8(i), q10(i)}:what the net change in from tos1(i):NONE</td></tr><tr><td>Q(pos)(i)s(pos)(i)</td><td>{q1(i), q2(i), q3(i), q4(i), q5(i), q6(i), q10(i)}:what is the difference in between and s4(i):NONE</td></tr><tr><td>edit dist</td><td>5</td></tr><tr><td>Qneg(i)s neg(i)</td><td>{q1(i), q3(i), q4(i), q5(i), q6(i), q12(i)}:what the rate of change of to s4(i):divide</td></tr><tr><td>edit dist</td><td>4</td></tr></table>"
+    },
+    {
+      "source_window_id": "2023.acl-long.834::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.834::sections::5.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.2",
+      "section_title": "baselines",
+      "evidence": "We apply our proposed auxiliary loss to three baselines: 1) FinQANet, originally developed for the FinQA dataset (Chen et al., 2021b). 2) TAGOP, originally developed for the TAT-QA dataset (Zhu et al., 2021). 3) Pointer-Verbalizer Network (PVN), originally proposed by Nourbakhsh et al. (2022). We also apply the CompAQT loss to each model as a secondary baseline in order to determine how CounterComp compares to an attention-alignment strategy."
+    },
+    {
+      "source_window_id": "2023.acl-long.834::appendix::B",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B",
+      "section_title": "training algorithm",
+      "evidence": "Algorithm 1 details our pre-indexing, sampling, and training processes. Note that the algorithm is a simplified version of our implementation, e.g. it follows a basic SGD instead of a batch SGD process, and shows the process for only one epoch."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "5.4"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla T4",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2023\\2023.acl-long.834\\auto\\full.md",
+    "source_md_sha256": "d3c2651fad3193dbea1aba9076e98c5f813dcdbb0492b0ac284d85d72bf94cd2",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

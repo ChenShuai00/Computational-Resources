@@ -1,0 +1,285 @@
+{
+  "paper_id": "2025.acl-long.1052",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.1052::sections::5.2",
+      "paper_id": "2025.acl-long.1052",
+      "section_number": "5.2",
+      "section_title": "configuration and baseline",
+      "normalized_section_title": "configuration and baseline",
+      "window_text": "We begin by training a vocabulary of 160,000 tokens using SentencePiece (Kudo and Richardson, 2018) on 150 million sentences randomly sampled from the training set. We then pre-train two models, named MITRE (multilingual translation with registers), on 80 V100 GPUs with 466 million and 913 million parameters, respectively. We report complete details of modeling and training in Appendix D. The validation and testing process aligns with Section 4.1.\n\nWe compare our model against not only state-of-the-art MNMT-specific models, but also commercial LLMs, because commercial LLMs present the upper limit of fine-tuning open-sourced LLMs into MNMT-specific models (Section 2). First, the MNMT models include three versions of M2M $(483\\mathrm{M}^{10}$ ,615M,and 1.2B) (Fan et al., 2021) and three versions of NLLB (615M-distilled, 1.3B, and 3.3B) (NLLB Team, 2022). Also, we include commercial LLMs, GPT-3.5 Turbo[1] (Brown et al.,\n\n2020) and GPT-4o mini $^{12}$ (OpenAI, 2024). Meanwhile, we include these NLLB models as baselines $^{13}$ in our fine-tuning experiments. Specifically, we create three scenarios randomly selecting 5, 25, and 100 translation directions from the possible directions. Then, we perform fine-tuning with full parameters and with LoRA (Hu et al., 2022) on the Flores dev, which contains 997 sentence pairs per direction. Fine-tuning settings are provided in Appendix E.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.acl-long.1052::sections::6",
+      "paper_id": "2025.acl-long.1052",
+      "section_number": "6",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1052::sections::limitations",
+      "paper_id": "2025.acl-long.1052",
+      "section_number": "",
+      "section_title": "limitations",
+      "normalized_section_title": "limitations",
+      "window_text": "A key concern is our limited computational resources. Given that the training of MITRE-913M has already required 80 Tesla V100 GPUs for one month, MITRE supports 24 languages, and we cannot further increase the supported languages. Although this number is far greater than the latest research in the community, e.g., 10 languages of Alves et al. (2024) and 5 languages of Xu et al. (2024), this number is fewer than the number of supported languages of M2M, NLLB, and commercial LLMs. However, the comparison in Section 5 is relatively fair. Specifically (using NLLB as an example), first, our training data is collected from the reproduced version of the NLLB dataset, which includes fewer samples per translation direction than those used for training NLLB models. Second, as described in Section 5.1, our Bridge Language strategy results in fewer supervised translation directions, whereas NLLB is trained on as many directions as possible. Moreover, NLLB incorporates additional engineering strategies, e.g., back-translation (Edunov et al., 2018) and distillation (Hinton et al., 2015), whereas MITRE only iterates over the training set. Also, we directly compare MITRE-466M and MITRE-913M to NLLB-3.3B, where the parameter size difference helps offset the disparity in supported languages. Finally, we conduct fine-tuning experiments to compare MITRE and NLLB with the same settings.\n\nAnother limitation of our approach is the additional computational cost introduced by registers, as they double the number of source tokens. Based on our measurements on EC-40 using a Tesla V100 GPU, the training time for models with registers is 1.34 times that of the vanilla decoder-only model, 1.63 times that of the vanilla encoder-decoder model, and approximately equivalent (1.01 times) to the previous state-of-the-art method, CL (Pan et al., 2021). At inference time, thanks to the KV cache, the model with registers incurs only a linear and affordable increase in inference cost, comparable to other MNMT-specific models. To validate this, we randomly translate 100 sentences using publicly available implementations of M2M, NLLB, and MITRE from HuggingFace (with batch size 1 and beam size 5), and repeat each experiment 10 times. Results in Table 7 confirm our claim. Additionally, in practical usage of MITRE, the inference cost is substantially lower than that of LLMs due to the smaller number of parameters.\n\n<table><tr><td>Model</td><td>#Tokens</td><td>Times (s)</td><td>Times per Token (s)</td></tr><tr><td>MITRE-466M</td><td>3667</td><td>64.95</td><td>0.0177</td></tr><tr><td>MITRE-913M</td><td>3626</td><td>85.65</td><td>0.0236</td></tr><tr><td>M2M-483M</td><td>4226</td><td>52.22</td><td>0.0124</td></tr><tr><td>M2M-1.2B</td><td>4234</td><td>89.75</td><td>0.0212</td></tr><tr><td>NLLB-600M</td><td>3990</td><td>41.29</td><td>0.0103</td></tr><tr><td>NLLB-1.3B</td><td>4104</td><td>74.37</td><td>0.0181</td></tr><tr><td>NLLB-3.3B</td><td>3837</td><td>82.15</td><td>0.0214</td></tr></table>\n\nTable 7: Generation cost measurement. Tokens refer to the total tokens generated during inference, and Times refer to the time cost of inference, which is counted by seconds.",
+      "rule_tier": "hard_skip_override",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1052::appendix::B",
+      "paper_id": "2025.acl-long.1052",
+      "section_number": "B",
+      "section_title": "description of pre-training dataset",
+      "normalized_section_title": "description of pre-training dataset",
+      "window_text": "Our pre-training dataset comprises 24 languages, as detailed in Table 8. As described in Section 5.1, our data collection strategy results in 9.3 billion translation instances across 194 translation directions. The data distribution is visualized at the family level in Figure 9a and at the language level in Figure 9b. Additionally, Figure 9b highlights which translation directions are supervised and which are zero-shot. Notably, translation directions involving ms are also indicated in Figure 9b.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1052::appendix::C",
+      "paper_id": "2025.acl-long.1052",
+      "section_number": "C",
+      "section_title": "training details of ec-40",
+      "normalized_section_title": "training details of ec-40",
+      "window_text": "Training configurations We employ Fairseq (Ott et al., 2019), an open-source toolkit, to implement our models with methods mentioned in Section 4.2. First, we directly reuse the vocabulary and binary training data provided by Chen et al. $(2023)^{17}$ . Note that we include only supervised translation directions in validation. We train on 8 Tesla V100 GPUs, setting memory-efficientfp16 in Fairseq, with a maximum input of 2048 source tokens per GPU and a gradient accumulation of 16 steps. Both input and output token lengths are limited to 256, and we share the embedding layer between the encoder and decoder. We use a seed of 1234, a learning rate of 0.0005 with the inverse square root schedule and a warmup of 4000 steps, the Adam optimizer (Kingma and Ba, 2017), dropout of 0.1, attention dropout of 0.1, a label smoothing rate of 0.1, no weight decay, and the temperature sampling with $T = 5$ (Arivazhagan et al., 2019). Finally, we train for 200,000 steps, averaging the last 5 checkpoints, saving by epoch.\n\nConfigurations of Related Methods Generally, both our method and these related methods share\n\n<sup>17</sup>https://github.com/Smu-Tan/ZS-NMT-Variations\n\n![](images/7230b1af4075ce44a2ef5fc83f2bd20063cd68243e474e5441a8ca34ab829892.jpg)  \nFigure 7: The training and validation loss in pre-training MITRE. We report the first 100 epochs, each with approximately 2262 steps.\n\nthe same hyper-parameters as the vanilla models. However, there are some method-specific configurations we have to notice. (1) For LAVS (Chen et al., 2023), we directly reuse their code<sup>18</sup> and add around 12k language-specific tokens into the shared vocabulary, resulting in 12.8M additional parameters in modeling; (2) For CL (Pan et al., 2021), we directly reuse their code<sup>19</sup> and set the contrastive learning temperature to 0.1, which is the optimal setting according to their reports; (3) For LCS (Sun et al., 2024), the model follows another translation instruction strategy of Fan et al. (2021) by adding a source language tag at the beginning of the source tokens and a target language tag at the beginning of the target tokens. We re-implement their code and, in the case of 12-layer models where the encoder has 6 layers, apply LCS biasing at the 5th encoder layer; For models with 12 encoder layers, we apply it at the 8th encoder layer; (4) For TDO (Qu et al., 2024b), we also reuse their code<sup>20</sup> and, based on their ablation study, set the number of layers for the first stage to 3 in 12-layer models and to 6 in 24-layer models to allow stronger zero-shot translation ability.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1052::appendix::D",
+      "paper_id": "2025.acl-long.1052",
+      "section_number": "D",
+      "section_title": "training details of mitre",
+      "normalized_section_title": "training details of mitre",
+      "window_text": "We employ Fairseq to implement MITRE mentioned in Section 5.2, and two versions of MITRE have the different configurations in modeling and have the same configuration in training. Specifically, MITRE-466M is configured with an embedding size of 1,024, an inner size of 4,096, 16 attention heads, and 24 layers. MITRE-913M,\n\n18https://github.com/PKUnlp-icler/   \nOff-Target-MNMT   \n19 https://github.com/PANXiao1994/mRASP2   \n$^{20}$ https://github.com/zhiqu22/PhasedDecoder\n\nTable 8: Details of the dataset in our pre-training. The decoration * on Asian means a group instead of a language family. We not only list the ISO 630-1 code for each language but also list the Flores code to help search corresponding resources from Flores+.   \n\n<table><tr><td>Family</td><td>ISO code</td><td>Flores code</td><td>Language</td><td>script</td></tr><tr><td rowspan=\"6\">Germanic</td><td>en</td><td>eng_Latin</td><td>English</td><td>Latin</td></tr><tr><td>de</td><td>deu_Latin</td><td>German</td><td>Latin</td></tr><tr><td>nl</td><td>nld_Latin</td><td>Dutch</td><td>Latin</td></tr><tr><td>sv</td><td>swe_Latin</td><td>Swedish</td><td>Latin</td></tr><tr><td>da</td><td>dan_Latin</td><td>Danish</td><td>Latin</td></tr><tr><td>af</td><td>afr_Latin</td><td>Afrikaans</td><td>Latin</td></tr><tr><td rowspan=\"5\">Romance</td><td>fr</td><td>fra_Latin</td><td>French</td><td>Latin</td></tr><tr><td>es</td><td>spa_Latin</td><td>Spanish</td><td>Latin</td></tr><tr><td>it</td><td>ita_Latin</td><td>Italian</td><td>Latin</td></tr><tr><td>pt</td><td>por_Latin</td><td>Portuguese</td><td>Latin</td></tr><tr><td>ro</td><td>ron_Latin</td><td>Romanian</td><td>Latin</td></tr><tr><td rowspan=\"5\">Slavic</td><td>ru</td><td>rus_Cyrl</td><td>Russian</td><td>Cyrillic</td></tr><tr><td>cs</td><td>ces_Latin</td><td>Czech</td><td>Latin</td></tr><tr><td>pl</td><td>pol_Latin</td><td>Polish</td><td>Latin</td></tr><tr><td>bg</td><td>bul_Cyrl</td><td>Bulgarian</td><td>Cyrillic</td></tr><tr><td>uk</td><td>ukr_Cyrl</td><td>Ukrainian</td><td>Cyrillic</td></tr><tr><td rowspan=\"4\">Malayo-Polynesian</td><td>id</td><td>ind_Latin</td><td>Indonesian</td><td>Latin</td></tr><tr><td>ms</td><td>zsm_Latin</td><td>Malay</td><td>Latin</td></tr><tr><td>jv</td><td>jav_Latin</td><td>Javanese</td><td>Latin</td></tr><tr><td>tl</td><td>fil_Latin</td><td>Filipino</td><td>Latin</td></tr><tr><td rowspan=\"4\">Asian*</td><td>ko</td><td>kor_Hang</td><td>Korean</td><td>Hangul</td></tr><tr><td>vi</td><td>vie_Latin</td><td>Vietnamese</td><td>Latin</td></tr><tr><td>ja</td><td>jpn_Jpan</td><td>Japanese</td><td>Kanji; Kana</td></tr><tr><td>zh</td><td>cmn_Hans</td><td>Chinese</td><td>Chinese</td></tr></table>\n\na larger model with expanded width and depth, has an embedding size of 1,280, an inner size of 5,120, 20 heads, and 36 layers. In training, we first train a shared SentencePiece vocabulary (Kudo and Richardson, 2018) with a size of 160,000 by 150 million sentences randomly sampled from the training set. We include only supervised translation directions in validation. Then, we train on 80 Tesla V100 GPUs, setting memory-efficient-fp16 in Fairseq, with a maximum input of 1408 source tokens per GPU and a gradient accumulation of 10 steps. In practice, this setup results in each batch containing approximately 0.91 million source tokens. Given the large batch size, we set the learning rate of 0.002 with the inverse square root schedule and the warmup of 8000 steps. We also use a seed of 42, the Adam optimizer (Kingma and Ba, 2017), dropout of 0.1, attention dropout of 0.1, a label smoothing rate of 0.1, no weight decay, and the temperature sampling with $T = 1$ (Arivazha-gan et al., 2019). We train for 300,000 steps and save a checkpoint per 10,000 steps. Finally, we average the last 5 checkpoints. Figure 7 shows the variations of training and validation loss. We can observe that the trends of MITRE-466M and MITRE-913M are highly consistent.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1052::appendix::E",
+      "paper_id": "2025.acl-long.1052",
+      "section_number": "E",
+      "section_title": "training details of fine-tuning",
+      "normalized_section_title": "training details of fine-tuning",
+      "window_text": "Selecting Directions We use random.sample in Python to randomly select translation directions for fine-tuning, setting the seed to 0. We define three scenarios, including 5, 25, and 100 translation directions. It is important to note that random.sample causes the 5 and 25 directions to be subsets of the 100 directions. Specifically, the first 5 and first 25 directions in the 100-direction set correspond to the other two scenarios. The 100 directions are: \\( \\mathrm{jv} \\rightarrow \\mathrm{sv}, \\mathrm{ms} \\rightarrow \\mathrm{id}, \\mathrm{de} \\rightarrow \\mathrm{tl}, \\mathrm{ru} \\rightarrow \\mathrm{pl}, \\mathrm{ko} \\rightarrow \\mathrm{jv}, \\mathrm{zh} \\rightarrow \\mathrm{bg}, \\mathrm{ms} \\rightarrow \\mathrm{en}, \\mathrm{pl} \\rightarrow \\mathrm{ru}, \\mathrm{zh} \\rightarrow \\mathrm{af}, \\mathrm{uk} \\rightarrow \\mathrm{ko}, \\mathrm{pt} \\rightarrow \\mathrm{jv}, \\mathrm{ko} \\rightarrow \\mathrm{ro}, \\mathrm{fr} \\rightarrow \\mathrm{da}, \\mathrm{cs} \\rightarrow \\mathrm{pl}, \\mathrm{fr} \\rightarrow \\mathrm{af}, \\mathrm{da} \\rightarrow \\mathrm{fr}, \\mathrm{ru} \\rightarrow \\mathrm{sv}, \\mathrm{fr} \\rightarrow \\mathrm{pl}, \\mathrm{pl} \\rightarrow \\mathrm{tl}, \\mathrm{da} \\rightarrow \\mathrm{ro}, \\mathrm{sv} \\rightarrow \\mathrm{es}, \\mathrm{bg} \\rightarrow \\mathrm{jv}, \\mathrm{zh} \\rightarrow \\mathrm{en}, \\mathrm{da} \\rightarrow \\mathrm{cs}, \\mathrm{uk} \\rightarrow \\mathrm{ms}, \\mathrm{tl} \\rightarrow \\mathrm{es}, \\mathrm{bg} \\rightarrow \\mathrm{de}, \\mathrm{pt} \\rightarrow \\mathrm{n1}, \\mathrm{vi} \\rightarrow \\mathrm{bg}, \\mathrm{tl} \\rightarrow \\mathrm{id}, \\mathrm{ru} \\rightarrow \\mathrm{bg}, \\mathrm{n1} \\rightarrow \\mathrm{ms}, \\mathrm{en} \\rightarrow \\mathrm{uk}, \\mathrm{da} \\rightarrow \\mathrm{sv}, \\mathrm{jv} \\rightarrow \\mathrm{ms}, \\mathrm{en} \\rightarrow \\mathrm{n1}, \\mathrm{zh} \\rightarrow \\mathrm{vi}, \\mathrm{bg} \\rightarrow \\mathrm{ja}, \\mathrm{ro} \\rightarrow \\mathrm{ja}, \\mathrm{bg} \\rightarrow \\mathrm{ru}, \\mathrm{n1} \\rightarrow \\mathrm{tl}, \\mathrm{vi} \\rightarrow \\mathrm{es}, \\mathrm{ja} \\rightarrow \\mathrm{pt}, \\mathrm{cs} \\rightarrow \\mathrm{uk}, \\mathrm{da} \\rightarrow \\mathrm{ko}, \\mathrm{af} \\rightarrow \\mathrm{i t}, \\mathrm{jv} \\rightarrow \\mathrm{zh}, \\mathrm{zh} \\rightarrow \\mathrm{cs}, \\mathrm{sv} \\rightarrow \\mathrm{da}, \\mathrm{ko} \\rightarrow \\mathrm{pt}, \\mathrm{cs} \\rightarrow \\mathrm{n1}, \\mathrm{pt} \\rightarrow \\mathrm{vi}, \\mathrm{n1} \\rightarrow \\mathrm{en}, \\mathrm{vi} \\rightarrow \\mathrm{ja}, \\mathrm{es} \\rightarrow \\mathrm{n1}, \\mathrm{tl} \\rightarrow \\mathrm{ru}, \\mathrm{ru} \\rightarrow \\mathrm{es}, \\mathrm{ja} \\rightarrow \\mathrm{jv}, \\mathrm{ro} \\rightarrow zh, n1\\rightarrow r0, f r\\rightarrow j v, c s\\rightarrow f r, f r\\rightarrow c s, u k\\rightarrow j v, k o\\rightarrow b g, c s\\rightarrow d a, e s\\rightarrow r o, m s\\rightarrow s v, j a\\rightarrow c s, c s\\rightarrow e n, d a\\rightarrow p l, j v\\rightarrow t l, p l\\rightarrow p t, z h\\rightarrow s v, p l\\rightarrow d e, f r\\rightarrow r o, p t\\rightarrow z h, z h\\rightarrow i d, p l\\rightarrow f r, k o\\rightarrow r u, i t\\rightarrow b g, e s\\rightarrow d e, c s\\rightarrow t l, a f\\rightarrow p t, f r\\rightarrow r u, d a\\rightarrow n l, d a\\rightarrow a f, m s\\rightarrow f r, k o\\rightarrow c s, e n\\rightarrow j v, p l\\rightarrow u k, b g\\rightarrow u k, a f\\rightarrow t l, r o\\rightarrow b g, d e\\rightarrow p l, d e\\rightarrow v i, u k\\rightarrow n l, i d\\rightarrow j a, n l\\rightarrow z h, z h\\rightarrow p l\n\nFine-tuning Configurations All fine-tuning experiments use the same settings. We conduct experiments on 8 Tesla V100 GPUs, with a maximum of 1024 tokens per GPU and a gradient accumulation of 2 steps. Based on the pre-trained model, we set the learning rate to 0.0001 with a warmup step of 1 (for launching the inverse square root schedule), and train for 10 epochs. Finally, we use the last epoch for testing.\n\nLoRA Configurations We adopt the setting of Hu et al. (2022) to implement LoRA components for pre-trained models. Specifically, LoRA is only implemented for Query and Value in the attention mechanism with a rank of 8. As a result, the learnable parameters of NLLB series are 1.18M, 2.36M, and 4.72M, respectively, and the learnable parameters of MITRE series are 0.78M and 1.47M, respectively.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1052::appendix::J",
+      "paper_id": "2025.acl-long.1052",
+      "section_number": "J",
+      "section_title": "supporting experiments for comparing enc-dec and dec-only",
+      "normalized_section_title": "supporting experiments for comparing enc-dec and dec-only",
+      "window_text": "In Section 3.2, we explain our reason for implementing registering in Dec-only. Specifically, Dec-only offers better parameter efficiency than Encdec, where the encoder learns the representation of input tokens while the decoder learns the generated tokens (as illustrated in Figure 1, where encoded source tokens are shown in gray). In contrast, Deconly utilizes all parameters for both encoding and\n\n<table><tr><td>Methods</td><td>#layer</td><td>spBLEU</td><td>chrF++</td><td>COMET</td><td>Off-target(%)</td></tr><tr><td>Enc-dec</td><td></td><td>6.99</td><td>19.68</td><td>53.72</td><td>48.4</td></tr><tr><td>+registering</td><td>12</td><td>10.55</td><td>27.29</td><td>58.07</td><td>7.5</td></tr><tr><td>Dec-only</td><td></td><td>8.34</td><td>22.34</td><td>55.71</td><td>22.21</td></tr><tr><td>+registering</td><td></td><td>11.92</td><td>29.02</td><td>61.19</td><td>4.65</td></tr><tr><td>Enc-dec</td><td></td><td>9.69</td><td>23.95</td><td>58.08</td><td>26.69</td></tr><tr><td>+registering</td><td>24</td><td>11.13</td><td>27.91</td><td>58.67</td><td>3.91</td></tr><tr><td>Dec-only</td><td></td><td>10.82</td><td>26.04</td><td>59.95</td><td>19.01</td></tr><tr><td>+registering</td><td></td><td>13.12</td><td>30.51</td><td>63.54</td><td>3.65</td></tr></table>\n\nTable 9: Results on EC-40. For convenience, the score in this table is averaged from all 1,640 translation directions. Enc-dec and Dec-only indicate the vanilla models without registering. The best score is in bold.\n\ngeneration. Based on this, we employ Dec-only as the backbone of our implementation.\n\nTo further support our statement, we provide supporting experiments on EC40, following the experimental setup described in Section 4.2. As shown in Table 9, registering also significantly improves the performance of Enc-dec. However, the gains are more pronounced in Dec-only, suggesting that registering is particularly well-suited for this architecture.\n\nAdditionally, we propose an insight beyond the scope of this work. In Section 3.2, we mention a potential cause of the off-target problem: the dilution of translation instruction attention by other tokens (Gu et al., 2019; Qu et al., 2024b). This theory may explain why Dec-only tends to underperform Enc-dec in MNMT (Gao et al., 2022; Zhang et al., 2022), as the effectiveness of $l_{y}$ is further diluted by both source and target tokens in the attention mechanism. The results in Table 9 further support this explanation, as registering achieves a much larger performance gain in Dec-only than in Enc-dec.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.1052::sections::5.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "count": 80,
+      "count_text": "80",
+      "evidence": "We begin by training a vocabulary of 160,000 tokens using SentencePiece (Kudo and Richardson, 2018) on 150 million sentences randomly sampled from the training set. We then pre-train two models, named MITRE (multilingual translation with registers), on 80 V100 GPUs with 466 million and 913 million parameters, respectively. We report complete details of modeling and training in Appendix D. The validation and testing process aligns with Section 4.1.\n\nWe compare our model against not only state-of-the-art MNMT-specific models, but also commercial LLMs, because commercial LLMs present the upper limit of fine-tuning open-sourced LLMs into MNMT-specific models (Section 2). First, the MNMT models include three versions of M2M $(483\\mathrm{M}^{10}$ ,615M,and 1.2B) (Fan et al., 2021) and three versions of NLLB (615M-distilled, 1.3B, and 3.3B) (NLLB Team, 2022). Also, we include commercial LLMs, GPT-3.5 Turbo[1] (Brown et al.,\n\n2020) and GPT-4o mini $^{12}$ (OpenAI, 2024). Meanwhile, we include these NLLB models as baselines $^{13}$ in our fine-tuning experiments. Specifically, we create three scenarios randomly selecting 5, 25, and 100 translation directions from the possible directions. Then, we perform fine-tuning with full parameters and with LoRA (Hu et al., 2022) on the Flores dev, which contains 997 sentence pairs per direction. Fine-tuning settings are provided in Appendix E.",
+      "section_number": "5.2",
+      "section_title": "configuration and baseline",
+      "normalized_section_title": "configuration and baseline"
+    },
+    {
+      "window_id": "2025.acl-long.1052::sections::limitations",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100",
+      "count": 80,
+      "count_text": "80",
+      "evidence": "A key concern is our limited computational resources. Given that the training of MITRE-913M has already required 80 Tesla V100 GPUs for one month, MITRE supports 24 languages, and we cannot further increase the supported languages. Although this number is far greater than the latest research in the community, e.g., 10 languages of Alves et al. (2024) and 5 languages of Xu et al. (2024), this number is fewer than the number of supported languages of M2M, NLLB, and commercial LLMs. However, the comparison in Section 5 is relatively fair. Specifically (using NLLB as an example), first, our training data is collected from the reproduced version of the NLLB dataset, which includes fewer samples per translation direction than those used for training NLLB models. Second, as described in Section 5.1, our Bridge Language strategy results in fewer supervised translation directions, whereas NLLB is trained on as many directions as possible. Moreover, NLLB incorporates additional engineering strategies, e.g., back-translation (Edunov et al., 2018) and distillation (Hinton et al., 2015), whereas MITRE only iterates over the training set. Also, we directly compare MITRE-466M and MITRE-913M to NLLB-3.3B, where the parameter size difference helps offset the disparity in supported languages. Finally, we conduct fine-tuning experiments to compare MITRE and NLLB with the same settings.\n\nAnother limitation of our approach is the additional computational cost introduced by registers, as they double the number of source tokens. Based on our measurements on EC-40 using a Tesla V100 GPU, the training time for models with registers is 1.34 times that of the vanilla decoder-only model, 1.63 times that of the vanilla encoder-decoder model, and approximately equivalent (1.01 times) to the previous state-of-the-art method, CL (Pan et al., 2021). At inference time, thanks to the KV cache, the model with registers incurs only a linear and affordable increase in inference cost, comparable to other MNMT-specific models. To validate this, we randomly translate 100 sentences using publicly available implementations of M2M, NLLB, and MITRE from HuggingFace (with batch size 1 and beam size 5), and repeat each experiment 10 times. Results in Table 7 confirm our claim. Additionally, in practical usage of MITRE, the inference cost is substantially lower than that of LLMs due to the smaller number of parameters.\n\n<table><tr><td>Model</td><td>#Tokens</td><td>Times (s)</td><td>Times per Token (s)</td></tr><tr><td>MITRE-466M</td><td>3667</td><td>64.95</td><td>0.0177</td></tr><tr><td>MITRE-913M</td><td>3626</td><td>85.65</td><td>0.0236</td></tr><tr><td>M2M-483M</td><td>4226</td><td>52.22</td><td>0.0124</td></tr><tr><td>M2M-1.2B</td><td>4234</td><td>89.75</td><td>0.0212</td></tr><tr><td>NLLB-600M</td><td>3990</td><td>41.29</td><td>0.0103</td></tr><tr><td>NLLB-1.3B</td><td>4104</td><td>74.37</td><td>0.0181</td></tr><tr><td>NLLB-3.3B</td><td>3837</td><td>82.15</td><td>0.0214</td></tr></table>\n\nTable 7: Generation cost measurement. Tokens refer to the total tokens generated during inference, and Times refer to the time cost of inference, which is counted by seconds.",
+      "section_number": "",
+      "section_title": "limitations",
+      "normalized_section_title": "limitations"
+    },
+    {
+      "window_id": "2025.acl-long.1052::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Training configurations We employ Fairseq (Ott et al., 2019), an open-source toolkit, to implement our models with methods mentioned in Section 4.2. First, we directly reuse the vocabulary and binary training data provided by Chen et al. $(2023)^{17}$ . Note that we include only supervised translation directions in validation. We train on 8 Tesla V100 GPUs, setting memory-efficientfp16 in Fairseq, with a maximum input of 2048 source tokens per GPU and a gradient accumulation of 16 steps. Both input and output token lengths are limited to 256, and we share the embedding layer between the encoder and decoder. We use a seed of 1234, a learning rate of 0.0005 with the inverse square root schedule and a warmup of 4000 steps, the Adam optimizer (Kingma and Ba, 2017), dropout of 0.1, attention dropout of 0.1, a label smoothing rate of 0.1, no weight decay, and the temperature sampling with $T = 5$ (Arivazhagan et al., 2019). Finally, we train for 200,000 steps, averaging the last 5 checkpoints, saving by epoch.\n\nConfigurations of Related Methods Generally, both our method and these related methods share\n\n<sup>17</sup>https://github.com/Smu-Tan/ZS-NMT-Variations\n\n![](images/7230b1af4075ce44a2ef5fc83f2bd20063cd68243e474e5441a8ca34ab829892.jpg)  \nFigure 7: The training and validation loss in pre-training MITRE. We report the first 100 epochs, each with approximately 2262 steps.\n\nthe same hyper-parameters as the vanilla models. However, there are some method-specific configurations we have to notice. (1) For LAVS (Chen et al., 2023), we directly reuse their code<sup>18</sup> and add around 12k language-specific tokens into the shared vocabulary, resulting in 12.8M additional parameters in modeling; (2) For CL (Pan et al., 2021), we directly reuse their code<sup>19</sup> and set the contrastive learning temperature to 0.1, which is the optimal setting according to their reports; (3) For LCS (Sun et al., 2024), the model follows another translation instruction strategy of Fan et al. (2021) by adding a source language tag at the beginning of the source tokens and a target language tag at the beginning of the target tokens. We re-implement their code and, in the case of 12-layer models where the encoder has 6 layers, apply LCS biasing at the 5th encoder layer; For models with 12 encoder layers, we apply it at the 8th encoder layer; (4) For TDO (Qu et al., 2024b), we also reuse their code<sup>20</sup> and, based on their ablation study, set the number of layers for the first stage to 3 in 12-layer models and to 6 in 24-layer models to allow stronger zero-shot translation ability.",
+      "section_number": "C",
+      "section_title": "training details of ec-40",
+      "normalized_section_title": "training details of ec-40"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.1052::sections::5.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "cleaned_hardware_name": "v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 80,
+      "count_text": "80",
+      "section_number": "5.2",
+      "section_title": "configuration and baseline",
+      "normalized_section_title": "configuration and baseline",
+      "evidence": "We begin by training a vocabulary of 160,000 tokens using SentencePiece (Kudo and Richardson, 2018) on 150 million sentences randomly sampled from the training set. We then pre-train two models, named MITRE (multilingual translation with registers), on 80 V100 GPUs with 466 million and 913 million parameters, respectively. We report complete details of modeling and training in Appendix D. The validation and testing process aligns with Section 4.1.\n\nWe compare our model against not only state-of-the-art MNMT-specific models, but also commercial LLMs, because commercial LLMs present the upper limit of fine-tuning open-sourced LLMs into MNMT-specific models (Section 2). First, the MNMT models include three versions of M2M $(483\\mathrm{M}^{10}$ ,615M,and 1.2B) (Fan et al., 2021) and three versions of NLLB (615M-distilled, 1.3B, and 3.3B) (NLLB Team, 2022). Also, we include commercial LLMs, GPT-3.5 Turbo[1] (Brown et al.,\n\n2020) and GPT-4o mini $^{12}$ (OpenAI, 2024). Meanwhile, we include these NLLB models as baselines $^{13}$ in our fine-tuning experiments. Specifically, we create three scenarios randomly selecting 5, 25, and 100 translation directions from the possible directions. Then, we perform fine-tuning with full parameters and with LoRA (Hu et al., 2022) on the Flores dev, which contains 997 sentence pairs per direction. Fine-tuning settings are provided in Appendix E.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.1052::sections::limitations",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100",
+      "cleaned_hardware_name": "tesla v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 80,
+      "count_text": "80",
+      "section_number": "",
+      "section_title": "limitations",
+      "normalized_section_title": "limitations",
+      "evidence": "A key concern is our limited computational resources. Given that the training of MITRE-913M has already required 80 Tesla V100 GPUs for one month, MITRE supports 24 languages, and we cannot further increase the supported languages. Although this number is far greater than the latest research in the community, e.g., 10 languages of Alves et al. (2024) and 5 languages of Xu et al. (2024), this number is fewer than the number of supported languages of M2M, NLLB, and commercial LLMs. However, the comparison in Section 5 is relatively fair. Specifically (using NLLB as an example), first, our training data is collected from the reproduced version of the NLLB dataset, which includes fewer samples per translation direction than those used for training NLLB models. Second, as described in Section 5.1, our Bridge Language strategy results in fewer supervised translation directions, whereas NLLB is trained on as many directions as possible. Moreover, NLLB incorporates additional engineering strategies, e.g., back-translation (Edunov et al., 2018) and distillation (Hinton et al., 2015), whereas MITRE only iterates over the training set. Also, we directly compare MITRE-466M and MITRE-913M to NLLB-3.3B, where the parameter size difference helps offset the disparity in supported languages. Finally, we conduct fine-tuning experiments to compare MITRE and NLLB with the same settings.\n\nAnother limitation of our approach is the additional computational cost introduced by registers, as they double the number of source tokens. Based on our measurements on EC-40 using a Tesla V100 GPU, the training time for models with registers is 1.34 times that of the vanilla decoder-only model, 1.63 times that of the vanilla encoder-decoder model, and approximately equivalent (1.01 times) to the previous state-of-the-art method, CL (Pan et al., 2021). At inference time, thanks to the KV cache, the model with registers incurs only a linear and affordable increase in inference cost, comparable to other MNMT-specific models. To validate this, we randomly translate 100 sentences using publicly available implementations of M2M, NLLB, and MITRE from HuggingFace (with batch size 1 and beam size 5), and repeat each experiment 10 times. Results in Table 7 confirm our claim. Additionally, in practical usage of MITRE, the inference cost is substantially lower than that of LLMs due to the smaller number of parameters.\n\n<table><tr><td>Model</td><td>#Tokens</td><td>Times (s)</td><td>Times per Token (s)</td></tr><tr><td>MITRE-466M</td><td>3667</td><td>64.95</td><td>0.0177</td></tr><tr><td>MITRE-913M</td><td>3626</td><td>85.65</td><td>0.0236</td></tr><tr><td>M2M-483M</td><td>4226</td><td>52.22</td><td>0.0124</td></tr><tr><td>M2M-1.2B</td><td>4234</td><td>89.75</td><td>0.0212</td></tr><tr><td>NLLB-600M</td><td>3990</td><td>41.29</td><td>0.0103</td></tr><tr><td>NLLB-1.3B</td><td>4104</td><td>74.37</td><td>0.0181</td></tr><tr><td>NLLB-3.3B</td><td>3837</td><td>82.15</td><td>0.0214</td></tr></table>\n\nTable 7: Generation cost measurement. Tokens refer to the total tokens generated during inference, and Times refer to the time cost of inference, which is counted by seconds.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.1052::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100",
+      "cleaned_hardware_name": "tesla v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "C",
+      "section_title": "training details of ec-40",
+      "normalized_section_title": "training details of ec-40",
+      "evidence": "Training configurations We employ Fairseq (Ott et al., 2019), an open-source toolkit, to implement our models with methods mentioned in Section 4.2. First, we directly reuse the vocabulary and binary training data provided by Chen et al. $(2023)^{17}$ . Note that we include only supervised translation directions in validation. We train on 8 Tesla V100 GPUs, setting memory-efficientfp16 in Fairseq, with a maximum input of 2048 source tokens per GPU and a gradient accumulation of 16 steps. Both input and output token lengths are limited to 256, and we share the embedding layer between the encoder and decoder. We use a seed of 1234, a learning rate of 0.0005 with the inverse square root schedule and a warmup of 4000 steps, the Adam optimizer (Kingma and Ba, 2017), dropout of 0.1, attention dropout of 0.1, a label smoothing rate of 0.1, no weight decay, and the temperature sampling with $T = 5$ (Arivazhagan et al., 2019). Finally, we train for 200,000 steps, averaging the last 5 checkpoints, saving by epoch.\n\nConfigurations of Related Methods Generally, both our method and these related methods share\n\n<sup>17</sup>https://github.com/Smu-Tan/ZS-NMT-Variations\n\n![](images/7230b1af4075ce44a2ef5fc83f2bd20063cd68243e474e5441a8ca34ab829892.jpg)  \nFigure 7: The training and validation loss in pre-training MITRE. We report the first 100 epochs, each with approximately 2262 steps.\n\nthe same hyper-parameters as the vanilla models. However, there are some method-specific configurations we have to notice. (1) For LAVS (Chen et al., 2023), we directly reuse their code<sup>18</sup> and add around 12k language-specific tokens into the shared vocabulary, resulting in 12.8M additional parameters in modeling; (2) For CL (Pan et al., 2021), we directly reuse their code<sup>19</sup> and set the contrastive learning temperature to 0.1, which is the optimal setting according to their reports; (3) For LCS (Sun et al., 2024), the model follows another translation instruction strategy of Fan et al. (2021) by adding a source language tag at the beginning of the source tokens and a target language tag at the beginning of the target tokens. We re-implement their code and, in the case of 12-layer models where the encoder has 6 layers, apply LCS biasing at the 5th encoder layer; For models with 12 encoder layers, we apply it at the 8th encoder layer; (4) For TDO (Qu et al., 2024b), we also reuse their code<sup>20</sup> and, based on their ablation study, set the number of layers for the first stage to 3 in 12-layer models and to 6 in 24-layer models to allow stronger zero-shot translation ability.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.1052::sections::6",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6",
+      "section_title": "discussion",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.1052::appendix::B",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B",
+      "section_title": "description of pre-training dataset",
+      "evidence": "Our pre-training dataset comprises 24 languages, as detailed in Table 8. As described in Section 5.1, our data collection strategy results in 9.3 billion translation instances across 194 translation directions. The data distribution is visualized at the family level in Figure 9a and at the language level in Figure 9b. Additionally, Figure 9b highlights which translation directions are supervised and which are zero-shot. Notably, translation directions involving ms are also indicated in Figure 9b."
+    },
+    {
+      "source_window_id": "2025.acl-long.1052::appendix::D",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D",
+      "section_title": "training details of mitre",
+      "evidence": "We employ Fairseq to implement MITRE mentioned in Section 5.2, and two versions of MITRE have the different configurations in modeling and have the same configuration in training. Specifically, MITRE-466M is configured with an embedding size of 1,024, an inner size of 4,096, 16 attention heads, and 24 layers. MITRE-913M,\n\n18https://github.com/PKUnlp-icler/   \nOff-Target-MNMT   \n19 https://github.com/PANXiao1994/mRASP2   \n$^{20}$ https://github.com/zhiqu22/PhasedDecoder\n\nTable 8: Details of the dataset in our pre-training. The decoration * on Asian means a group instead of a language family. We not only list the ISO 630-1 code for each language but also list the Flores code to help search corresponding resources from Flores+.   \n\n<table><tr><td>Family</td><td>ISO code</td><td>Flores code</td><td>Language</td><td>script</td></tr><tr><td rowspan=\"6\">Germanic</td><td>en</td><td>eng_Latin</td><td>English</td><td>Latin</td></tr><tr><td>de</td><td>deu_Latin</td><td>German</td><td>Latin</td></tr><tr><td>nl</td><td>nld_Latin</td><td>Dutch</td><td>Latin</td></tr><tr><td>sv</td><td>swe_Latin</td><td>Swedish</td><td>Latin</td></tr><tr><td>da</td><td>dan_Latin</td><td>Danish</td><td>Latin</td></tr><tr><td>af</td><td>afr_Latin</td><td>Afrikaans</td><td>Latin</td></tr><tr><td rowspan=\"5\">Romance</td><td>fr</td><td>fra_Latin</td><td>French</td><td>Latin</td></tr><tr><td>es</td><td>spa_Latin</td><td>Spanish</td><td>Latin</td></tr><tr><td>it</td><td>ita_Latin</td><td>Italian</td><td>Latin</td></tr><tr><td>pt</td><td>por_Latin</td><td>Portuguese</td><td>Latin</td></tr><tr><td>ro</td><td>ron_Latin</td><td>Romanian</td><td>Latin</td></tr><tr><td rowspan=\"5\">Slavic</td><td>ru</td><td>rus_Cyrl</td><td>Russian</td><td>Cyrillic</td></tr><tr><td>cs</td><td>ces_Latin</td><td>Czech</td><td>Latin</td></tr><tr><td>pl</td><td>pol_Latin</td><td>Polish</td><td>Latin</td></tr><tr><td>bg</td><td>bul_Cyrl</td><td>Bulgarian</td><td>Cyrillic</td></tr><tr><td>uk</td><td>ukr_Cyrl</td><td>Ukrainian</td><td>Cyrillic</td></tr><tr><td rowspan=\"4\">Malayo-Polynesian</td><td>id</td><td>ind_Latin</td><td>Indonesian</td><td>Latin</td></tr><tr><td>ms</td><td>zsm_Latin</td><td>Malay</td><td>Latin</td></tr><tr><td>jv</td><td>jav_Latin</td><td>Javanese</td><td>Latin</td></tr><tr><td>tl</td><td>fil_Latin</td><td>Filipino</td><td>Latin</td></tr><tr><td rowspan=\"4\">Asian*</td><td>ko</td><td>kor_Hang</td><td>Korean</td><td>Hangul</td></tr><tr><td>vi</td><td>vie_Latin</td><td>Vietnamese</td><td>Latin</td></tr><tr><td>ja</td><td>jpn_Jpan</td><td>Japanese</td><td>Kanji; Kana</td></tr><tr><td>zh</td><td>cmn_Hans</td><td>Chinese</td><td>Chinese</td></tr></table>\n\na larger model with expanded width and depth, has an embedding size of 1,280, an inner size of 5,120, 20 heads, and 36 layers. In training, we first train a shared SentencePiece vocabulary (Kudo and Richardson, 2018) with a size of 160,000 by 150 million sentences randomly sampled from the training set. We include only supervised translation directions in validation. Then, we train on 80 Tesla V100 GPUs, setting memory-efficient-fp16 in Fairseq, with a maximum input of 1408 source tokens per GPU and a gradient accumulation of 10 steps. In practice, this setup results in each batch containing approximately 0.91 million source tokens. Given the large batch size, we set the learning rate of 0.002 with the inverse square root schedule and the warmup of 8000 steps. We also use a seed of 42, the Adam optimizer (Kingma and Ba, 2017), dropout of 0.1, attention dropout of 0.1, a label smoothing rate of 0.1, no weight decay, and the temperature sampling with $T = 1$ (Arivazha-gan et al., 2019). We train for 300,000 steps and save a checkpoint per 10,000 steps. Finally, we average the last 5 checkpoints. Figure 7 shows the variations of training and validation loss. We can observe that the trends of MITRE-466M and MITRE-913M are highly consistent."
+    },
+    {
+      "source_window_id": "2025.acl-long.1052::appendix::E",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "E",
+      "section_title": "training details of fine-tuning",
+      "evidence": "Selecting Directions We use random.sample in Python to randomly select translation directions for fine-tuning, setting the seed to 0. We define three scenarios, including 5, 25, and 100 translation directions. It is important to note that random.sample causes the 5 and 25 directions to be subsets of the 100 directions. Specifically, the first 5 and first 25 directions in the 100-direction set correspond to the other two scenarios. The 100 directions are: \\( \\mathrm{jv} \\rightarrow \\mathrm{sv}, \\mathrm{ms} \\rightarrow \\mathrm{id}, \\mathrm{de} \\rightarrow \\mathrm{tl}, \\mathrm{ru} \\rightarrow \\mathrm{pl}, \\mathrm{ko} \\rightarrow \\mathrm{jv}, \\mathrm{zh} \\rightarrow \\mathrm{bg}, \\mathrm{ms} \\rightarrow \\mathrm{en}, \\mathrm{pl} \\rightarrow \\mathrm{ru}, \\mathrm{zh} \\rightarrow \\mathrm{af}, \\mathrm{uk} \\rightarrow \\mathrm{ko}, \\mathrm{pt} \\rightarrow \\mathrm{jv}, \\mathrm{ko} \\rightarrow \\mathrm{ro}, \\mathrm{fr} \\rightarrow \\mathrm{da}, \\mathrm{cs} \\rightarrow \\mathrm{pl}, \\mathrm{fr} \\rightarrow \\mathrm{af}, \\mathrm{da} \\rightarrow \\mathrm{fr}, \\mathrm{ru} \\rightarrow \\mathrm{sv}, \\mathrm{fr} \\rightarrow \\mathrm{pl}, \\mathrm{pl} \\rightarrow \\mathrm{tl}, \\mathrm{da} \\rightarrow \\mathrm{ro}, \\mathrm{sv} \\rightarrow \\mathrm{es}, \\mathrm{bg} \\rightarrow \\mathrm{jv}, \\mathrm{zh} \\rightarrow \\mathrm{en}, \\mathrm{da} \\rightarrow \\mathrm{cs}, \\mathrm{uk} \\rightarrow \\mathrm{ms}, \\mathrm{tl} \\rightarrow \\mathrm{es}, \\mathrm{bg} \\rightarrow \\mathrm{de}, \\mathrm{pt} \\rightarrow \\mathrm{n1}, \\mathrm{vi} \\rightarrow \\mathrm{bg}, \\mathrm{tl} \\rightarrow \\mathrm{id}, \\mathrm{ru} \\rightarrow \\mathrm{bg}, \\mathrm{n1} \\rightarrow \\mathrm{ms}, \\mathrm{en} \\rightarrow \\mathrm{uk}, \\mathrm{da} \\rightarrow \\mathrm{sv}, \\mathrm{jv} \\rightarrow \\mathrm{ms}, \\mathrm{en} \\rightarrow \\mathrm{n1}, \\mathrm{zh} \\rightarrow \\mathrm{vi}, \\mathrm{bg} \\rightarrow \\mathrm{ja}, \\mathrm{ro} \\rightarrow \\mathrm{ja}, \\mathrm{bg} \\rightarrow \\mathrm{ru}, \\mathrm{n1} \\rightarrow \\mathrm{tl}, \\mathrm{vi} \\rightarrow \\mathrm{es}, \\mathrm{ja} \\rightarrow \\mathrm{pt}, \\mathrm{cs} \\rightarrow \\mathrm{uk}, \\mathrm{da} \\rightarrow \\mathrm{ko}, \\mathrm{af} \\rightarrow \\mathrm{i t}, \\mathrm{jv} \\rightarrow \\mathrm{zh}, \\mathrm{zh} \\rightarrow \\mathrm{cs}, \\mathrm{sv} \\rightarrow \\mathrm{da}, \\mathrm{ko} \\rightarrow \\mathrm{pt}, \\mathrm{cs} \\rightarrow \\mathrm{n1}, \\mathrm{pt} \\rightarrow \\mathrm{vi}, \\mathrm{n1} \\rightarrow \\mathrm{en}, \\mathrm{vi} \\rightarrow \\mathrm{ja}, \\mathrm{es} \\rightarrow \\mathrm{n1}, \\mathrm{tl} \\rightarrow \\mathrm{ru}, \\mathrm{ru} \\rightarrow \\mathrm{es}, \\mathrm{ja} \\rightarrow \\mathrm{jv}, \\mathrm{ro} \\rightarrow zh, n1\\rightarrow r0, f r\\rightarrow j v, c s\\rightarrow f r, f r\\rightarrow c s, u k\\rightarrow j v, k o\\rightarrow b g, c s\\rightarrow d a, e s\\rightarrow r o, m s\\rightarrow s v, j a\\rightarrow c s, c s\\rightarrow e n, d a\\rightarrow p l, j v\\rightarrow t l, p l\\rightarrow p t, z h\\rightarrow s v, p l\\rightarrow d e, f r\\rightarrow r o, p t\\rightarrow z h, z h\\rightarrow i d, p l\\rightarrow f r, k o\\rightarrow r u, i t\\rightarrow b g, e s\\rightarrow d e, c s\\rightarrow t l, a f\\rightarrow p t, f r\\rightarrow r u, d a\\rightarrow n l, d a\\rightarrow a f, m s\\rightarrow f r, k o\\rightarrow c s, e n\\rightarrow j v, p l\\rightarrow u k, b g\\rightarrow u k, a f\\rightarrow t l, r o\\rightarrow b g, d e\\rightarrow p l, d e\\rightarrow v i, u k\\rightarrow n l, i d\\rightarrow j a, n l\\rightarrow z h, z h\\rightarrow p l\n\nFine-tuning Configurations All fine-tuning experiments use the same settings. We conduct experiments on 8 Tesla V100 GPUs, with a maximum of 1024 tokens per GPU and a gradient accumulation of 2 steps. Based on the pre-trained model, we set the learning rate to 0.0001 with a warmup step of 1 (for launching the inverse square root schedule), and train for 10 epochs. Finally, we use the last epoch for testing.\n\nLoRA Configurations We adopt the setting of Hu et al. (2022) to implement LoRA components for pre-trained models. Specifically, LoRA is only implemented for Query and Value in the attention mechanism with a rank of 8. As a result, the learnable parameters of NLLB series are 1.18M, 2.36M, and 4.72M, respectively, and the learnable parameters of MITRE series are 0.78M and 1.47M, respectively."
+    },
+    {
+      "source_window_id": "2025.acl-long.1052::appendix::J",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "J",
+      "section_title": "supporting experiments for comparing enc-dec and dec-only",
+      "evidence": "In Section 3.2, we explain our reason for implementing registering in Dec-only. Specifically, Dec-only offers better parameter efficiency than Encdec, where the encoder learns the representation of input tokens while the decoder learns the generated tokens (as illustrated in Figure 1, where encoded source tokens are shown in gray). In contrast, Deconly utilizes all parameters for both encoding and\n\n<table><tr><td>Methods</td><td>#layer</td><td>spBLEU</td><td>chrF++</td><td>COMET</td><td>Off-target(%)</td></tr><tr><td>Enc-dec</td><td></td><td>6.99</td><td>19.68</td><td>53.72</td><td>48.4</td></tr><tr><td>+registering</td><td>12</td><td>10.55</td><td>27.29</td><td>58.07</td><td>7.5</td></tr><tr><td>Dec-only</td><td></td><td>8.34</td><td>22.34</td><td>55.71</td><td>22.21</td></tr><tr><td>+registering</td><td></td><td>11.92</td><td>29.02</td><td>61.19</td><td>4.65</td></tr><tr><td>Enc-dec</td><td></td><td>9.69</td><td>23.95</td><td>58.08</td><td>26.69</td></tr><tr><td>+registering</td><td>24</td><td>11.13</td><td>27.91</td><td>58.67</td><td>3.91</td></tr><tr><td>Dec-only</td><td></td><td>10.82</td><td>26.04</td><td>59.95</td><td>19.01</td></tr><tr><td>+registering</td><td></td><td>13.12</td><td>30.51</td><td>63.54</td><td>3.65</td></tr></table>\n\nTable 9: Results on EC-40. For convenience, the score in this table is averaged from all 1,640 translation directions. Enc-dec and Dec-only indicate the vanilla models without registering. The best score is in bold.\n\ngeneration. Based on this, we employ Dec-only as the backbone of our implementation.\n\nTo further support our statement, we provide supporting experiments on EC40, following the experimental setup described in Section 4.2. As shown in Table 9, registering also significantly improves the performance of Enc-dec. However, the gains are more pronounced in Dec-only, suggesting that registering is particularly well-suited for this architecture.\n\nAdditionally, we propose an insight beyond the scope of this work. In Section 3.2, we mention a potential cause of the off-target problem: the dilution of translation instruction attention by other tokens (Gu et al., 2019; Qu et al., 2024b). This theory may explain why Dec-only tends to underperform Enc-dec in MNMT (Gao et al., 2022; Zhang et al., 2022), as the effectiveness of $l_{y}$ is further diluted by both source and target tokens in the attention mechanism. The results in Table 9 further support this explanation, as registering achieves a much larger performance gain in Dec-only than in Enc-dec."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "5.2",
+      "",
+      "C"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 80
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 80
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.1052\\auto\\full.md",
+    "source_md_sha256": "d00f5220764428c7a753f0aeedee7429daca1d12aa640d80a0b6696daa0aa41d",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

@@ -1,0 +1,162 @@
+{
+  "paper_id": "2023.acl-long.517",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.517::sections::5",
+      "paper_id": "2023.acl-long.517",
+      "section_number": "5",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.517::sections::5.1",
+      "paper_id": "2023.acl-long.517",
+      "section_number": "5.1",
+      "section_title": "settings",
+      "normalized_section_title": "settings",
+      "window_text": "To demonstrate the robustness of our approach, we run experiments on a variety of different base tasks, with lattices generated in different conditions, and with 3 different reranking models that fit our criterion. Our base tasks are as follows:\n\nMachine translation We generate lattices (using an mBART model (Liu et al., 2020)) in 3 machine translation settings from WMT-2019: English to German (EN-DE), English to Russian (EN-RU), and French to English (FR-EN) (Barrault et al., 2019).\n\nTable-to-text We use generated candidate sets from a BART model from Ribeiro et al. (2021) on examples from the WebNLG 2017 challenge (Gardent et al., 2017).\n\nDocument summarization We also generate a set on document summarization, using a BART model (Lewis et al., 2020) and XSum data (Narayan et al., 2018).\n\nWe experiment with 3 downstream objectives: COMET (Rei et al., 2020) quality estimation of machine translations, PARENT score (Dhingra et al., 2019) precision for quality estimation of table-to-text generation, and number of unique nouns $^{2}$ using a part-of-speech tagger. We train TFRs for each respectively; see Section 5.2 for model details.\n\nImplementation Details We generate sets of 500 lattices each with different generation conditions, across 5 settings (3 MT settings, summarization, table-to-text), parallel for 3 decoding methods:\n\n- lattice decoding (LATT), with a beam width of $4^{3}$ and RCB recombination (based on n-gram matching during decoding) (Xu et al., 2022).\n\n- beam search, with beam-width 12 (B-12), as a low generation cost baseline   \n- beam search, with beam-width 50 (B-50), which we find to have a comparable wall clock generation time to LATT\n\nFor beam search, we use the Hugging Face generator() API to generate candidates, and we use the corresponding model probabilities returned alongside generation candidates as model scores.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.517::sections::6",
+      "paper_id": "2023.acl-long.517",
+      "section_number": "6",
+      "section_title": "intrinsic evaluation: finding hypotheses with high reranker scores",
+      "normalized_section_title": "intrinsic evaluation: finding hypotheses with high reranker scores",
+      "window_text": "We first evaluate how closely the TFR scores of EEL selections come to matching the quality of the oracle top-1 hypotheses $\\mathbf{y}_{\\mathrm{best}}$ with respect to TFR model $S(\\mathbf{x},\\hat{\\mathbf{y}})$ . We compute an upper bound for this by calculating TFR scores on exploded lattice candidate sets: enumerating the exponentially-large set of complete paths and scoring each individually. Our EXHAUSTIVE numbers are the average top-1 TFR score (not the downstream metric score) across the entire exploded set.\n\nAs baselines, we rerank on a randomly sampled sets of 1 (RAND), 8 (TFR-8-SAMP), and 32 (TFR-32-SAMP) from exploded sets. For EEL approaches, we test a single mask (EEL 1-MASK) and few-mask (EEL 8-MASK) approach. We report these results across decoding methods in Table 1 alongside efficiency measurements on the MT-TFR FR-EN\n\nTable 1: Base task results, grouped by decoding method of input lattices. EEL 1-MASK and EEL 8-MASK strongly improve candidate/node (C/N) efficiency and demonstrate notable speedups compared to baselines. Across settings EEL 8-MASK comes close to matching the much slower LATT exhaustive, even outperforming B-50 exhaustive, demonstrating that EEL comes with low degradation for high efficiency gain.   \n\n<table><tr><td rowspan=\"2\" colspan=\"2\">Method</td><td colspan=\"3\">MT-TFRreranker score</td><td colspan=\"2\">NOUN-TFRscore</td><td>TAB-TFRscore</td><td colspan=\"3\">Efficiency (Fr-En)</td></tr><tr><td>FR-EN</td><td>EN-DE</td><td>EN-RU</td><td>FR-EN</td><td>XSUM</td><td>WEBNLG</td><td>ratio↑C/N</td><td>RRK</td><td>GEN</td></tr><tr><td rowspan=\"6\">LATT</td><td>RAND</td><td>.605</td><td>.582</td><td>.631</td><td>.765</td><td>.831</td><td>.511</td><td>.020</td><td>.051</td><td></td></tr><tr><td>TFR-8-SAMP</td><td>.690</td><td>.690</td><td>.792</td><td>.863</td><td>1.022</td><td>.589</td><td>.020</td><td>.167</td><td></td></tr><tr><td>TFR-32-SAMP</td><td>.716</td><td>.719</td><td>.838</td><td>.903</td><td>1.097</td><td>.627</td><td>.020</td><td>.695</td><td>4.135±1.595</td></tr><tr><td>EEL 1-MASK</td><td>.695</td><td>.700</td><td>.836</td><td>.922</td><td>1.118</td><td>.653</td><td>3.304</td><td>.091</td><td></td></tr><tr><td>EEL 8-MASK</td><td>.720</td><td>.731</td><td>.862</td><td>.934</td><td>1.142</td><td>.657</td><td>0.413</td><td>.252</td><td></td></tr><tr><td>EXHAUSTIVE</td><td>.743</td><td>.748</td><td>.883</td><td>.945</td><td>1.178</td><td>.692</td><td>.025</td><td>17.950</td><td></td></tr><tr><td rowspan=\"3\">B-12</td><td>RAND</td><td>.629</td><td>.616</td><td>.678</td><td>.751</td><td>.734</td><td>.582</td><td>.024</td><td>0</td><td></td></tr><tr><td>EEL 1-MASK</td><td>.687</td><td>.684</td><td>.783</td><td>.812</td><td>.848</td><td>.641</td><td>.064</td><td>.078</td><td>1.280±.260</td></tr><tr><td>EXHAUSTIVE</td><td>.687</td><td>.684</td><td>.783</td><td>.812</td><td>.848</td><td>.641</td><td>.024</td><td>.248</td><td></td></tr><tr><td rowspan=\"3\">B-50</td><td>RAND</td><td>.618</td><td>.611</td><td>.640</td><td>.752</td><td>.733</td><td>.581</td><td>.025</td><td>0</td><td></td></tr><tr><td>EEL 1-MASK</td><td>.700</td><td>.707</td><td>.805</td><td>.845</td><td>.908</td><td>.651</td><td>.075</td><td>.120</td><td>3.670±.960</td></tr><tr><td>EXHAUSTIVE</td><td>.706</td><td>.710</td><td>.810</td><td>.850</td><td>.909</td><td>.653</td><td>.025</td><td>1.051</td><td></td></tr></table>\n\nsetting, which we noted to be representative of performance across settings.\n\nEEL universally provides strong efficiency boosts: While the lattice EXHAUSTIVE reranking always performs the best, it's incredibly slow, taking 17.95s on average to rerank a single candidate set. EEL 1-MASK, meanwhile, encodes the same candidate set roughly 200 times faster, at only .091s, and even EEL 8-MASK only takes .252s. The candidate / node ratio of 3.304 (EEL 1-MASK) and .413 EEL 1-MASK, compared to baseline C/N efficiencies of .025, further demonstrates how much computation EEL saves on large lattices. Even on B-50 and B-12, we see strong reranking efficiency improvements, with 3x and 2.67x better C/N efficiency, and notable rerank time (RRK) boosts.\n\nEEL selections nearly match ORACLE: While EEL, especially with large input lattices, can improve encoding efficiency by orders of magnitude, it does so while on average still coming very close to matching oracle top-1 candidates (see Appendix B for degradation analysis). We find EEL-8-MASK on LATT to be the most effective overall for efficiently approximating lattice decoding lattice TFR score, as outside of the unfeasible LATT EXHAUSTIVE, EEL 8-MASK obtains the highest TFR scores in every setting, outperforming baselines and even B-50 EXHAUSTIVE. Furthermore, EEL, applied on B-12, and B-50 comes with zero and near-zero degradation respectively.\n\nTable 2: Downstream score results, grouped by systems which have comparable computational requirements. We find that our best method (EEL-W 8-MASK) achieves strong performance. The bottom rows report oracle reranking approaches, showing that lattices have much higher oracle values and that our rerankers can sometimes come close (especially on NOUN-XSum). * indicates statistically significant improvement over B50-E-TFR using a paired bootstrap test, $p < {0.05}$ .   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"3\">COMET</td><td rowspan=\"2\">NOUN XSUM</td><td rowspan=\"2\">PRT-P WNLG</td></tr><tr><td>FR-EN</td><td>EN-DE</td><td>EN-RU</td></tr><tr><td>RAND-B50</td><td>.654</td><td>.541</td><td>.482</td><td>7.01</td><td>.573</td></tr><tr><td>RAND-LATT</td><td>.598</td><td>.419</td><td>.445</td><td>8.07</td><td>.452</td></tr><tr><td>B50-PROB</td><td>.680</td><td>.564</td><td>.518</td><td>-</td><td>.623</td></tr><tr><td>LATT-PROB</td><td>.660</td><td>.493</td><td>.545</td><td>-</td><td>.654</td></tr><tr><td>EEL-W 1-MASK</td><td>.673</td><td>.541</td><td>.592*</td><td>10.80*</td><td>.667</td></tr><tr><td>EEL-W 8-MASK</td><td>.674</td><td>.545</td><td>.593*</td><td>11.05*</td><td>.670</td></tr><tr><td>B50-E-TFR</td><td>.689</td><td>.576</td><td>.562</td><td>8.63</td><td>.664</td></tr><tr><td colspan=\"6\">Oracle values</td></tr><tr><td>LATT-E-TFR</td><td>.698</td><td>.574</td><td>.614</td><td>11.24</td><td>.691</td></tr><tr><td>B50-ORACLE</td><td>.761</td><td>.664</td><td>.702</td><td>8.74</td><td>.778</td></tr><tr><td>LATT-ORACLE</td><td>.789</td><td>.677</td><td>.775</td><td>11.40</td><td>.825</td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.517::appendix::A.2",
+      "paper_id": "2023.acl-long.517",
+      "section_number": "A.2",
+      "section_title": "training",
+      "normalized_section_title": "training",
+      "window_text": "For training, as a rough heuristic of how well a model would perform as a re-ranker, we optimized for correlation metrics between TFR model scores and downstream metric scores (Pearson, Spearman, and Kendall's Tau correlations). For our MT-TFR validation set, our model reached .879 Pearson, .854 Spearman, and .690 Kendall correlation with COMET score. For our NOUN-TFR model, our model reached .971 Perason, .940 Spearman, and .800 Kendall correlations with gold NLTK noun count. Lastly, for our TAB-TFR model, our model reached .646 Pearson, .632 Spearman, and .470 Kendall correlation. Interestingly, though the correlation metrics weren't good for the TAB-TFR model, the downstream re-ranking still worked well, outperforming model score with similar margins to MT-TFR. We trained each model for an average of roughly 12 hours of training for the TAB-TFR and MT-TFR models, and roughly 3 hours of training for the NOUN-TFR model.\n\nNote the size of the train / validation set for MT-TFR were 958,122/74,522, for TAB-TFR were 260,668/28,964, and for NOUN-TFR were 90,000/10,001.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.517::appendix::D.2",
+      "paper_id": "2023.acl-long.517",
+      "section_number": "D.2",
+      "section_title": "model hyperparameters / infrastructure",
+      "normalized_section_title": "model hyperparameters / infrastructure",
+      "window_text": "We run all of our experiments on a single PNY NVIDIA Quadro RTX 8000 GPU.\n\nAs we found it to work well across models, for training our TFR models, we use the following common hyperparameters: encoder learning rate: 1e-5, learning rate: 3.1e-5, layerwise decay: 0.9, dropout: 0.1, number of encoder frozen epochs: 0.3, and a batch size of 8.\n\nWe run our NOUN-TFR model for 40000 train steps, our MT-TFR model for 140000 train steps, and our TAB-TFR model for 190000 train steps. This came out to roughly 28 GPU hours total to train the models that we used. Note that beyond manual adjustments, we don't use any sort of hyperparameter grid search.\n\nWe further report another approximately 8 GPU hours for generating and reranking the lattices we used for our evaluation.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.517::appendix::D.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "PNY NVIDIA Quadro RTX 8000",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We run all of our experiments on a single PNY NVIDIA Quadro RTX 8000 GPU.\n\nAs we found it to work well across models, for training our TFR models, we use the following common hyperparameters: encoder learning rate: 1e-5, learning rate: 3.1e-5, layerwise decay: 0.9, dropout: 0.1, number of encoder frozen epochs: 0.3, and a batch size of 8.\n\nWe run our NOUN-TFR model for 40000 train steps, our MT-TFR model for 140000 train steps, and our TAB-TFR model for 190000 train steps. This came out to roughly 28 GPU hours total to train the models that we used. Note that beyond manual adjustments, we don't use any sort of hyperparameter grid search.\n\nWe further report another approximately 8 GPU hours for generating and reranking the lattices we used for our evaluation.",
+      "section_number": "D.2",
+      "section_title": "model hyperparameters / infrastructure",
+      "normalized_section_title": "model hyperparameters / infrastructure"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.517::appendix::D.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "PNY NVIDIA Quadro RTX 8000",
+      "cleaned_hardware_name": "nvidia quadro rtx 8000",
+      "normalized_hardware_name": "NVIDIA Quadro RTX 8000",
+      "benchmark_hardware_name": "NVIDIA Quadro RTX 8000",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "D.2",
+      "section_title": "model hyperparameters / infrastructure",
+      "normalized_section_title": "model hyperparameters / infrastructure",
+      "evidence": "We run all of our experiments on a single PNY NVIDIA Quadro RTX 8000 GPU.\n\nAs we found it to work well across models, for training our TFR models, we use the following common hyperparameters: encoder learning rate: 1e-5, learning rate: 3.1e-5, layerwise decay: 0.9, dropout: 0.1, number of encoder frozen epochs: 0.3, and a batch size of 8.\n\nWe run our NOUN-TFR model for 40000 train steps, our MT-TFR model for 140000 train steps, and our TAB-TFR model for 190000 train steps. This came out to roughly 28 GPU hours total to train the models that we used. Note that beyond manual adjustments, we don't use any sort of hyperparameter grid search.\n\nWe further report another approximately 8 GPU hours for generating and reranking the lattices we used for our evaluation.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.acl-long.517::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experimental setup",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.517::sections::5.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.1",
+      "section_title": "settings",
+      "evidence": "To demonstrate the robustness of our approach, we run experiments on a variety of different base tasks, with lattices generated in different conditions, and with 3 different reranking models that fit our criterion. Our base tasks are as follows:\n\nMachine translation We generate lattices (using an mBART model (Liu et al., 2020)) in 3 machine translation settings from WMT-2019: English to German (EN-DE), English to Russian (EN-RU), and French to English (FR-EN) (Barrault et al., 2019).\n\nTable-to-text We use generated candidate sets from a BART model from Ribeiro et al. (2021) on examples from the WebNLG 2017 challenge (Gardent et al., 2017).\n\nDocument summarization We also generate a set on document summarization, using a BART model (Lewis et al., 2020) and XSum data (Narayan et al., 2018).\n\nWe experiment with 3 downstream objectives: COMET (Rei et al., 2020) quality estimation of machine translations, PARENT score (Dhingra et al., 2019) precision for quality estimation of table-to-text generation, and number of unique nouns $^{2}$ using a part-of-speech tagger. We train TFRs for each respectively; see Section 5.2 for model details.\n\nImplementation Details We generate sets of 500 lattices each with different generation conditions, across 5 settings (3 MT settings, summarization, table-to-text), parallel for 3 decoding methods:\n\n- lattice decoding (LATT), with a beam width of $4^{3}$ and RCB recombination (based on n-gram matching during decoding) (Xu et al., 2022).\n\n- beam search, with beam-width 12 (B-12), as a low generation cost baseline   \n- beam search, with beam-width 50 (B-50), which we find to have a comparable wall clock generation time to LATT\n\nFor beam search, we use the Hugging Face generator() API to generate candidates, and we use the corresponding model probabilities returned alongside generation candidates as model scores."
+    },
+    {
+      "source_window_id": "2023.acl-long.517::sections::6",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6",
+      "section_title": "intrinsic evaluation: finding hypotheses with high reranker scores",
+      "evidence": "We first evaluate how closely the TFR scores of EEL selections come to matching the quality of the oracle top-1 hypotheses $\\mathbf{y}_{\\mathrm{best}}$ with respect to TFR model $S(\\mathbf{x},\\hat{\\mathbf{y}})$ . We compute an upper bound for this by calculating TFR scores on exploded lattice candidate sets: enumerating the exponentially-large set of complete paths and scoring each individually. Our EXHAUSTIVE numbers are the average top-1 TFR score (not the downstream metric score) across the entire exploded set.\n\nAs baselines, we rerank on a randomly sampled sets of 1 (RAND), 8 (TFR-8-SAMP), and 32 (TFR-32-SAMP) from exploded sets. For EEL approaches, we test a single mask (EEL 1-MASK) and few-mask (EEL 8-MASK) approach. We report these results across decoding methods in Table 1 alongside efficiency measurements on the MT-TFR FR-EN\n\nTable 1: Base task results, grouped by decoding method of input lattices. EEL 1-MASK and EEL 8-MASK strongly improve candidate/node (C/N) efficiency and demonstrate notable speedups compared to baselines. Across settings EEL 8-MASK comes close to matching the much slower LATT exhaustive, even outperforming B-50 exhaustive, demonstrating that EEL comes with low degradation for high efficiency gain.   \n\n<table><tr><td rowspan=\"2\" colspan=\"2\">Method</td><td colspan=\"3\">MT-TFRreranker score</td><td colspan=\"2\">NOUN-TFRscore</td><td>TAB-TFRscore</td><td colspan=\"3\">Efficiency (Fr-En)</td></tr><tr><td>FR-EN</td><td>EN-DE</td><td>EN-RU</td><td>FR-EN</td><td>XSUM</td><td>WEBNLG</td><td>ratio↑C/N</td><td>RRK</td><td>GEN</td></tr><tr><td rowspan=\"6\">LATT</td><td>RAND</td><td>.605</td><td>.582</td><td>.631</td><td>.765</td><td>.831</td><td>.511</td><td>.020</td><td>.051</td><td></td></tr><tr><td>TFR-8-SAMP</td><td>.690</td><td>.690</td><td>.792</td><td>.863</td><td>1.022</td><td>.589</td><td>.020</td><td>.167</td><td></td></tr><tr><td>TFR-32-SAMP</td><td>.716</td><td>.719</td><td>.838</td><td>.903</td><td>1.097</td><td>.627</td><td>.020</td><td>.695</td><td>4.135±1.595</td></tr><tr><td>EEL 1-MASK</td><td>.695</td><td>.700</td><td>.836</td><td>.922</td><td>1.118</td><td>.653</td><td>3.304</td><td>.091</td><td></td></tr><tr><td>EEL 8-MASK</td><td>.720</td><td>.731</td><td>.862</td><td>.934</td><td>1.142</td><td>.657</td><td>0.413</td><td>.252</td><td></td></tr><tr><td>EXHAUSTIVE</td><td>.743</td><td>.748</td><td>.883</td><td>.945</td><td>1.178</td><td>.692</td><td>.025</td><td>17.950</td><td></td></tr><tr><td rowspan=\"3\">B-12</td><td>RAND</td><td>.629</td><td>.616</td><td>.678</td><td>.751</td><td>.734</td><td>.582</td><td>.024</td><td>0</td><td></td></tr><tr><td>EEL 1-MASK</td><td>.687</td><td>.684</td><td>.783</td><td>.812</td><td>.848</td><td>.641</td><td>.064</td><td>.078</td><td>1.280±.260</td></tr><tr><td>EXHAUSTIVE</td><td>.687</td><td>.684</td><td>.783</td><td>.812</td><td>.848</td><td>.641</td><td>.024</td><td>.248</td><td></td></tr><tr><td rowspan=\"3\">B-50</td><td>RAND</td><td>.618</td><td>.611</td><td>.640</td><td>.752</td><td>.733</td><td>.581</td><td>.025</td><td>0</td><td></td></tr><tr><td>EEL 1-MASK</td><td>.700</td><td>.707</td><td>.805</td><td>.845</td><td>.908</td><td>.651</td><td>.075</td><td>.120</td><td>3.670±.960</td></tr><tr><td>EXHAUSTIVE</td><td>.706</td><td>.710</td><td>.810</td><td>.850</td><td>.909</td><td>.653</td><td>.025</td><td>1.051</td><td></td></tr></table>\n\nsetting, which we noted to be representative of performance across settings.\n\nEEL universally provides strong efficiency boosts: While the lattice EXHAUSTIVE reranking always performs the best, it's incredibly slow, taking 17.95s on average to rerank a single candidate set. EEL 1-MASK, meanwhile, encodes the same candidate set roughly 200 times faster, at only .091s, and even EEL 8-MASK only takes .252s. The candidate / node ratio of 3.304 (EEL 1-MASK) and .413 EEL 1-MASK, compared to baseline C/N efficiencies of .025, further demonstrates how much computation EEL saves on large lattices. Even on B-50 and B-12, we see strong reranking efficiency improvements, with 3x and 2.67x better C/N efficiency, and notable rerank time (RRK) boosts.\n\nEEL selections nearly match ORACLE: While EEL, especially with large input lattices, can improve encoding efficiency by orders of magnitude, it does so while on average still coming very close to matching oracle top-1 candidates (see Appendix B for degradation analysis). We find EEL-8-MASK on LATT to be the most effective overall for efficiently approximating lattice decoding lattice TFR score, as outside of the unfeasible LATT EXHAUSTIVE, EEL 8-MASK obtains the highest TFR scores in every setting, outperforming baselines and even B-50 EXHAUSTIVE. Furthermore, EEL, applied on B-12, and B-50 comes with zero and near-zero degradation respectively.\n\nTable 2: Downstream score results, grouped by systems which have comparable computational requirements. We find that our best method (EEL-W 8-MASK) achieves strong performance. The bottom rows report oracle reranking approaches, showing that lattices have much higher oracle values and that our rerankers can sometimes come close (especially on NOUN-XSum). * indicates statistically significant improvement over B50-E-TFR using a paired bootstrap test, $p < {0.05}$ .   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"3\">COMET</td><td rowspan=\"2\">NOUN XSUM</td><td rowspan=\"2\">PRT-P WNLG</td></tr><tr><td>FR-EN</td><td>EN-DE</td><td>EN-RU</td></tr><tr><td>RAND-B50</td><td>.654</td><td>.541</td><td>.482</td><td>7.01</td><td>.573</td></tr><tr><td>RAND-LATT</td><td>.598</td><td>.419</td><td>.445</td><td>8.07</td><td>.452</td></tr><tr><td>B50-PROB</td><td>.680</td><td>.564</td><td>.518</td><td>-</td><td>.623</td></tr><tr><td>LATT-PROB</td><td>.660</td><td>.493</td><td>.545</td><td>-</td><td>.654</td></tr><tr><td>EEL-W 1-MASK</td><td>.673</td><td>.541</td><td>.592*</td><td>10.80*</td><td>.667</td></tr><tr><td>EEL-W 8-MASK</td><td>.674</td><td>.545</td><td>.593*</td><td>11.05*</td><td>.670</td></tr><tr><td>B50-E-TFR</td><td>.689</td><td>.576</td><td>.562</td><td>8.63</td><td>.664</td></tr><tr><td colspan=\"6\">Oracle values</td></tr><tr><td>LATT-E-TFR</td><td>.698</td><td>.574</td><td>.614</td><td>11.24</td><td>.691</td></tr><tr><td>B50-ORACLE</td><td>.761</td><td>.664</td><td>.702</td><td>8.74</td><td>.778</td></tr><tr><td>LATT-ORACLE</td><td>.789</td><td>.677</td><td>.775</td><td>11.40</td><td>.825</td></tr></table>"
+    },
+    {
+      "source_window_id": "2023.acl-long.517::appendix::A.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.2",
+      "section_title": "training",
+      "evidence": "For training, as a rough heuristic of how well a model would perform as a re-ranker, we optimized for correlation metrics between TFR model scores and downstream metric scores (Pearson, Spearman, and Kendall's Tau correlations). For our MT-TFR validation set, our model reached .879 Pearson, .854 Spearman, and .690 Kendall correlation with COMET score. For our NOUN-TFR model, our model reached .971 Perason, .940 Spearman, and .800 Kendall correlations with gold NLTK noun count. Lastly, for our TAB-TFR model, our model reached .646 Pearson, .632 Spearman, and .470 Kendall correlation. Interestingly, though the correlation metrics weren't good for the TAB-TFR model, the downstream re-ranking still worked well, outperforming model score with similar margins to MT-TFR. We trained each model for an average of roughly 12 hours of training for the TAB-TFR and MT-TFR models, and roughly 3 hours of training for the NOUN-TFR model.\n\nNote the size of the train / validation set for MT-TFR were 958,122/74,522, for TAB-TFR were 260,668/28,964, and for NOUN-TFR were 90,000/10,001."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "D.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Quadro RTX 8000",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2023\\2023.acl-long.517\\auto\\full.md",
+    "source_md_sha256": "02178a34a45a47e623d83488d5e20976cc269700d25abf9d3b1138a13cc2c804",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

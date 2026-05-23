@@ -1,0 +1,343 @@
+{
+  "paper_id": "2025.acl-long.99",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.99::sections::3",
+      "paper_id": "2025.acl-long.99",
+      "section_number": "3",
+      "section_title": "methods",
+      "normalized_section_title": "methods",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.99::sections::4",
+      "paper_id": "2025.acl-long.99",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.99::sections::4.1",
+      "paper_id": "2025.acl-long.99",
+      "section_number": "4.1",
+      "section_title": "experimental settings",
+      "normalized_section_title": "experimental settings",
+      "window_text": "Target Foundation Models OpenLLaMA<sup>1</sup> 3B model, LLaMA family models (Touvron et al., 2023a,b) 7B to 33B, and Mistral-v0.1 7B (Jiang et al., 2023) model are used for the evaluation.\n\nBaselines We compare the proposed L4Q with previous quantization methods and quantization-aware PEFT methods. The baseline quantization methods considered are LSQ for QAT, and GPTQ and OmniQuant for PTQ. For quantization-aware PEFT baselines, we include QLoRA, QA-LoRA, and LoftQ. We apply uniform quantization in our experiments to ensure consistency across methods. The methods that were originally deployed with non-uniform quantization are denoted with an as\n\nterisk $(^{*})$ . For methods with LoRA adapters, including L4Q, the adapters are initialized following the original scheme: $A$ is initialized using Kaiminguniform, while $B$ is initialized to zeros. We also note that the term fully-quantized refers to a condition in which all linear layers are quantized, while non-linear components and the head layer remain in higher precision.\n\nEvaluation Setups We establish the L4Q framework based on the open-source frameworks: LitGPT $^2$ and huggingface transformers $^3$ . The models are symmetrically quantized with quantization group size of 128 for the LLaMA and Mistral models, and 64 for the OpenLLaMA models due to its small channel size. Also, the models are finetuned with a LoRA rank $r$ of 4 by default, and 8 for Mistral. We double the rank $r$ in QA-LoRA for a fair comparison in terms of the number of LoRA parameters. Further details on the effect of rank size and quantization group size can be found in Appendix C. We use the Stanford-Alpaca (Taori et al., 2023), a dataset that consists of 50k training samples and 2k validation samples generated from the GPT 3.5 (Brown et al., 2020). We use bfloat16 precision for numerically stable fine-tuning. All experiments are conducted on an NVIDIA A100 80GB GPU. Detailed hyperparameter settings for fine-tuning are provided in Appendix D.\n\nEvaluation Metrics We evaluate the accuracy of LLMs on Commonsense QA (CSQA) (Gao et al., 2021) and MMLU (Hendrycks et al., 2021) benchmarks. The CSQA benchmark comprises seven multiple-choice tasks designed to evaluate language models (Zellers et al., 2019; Bisk et al., 2020; Clark et al., 2018; Sakaguchi et al., 2020; Clark et al., 2019; Talmor et al., 2019). The MMLU benchmark spans four subject categories made up of 57 subcategories of language tasks.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.99::sections::4.2",
+      "paper_id": "2025.acl-long.99",
+      "section_number": "4.2",
+      "section_title": "evaluation results",
+      "normalized_section_title": "evaluation results",
+      "window_text": "Memory Cost for Fine-Tuning We measure the peak memory usage during fine-tuning of 4-bit LLMs, including L4Q and QAT-based baselines, as shown in Table 1. While QAT and QAT-LoRA incur significantly higher memory costs compared to LoRA, L4Q's memory usage remains comparable to that of LoRA. This analysis shows that L4Q effectively balances the advantages of QAT and the memory efficiency of LoRA. Further analysis\n\nTable 1: Memory cost (GB) for fine-tuning LLMs on NVIDIA A100 GPU. (OOM: Out of Memory)   \n\n<table><tr><td rowspan=\"2\">Methods</td><td colspan=\"2\">OpenLLaMA</td><td colspan=\"2\">LLaMA</td></tr><tr><td>3B</td><td>7B</td><td>13B</td><td>33B</td></tr><tr><td>LoRA</td><td>15.1</td><td>25.1</td><td>43.8</td><td>71.9</td></tr><tr><td>QAT</td><td>44.2</td><td>79.5</td><td>OOM</td><td>OOM</td></tr><tr><td>QAT-LoRA</td><td>22.6</td><td>41.9</td><td>70.6</td><td>OOM</td></tr><tr><td>L4Q</td><td>15.3</td><td>25.4</td><td>44.3</td><td>73.2</td></tr></table>\n\n![](images/3435b3e453986cd30e91ee101ad600b3aad48a35fa9783f8f114773409b56c0a.jpg)  \nFigure 4: The average inference speedup of quantized models compared to pre-trained models.\n\nof the training efficiency of L4Q and the baseline methods can be found in Appendix E.\n\nInference Speedup We measure the inference speed of 16-bit pre-trained models and quantized models using LLaMA-1 models. The average speedup of quantized models compared to full-precision 16-bit models is reported in Figure 4. The quantized models include fully-quantized 4-bit models (L4Q and QA-LoRA), which contain only quantized parameters, and mixed-precision 4&16-bit models (LoftQ*, QLoRA*, and QAT-LoRA), which use additional 16-bit LoRA parameters. The inference speed was measured with input batch sizes ranging from 1 to 64. The 4-bit models achieve a speedup of $1.8 \\times$ to $2.3 \\times$ over the pre-trained models. Moreover, these 4-bit models achieve a $1.4 \\times$ to $1.6 \\times$ speedup compared to mixed-precision models, which are also quantized versions of LLMs. This demonstrates that the full integration of QAT and LoRA in L4Q plays a crucial role in inference speedup. Further analysis and details on speedup can be found in Appendix F.\n\nAccuracy Results We compare the CSQA and MMLU benchmark accuracy of baselines and L4Q. Table 2 and Table 3 present a comprehensive comparison between baselines and the proposed L4Q. Since previous quantization-aware PEFT methods involve a fine-tuning stage after PTQ, they generally achieve higher accuracy compared to PTQ\n\nTable 2: Accuracy (%) evaluation results with 4-bit quantization. We present the bit precision under each methods. The notation '4&16' refers to the use of 16-bit LoRA parameters with the quantized weights for inference.   \n\n<table><tr><td>Model</td><td>Benchmark</td><td>Pre-trained 16</td><td>LoRA 16</td><td>GPTQ 4</td><td>OmniQ 4</td><td>\\( LoftQ^* \\) 4&amp;16</td><td>\\( QLoRA^* \\) 4&amp;16</td><td>QA-LoRA 4</td><td>QAT-LoRA 4&amp;16</td><td>L4Q 4</td></tr><tr><td>OpenLLaMA 3B</td><td>CSQA</td><td>54.8</td><td>55.9</td><td>50.7</td><td>54.1</td><td>54.2</td><td>54.4</td><td>54.5</td><td>54.6</td><td>55.0</td></tr><tr><td>LLaMA-3 8B</td><td>CSQA</td><td>65.6</td><td>67.2</td><td>57.9</td><td>64.9</td><td>63.3</td><td>58.6</td><td>58.0</td><td>65.7</td><td>66.8</td></tr><tr><td rowspan=\"3\">LLaMA-1 7B</td><td>CSQA</td><td>61.7</td><td>63.4</td><td>59.4</td><td>58.1</td><td>62.6</td><td>61.3</td><td>61.3</td><td>62.4</td><td>62.7</td></tr><tr><td>MMLU0-shot</td><td>32.5</td><td>36.3</td><td>28.3</td><td>30.9</td><td>33.0</td><td>32.8</td><td>34.5</td><td>33.8</td><td>34.9</td></tr><tr><td>MMLU5-shot</td><td>35.1</td><td>36.7</td><td>32.7</td><td>33.3</td><td>35.1</td><td>33.6</td><td>35.6</td><td>34.8</td><td>35.7</td></tr><tr><td rowspan=\"3\">LLaMA-1 13B</td><td>CSQA</td><td>63.8</td><td>65.2</td><td>63.5</td><td>60.4</td><td>64.2</td><td>63.8</td><td>62.5</td><td>64.4</td><td>64.5</td></tr><tr><td>MMLU0-shot</td><td>43.6</td><td>44.3</td><td>40.1</td><td>42.6</td><td>42.4</td><td>42.1</td><td>42.4</td><td>42.0</td><td>43.2</td></tr><tr><td>MMLU5-shot</td><td>46.3</td><td>47.0</td><td>45.7</td><td>45.7</td><td>45.4</td><td>45.9</td><td>45.8</td><td>45.5</td><td>46.0</td></tr><tr><td rowspan=\"3\">LLaMA-1 33B</td><td>CSQA</td><td>67.4</td><td>68.3</td><td>65.7</td><td>62.9</td><td>67.4</td><td>66.2</td><td>65.3</td><td>67.3</td><td>67.5</td></tr><tr><td>MMLU0-shot</td><td>53.0</td><td>54.4</td><td>51.4</td><td>52.0</td><td>51.8</td><td>51.0</td><td>48.9</td><td>52.3</td><td>53.3</td></tr><tr><td>MMLU5-shot</td><td>56.4</td><td>57.6</td><td>55.7</td><td>55.8</td><td>56.4</td><td>55.6</td><td>55.0</td><td>56.7</td><td>56.7</td></tr><tr><td rowspan=\"3\">LLaMA-2 7B</td><td>CSQA</td><td>61.9</td><td>63.3</td><td>60.7</td><td>59.5</td><td>61.7</td><td>61.3</td><td>61.0</td><td>61.9</td><td>63.6</td></tr><tr><td>MMLU0-shot</td><td>41.6</td><td>43.9</td><td>37.1</td><td>41.0</td><td>38.5</td><td>38.6</td><td>38.9</td><td>37.9</td><td>40.9</td></tr><tr><td>MMLU5-shot</td><td>45.4</td><td>46.0</td><td>42.9</td><td>45.4</td><td>43.7</td><td>44.6</td><td>44.4</td><td>43.8</td><td>45.5</td></tr><tr><td rowspan=\"3\">LLaMA-2 13B</td><td>CSQA</td><td>65.0</td><td>66.5</td><td>64.4</td><td>59.9</td><td>64.9</td><td>64.0</td><td>64.5</td><td>64.7</td><td>65.8</td></tr><tr><td>MMLU0-shot</td><td>52.1</td><td>52.5</td><td>50.0</td><td>51.8</td><td>51.7</td><td>50.7</td><td>50.4</td><td>50.7</td><td>51.9</td></tr><tr><td>MMLU5-shot</td><td>54.8</td><td>55.7</td><td>54.7</td><td>54.7</td><td>54.5</td><td>54.2</td><td>54.1</td><td>53.8</td><td>55.2</td></tr><tr><td rowspan=\"3\">Mistral-v0.1 7B</td><td>CSQA</td><td>66.2</td><td>66.4</td><td>65.3</td><td>64.7</td><td>60.7</td><td>65.8</td><td>65.4</td><td>64.5</td><td>66.1</td></tr><tr><td>MMLU0-shot</td><td>60.2</td><td>60.6</td><td>57.6</td><td>58.4</td><td>45.2</td><td>58.7</td><td>56.5</td><td>58.8</td><td>59.0</td></tr><tr><td>MMLU5-shot</td><td>62.6</td><td>62.9</td><td>61.0</td><td>61.0</td><td>45.7</td><td>61.1</td><td>61.2</td><td>60.2</td><td>61.4</td></tr></table>\n\nTable 3: Accuracy (%) evaluation results with 3-bit quantization. We present the bit precision under each methods. The notation '3&16' refers to the use of 16-bit LoRA parameters with the quantized weights for inference.   \n\n<table><tr><td>Model</td><td>Benchmark</td><td>Pre-trained 16</td><td>LoRA 16</td><td>GPTQ 3</td><td>OmniQ 3</td><td>\\( LoftQ^* \\) 3&amp;16</td><td>QLoRA* 3&amp;16</td><td>QA-LoRA 3</td><td>QAT-LoRA 3&amp;16</td><td>L4Q 3</td></tr><tr><td>OpenLLaMA 3B</td><td>CSQA</td><td>54.8</td><td>55.9</td><td>52.2</td><td>50.0</td><td>38.1</td><td>51.0</td><td>51.5</td><td>53.2</td><td>54.0</td></tr><tr><td>LLaMA-3 8B</td><td>CSQA</td><td>65.6</td><td>67.2</td><td>53.5</td><td>58.7</td><td>48.6</td><td>55.7</td><td>56.6</td><td>63.1</td><td>63.5</td></tr><tr><td rowspan=\"3\">LLaMA-1 7B</td><td>CSQA</td><td>61.7</td><td>63.4</td><td>53.4</td><td>56.5</td><td>49.8</td><td>59.1</td><td>58.7</td><td>60.7</td><td>61.2</td></tr><tr><td>MMLU0-shot</td><td>32.5</td><td>36.3</td><td>23.7</td><td>29.0</td><td>23.4</td><td>27.7</td><td>28.0</td><td>30.6</td><td>30.6</td></tr><tr><td>MMLU5-shot</td><td>35.1</td><td>36.7</td><td>27.3</td><td>31.6</td><td>23.1</td><td>31.5</td><td>29.1</td><td>31.5</td><td>31.8</td></tr><tr><td rowspan=\"3\">LLaMA-1 13B</td><td>CSQA</td><td>63.8</td><td>65.2</td><td>61.0</td><td>58.9</td><td>54.0</td><td>61.3</td><td>61.1</td><td>63.2</td><td>63.4</td></tr><tr><td>MMLU0-shot</td><td>43.6</td><td>44.3</td><td>33.1</td><td>34.8</td><td>25.0</td><td>36.1</td><td>37.5</td><td>38.8</td><td>40.7</td></tr><tr><td>MMLU5-shot</td><td>46.3</td><td>47.0</td><td>38.2</td><td>41.6</td><td>25.3</td><td>40.4</td><td>38.2</td><td>40.9</td><td>41.8</td></tr><tr><td rowspan=\"3\">LLaMA-1 33B</td><td>CSQA</td><td>67.4</td><td>68.3</td><td>65.1</td><td>62.3</td><td>54.8</td><td>64.3</td><td>64.6</td><td>67.4</td><td>67.4</td></tr><tr><td>MMLU0-shot</td><td>53.0</td><td>54.4</td><td>50.0</td><td>50.2</td><td>24.6</td><td>45.6</td><td>46.1</td><td>50.1</td><td>50.5</td></tr><tr><td>MMLU5-shot</td><td>56.4</td><td>57.6</td><td>51.9</td><td>52.4</td><td>24.0</td><td>50.1</td><td>48.7</td><td>50.6</td><td>53.1</td></tr><tr><td rowspan=\"3\">LLaMA-2 7B</td><td>CSQA</td><td>61.9</td><td>63.3</td><td>57.6</td><td>57.9</td><td>34.7</td><td>57.6</td><td>56.3</td><td>57.4</td><td>61.3</td></tr><tr><td>MMLU0-shot</td><td>41.6</td><td>43.9</td><td>31.3</td><td>34.3</td><td>22.9</td><td>32.5</td><td>31.0</td><td>31.5</td><td>34.9</td></tr><tr><td>MMLU5-shot</td><td>45.4</td><td>46.0</td><td>37.5</td><td>37.7</td><td>24.2</td><td>37.6</td><td>37.5</td><td>36.8</td><td>38.0</td></tr><tr><td rowspan=\"3\">LLaMA-2 13B</td><td>CSQA</td><td>65.0</td><td>66.5</td><td>61.7</td><td>59.9</td><td>39.3</td><td>62.5</td><td>61.7</td><td>64.3</td><td>65.1</td></tr><tr><td>MMLU0-shot</td><td>52.1</td><td>52.5</td><td>46.3</td><td>46.3</td><td>23.5</td><td>46.8</td><td>46.4</td><td>45.9</td><td>47.1</td></tr><tr><td>MMLU5-shot</td><td>54.8</td><td>55.7</td><td>50.4</td><td>50.2</td><td>26.0</td><td>50.6</td><td>49.9</td><td>48.9</td><td>50.0</td></tr><tr><td rowspan=\"3\">Mistral-v0.1 7B</td><td>CSQA</td><td>66.2</td><td>66.4</td><td>61.8</td><td>61.4</td><td>58.5</td><td>63.0</td><td>62.3</td><td>61.6</td><td>63.1</td></tr><tr><td>MMLU0-shot</td><td>60.2</td><td>60.6</td><td>50.5</td><td>54.3</td><td>35.8</td><td>52.2</td><td>50.5</td><td>52.4</td><td>54.5</td></tr><tr><td>MMLU5-shot</td><td>62.6</td><td>62.9</td><td>49.6</td><td>55.9</td><td>37.1</td><td>53.6</td><td>51.7</td><td>54.0</td><td>56.2</td></tr></table>\n\nmethods. L4Q further enhances accuracy by incorporating the QAT strategy, achieving highest accuracy compared to the baselines, and attaining 4-bit model accuracy comparable to that of 16-bit models. Moreover, L4Q consistently outperforms QAT-LoRA that keeps quantization and LoRA parameters decoupled. This highlights the advantage of L4Q in accuracy through the joint optimization of quantization and LoRA parameters. This impact is more pronounced in 3-bit quantization, as some PTQ-based PEFT approaches experience significant accuracy degradation. The detailed results are presented in Appendix G.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.99::appendix::C",
+      "paper_id": "2025.acl-long.99",
+      "section_number": "C",
+      "section_title": "ablative study on l4q hyperparameters",
+      "normalized_section_title": "ablative study on l4q hyperparameters",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.99::appendix::D",
+      "paper_id": "2025.acl-long.99",
+      "section_number": "D",
+      "section_title": "experimental settings",
+      "normalized_section_title": "experimental settings",
+      "window_text": "The baselines and L4Q are trained with AdamW optimizer (Loshchilov and Hutter, 2019) with a weight decay of 0.01. For the learning rate scheduler, a cosine decay scheduler with a linear warm-up through $10\\%$ of the total training steps. Learning rates are presented in Table 9.\n\nTable 9: Learning rate conditions used to fine-tuning on each models for L4Q and baselines: QLoRA*, QA-LoRA, and QAT-LoRA.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"4\">Methods</td></tr><tr><td>QLoRA*</td><td>QA-LoRA</td><td>QAT-LoRA</td><td>L4Q</td></tr><tr><td>OpenLLaMA 3B</td><td>1 × 10-5</td><td>2 × 10-5</td><td>5 × 10-5</td><td>5 × 10-5</td></tr><tr><td>LLaMA-1 7B</td><td>1 × 10-5</td><td>2 × 10-5</td><td>5 × 10-5</td><td>5 × 10-5</td></tr><tr><td>LLaMA-1 13B</td><td>1 × 10-5</td><td>5 × 10-5</td><td>4 × 10-5</td><td>4 × 10-5</td></tr><tr><td>LLaMA-1 33B</td><td>1 × 10-5</td><td>5 × 10-5</td><td>2 × 10-4</td><td>2 × 10-4</td></tr><tr><td>LLaMA-2 7B</td><td>2 × 10-5</td><td>2 × 10-5</td><td>2 × 10-4</td><td>2 × 10-4</td></tr><tr><td>LLaMA-2 13B</td><td>2 × 10-5</td><td>2 × 10-5</td><td>2 × 10-4</td><td>2 × 10-4</td></tr><tr><td>Mistral-v0.1 7B</td><td>1 × 10-5</td><td>5 × 10-6</td><td>-</td><td>5 × 10-6</td></tr></table>\n\nThe batch size is set to 128. For baselines that utilize PTQ-based schemes, such as QLoRA* and QA-LoRA, training is conducted for 50K iterations. For QAT-based methods, such as QAT, QAT-LoRA, and L4Q, training is conducted for 25K iterations. This reduction in training length for QAT-based methods is due to their faster convergence, as illustrated in Figure 5 with an example of LLaMA-2 7B.\n\nUsing the same training hyperparameters, including a learning rate of $2 \\times 10^{-5}$ , the joint training of quantization parameters and LoRA weight parameters enables L4Q to converge more quickly. This allows for halving the training length, which also helps mitigate overfitting.\n\nAdditionally, the training sequence length is set to match or exceed the maximum sequence length of the dataset, which is 2048. The only exception is the 33B model with L4Q, where the training sequence length is set to 128.\n\n![](images/b51d7ef2864ae782d8f77f3dcb40a7f75d771227b86918285e5fc06ae5179e92.jpg)  \nFigure 5: Train loss curve of L4Q and QLoRA. With a same training condition, L4Q converges faster than QLoRA.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.99::appendix::E",
+      "paper_id": "2025.acl-long.99",
+      "section_number": "E",
+      "section_title": "training efficiency",
+      "normalized_section_title": "training efficiency",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.99::appendix::E.1",
+      "paper_id": "2025.acl-long.99",
+      "section_number": "E.1",
+      "section_title": "memory usage",
+      "normalized_section_title": "memory usage",
+      "window_text": "We report the memory usage of QAT (LSQ), quantization-aware PEFT baselines (LoTQ, QLoRA, QA-LoRA, QAT-LoRA), and L4Q in Table 10. Note that QLoRA reduces memory usage further by employing paged optimizers, a technique that can also be applied to other fine-tuning methods, including L4Q. We plan to explore this vertical implementation in future work. As quantization-aware PEFT methods utilize pre-quantized model weights, the memory usage of L4Q and quantization-aware PEFT methods differs by the amount of the reduced memory usage of model weights during inference.\n\nTable 10: Memory cost (GB) for fine-tuning LLMs on a single NVIDIA A100 GPU. (OOM: Out of Memory)   \n\n<table><tr><td rowspan=\"2\">Methods</td><td colspan=\"2\">OpenLLaMA</td><td colspan=\"2\">LLaMA</td></tr><tr><td>3B</td><td>7B</td><td>13B</td><td>33B</td></tr><tr><td>LoRA</td><td>15.1</td><td>25.1</td><td>43.8</td><td>71.9</td></tr><tr><td>LoTQ</td><td>5.2</td><td>7.9</td><td>19.6</td><td>31.9</td></tr><tr><td>QLoRA</td><td>5.2</td><td>7.9</td><td>19.6</td><td>31.9</td></tr><tr><td>QA-LoRA</td><td>7.8</td><td>14.8</td><td>27.8</td><td>67.2</td></tr><tr><td>LSQ</td><td>44.2</td><td>79.5</td><td>OOM</td><td>OOM</td></tr><tr><td>QAT-LoRA</td><td>22.6</td><td>41.9</td><td>70.6</td><td>OOM</td></tr><tr><td>L4Q</td><td>15.3</td><td>25.4</td><td>44.3</td><td>73.2</td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.99::appendix::E.2",
+      "paper_id": "2025.acl-long.99",
+      "section_number": "E.2",
+      "section_title": "training time",
+      "normalized_section_title": "training time",
+      "window_text": "We report the total training time of L4Q, QAT (LSQ), and the quantization-aware PEFT baselines(QLoRA* and QA-LoRA) in Table 11. While L4Q has a longer training time per step compared to the baselines due to gradient recomputation during the backpropagation stage, the reduced number of training steps enables L4Q to achieve similar overall training time performance. The training time for QAT on 13B and 33B models was measured using 2 and 4 NVIDIA A100 GPUs on a single node.\n\nTable 11: Training time (in hours) spent on fine-tuning on OpenLLaMA and LLaMA-1 models with a A100 GPU.   \n\n<table><tr><td rowspan=\"2\">Methods</td><td colspan=\"2\">OpenLLaMA</td><td colspan=\"2\">LLaMA</td></tr><tr><td>3B</td><td>7B</td><td>13B</td><td>33B</td></tr><tr><td>LSQ</td><td>8.6</td><td>17.1</td><td>35.4</td><td>76.9</td></tr><tr><td>QLoRA*</td><td>4.5</td><td>9.9</td><td>18.0</td><td>38.4</td></tr><tr><td>QA-LoRA</td><td>5.0</td><td>11.2</td><td>19.8</td><td>39.6</td></tr><tr><td>L4Q</td><td>4.4</td><td>10.1</td><td>16.9</td><td>37.9</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.99::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Target Foundation Models OpenLLaMA<sup>1</sup> 3B model, LLaMA family models (Touvron et al., 2023a,b) 7B to 33B, and Mistral-v0.1 7B (Jiang et al., 2023) model are used for the evaluation.\n\nBaselines We compare the proposed L4Q with previous quantization methods and quantization-aware PEFT methods. The baseline quantization methods considered are LSQ for QAT, and GPTQ and OmniQuant for PTQ. For quantization-aware PEFT baselines, we include QLoRA, QA-LoRA, and LoftQ. We apply uniform quantization in our experiments to ensure consistency across methods. The methods that were originally deployed with non-uniform quantization are denoted with an as\n\nterisk $(^{*})$ . For methods with LoRA adapters, including L4Q, the adapters are initialized following the original scheme: $A$ is initialized using Kaiminguniform, while $B$ is initialized to zeros. We also note that the term fully-quantized refers to a condition in which all linear layers are quantized, while non-linear components and the head layer remain in higher precision.\n\nEvaluation Setups We establish the L4Q framework based on the open-source frameworks: LitGPT $^2$ and huggingface transformers $^3$ . The models are symmetrically quantized with quantization group size of 128 for the LLaMA and Mistral models, and 64 for the OpenLLaMA models due to its small channel size. Also, the models are finetuned with a LoRA rank $r$ of 4 by default, and 8 for Mistral. We double the rank $r$ in QA-LoRA for a fair comparison in terms of the number of LoRA parameters. Further details on the effect of rank size and quantization group size can be found in Appendix C. We use the Stanford-Alpaca (Taori et al., 2023), a dataset that consists of 50k training samples and 2k validation samples generated from the GPT 3.5 (Brown et al., 2020). We use bfloat16 precision for numerically stable fine-tuning. All experiments are conducted on an NVIDIA A100 80GB GPU. Detailed hyperparameter settings for fine-tuning are provided in Appendix D.\n\nEvaluation Metrics We evaluate the accuracy of LLMs on Commonsense QA (CSQA) (Gao et al., 2021) and MMLU (Hendrycks et al., 2021) benchmarks. The CSQA benchmark comprises seven multiple-choice tasks designed to evaluate language models (Zellers et al., 2019; Bisk et al., 2020; Clark et al., 2018; Sakaguchi et al., 2020; Clark et al., 2019; Talmor et al., 2019). The MMLU benchmark spans four subject categories made up of 57 subcategories of language tasks.",
+      "section_number": "4.1",
+      "section_title": "experimental settings",
+      "normalized_section_title": "experimental settings"
+    },
+    {
+      "window_id": "2025.acl-long.99::appendix::E.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We report the memory usage of QAT (LSQ), quantization-aware PEFT baselines (LoTQ, QLoRA, QA-LoRA, QAT-LoRA), and L4Q in Table 10. Note that QLoRA reduces memory usage further by employing paged optimizers, a technique that can also be applied to other fine-tuning methods, including L4Q. We plan to explore this vertical implementation in future work. As quantization-aware PEFT methods utilize pre-quantized model weights, the memory usage of L4Q and quantization-aware PEFT methods differs by the amount of the reduced memory usage of model weights during inference.\n\nTable 10: Memory cost (GB) for fine-tuning LLMs on a single NVIDIA A100 GPU. (OOM: Out of Memory)   \n\n<table><tr><td rowspan=\"2\">Methods</td><td colspan=\"2\">OpenLLaMA</td><td colspan=\"2\">LLaMA</td></tr><tr><td>3B</td><td>7B</td><td>13B</td><td>33B</td></tr><tr><td>LoRA</td><td>15.1</td><td>25.1</td><td>43.8</td><td>71.9</td></tr><tr><td>LoTQ</td><td>5.2</td><td>7.9</td><td>19.6</td><td>31.9</td></tr><tr><td>QLoRA</td><td>5.2</td><td>7.9</td><td>19.6</td><td>31.9</td></tr><tr><td>QA-LoRA</td><td>7.8</td><td>14.8</td><td>27.8</td><td>67.2</td></tr><tr><td>LSQ</td><td>44.2</td><td>79.5</td><td>OOM</td><td>OOM</td></tr><tr><td>QAT-LoRA</td><td>22.6</td><td>41.9</td><td>70.6</td><td>OOM</td></tr><tr><td>L4Q</td><td>15.3</td><td>25.4</td><td>44.3</td><td>73.2</td></tr></table>",
+      "section_number": "E.1",
+      "section_title": "memory usage",
+      "normalized_section_title": "memory usage"
+    },
+    {
+      "window_id": "2025.acl-long.99::appendix::E.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "We report the total training time of L4Q, QAT (LSQ), and the quantization-aware PEFT baselines(QLoRA* and QA-LoRA) in Table 11. While L4Q has a longer training time per step compared to the baselines due to gradient recomputation during the backpropagation stage, the reduced number of training steps enables L4Q to achieve similar overall training time performance. The training time for QAT on 13B and 33B models was measured using 2 and 4 NVIDIA A100 GPUs on a single node.\n\nTable 11: Training time (in hours) spent on fine-tuning on OpenLLaMA and LLaMA-1 models with a A100 GPU.   \n\n<table><tr><td rowspan=\"2\">Methods</td><td colspan=\"2\">OpenLLaMA</td><td colspan=\"2\">LLaMA</td></tr><tr><td>3B</td><td>7B</td><td>13B</td><td>33B</td></tr><tr><td>LSQ</td><td>8.6</td><td>17.1</td><td>35.4</td><td>76.9</td></tr><tr><td>QLoRA*</td><td>4.5</td><td>9.9</td><td>18.0</td><td>38.4</td></tr><tr><td>QA-LoRA</td><td>5.0</td><td>11.2</td><td>19.8</td><td>39.6</td></tr><tr><td>L4Q</td><td>4.4</td><td>10.1</td><td>16.9</td><td>37.9</td></tr></table>",
+      "section_number": "E.2",
+      "section_title": "training time",
+      "normalized_section_title": "training time"
+    },
+    {
+      "window_id": "2025.acl-long.99::appendix::E.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "We report the total training time of L4Q, QAT (LSQ), and the quantization-aware PEFT baselines(QLoRA* and QA-LoRA) in Table 11. While L4Q has a longer training time per step compared to the baselines due to gradient recomputation during the backpropagation stage, the reduced number of training steps enables L4Q to achieve similar overall training time performance. The training time for QAT on 13B and 33B models was measured using 2 and 4 NVIDIA A100 GPUs on a single node.\n\nTable 11: Training time (in hours) spent on fine-tuning on OpenLLaMA and LLaMA-1 models with a A100 GPU.   \n\n<table><tr><td rowspan=\"2\">Methods</td><td colspan=\"2\">OpenLLaMA</td><td colspan=\"2\">LLaMA</td></tr><tr><td>3B</td><td>7B</td><td>13B</td><td>33B</td></tr><tr><td>LSQ</td><td>8.6</td><td>17.1</td><td>35.4</td><td>76.9</td></tr><tr><td>QLoRA*</td><td>4.5</td><td>9.9</td><td>18.0</td><td>38.4</td></tr><tr><td>QA-LoRA</td><td>5.0</td><td>11.2</td><td>19.8</td><td>39.6</td></tr><tr><td>L4Q</td><td>4.4</td><td>10.1</td><td>16.9</td><td>37.9</td></tr></table>",
+      "section_number": "E.2",
+      "section_title": "training time",
+      "normalized_section_title": "training time"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.99::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "4.1",
+      "section_title": "experimental settings",
+      "normalized_section_title": "experimental settings",
+      "evidence": "Target Foundation Models OpenLLaMA<sup>1</sup> 3B model, LLaMA family models (Touvron et al., 2023a,b) 7B to 33B, and Mistral-v0.1 7B (Jiang et al., 2023) model are used for the evaluation.\n\nBaselines We compare the proposed L4Q with previous quantization methods and quantization-aware PEFT methods. The baseline quantization methods considered are LSQ for QAT, and GPTQ and OmniQuant for PTQ. For quantization-aware PEFT baselines, we include QLoRA, QA-LoRA, and LoftQ. We apply uniform quantization in our experiments to ensure consistency across methods. The methods that were originally deployed with non-uniform quantization are denoted with an as\n\nterisk $(^{*})$ . For methods with LoRA adapters, including L4Q, the adapters are initialized following the original scheme: $A$ is initialized using Kaiminguniform, while $B$ is initialized to zeros. We also note that the term fully-quantized refers to a condition in which all linear layers are quantized, while non-linear components and the head layer remain in higher precision.\n\nEvaluation Setups We establish the L4Q framework based on the open-source frameworks: LitGPT $^2$ and huggingface transformers $^3$ . The models are symmetrically quantized with quantization group size of 128 for the LLaMA and Mistral models, and 64 for the OpenLLaMA models due to its small channel size. Also, the models are finetuned with a LoRA rank $r$ of 4 by default, and 8 for Mistral. We double the rank $r$ in QA-LoRA for a fair comparison in terms of the number of LoRA parameters. Further details on the effect of rank size and quantization group size can be found in Appendix C. We use the Stanford-Alpaca (Taori et al., 2023), a dataset that consists of 50k training samples and 2k validation samples generated from the GPT 3.5 (Brown et al., 2020). We use bfloat16 precision for numerically stable fine-tuning. All experiments are conducted on an NVIDIA A100 80GB GPU. Detailed hyperparameter settings for fine-tuning are provided in Appendix D.\n\nEvaluation Metrics We evaluate the accuracy of LLMs on Commonsense QA (CSQA) (Gao et al., 2021) and MMLU (Hendrycks et al., 2021) benchmarks. The CSQA benchmark comprises seven multiple-choice tasks designed to evaluate language models (Zellers et al., 2019; Bisk et al., 2020; Clark et al., 2018; Sakaguchi et al., 2020; Clark et al., 2019; Talmor et al., 2019). The MMLU benchmark spans four subject categories made up of 57 subcategories of language tasks.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.99::appendix::E.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "E.1",
+      "section_title": "memory usage",
+      "normalized_section_title": "memory usage",
+      "evidence": "We report the memory usage of QAT (LSQ), quantization-aware PEFT baselines (LoTQ, QLoRA, QA-LoRA, QAT-LoRA), and L4Q in Table 10. Note that QLoRA reduces memory usage further by employing paged optimizers, a technique that can also be applied to other fine-tuning methods, including L4Q. We plan to explore this vertical implementation in future work. As quantization-aware PEFT methods utilize pre-quantized model weights, the memory usage of L4Q and quantization-aware PEFT methods differs by the amount of the reduced memory usage of model weights during inference.\n\nTable 10: Memory cost (GB) for fine-tuning LLMs on a single NVIDIA A100 GPU. (OOM: Out of Memory)   \n\n<table><tr><td rowspan=\"2\">Methods</td><td colspan=\"2\">OpenLLaMA</td><td colspan=\"2\">LLaMA</td></tr><tr><td>3B</td><td>7B</td><td>13B</td><td>33B</td></tr><tr><td>LoRA</td><td>15.1</td><td>25.1</td><td>43.8</td><td>71.9</td></tr><tr><td>LoTQ</td><td>5.2</td><td>7.9</td><td>19.6</td><td>31.9</td></tr><tr><td>QLoRA</td><td>5.2</td><td>7.9</td><td>19.6</td><td>31.9</td></tr><tr><td>QA-LoRA</td><td>7.8</td><td>14.8</td><td>27.8</td><td>67.2</td></tr><tr><td>LSQ</td><td>44.2</td><td>79.5</td><td>OOM</td><td>OOM</td></tr><tr><td>QAT-LoRA</td><td>22.6</td><td>41.9</td><td>70.6</td><td>OOM</td></tr><tr><td>L4Q</td><td>15.3</td><td>25.4</td><td>44.3</td><td>73.2</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.99::appendix::E.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "E.2",
+      "section_title": "training time",
+      "normalized_section_title": "training time",
+      "evidence": "We report the total training time of L4Q, QAT (LSQ), and the quantization-aware PEFT baselines(QLoRA* and QA-LoRA) in Table 11. While L4Q has a longer training time per step compared to the baselines due to gradient recomputation during the backpropagation stage, the reduced number of training steps enables L4Q to achieve similar overall training time performance. The training time for QAT on 13B and 33B models was measured using 2 and 4 NVIDIA A100 GPUs on a single node.\n\nTable 11: Training time (in hours) spent on fine-tuning on OpenLLaMA and LLaMA-1 models with a A100 GPU.   \n\n<table><tr><td rowspan=\"2\">Methods</td><td colspan=\"2\">OpenLLaMA</td><td colspan=\"2\">LLaMA</td></tr><tr><td>3B</td><td>7B</td><td>13B</td><td>33B</td></tr><tr><td>LSQ</td><td>8.6</td><td>17.1</td><td>35.4</td><td>76.9</td></tr><tr><td>QLoRA*</td><td>4.5</td><td>9.9</td><td>18.0</td><td>38.4</td></tr><tr><td>QA-LoRA</td><td>5.0</td><td>11.2</td><td>19.8</td><td>39.6</td></tr><tr><td>L4Q</td><td>4.4</td><td>10.1</td><td>16.9</td><td>37.9</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.99::appendix::E.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "E.2",
+      "section_title": "training time",
+      "normalized_section_title": "training time",
+      "evidence": "We report the total training time of L4Q, QAT (LSQ), and the quantization-aware PEFT baselines(QLoRA* and QA-LoRA) in Table 11. While L4Q has a longer training time per step compared to the baselines due to gradient recomputation during the backpropagation stage, the reduced number of training steps enables L4Q to achieve similar overall training time performance. The training time for QAT on 13B and 33B models was measured using 2 and 4 NVIDIA A100 GPUs on a single node.\n\nTable 11: Training time (in hours) spent on fine-tuning on OpenLLaMA and LLaMA-1 models with a A100 GPU.   \n\n<table><tr><td rowspan=\"2\">Methods</td><td colspan=\"2\">OpenLLaMA</td><td colspan=\"2\">LLaMA</td></tr><tr><td>3B</td><td>7B</td><td>13B</td><td>33B</td></tr><tr><td>LSQ</td><td>8.6</td><td>17.1</td><td>35.4</td><td>76.9</td></tr><tr><td>QLoRA*</td><td>4.5</td><td>9.9</td><td>18.0</td><td>38.4</td></tr><tr><td>QA-LoRA</td><td>5.0</td><td>11.2</td><td>19.8</td><td>39.6</td></tr><tr><td>L4Q</td><td>4.4</td><td>10.1</td><td>16.9</td><td>37.9</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.99::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methods",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.99::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.99::sections::4.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2",
+      "section_title": "evaluation results",
+      "evidence": "Memory Cost for Fine-Tuning We measure the peak memory usage during fine-tuning of 4-bit LLMs, including L4Q and QAT-based baselines, as shown in Table 1. While QAT and QAT-LoRA incur significantly higher memory costs compared to LoRA, L4Q's memory usage remains comparable to that of LoRA. This analysis shows that L4Q effectively balances the advantages of QAT and the memory efficiency of LoRA. Further analysis\n\nTable 1: Memory cost (GB) for fine-tuning LLMs on NVIDIA A100 GPU. (OOM: Out of Memory)   \n\n<table><tr><td rowspan=\"2\">Methods</td><td colspan=\"2\">OpenLLaMA</td><td colspan=\"2\">LLaMA</td></tr><tr><td>3B</td><td>7B</td><td>13B</td><td>33B</td></tr><tr><td>LoRA</td><td>15.1</td><td>25.1</td><td>43.8</td><td>71.9</td></tr><tr><td>QAT</td><td>44.2</td><td>79.5</td><td>OOM</td><td>OOM</td></tr><tr><td>QAT-LoRA</td><td>22.6</td><td>41.9</td><td>70.6</td><td>OOM</td></tr><tr><td>L4Q</td><td>15.3</td><td>25.4</td><td>44.3</td><td>73.2</td></tr></table>\n\n![](images/3435b3e453986cd30e91ee101ad600b3aad48a35fa9783f8f114773409b56c0a.jpg)  \nFigure 4: The average inference speedup of quantized models compared to pre-trained models.\n\nof the training efficiency of L4Q and the baseline methods can be found in Appendix E.\n\nInference Speedup We measure the inference speed of 16-bit pre-trained models and quantized models using LLaMA-1 models. The average speedup of quantized models compared to full-precision 16-bit models is reported in Figure 4. The quantized models include fully-quantized 4-bit models (L4Q and QA-LoRA), which contain only quantized parameters, and mixed-precision 4&16-bit models (LoftQ*, QLoRA*, and QAT-LoRA), which use additional 16-bit LoRA parameters. The inference speed was measured with input batch sizes ranging from 1 to 64. The 4-bit models achieve a speedup of $1.8 \\times$ to $2.3 \\times$ over the pre-trained models. Moreover, these 4-bit models achieve a $1.4 \\times$ to $1.6 \\times$ speedup compared to mixed-precision models, which are also quantized versions of LLMs. This demonstrates that the full integration of QAT and LoRA in L4Q plays a crucial role in inference speedup. Further analysis and details on speedup can be found in Appendix F.\n\nAccuracy Results We compare the CSQA and MMLU benchmark accuracy of baselines and L4Q. Table 2 and Table 3 present a comprehensive comparison between baselines and the proposed L4Q. Since previous quantization-aware PEFT methods involve a fine-tuning stage after PTQ, they generally achieve higher accuracy compared to PTQ\n\nTable 2: Accuracy (%) evaluation results with 4-bit quantization. We present the bit precision under each methods. The notation '4&16' refers to the use of 16-bit LoRA parameters with the quantized weights for inference.   \n\n<table><tr><td>Model</td><td>Benchmark</td><td>Pre-trained 16</td><td>LoRA 16</td><td>GPTQ 4</td><td>OmniQ 4</td><td>\\( LoftQ^* \\) 4&amp;16</td><td>\\( QLoRA^* \\) 4&amp;16</td><td>QA-LoRA 4</td><td>QAT-LoRA 4&amp;16</td><td>L4Q 4</td></tr><tr><td>OpenLLaMA 3B</td><td>CSQA</td><td>54.8</td><td>55.9</td><td>50.7</td><td>54.1</td><td>54.2</td><td>54.4</td><td>54.5</td><td>54.6</td><td>55.0</td></tr><tr><td>LLaMA-3 8B</td><td>CSQA</td><td>65.6</td><td>67.2</td><td>57.9</td><td>64.9</td><td>63.3</td><td>58.6</td><td>58.0</td><td>65.7</td><td>66.8</td></tr><tr><td rowspan=\"3\">LLaMA-1 7B</td><td>CSQA</td><td>61.7</td><td>63.4</td><td>59.4</td><td>58.1</td><td>62.6</td><td>61.3</td><td>61.3</td><td>62.4</td><td>62.7</td></tr><tr><td>MMLU0-shot</td><td>32.5</td><td>36.3</td><td>28.3</td><td>30.9</td><td>33.0</td><td>32.8</td><td>34.5</td><td>33.8</td><td>34.9</td></tr><tr><td>MMLU5-shot</td><td>35.1</td><td>36.7</td><td>32.7</td><td>33.3</td><td>35.1</td><td>33.6</td><td>35.6</td><td>34.8</td><td>35.7</td></tr><tr><td rowspan=\"3\">LLaMA-1 13B</td><td>CSQA</td><td>63.8</td><td>65.2</td><td>63.5</td><td>60.4</td><td>64.2</td><td>63.8</td><td>62.5</td><td>64.4</td><td>64.5</td></tr><tr><td>MMLU0-shot</td><td>43.6</td><td>44.3</td><td>40.1</td><td>42.6</td><td>42.4</td><td>42.1</td><td>42.4</td><td>42.0</td><td>43.2</td></tr><tr><td>MMLU5-shot</td><td>46.3</td><td>47.0</td><td>45.7</td><td>45.7</td><td>45.4</td><td>45.9</td><td>45.8</td><td>45.5</td><td>46.0</td></tr><tr><td rowspan=\"3\">LLaMA-1 33B</td><td>CSQA</td><td>67.4</td><td>68.3</td><td>65.7</td><td>62.9</td><td>67.4</td><td>66.2</td><td>65.3</td><td>67.3</td><td>67.5</td></tr><tr><td>MMLU0-shot</td><td>53.0</td><td>54.4</td><td>51.4</td><td>52.0</td><td>51.8</td><td>51.0</td><td>48.9</td><td>52.3</td><td>53.3</td></tr><tr><td>MMLU5-shot</td><td>56.4</td><td>57.6</td><td>55.7</td><td>55.8</td><td>56.4</td><td>55.6</td><td>55.0</td><td>56.7</td><td>56.7</td></tr><tr><td rowspan=\"3\">LLaMA-2 7B</td><td>CSQA</td><td>61.9</td><td>63.3</td><td>60.7</td><td>59.5</td><td>61.7</td><td>61.3</td><td>61.0</td><td>61.9</td><td>63.6</td></tr><tr><td>MMLU0-shot</td><td>41.6</td><td>43.9</td><td>37.1</td><td>41.0</td><td>38.5</td><td>38.6</td><td>38.9</td><td>37.9</td><td>40.9</td></tr><tr><td>MMLU5-shot</td><td>45.4</td><td>46.0</td><td>42.9</td><td>45.4</td><td>43.7</td><td>44.6</td><td>44.4</td><td>43.8</td><td>45.5</td></tr><tr><td rowspan=\"3\">LLaMA-2 13B</td><td>CSQA</td><td>65.0</td><td>66.5</td><td>64.4</td><td>59.9</td><td>64.9</td><td>64.0</td><td>64.5</td><td>64.7</td><td>65.8</td></tr><tr><td>MMLU0-shot</td><td>52.1</td><td>52.5</td><td>50.0</td><td>51.8</td><td>51.7</td><td>50.7</td><td>50.4</td><td>50.7</td><td>51.9</td></tr><tr><td>MMLU5-shot</td><td>54.8</td><td>55.7</td><td>54.7</td><td>54.7</td><td>54.5</td><td>54.2</td><td>54.1</td><td>53.8</td><td>55.2</td></tr><tr><td rowspan=\"3\">Mistral-v0.1 7B</td><td>CSQA</td><td>66.2</td><td>66.4</td><td>65.3</td><td>64.7</td><td>60.7</td><td>65.8</td><td>65.4</td><td>64.5</td><td>66.1</td></tr><tr><td>MMLU0-shot</td><td>60.2</td><td>60.6</td><td>57.6</td><td>58.4</td><td>45.2</td><td>58.7</td><td>56.5</td><td>58.8</td><td>59.0</td></tr><tr><td>MMLU5-shot</td><td>62.6</td><td>62.9</td><td>61.0</td><td>61.0</td><td>45.7</td><td>61.1</td><td>61.2</td><td>60.2</td><td>61.4</td></tr></table>\n\nTable 3: Accuracy (%) evaluation results with 3-bit quantization. We present the bit precision under each methods. The notation '3&16' refers to the use of 16-bit LoRA parameters with the quantized weights for inference.   \n\n<table><tr><td>Model</td><td>Benchmark</td><td>Pre-trained 16</td><td>LoRA 16</td><td>GPTQ 3</td><td>OmniQ 3</td><td>\\( LoftQ^* \\) 3&amp;16</td><td>QLoRA* 3&amp;16</td><td>QA-LoRA 3</td><td>QAT-LoRA 3&amp;16</td><td>L4Q 3</td></tr><tr><td>OpenLLaMA 3B</td><td>CSQA</td><td>54.8</td><td>55.9</td><td>52.2</td><td>50.0</td><td>38.1</td><td>51.0</td><td>51.5</td><td>53.2</td><td>54.0</td></tr><tr><td>LLaMA-3 8B</td><td>CSQA</td><td>65.6</td><td>67.2</td><td>53.5</td><td>58.7</td><td>48.6</td><td>55.7</td><td>56.6</td><td>63.1</td><td>63.5</td></tr><tr><td rowspan=\"3\">LLaMA-1 7B</td><td>CSQA</td><td>61.7</td><td>63.4</td><td>53.4</td><td>56.5</td><td>49.8</td><td>59.1</td><td>58.7</td><td>60.7</td><td>61.2</td></tr><tr><td>MMLU0-shot</td><td>32.5</td><td>36.3</td><td>23.7</td><td>29.0</td><td>23.4</td><td>27.7</td><td>28.0</td><td>30.6</td><td>30.6</td></tr><tr><td>MMLU5-shot</td><td>35.1</td><td>36.7</td><td>27.3</td><td>31.6</td><td>23.1</td><td>31.5</td><td>29.1</td><td>31.5</td><td>31.8</td></tr><tr><td rowspan=\"3\">LLaMA-1 13B</td><td>CSQA</td><td>63.8</td><td>65.2</td><td>61.0</td><td>58.9</td><td>54.0</td><td>61.3</td><td>61.1</td><td>63.2</td><td>63.4</td></tr><tr><td>MMLU0-shot</td><td>43.6</td><td>44.3</td><td>33.1</td><td>34.8</td><td>25.0</td><td>36.1</td><td>37.5</td><td>38.8</td><td>40.7</td></tr><tr><td>MMLU5-shot</td><td>46.3</td><td>47.0</td><td>38.2</td><td>41.6</td><td>25.3</td><td>40.4</td><td>38.2</td><td>40.9</td><td>41.8</td></tr><tr><td rowspan=\"3\">LLaMA-1 33B</td><td>CSQA</td><td>67.4</td><td>68.3</td><td>65.1</td><td>62.3</td><td>54.8</td><td>64.3</td><td>64.6</td><td>67.4</td><td>67.4</td></tr><tr><td>MMLU0-shot</td><td>53.0</td><td>54.4</td><td>50.0</td><td>50.2</td><td>24.6</td><td>45.6</td><td>46.1</td><td>50.1</td><td>50.5</td></tr><tr><td>MMLU5-shot</td><td>56.4</td><td>57.6</td><td>51.9</td><td>52.4</td><td>24.0</td><td>50.1</td><td>48.7</td><td>50.6</td><td>53.1</td></tr><tr><td rowspan=\"3\">LLaMA-2 7B</td><td>CSQA</td><td>61.9</td><td>63.3</td><td>57.6</td><td>57.9</td><td>34.7</td><td>57.6</td><td>56.3</td><td>57.4</td><td>61.3</td></tr><tr><td>MMLU0-shot</td><td>41.6</td><td>43.9</td><td>31.3</td><td>34.3</td><td>22.9</td><td>32.5</td><td>31.0</td><td>31.5</td><td>34.9</td></tr><tr><td>MMLU5-shot</td><td>45.4</td><td>46.0</td><td>37.5</td><td>37.7</td><td>24.2</td><td>37.6</td><td>37.5</td><td>36.8</td><td>38.0</td></tr><tr><td rowspan=\"3\">LLaMA-2 13B</td><td>CSQA</td><td>65.0</td><td>66.5</td><td>61.7</td><td>59.9</td><td>39.3</td><td>62.5</td><td>61.7</td><td>64.3</td><td>65.1</td></tr><tr><td>MMLU0-shot</td><td>52.1</td><td>52.5</td><td>46.3</td><td>46.3</td><td>23.5</td><td>46.8</td><td>46.4</td><td>45.9</td><td>47.1</td></tr><tr><td>MMLU5-shot</td><td>54.8</td><td>55.7</td><td>50.4</td><td>50.2</td><td>26.0</td><td>50.6</td><td>49.9</td><td>48.9</td><td>50.0</td></tr><tr><td rowspan=\"3\">Mistral-v0.1 7B</td><td>CSQA</td><td>66.2</td><td>66.4</td><td>61.8</td><td>61.4</td><td>58.5</td><td>63.0</td><td>62.3</td><td>61.6</td><td>63.1</td></tr><tr><td>MMLU0-shot</td><td>60.2</td><td>60.6</td><td>50.5</td><td>54.3</td><td>35.8</td><td>52.2</td><td>50.5</td><td>52.4</td><td>54.5</td></tr><tr><td>MMLU5-shot</td><td>62.6</td><td>62.9</td><td>49.6</td><td>55.9</td><td>37.1</td><td>53.6</td><td>51.7</td><td>54.0</td><td>56.2</td></tr></table>\n\nmethods. L4Q further enhances accuracy by incorporating the QAT strategy, achieving highest accuracy compared to the baselines, and attaining 4-bit model accuracy comparable to that of 16-bit models. Moreover, L4Q consistently outperforms QAT-LoRA that keeps quantization and LoRA parameters decoupled. This highlights the advantage of L4Q in accuracy through the joint optimization of quantization and LoRA parameters. This impact is more pronounced in 3-bit quantization, as some PTQ-based PEFT approaches experience significant accuracy degradation. The detailed results are presented in Appendix G."
+    },
+    {
+      "source_window_id": "2025.acl-long.99::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "ablative study on l4q hyperparameters",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.99::appendix::D",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D",
+      "section_title": "experimental settings",
+      "evidence": "The baselines and L4Q are trained with AdamW optimizer (Loshchilov and Hutter, 2019) with a weight decay of 0.01. For the learning rate scheduler, a cosine decay scheduler with a linear warm-up through $10\\%$ of the total training steps. Learning rates are presented in Table 9.\n\nTable 9: Learning rate conditions used to fine-tuning on each models for L4Q and baselines: QLoRA*, QA-LoRA, and QAT-LoRA.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"4\">Methods</td></tr><tr><td>QLoRA*</td><td>QA-LoRA</td><td>QAT-LoRA</td><td>L4Q</td></tr><tr><td>OpenLLaMA 3B</td><td>1 × 10-5</td><td>2 × 10-5</td><td>5 × 10-5</td><td>5 × 10-5</td></tr><tr><td>LLaMA-1 7B</td><td>1 × 10-5</td><td>2 × 10-5</td><td>5 × 10-5</td><td>5 × 10-5</td></tr><tr><td>LLaMA-1 13B</td><td>1 × 10-5</td><td>5 × 10-5</td><td>4 × 10-5</td><td>4 × 10-5</td></tr><tr><td>LLaMA-1 33B</td><td>1 × 10-5</td><td>5 × 10-5</td><td>2 × 10-4</td><td>2 × 10-4</td></tr><tr><td>LLaMA-2 7B</td><td>2 × 10-5</td><td>2 × 10-5</td><td>2 × 10-4</td><td>2 × 10-4</td></tr><tr><td>LLaMA-2 13B</td><td>2 × 10-5</td><td>2 × 10-5</td><td>2 × 10-4</td><td>2 × 10-4</td></tr><tr><td>Mistral-v0.1 7B</td><td>1 × 10-5</td><td>5 × 10-6</td><td>-</td><td>5 × 10-6</td></tr></table>\n\nThe batch size is set to 128. For baselines that utilize PTQ-based schemes, such as QLoRA* and QA-LoRA, training is conducted for 50K iterations. For QAT-based methods, such as QAT, QAT-LoRA, and L4Q, training is conducted for 25K iterations. This reduction in training length for QAT-based methods is due to their faster convergence, as illustrated in Figure 5 with an example of LLaMA-2 7B.\n\nUsing the same training hyperparameters, including a learning rate of $2 \\times 10^{-5}$ , the joint training of quantization parameters and LoRA weight parameters enables L4Q to converge more quickly. This allows for halving the training length, which also helps mitigate overfitting.\n\nAdditionally, the training sequence length is set to match or exceed the maximum sequence length of the dataset, which is 2048. The only exception is the 33B model with L4Q, where the training sequence length is set to 128.\n\n![](images/b51d7ef2864ae782d8f77f3dcb40a7f75d771227b86918285e5fc06ae5179e92.jpg)  \nFigure 5: Train loss curve of L4Q and QLoRA. With a same training condition, L4Q converges faster than QLoRA."
+    },
+    {
+      "source_window_id": "2025.acl-long.99::appendix::E",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "E",
+      "section_title": "training efficiency",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.1",
+      "E.1",
+      "E.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 2
+      },
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 4
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.99\\auto\\full.md",
+    "source_md_sha256": "3a20045b6b068cece658182d3077c37ca7f30943bfc4ea88e3d708b5bc371716",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "ad96f3b6ca003898756db958dd17467668c845886fa3f1f835d26a866c8af3f0"
+  }
+}

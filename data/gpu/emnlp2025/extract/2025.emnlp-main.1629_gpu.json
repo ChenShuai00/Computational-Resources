@@ -1,0 +1,96 @@
+{
+  "paper_id": "2025.emnlp-main.1629",
+  "candidate_windows": [
+    {
+      "window_id": "2025.emnlp-main.1629::sections::4",
+      "paper_id": "2025.emnlp-main.1629",
+      "section_number": "4",
+      "section_title": "evaluation setup",
+      "normalized_section_title": "evaluation setup",
+      "window_text": "Dataset.The Text2R task requires a text document paired with a ground-truth relational database—however, no existing benchmarks directly support this. To fill this gap,we introduce an automated dataset creation pipeline: starting from relational databases or CSV files (using column names and tuple values as ground truth), we prompt an LLM to generate textual descriptions of the tuples, which serve as the input for Text2R. Using this approach, we construct two datasets: (1) BIRD Dataset—covering six domains from the BIRD Text2SQL benchmark (Li et al., 2024); and (2)Kaggle Dataset—containing CSV fles from three domains (tourism, education, finance) (Kiattisak, 2023; Becker and Kohavi, 1996; Rai, 2023), which reflect more user-centric, realistic data often missing in BIRD. Table 1 summarizes the dataset statistics. We categorize the text difficulty as easy (e.g.,Tourism, Finance),medium (e.g., Education, California Schools), or hard (e.g., Mental Health, Superheroes), based on domain complexity, record sparsity,and LLM-induced verbosity. We also manually annotated samples from the WikiBio (Lebret et al., 2016), CNN-DM (Nallapati et al., 2016), and CORD-19 (Wang et al., 2020) datasets to enable evaluation on real text (see Appendix D.2).\n\n<table><tr><td rowspan=\"2\">Domain</td><td colspan=\"3\">Kaggle (24 tables/domain)</td><td colspan=\"6\">BIRD (24 tables/domain)</td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td>Tourism Education Finance Calif. Schools Superhero Books Comp. Student Mental Health Authors</td><td></td><td></td></tr><tr><td>Cols/Table</td><td>12</td><td>8</td><td>10</td><td>26</td><td>9</td><td>7</td><td>6</td><td>2</td><td>5</td></tr><tr><td>Vals/Table</td><td>60</td><td>40</td><td>50</td><td>130</td><td>45</td><td>35</td><td>30</td><td>10</td><td>25</td></tr><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td>Overall Total Values 10,200</td><td></td></tr></table>\n\nTable 1: Dataset statistics\n\nModels.We test five state-of-the-art models: GPT-4O (OpenAI, 2024), DEEPSEEK-V2.5 (DeepSeek AI, 2024), CLAUDE 3.7 SONNET (Anthropic, 2024), LLAMA-3-8B-INSTRUCT (Meta AI, 2024), and QwEN3-8B (Alibaba, 2024).\n\nMetrics. We propose a suite of novel metrics for a principled evaluation of the Text2R task, which are summarized in Table 2.\n\nSchema Evaluation. We evaluate the quality of generated database schemas along three dimensions: entity coverage, primary key coverage, and foreign key coverage. Entity coverage assesses whether each column from the ground truth is represented in the generated schema.A column is considered covered if there exists a semantically equivalent column (based on cosine similarity between column names) in the output. Primary key coverage checks whether each generated table defines at least one primary key, while foreign key coverage evaluates whether all foreign keys correctly reference primary keys in valid, related tables within the schema. The last two metrics assess syntactic constraints that are essential for the correctness of relational database schemas.\n\nTuple Evaluation. Relational databases store data across multiple tables； therefore,evaluating the quality of such databases requires a holistic view that goes beyond individual tables or isolated values. To enable a principled evaluation, we flatten the schema into a single table—commonly referred to as a denormalized table (Elmasri and Navathe, 2016)—by performing a JOIN across all tables. In our databases, each table maintains a many-to-one or one-to-one relationship with a central table, enabling this complete JOIN of the entire schema. This consolidated table captures complete entityrelationship instances in a unified format. We generate two denormalized tables: one from the ground-truth database and one from the database produced by SQUiD. The two are then compared to assess the accuracy of the generated database.\n\n<table><tr><td></td><td>Evaluation Metrics</td><td>Definition</td><td>Formula</td></tr><tr><td rowspan=\"3\"></td><td>Entity Coverage Score (ECS)</td><td>Avg. max cosine similarity betn. GT &amp; DB columns</td><td></td></tr><tr><td>Schema Primary Key Coverage (PKC)</td><td>% of tables with adefined primary key</td><td>#Tables with PK/#Tables</td></tr><tr><td>Foreign Key Coverage (FKC)</td><td>% of tables whose foreign keys refer valid primary keys</td><td>#Tables with validFK/#Tables</td></tr><tr><td rowspan=\"5\">Tuple</td><td>Database Construction Success Rate (DBR)</td><td>% of successfully generated databases</td><td>#Generated DB/#Text Documents</td></tr><tr><td>Tuple Coverage (TC)</td><td>% of GT tuples present in DB</td><td>|RGTnRDBl/RGT|</td></tr><tr><td>Value Coverage (VC)</td><td>% of GT values present in DB</td><td>|VGTNVDBl/VGT|</td></tr><tr><td>Column Consistency (CC)</td><td>% of GT values present in DB in correct columns</td><td>|VGTnVDBl/Varl,Where VG,VDB ∈col</td></tr><tr><td>Ref.Integrity % (RRIR)</td><td>Avg. tuple completeness after FK joins (non-null ratio)</td><td>#non-null values in tuple i #total values in tuple i</td></tr></table>\n\nTable 2: Novel evaluation metrics for Text2R: GT denotes ground truth and DB denotes the generated databases\n\nWe propose five novel metrics to evaluate the quality of the generated tuples along two dimensions: syntactic and semantic validity. Syntactic validity assesses whether the generated databases adhere to correct structural and relational rules. It is measured using:（1) Database Construction Success Rate,which measures the percentage of generated SQL statements that successfully materialize into databases with at least one non-null tuple, (2) Referential Integrity Rate (RRIR), which measures the fraction of foreign-key joins that yielded valid (non-null) tuples.\n\nSemantic validity evaluates the comprehensiveness and correctness of the values populated. It is measured using:（1） Tuple Coverage,which measures the fraction of the ground truth tuples recovered; (2) Value Coverage, which measures the fraction of ground truth values populated; and (3) Column Consistency, which checks whether each value appears in its correct column.\n\nBaseline. We design a tailored baseline:using zero-shot prompting,We generate CREATE TABLE and INSERT INTO SQL statements directly from the input text, then execute them in SQLite to instantiate the database, serving as the most relevant point of reference.Prompt details are in Appendix G.\n\nExisting work, by contrast, addresses a fundamentally different task—text-to-table summarization—which diverges from our task in the following key aspects:（1） Text2R involves generating interrelated tables which must satisfy constraints such as primary/foreign keys,whereas prior work produces independent tables that cannot be queried as a database.(2) Text2R requires consistent value population across related tables-e.g.,the same entity must be consistently represented wherever it occurs. Existing work lacks this requirement as their tables are unrelated.(3) Database creation requires valid, executable SQL statements. This critical step is entirely absent in prior work, which generates markdown-style tables (i.e., plain text), not databases. Instead, SQUiD generates fully executable SQLite databases in the user's system, providing a way to perform computation over unstructured text,rather than mere text summarization. Thus,any end-to-end quantitative comparison with prior work on Text2R would not be meaningful (as highlighted in Fig. 3).Nevertheless, for completeness, we adapt prompts from T3 (Deng et al. 2024), STRUCTSUM (Jain et al., 2024),and EVAPORATE (Arora et al., 2023), and evaluate them on a subset of our metrics where a fair comparison is possible. Since these methods output only markdown tables, we relied on custom parsing to extract column names and values, which introduces some unreliability. In contrast, SQUiD supports principled evaluation through relational databases and query-based retrieval.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1629::appendix::D",
+      "paper_id": "2025.emnlp-main.1629",
+      "section_number": "D",
+      "section_title": "experimentation details",
+      "normalized_section_title": "experimentation details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1629::appendix::D.1",
+      "paper_id": "2025.emnlp-main.1629",
+      "section_number": "D.1",
+      "section_title": "experimental setting",
+      "normalized_section_title": "experimental setting",
+      "window_text": "Computational Resources and Model Sizes. We report the number of parameters,computational budget,and infrastructure details for all models and experiments used in this work. The models employed include: LLAMA3-8B-INSTRUCT (8B parameters),CLAUDE 3.7 SONNET (parameter size not disclosed), GPT-4o (parameter size not disclosed), QwEN3-8B (8B parameters), and DEEPSEEK-V2.5 (16B parameters). All experiments, including both development and final evaluation runs,were conducted using 1 GPU (NVIDIA A10, 24 GB VRAM) over a total of approximately 100 GPU hours. Our computing environment included 48-core Intel Xeon Silver 4310 CPUs and 128 GB RAM, running on Ubuntu $2 4 . 0 4 . 2 ~ \\mathrm { L T S }$ These details are provided to support reproducibility and contextualize the performance reported in this study.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.emnlp-main.1629::appendix::D.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A10 24GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Computational Resources and Model Sizes. We report the number of parameters,computational budget,and infrastructure details for all models and experiments used in this work. The models employed include: LLAMA3-8B-INSTRUCT (8B parameters),CLAUDE 3.7 SONNET (parameter size not disclosed), GPT-4o (parameter size not disclosed), QwEN3-8B (8B parameters), and DEEPSEEK-V2.5 (16B parameters). All experiments, including both development and final evaluation runs,were conducted using 1 GPU (NVIDIA A10, 24 GB VRAM) over a total of approximately 100 GPU hours. Our computing environment included 48-core Intel Xeon Silver 4310 CPUs and 128 GB RAM, running on Ubuntu $2 4 . 0 4 . 2 ~ \\mathrm { L T S }$ These details are provided to support reproducibility and contextualize the performance reported in this study.",
+      "section_number": "D.1",
+      "section_title": "experimental setting",
+      "normalized_section_title": "experimental setting"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.emnlp-main.1629::appendix::D.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A10 24GB",
+      "cleaned_hardware_name": "nvidia a10 24gb",
+      "normalized_hardware_name": "NVIDIA A10 PCIe",
+      "benchmark_hardware_name": "NVIDIA A10 PCIe",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "D.1",
+      "section_title": "experimental setting",
+      "normalized_section_title": "experimental setting",
+      "evidence": "Computational Resources and Model Sizes. We report the number of parameters,computational budget,and infrastructure details for all models and experiments used in this work. The models employed include: LLAMA3-8B-INSTRUCT (8B parameters),CLAUDE 3.7 SONNET (parameter size not disclosed), GPT-4o (parameter size not disclosed), QwEN3-8B (8B parameters), and DEEPSEEK-V2.5 (16B parameters). All experiments, including both development and final evaluation runs,were conducted using 1 GPU (NVIDIA A10, 24 GB VRAM) over a total of approximately 100 GPU hours. Our computing environment included 48-core Intel Xeon Silver 4310 CPUs and 128 GB RAM, running on Ubuntu $2 4 . 0 4 . 2 ~ \\mathrm { L T S }$ These details are provided to support reproducibility and contextualize the performance reported in this study.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "D.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A10 PCIe",
+        "num": 1
+      }
+    ]
+  }
+}

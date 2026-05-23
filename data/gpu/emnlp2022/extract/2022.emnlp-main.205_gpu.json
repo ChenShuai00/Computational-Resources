@@ -1,0 +1,192 @@
+{
+  "paper_id": "2022.emnlp-main.205",
+  "candidate_windows": [
+    {
+      "window_id": "2022.emnlp-main.205::sections::4.2",
+      "paper_id": "2022.emnlp-main.205",
+      "section_number": "4.2",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "On one hand, we compare our JABER, CharJABER and SABER models with the popular Arabic PLMs: Arabic-BERT (Safaya et al., 2020), AraBERT (Antoun et al., 2020), CAMeLBERT (Inoue et al., 2021), ARBERT and MARBERT (Abdul-Mageed et al., 2021). On the other hand, we evaluate our AT5S and AT5B models against the recently proposed AraT5-base (Nagoudi et al., 2022) and AraB2B (Naous et al., 2021) models. The latter is an encoder-decoder model initialized with the weights of AraBERT. CAMeLBERT and AraT5-base refer to CAMeLBERT-MIX and AraT5 models in (Inoue et al., 2021) and (Nagoudi et al., 2022) respectively. These models were pretrained on a mix of MSA and tweets (the largest possible corpus) and achieve the best overall performance in their respective papers.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.205::sections::4.3",
+      "paper_id": "2022.emnlp-main.205",
+      "section_number": "4.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "In order to ensure a fair comparison amongst existing models, we define a systematic evaluation protocol following the recommendations of Pineau et al. (2021). The following four-step approach is applied to every model (including the baselines) for\n\neach of the ALUE and generative tasks: (1) We conduct extensive hyperparameter-search experiments (e.g. 60 for BERT models) to find the best combination of batch size, learning rate, and dropout rate; (2) We use the best found hyperparameter-setting to perform 5 runs with different random seeds; (3) We report the average and the standard deviation on the development set; (4) We use the best-performing models of the development set experiments for the ALUE leaderboard submissions, as well as for reporting the test-set scores of the encoder-decoder models.\n\nFor BERT-style models, we use the AdamW (Loshchilov and Hutter, 2017) optimizer with a learning rate decay. Fixing the number of epochs to 30, we perform grid search with multiple runs to find the best hyperparameters: learning rate from $\\{7\\mathrm{e} - 6,2\\mathrm{e} - 5,5\\mathrm{e} - 5\\}$ , batch-size from $\\{8,16,32,64,128\\}$ , hidden dropout from $\\{0.1,0.2,0.3,0.4\\}$ . For encoder-decoder models, we use the Adafactor (Shazeer and Stern, 2018) with inverse square root decay and pick a learning rate from $\\{1\\mathrm{e} - 3,1\\mathrm{e} - 4,1\\mathrm{e} - 5\\}$ . The fine-tuning code is based on the PyTorch (Paszke et al., 2019) version of the Transformers library (Wolf et al., 2020). We run all experiments on a single NVIDIA Tesla V100 GPU. The best hyperparameters for the generative and ALUE tasks can be found in Table 12 and Table 13 respectively (Appendix B).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.205::appendix::A",
+      "paper_id": "2022.emnlp-main.205",
+      "section_number": "A",
+      "section_title": "pretraining details",
+      "normalized_section_title": "pretraining details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.205::appendix::A.2",
+      "paper_id": "2022.emnlp-main.205",
+      "section_number": "A.2",
+      "section_title": "bert-style models",
+      "normalized_section_title": "bert-style models",
+      "window_text": "For tokenization, we use the byte-level Byte Pair Encoding (BBPE) (Wei et al., 2021) training method which considers the text as a byte sequence. This method improves the learning of the representations of rare words and eliminates the out-of-vocabulary problem. We use a vocabulary size of 64K which is comparable to that of AraBERT, twice the size of Arabic-BERT and CAMeLBERT, and $36\\%$ smaller than ARBERT and MARBERT. Our JABER and SABER models use the same architecture as that of BERT-base and BERT-large (Devlin et al., 2018) respectively. The former is a stack of 12 Transformer-encoder layers (768 hidden units) while the latter consists of 24 Transformer-encoder layers (1024 hidden units).\n\nFor Char-JABER, we first randomly initialize a character embedding lookup table with a vocab size of 160 characters (induced from the pre-training corpus) and a 768 hidden size. Each word is split into a sequence of characters with a maximum character sequence length of 10. We use two 1-D CNN\n\nlayers with each layer having a filter size of 348 and a sliding window of size 3. Note that we apply a maxpooling layer with a window size of 5 after the first CNN layer. After the second CNN layer, a linear layer is used to map the final representation to the 768 hidden size. Although this architecture adds an additional 700K parameters to Char-JABER, this has a negligible computational overhead on JABER.\n\nFollowing Devlin et al. (2018), we pre-train our models on two unsupervised tasks: Masked Language Modelling (MLM) and Next Sentence Prediction (NSP). Specifically for MLM, we use whole word masking with a probability of $15\\%$ . The original tokens are replaced $80\\%$ of the time with the special [MASK] token, $10\\%$ of the time by a random token, and remains unchanged $10\\%$ of the time. We choose a duplication factor of 3: each input sequence generates 3 random sets of masked tokens.\n\nWe pre-train our JABER and SABER models on 16 servers for 15 and 5 epochs respectively. Each server constitutes 8 NVIDIA Tesla V100 GPUs with 32GB of memory. The distributed training is achieved through Horovod (Sergeev and Del Balso, 2018) with full precision. We use the AdamW (Loshchilov and Hutter, 2017) optimizer with a learning rate decay setting the initial learning rate to 1e-4 with 10,000 warm-up steps. We train with a maximum sequence length of 128, and set the per-GPU batch size to 64 for JABER and 32 for SABER. It takes approximately 16 and 32 hours to conclude one epoch for JABER and SABER respectively. Finally, the pre-training setting of our Char-JABER model is identical to that of JABER with the exception of using a smaller initial learning rate of 5e-5.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.205::appendix::A.3",
+      "paper_id": "2022.emnlp-main.205",
+      "section_number": "A.3",
+      "section_title": "encoder-decoder models",
+      "normalized_section_title": "encoder-decoder models",
+      "window_text": "Our text-to-text Transformer models AT5B and AT5S use the same encoder-decoder architecture as T5-base and T5-small (Raffel et al., 2019) respectively. The encoder and decoder components of T5-base have similar configuration as that of BERT-base (12 layers) while T5-small is a smaller model with only 6 layers and 8-headed attention. We use the self-supervised denoising objective (Raffel et al., 2019) to pre-train our models. Specifically, $15\\%$ of tokens are randomly dropped-out from the input and all consecutive spans of such tokens are replaced by a single sentinel token. The\n\nexpected output is a sequence of these dropped-out tokens separated by the corresponding sentinel token. We train our T5-style models using the same vocabulary and pre-training corpus as that of our BERT-style models.\n\nThe models are pre-trained on 64 GPU clusters for 200k steps. The pre-training code is based on the PyTorch (Paszke et al., 2019) version of the Transformers library (Wolf et al., 2020). The distributed training is achieved by PyTorch's native distributed training capabilities. We use the Adafactor optimizer (Shazeer and Stern, 2018) with an initial learning rate of 1 and inverse square-root decay until the end of pre-training.\n\nFor both AT5S and AT5B, the maximum sequence length is set to 512 for the encoder and 114 for the decoder. We use a per-GPU batch size of 56 and 16 for AT5S and AT5B respectively (the maximum batch size that can fit on a single GPU). It is important to note that most of our implementation choices (learning rate, optimizer, etc.) are adopted from Raffel et al. (2019) and Nagoudi et al. (2022). We only differ from AraT5 through the use of a different pre-training corpus and vocabulary.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.emnlp-main.205::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "In order to ensure a fair comparison amongst existing models, we define a systematic evaluation protocol following the recommendations of Pineau et al. (2021). The following four-step approach is applied to every model (including the baselines) for\n\neach of the ALUE and generative tasks: (1) We conduct extensive hyperparameter-search experiments (e.g. 60 for BERT models) to find the best combination of batch size, learning rate, and dropout rate; (2) We use the best found hyperparameter-setting to perform 5 runs with different random seeds; (3) We report the average and the standard deviation on the development set; (4) We use the best-performing models of the development set experiments for the ALUE leaderboard submissions, as well as for reporting the test-set scores of the encoder-decoder models.\n\nFor BERT-style models, we use the AdamW (Loshchilov and Hutter, 2017) optimizer with a learning rate decay. Fixing the number of epochs to 30, we perform grid search with multiple runs to find the best hyperparameters: learning rate from $\\{7\\mathrm{e} - 6,2\\mathrm{e} - 5,5\\mathrm{e} - 5\\}$ , batch-size from $\\{8,16,32,64,128\\}$ , hidden dropout from $\\{0.1,0.2,0.3,0.4\\}$ . For encoder-decoder models, we use the Adafactor (Shazeer and Stern, 2018) with inverse square root decay and pick a learning rate from $\\{1\\mathrm{e} - 3,1\\mathrm{e} - 4,1\\mathrm{e} - 5\\}$ . The fine-tuning code is based on the PyTorch (Paszke et al., 2019) version of the Transformers library (Wolf et al., 2020). We run all experiments on a single NVIDIA Tesla V100 GPU. The best hyperparameters for the generative and ALUE tasks can be found in Table 12 and Table 13 respectively (Appendix B).",
+      "section_number": "4.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    },
+    {
+      "window_id": "2022.emnlp-main.205::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100 32GB",
+      "count": 128,
+      "count_text": "128",
+      "evidence": "For tokenization, we use the byte-level Byte Pair Encoding (BBPE) (Wei et al., 2021) training method which considers the text as a byte sequence. This method improves the learning of the representations of rare words and eliminates the out-of-vocabulary problem. We use a vocabulary size of 64K which is comparable to that of AraBERT, twice the size of Arabic-BERT and CAMeLBERT, and $36\\%$ smaller than ARBERT and MARBERT. Our JABER and SABER models use the same architecture as that of BERT-base and BERT-large (Devlin et al., 2018) respectively. The former is a stack of 12 Transformer-encoder layers (768 hidden units) while the latter consists of 24 Transformer-encoder layers (1024 hidden units).\n\nFor Char-JABER, we first randomly initialize a character embedding lookup table with a vocab size of 160 characters (induced from the pre-training corpus) and a 768 hidden size. Each word is split into a sequence of characters with a maximum character sequence length of 10. We use two 1-D CNN\n\nlayers with each layer having a filter size of 348 and a sliding window of size 3. Note that we apply a maxpooling layer with a window size of 5 after the first CNN layer. After the second CNN layer, a linear layer is used to map the final representation to the 768 hidden size. Although this architecture adds an additional 700K parameters to Char-JABER, this has a negligible computational overhead on JABER.\n\nFollowing Devlin et al. (2018), we pre-train our models on two unsupervised tasks: Masked Language Modelling (MLM) and Next Sentence Prediction (NSP). Specifically for MLM, we use whole word masking with a probability of $15\\%$ . The original tokens are replaced $80\\%$ of the time with the special [MASK] token, $10\\%$ of the time by a random token, and remains unchanged $10\\%$ of the time. We choose a duplication factor of 3: each input sequence generates 3 random sets of masked tokens.\n\nWe pre-train our JABER and SABER models on 16 servers for 15 and 5 epochs respectively. Each server constitutes 8 NVIDIA Tesla V100 GPUs with 32GB of memory. The distributed training is achieved through Horovod (Sergeev and Del Balso, 2018) with full precision. We use the AdamW (Loshchilov and Hutter, 2017) optimizer with a learning rate decay setting the initial learning rate to 1e-4 with 10,000 warm-up steps. We train with a maximum sequence length of 128, and set the per-GPU batch size to 64 for JABER and 32 for SABER. It takes approximately 16 and 32 hours to conclude one epoch for JABER and SABER respectively. Finally, the pre-training setting of our Char-JABER model is identical to that of JABER with the exception of using a smaller initial learning rate of 5e-5.",
+      "section_number": "A.2",
+      "section_title": "bert-style models",
+      "normalized_section_title": "bert-style models"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.emnlp-main.205::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100",
+      "cleaned_hardware_name": "nvidia tesla v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "4.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "In order to ensure a fair comparison amongst existing models, we define a systematic evaluation protocol following the recommendations of Pineau et al. (2021). The following four-step approach is applied to every model (including the baselines) for\n\neach of the ALUE and generative tasks: (1) We conduct extensive hyperparameter-search experiments (e.g. 60 for BERT models) to find the best combination of batch size, learning rate, and dropout rate; (2) We use the best found hyperparameter-setting to perform 5 runs with different random seeds; (3) We report the average and the standard deviation on the development set; (4) We use the best-performing models of the development set experiments for the ALUE leaderboard submissions, as well as for reporting the test-set scores of the encoder-decoder models.\n\nFor BERT-style models, we use the AdamW (Loshchilov and Hutter, 2017) optimizer with a learning rate decay. Fixing the number of epochs to 30, we perform grid search with multiple runs to find the best hyperparameters: learning rate from $\\{7\\mathrm{e} - 6,2\\mathrm{e} - 5,5\\mathrm{e} - 5\\}$ , batch-size from $\\{8,16,32,64,128\\}$ , hidden dropout from $\\{0.1,0.2,0.3,0.4\\}$ . For encoder-decoder models, we use the Adafactor (Shazeer and Stern, 2018) with inverse square root decay and pick a learning rate from $\\{1\\mathrm{e} - 3,1\\mathrm{e} - 4,1\\mathrm{e} - 5\\}$ . The fine-tuning code is based on the PyTorch (Paszke et al., 2019) version of the Transformers library (Wolf et al., 2020). We run all experiments on a single NVIDIA Tesla V100 GPU. The best hyperparameters for the generative and ALUE tasks can be found in Table 12 and Table 13 respectively (Appendix B).",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2022.emnlp-main.205::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100 32GB",
+      "cleaned_hardware_name": "nvidia tesla v100 32gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "count": 128,
+      "count_text": "128",
+      "section_number": "A.2",
+      "section_title": "bert-style models",
+      "normalized_section_title": "bert-style models",
+      "evidence": "For tokenization, we use the byte-level Byte Pair Encoding (BBPE) (Wei et al., 2021) training method which considers the text as a byte sequence. This method improves the learning of the representations of rare words and eliminates the out-of-vocabulary problem. We use a vocabulary size of 64K which is comparable to that of AraBERT, twice the size of Arabic-BERT and CAMeLBERT, and $36\\%$ smaller than ARBERT and MARBERT. Our JABER and SABER models use the same architecture as that of BERT-base and BERT-large (Devlin et al., 2018) respectively. The former is a stack of 12 Transformer-encoder layers (768 hidden units) while the latter consists of 24 Transformer-encoder layers (1024 hidden units).\n\nFor Char-JABER, we first randomly initialize a character embedding lookup table with a vocab size of 160 characters (induced from the pre-training corpus) and a 768 hidden size. Each word is split into a sequence of characters with a maximum character sequence length of 10. We use two 1-D CNN\n\nlayers with each layer having a filter size of 348 and a sliding window of size 3. Note that we apply a maxpooling layer with a window size of 5 after the first CNN layer. After the second CNN layer, a linear layer is used to map the final representation to the 768 hidden size. Although this architecture adds an additional 700K parameters to Char-JABER, this has a negligible computational overhead on JABER.\n\nFollowing Devlin et al. (2018), we pre-train our models on two unsupervised tasks: Masked Language Modelling (MLM) and Next Sentence Prediction (NSP). Specifically for MLM, we use whole word masking with a probability of $15\\%$ . The original tokens are replaced $80\\%$ of the time with the special [MASK] token, $10\\%$ of the time by a random token, and remains unchanged $10\\%$ of the time. We choose a duplication factor of 3: each input sequence generates 3 random sets of masked tokens.\n\nWe pre-train our JABER and SABER models on 16 servers for 15 and 5 epochs respectively. Each server constitutes 8 NVIDIA Tesla V100 GPUs with 32GB of memory. The distributed training is achieved through Horovod (Sergeev and Del Balso, 2018) with full precision. We use the AdamW (Loshchilov and Hutter, 2017) optimizer with a learning rate decay setting the initial learning rate to 1e-4 with 10,000 warm-up steps. We train with a maximum sequence length of 128, and set the per-GPU batch size to 64 for JABER and 32 for SABER. It takes approximately 16 and 32 hours to conclude one epoch for JABER and SABER respectively. Finally, the pre-training setting of our Char-JABER model is identical to that of JABER with the exception of using a smaller initial learning rate of 5e-5.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2022.emnlp-main.205::sections::4.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2",
+      "section_title": "baselines",
+      "evidence": "On one hand, we compare our JABER, CharJABER and SABER models with the popular Arabic PLMs: Arabic-BERT (Safaya et al., 2020), AraBERT (Antoun et al., 2020), CAMeLBERT (Inoue et al., 2021), ARBERT and MARBERT (Abdul-Mageed et al., 2021). On the other hand, we evaluate our AT5S and AT5B models against the recently proposed AraT5-base (Nagoudi et al., 2022) and AraB2B (Naous et al., 2021) models. The latter is an encoder-decoder model initialized with the weights of AraBERT. CAMeLBERT and AraT5-base refer to CAMeLBERT-MIX and AraT5 models in (Inoue et al., 2021) and (Nagoudi et al., 2022) respectively. These models were pretrained on a mix of MSA and tweets (the largest possible corpus) and achieve the best overall performance in their respective papers."
+    },
+    {
+      "source_window_id": "2022.emnlp-main.205::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "pretraining details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2022.emnlp-main.205::appendix::A.3",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.3",
+      "section_title": "encoder-decoder models",
+      "evidence": "Our text-to-text Transformer models AT5B and AT5S use the same encoder-decoder architecture as T5-base and T5-small (Raffel et al., 2019) respectively. The encoder and decoder components of T5-base have similar configuration as that of BERT-base (12 layers) while T5-small is a smaller model with only 6 layers and 8-headed attention. We use the self-supervised denoising objective (Raffel et al., 2019) to pre-train our models. Specifically, $15\\%$ of tokens are randomly dropped-out from the input and all consecutive spans of such tokens are replaced by a single sentinel token. The\n\nexpected output is a sequence of these dropped-out tokens separated by the corresponding sentinel token. We train our T5-style models using the same vocabulary and pre-training corpus as that of our BERT-style models.\n\nThe models are pre-trained on 64 GPU clusters for 200k steps. The pre-training code is based on the PyTorch (Paszke et al., 2019) version of the Transformers library (Wolf et al., 2020). The distributed training is achieved by PyTorch's native distributed training capabilities. We use the Adafactor optimizer (Shazeer and Stern, 2018) with an initial learning rate of 1 and inverse square-root decay until the end of pre-training.\n\nFor both AT5S and AT5B, the maximum sequence length is set to 512 for the encoder and 114 for the decoder. We use a per-GPU batch size of 56 and 16 for AT5S and AT5B respectively (the maximum batch size that can fit on a single GPU). It is important to note that most of our implementation choices (learning rate, optimizer, etc.) are adopted from Raffel et al. (2019) and Nagoudi et al. (2022). We only differ from AraT5 through the use of a different pre-training corpus and vocabulary."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.3",
+      "A.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 32 GB",
+        "num": 128
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2022\\2022.emnlp-main.205\\auto\\full.md",
+    "source_md_sha256": "d80a1a1832a03cfb231915bfa39f856f3fd82b18bb8ff1e0499c9a855144a74f",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "44ecc0af216a9e5fe6ff4e8a000ce2b17b722bcc41b386c829c53021783d2d05"
+  }
+}

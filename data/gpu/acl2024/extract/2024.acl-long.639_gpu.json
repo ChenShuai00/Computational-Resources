@@ -1,0 +1,141 @@
+{
+  "paper_id": "2024.acl-long.639",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.639::sections::3.6",
+      "paper_id": "2024.acl-long.639",
+      "section_number": "3.6",
+      "section_title": "inference",
+      "normalized_section_title": "inference",
+      "window_text": "Post-training, the MLLM model could retrieve images akin to text generation. The process involves inputting a query into the MLLM, and then the model predicts several identifier strings through beam search. Since each identifier uniquely corresponds to an image, the generation results are the retrieval results.\n\nConstrained generation. To confine the generation to within-corpus results and ensure they fall within the test set, we implement constrained beam search in the MLLM. This approach leverages a Trie, a form of k-ary search tree, for efficient key location within a set. Specifically, we store all image identifiers into the Trie. The Trie structure, upon receiving a prefix string, suggests potential tokens found in the identifiers. This mechanism ensures that every generated identifier accurately matches an existing image's identifier. Furthermore, we employ beam search (Sutskever et al., 2014), a widely-used technique, for generating multiple identifiers concurrently. These identifiers are each assigned a language model score, facilitating the creation of a ranked list based on these scores. Consequently, the ranked identifiers correspond to a ranked list of images.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.639::sections::4",
+      "paper_id": "2024.acl-long.639",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.639::sections::4.4",
+      "paper_id": "2024.acl-long.639",
+      "section_number": "4.4",
+      "section_title": "efficiency analysis",
+      "normalized_section_title": "efficiency analysis",
+      "window_text": "In large-scale cross-modal retrieval, efficiency emerges as a crucial factor. This is why the onetower framework, effective for small-scale ranking, falls short in the retrieval stage. To address this, we conducted experiments comparing the efficiency of CLIP and GRACE. CLIP can pre-encode all images into vectors, incurring most of its inference cost from text encoding and calculating the similarity between text embeddings and image embeddings. In contrast, the generative framework necessitates generating identifiers. We assessed the query latency of both CLIP and GRACE to varying image sizes, with detailed results presented in Figure 4.\n\nOur findings are insightful. Firstly, CLIP's inference speed decreases progressively as image size increases, owing to the escalating number of similarity calculations required. Secondly, the inference speed of our generative framework remains nearly constant, a result of encoding all images directly into its parameters. Thirdly, when image sizes exceed a certain threshold (about 150,000 images), our generative framework surpasses CLIP in terms of inference speed, and this advantage grows as image sizes continue to increase. Lastly, these findings underscore that the generative framework is not only capable of large-scale image retrieval but can also perform comparably to two-tower approaches.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.639::appendix::A",
+      "paper_id": "2024.acl-long.639",
+      "section_number": "A",
+      "section_title": "implement details",
+      "normalized_section_title": "implement details",
+      "window_text": "We selected the open-flamingo (Awadalla et al., 2023) with the 3B parameters as our model's backbone. The visual encoder of the open-flamingo is a 12-layer visual transformer, while its language model is based on MPT-1B $^3$ . We adopted the deep-speed (Rasley et al., 2020) training framework to train the model on $4 \\times 24$ GB NVIDIA A5000 GPUs. We froze the visual encoder and fine-tuned the language model as well as cross-attention layers. We employed the Adam optimizer, setting a learning rate of 1e-4 and a batch size of 64 for each GPU. On the Flickr30K dataset, our training included 1,000K steps for learning to memorize and 3,000K steps for learning to retrieve. For the MS-COCO dataset, these numbers were increased to 2,000K and 6,000K steps, respectively. To accelerate the memorizing of images that without queries, we adopt the common technique from generative text retrieval to generate pseudo-queries for these images. More specifically, we train the MLLM model by feeding it images and generating the corresponding queries from the training set, and then utilize the trained model to predict pseudo-queries for images in the test set. We added these pseudo pairs into the training set for the training phases of GRACE. We have trained the GRACE several times to confirm that the improvement is not a result of random chance and present the mid one. The training duration was approximately 12 hours for Flickr30K and 24 hours for MS-COCO.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.639::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A5000 24GB",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "We selected the open-flamingo (Awadalla et al., 2023) with the 3B parameters as our model's backbone. The visual encoder of the open-flamingo is a 12-layer visual transformer, while its language model is based on MPT-1B $^3$ . We adopted the deep-speed (Rasley et al., 2020) training framework to train the model on $4 \\times 24$ GB NVIDIA A5000 GPUs. We froze the visual encoder and fine-tuned the language model as well as cross-attention layers. We employed the Adam optimizer, setting a learning rate of 1e-4 and a batch size of 64 for each GPU. On the Flickr30K dataset, our training included 1,000K steps for learning to memorize and 3,000K steps for learning to retrieve. For the MS-COCO dataset, these numbers were increased to 2,000K and 6,000K steps, respectively. To accelerate the memorizing of images that without queries, we adopt the common technique from generative text retrieval to generate pseudo-queries for these images. More specifically, we train the MLLM model by feeding it images and generating the corresponding queries from the training set, and then utilize the trained model to predict pseudo-queries for images in the test set. We added these pseudo pairs into the training set for the training phases of GRACE. We have trained the GRACE several times to confirm that the improvement is not a result of random chance and present the mid one. The training duration was approximately 12 hours for Flickr30K and 24 hours for MS-COCO.",
+      "section_number": "A",
+      "section_title": "implement details",
+      "normalized_section_title": "implement details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.639::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A5000 24GB",
+      "cleaned_hardware_name": "nvidia a5000 24gb",
+      "normalized_hardware_name": "NVIDIA RTX A5000",
+      "benchmark_hardware_name": "NVIDIA RTX A5000",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "A",
+      "section_title": "implement details",
+      "normalized_section_title": "implement details",
+      "evidence": "We selected the open-flamingo (Awadalla et al., 2023) with the 3B parameters as our model's backbone. The visual encoder of the open-flamingo is a 12-layer visual transformer, while its language model is based on MPT-1B $^3$ . We adopted the deep-speed (Rasley et al., 2020) training framework to train the model on $4 \\times 24$ GB NVIDIA A5000 GPUs. We froze the visual encoder and fine-tuned the language model as well as cross-attention layers. We employed the Adam optimizer, setting a learning rate of 1e-4 and a batch size of 64 for each GPU. On the Flickr30K dataset, our training included 1,000K steps for learning to memorize and 3,000K steps for learning to retrieve. For the MS-COCO dataset, these numbers were increased to 2,000K and 6,000K steps, respectively. To accelerate the memorizing of images that without queries, we adopt the common technique from generative text retrieval to generate pseudo-queries for these images. More specifically, we train the MLLM model by feeding it images and generating the corresponding queries from the training set, and then utilize the trained model to predict pseudo-queries for images in the test set. We added these pseudo pairs into the training set for the training phases of GRACE. We have trained the GRACE several times to confirm that the improvement is not a result of random chance and present the mid one. The training duration was approximately 12 hours for Flickr30K and 24 hours for MS-COCO.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.acl-long.639::sections::3.6",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3.6",
+      "section_title": "inference",
+      "evidence": "Post-training, the MLLM model could retrieve images akin to text generation. The process involves inputting a query into the MLLM, and then the model predicts several identifier strings through beam search. Since each identifier uniquely corresponds to an image, the generation results are the retrieval results.\n\nConstrained generation. To confine the generation to within-corpus results and ensure they fall within the test set, we implement constrained beam search in the MLLM. This approach leverages a Trie, a form of k-ary search tree, for efficient key location within a set. Specifically, we store all image identifiers into the Trie. The Trie structure, upon receiving a prefix string, suggests potential tokens found in the identifiers. This mechanism ensures that every generated identifier accurately matches an existing image's identifier. Furthermore, we employ beam search (Sutskever et al., 2014), a widely-used technique, for generating multiple identifiers concurrently. These identifiers are each assigned a language model score, facilitating the creation of a ranked list based on these scores. Consequently, the ranked identifiers correspond to a ranked list of images."
+    },
+    {
+      "source_window_id": "2024.acl-long.639::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.acl-long.639::sections::4.4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.4",
+      "section_title": "efficiency analysis",
+      "evidence": "In large-scale cross-modal retrieval, efficiency emerges as a crucial factor. This is why the onetower framework, effective for small-scale ranking, falls short in the retrieval stage. To address this, we conducted experiments comparing the efficiency of CLIP and GRACE. CLIP can pre-encode all images into vectors, incurring most of its inference cost from text encoding and calculating the similarity between text embeddings and image embeddings. In contrast, the generative framework necessitates generating identifiers. We assessed the query latency of both CLIP and GRACE to varying image sizes, with detailed results presented in Figure 4.\n\nOur findings are insightful. Firstly, CLIP's inference speed decreases progressively as image size increases, owing to the escalating number of similarity calculations required. Secondly, the inference speed of our generative framework remains nearly constant, a result of encoding all images directly into its parameters. Thirdly, when image sizes exceed a certain threshold (about 150,000 images), our generative framework surpasses CLIP in terms of inference speed, and this advantage grows as image sizes continue to increase. Lastly, these findings underscore that the generative framework is not only capable of large-scale image retrieval but can also perform comparably to two-tower approaches."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA RTX A5000",
+        "num": 4
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2024\\2024.acl-long.639\\auto\\full.md",
+    "source_md_sha256": "634b292151b5cd6933946e3d7e238a0c86c530c182d663e31d09432219c8f4af",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "ad96f3b6ca003898756db958dd17467668c845886fa3f1f835d26a866c8af3f0"
+  }
+}

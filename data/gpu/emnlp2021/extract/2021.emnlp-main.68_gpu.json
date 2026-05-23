@@ -1,0 +1,121 @@
+{
+  "paper_id": "2021.emnlp-main.68",
+  "candidate_windows": [
+    {
+      "window_id": "2021.emnlp-main.68::sections::3.1",
+      "paper_id": "2021.emnlp-main.68",
+      "section_number": "3.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "We run experiments using PyTorch and Transformers (Wolf et al., 2019) on machines with Titan RTX GPUs. For CAT-NQLM, we use the same architecture as GPT-2-base (Radford et al., 2019) but with an embedding and hidden size of 256, 8 attention heads, 4 layers, and 8,000 tokens. This model runs in real time (much less than 100ms, the limit for instantaneous perception) and totals 4.7 million parameters, which is slightly larger than the small\n\n3.8M-parameter model from Park and Chiba (2017) and much smaller than their large 30M variant.\n\nWe train this model using the Adam optimizer (Kingma and Ba, 2014) with a learning rate of $5 \\times 10^{-4}$ , a batch size of 128, and 5 epochs. We denote the models trained using the neural trie objective with the \"NT\" subscript. For tokenization, following the current state of the art, we apply byte-pair encoding (Kudo and Richardson, 2018) to solve the out-of-vocabulary problem. We tune $c$ from Section 2.1 for $c = 1, \\ldots, 5$ for all CAT-\\* approaches and pick a beam search width of 10. For more specific training details, refer to the appendix.\n\nDataset. We curate a proprietary dataset from real-life voice queries to our smart TV, the X1 entertainment system, which users interact with using a voice remote. Example queries include navigating to a specific channel (\"Channel 5\"), searching YouTube (\"YouTube funny videos\"), and program lookups (\"Cowboy Bebop\").\n\nIn Figure 1, we present the empirical cumulative distribution functions (ECDFs) of important statistics. From left to right, we plot the frequency rank of the query, the lexical length of the query, the number of ASR outputs, and the duration between the first and the last output. Note that this output activity duration is zero seconds for single-output utterances. We observe that the top-10 queries make up $25\\%$ of the traffic, which is roughly equal to the long tail past a rank of 1000 (see the left-most figure). As the middle two figures show, the final queries are mostly short with few intermediate ASR outputs, with $80\\%$ of them having fewer than 15 characters and yielding no more than 5 intermediate transcripts. Thus, the ASR system actively outputs for less than a second on most queries, as plotted in the rightmost figure. For a detailed analysis of the queries, see our previous work (Li and Ture, 2020; Tang et al., 2019; Rao et al., 2018).\n\nTable 2: The test set results (MRRs) on EntSys1M, taking the median across five randomly seeded runs, with the best bolded. $c$ denotes the best context size from Section 2.1, picked based on the dev set results.   \n\n<table><tr><td>#</td><td>Model</td><td>All</td><td>Seen</td><td>Unseen</td><td>c</td></tr><tr><td>1</td><td>MPC</td><td>0.494</td><td>0.656</td><td>0.0</td><td>-</td></tr><tr><td>2</td><td>MPC-KExt</td><td>0.518</td><td>0.689</td><td>0.0</td><td>-</td></tr><tr><td>3</td><td>NQLM</td><td>0.531</td><td>0.626</td><td>0.245</td><td>-</td></tr><tr><td>4</td><td>CAT-MPC</td><td>0.547</td><td>0.726</td><td>0.0</td><td>1</td></tr><tr><td>5</td><td>CAT-NQLM</td><td>0.625</td><td>0.741</td><td>0.273</td><td>5</td></tr><tr><td>6</td><td>CAT-NQLMNT</td><td>0.629</td><td>0.744</td><td>0.278</td><td>5</td></tr></table>\n\nFor the training and the development sets, we collect the streaming transcripts (provided by a third-party ASR system) of one million voice queries sampled uniformly at random from April $14^{\\mathrm{th}}$ , 2021, setting aside $10\\%$ of it for development and the rest for training. This set represents roughly $3\\%$ of our daily traffic, containing 163K unique final transcripts. For the test set, we sample 100k queries from April $15^{\\mathrm{th}}$ , 2021, a different date from the training set's, as is common in QAC datasets for testing generalizability (Adar, 2007). We call this dataset \"EntSys1M.\"\n\nTo evaluate the models, we compute for each prediction the mean reciprocal rank (MRR), defined as MRR := $\\frac{1}{|\\tilde{\\mathcal{D}}_c|}\\sum_{u_i\\in \\tilde{\\mathcal{D}}_c}\\mathrm{RR}_{u_i}$ , where $\\tilde{\\mathcal{D}}_c$ is the transformed test set using Section 2.1, and $\\mathrm{RR}_{u_i}$ is the reciprocal rank (index) of the first correct prediction in the top- $K$ completions, as produced following Section 2.2. If no correct prediction exists, then $\\mathrm{RR}_{u_i} = 0$ . We further split the test set into two distinct subsets: final transcripts seen at training time and unseen ones.\n\nBaseline models. We implement MPC and NQLMs (Park and Chiba, 2017) trained on the final transcript of each utterance, with the NLM architecture and training procedure matching our CAT-NQLM's for a fair comparison. We also implement and train the error-tolerant version of MPC (Chaudhuri and Kaushik, 2009), named MPC-KExt, which allows for up to an edit distance of $\\hat{k}$ between the lookup prefix and the observed prefixes. We tune $\\hat{k}$ on the development set for $\\hat{k} = 1,\\dots ,10$",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.emnlp-main.68::appendix::A",
+      "paper_id": "2021.emnlp-main.68",
+      "section_number": "A",
+      "section_title": "specifications",
+      "normalized_section_title": "specifications",
+      "window_text": "Our machines use Titan RTX GPUs, CUDA 10.2, PyTorch 1.8.1, Transformers 4.5.0, and Python 3.8.8. Our NLMs are based on a smaller version of DistilGPT-2 from the HuggingFace Transformers library, with a SentencePiece vocabulary of 8,000 learned from our datasets. Specifically, we make the following changes to the configuration:\n\nfrom transformers import GPT2Config, GPT2LMHeadModel   \n```python\ncfg = GPT2Config.from_pretrained('distilgpt2')\ncfg.vocab_size = 8000\ncfg.num_labels = 8000\ncfg.n_embd = 256\ncfg.n_layer = 4\ncfg.n_head = 8\nmodel = GPT2LMHeadModel.cfg) \n```\n\nWe train these models using the Adam optimizer (Kingma and Ba, 2014) with a learning rate of $5 \\times 10^{-4}$ and a linear triangular learning rate schedule with a 300 warmup steps and a linear decay until the end, as implemented by the get_linear_schedule_with_warmup function from Transformers.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2021.emnlp-main.68::sections::3.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Titan RTX",
+      "count": null,
+      "count_text": "",
+      "evidence": "We run experiments using PyTorch and Transformers (Wolf et al., 2019) on machines with Titan RTX GPUs. For CAT-NQLM, we use the same architecture as GPT-2-base (Radford et al., 2019) but with an embedding and hidden size of 256, 8 attention heads, 4 layers, and 8,000 tokens. This model runs in real time (much less than 100ms, the limit for instantaneous perception) and totals 4.7 million parameters, which is slightly larger than the small\n\n3.8M-parameter model from Park and Chiba (2017) and much smaller than their large 30M variant.\n\nWe train this model using the Adam optimizer (Kingma and Ba, 2014) with a learning rate of $5 \\times 10^{-4}$ , a batch size of 128, and 5 epochs. We denote the models trained using the neural trie objective with the \"NT\" subscript. For tokenization, following the current state of the art, we apply byte-pair encoding (Kudo and Richardson, 2018) to solve the out-of-vocabulary problem. We tune $c$ from Section 2.1 for $c = 1, \\ldots, 5$ for all CAT-\\* approaches and pick a beam search width of 10. For more specific training details, refer to the appendix.\n\nDataset. We curate a proprietary dataset from real-life voice queries to our smart TV, the X1 entertainment system, which users interact with using a voice remote. Example queries include navigating to a specific channel (\"Channel 5\"), searching YouTube (\"YouTube funny videos\"), and program lookups (\"Cowboy Bebop\").\n\nIn Figure 1, we present the empirical cumulative distribution functions (ECDFs) of important statistics. From left to right, we plot the frequency rank of the query, the lexical length of the query, the number of ASR outputs, and the duration between the first and the last output. Note that this output activity duration is zero seconds for single-output utterances. We observe that the top-10 queries make up $25\\%$ of the traffic, which is roughly equal to the long tail past a rank of 1000 (see the left-most figure). As the middle two figures show, the final queries are mostly short with few intermediate ASR outputs, with $80\\%$ of them having fewer than 15 characters and yielding no more than 5 intermediate transcripts. Thus, the ASR system actively outputs for less than a second on most queries, as plotted in the rightmost figure. For a detailed analysis of the queries, see our previous work (Li and Ture, 2020; Tang et al., 2019; Rao et al., 2018).\n\nTable 2: The test set results (MRRs) on EntSys1M, taking the median across five randomly seeded runs, with the best bolded. $c$ denotes the best context size from Section 2.1, picked based on the dev set results.   \n\n<table><tr><td>#</td><td>Model</td><td>All</td><td>Seen</td><td>Unseen</td><td>c</td></tr><tr><td>1</td><td>MPC</td><td>0.494</td><td>0.656</td><td>0.0</td><td>-</td></tr><tr><td>2</td><td>MPC-KExt</td><td>0.518</td><td>0.689</td><td>0.0</td><td>-</td></tr><tr><td>3</td><td>NQLM</td><td>0.531</td><td>0.626</td><td>0.245</td><td>-</td></tr><tr><td>4</td><td>CAT-MPC</td><td>0.547</td><td>0.726</td><td>0.0</td><td>1</td></tr><tr><td>5</td><td>CAT-NQLM</td><td>0.625</td><td>0.741</td><td>0.273</td><td>5</td></tr><tr><td>6</td><td>CAT-NQLMNT</td><td>0.629</td><td>0.744</td><td>0.278</td><td>5</td></tr></table>\n\nFor the training and the development sets, we collect the streaming transcripts (provided by a third-party ASR system) of one million voice queries sampled uniformly at random from April $14^{\\mathrm{th}}$ , 2021, setting aside $10\\%$ of it for development and the rest for training. This set represents roughly $3\\%$ of our daily traffic, containing 163K unique final transcripts. For the test set, we sample 100k queries from April $15^{\\mathrm{th}}$ , 2021, a different date from the training set's, as is common in QAC datasets for testing generalizability (Adar, 2007). We call this dataset \"EntSys1M.\"\n\nTo evaluate the models, we compute for each prediction the mean reciprocal rank (MRR), defined as MRR := $\\frac{1}{|\\tilde{\\mathcal{D}}_c|}\\sum_{u_i\\in \\tilde{\\mathcal{D}}_c}\\mathrm{RR}_{u_i}$ , where $\\tilde{\\mathcal{D}}_c$ is the transformed test set using Section 2.1, and $\\mathrm{RR}_{u_i}$ is the reciprocal rank (index) of the first correct prediction in the top- $K$ completions, as produced following Section 2.2. If no correct prediction exists, then $\\mathrm{RR}_{u_i} = 0$ . We further split the test set into two distinct subsets: final transcripts seen at training time and unseen ones.\n\nBaseline models. We implement MPC and NQLMs (Park and Chiba, 2017) trained on the final transcript of each utterance, with the NLM architecture and training procedure matching our CAT-NQLM's for a fair comparison. We also implement and train the error-tolerant version of MPC (Chaudhuri and Kaushik, 2009), named MPC-KExt, which allows for up to an edit distance of $\\hat{k}$ between the lookup prefix and the observed prefixes. We tune $\\hat{k}$ on the development set for $\\hat{k} = 1,\\dots ,10$",
+      "section_number": "3.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup"
+    },
+    {
+      "window_id": "2021.emnlp-main.68::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Titan RTX",
+      "count": null,
+      "count_text": "",
+      "evidence": "Our machines use Titan RTX GPUs, CUDA 10.2, PyTorch 1.8.1, Transformers 4.5.0, and Python 3.8.8. Our NLMs are based on a smaller version of DistilGPT-2 from the HuggingFace Transformers library, with a SentencePiece vocabulary of 8,000 learned from our datasets. Specifically, we make the following changes to the configuration:\n\nfrom transformers import GPT2Config, GPT2LMHeadModel   \n```python\ncfg = GPT2Config.from_pretrained('distilgpt2')\ncfg.vocab_size = 8000\ncfg.num_labels = 8000\ncfg.n_embd = 256\ncfg.n_layer = 4\ncfg.n_head = 8\nmodel = GPT2LMHeadModel.cfg) \n```\n\nWe train these models using the Adam optimizer (Kingma and Ba, 2014) with a learning rate of $5 \\times 10^{-4}$ and a linear triangular learning rate schedule with a 300 warmup steps and a linear decay until the end, as implemented by the get_linear_schedule_with_warmup function from Transformers.",
+      "section_number": "A",
+      "section_title": "specifications",
+      "normalized_section_title": "specifications"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2021.emnlp-main.68::sections::3.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Titan RTX",
+      "cleaned_hardware_name": "titan rtx",
+      "normalized_hardware_name": "NVIDIA TITAN RTX",
+      "benchmark_hardware_name": "NVIDIA TITAN RTX",
+      "count": null,
+      "count_text": "",
+      "section_number": "3.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "evidence": "We run experiments using PyTorch and Transformers (Wolf et al., 2019) on machines with Titan RTX GPUs. For CAT-NQLM, we use the same architecture as GPT-2-base (Radford et al., 2019) but with an embedding and hidden size of 256, 8 attention heads, 4 layers, and 8,000 tokens. This model runs in real time (much less than 100ms, the limit for instantaneous perception) and totals 4.7 million parameters, which is slightly larger than the small\n\n3.8M-parameter model from Park and Chiba (2017) and much smaller than their large 30M variant.\n\nWe train this model using the Adam optimizer (Kingma and Ba, 2014) with a learning rate of $5 \\times 10^{-4}$ , a batch size of 128, and 5 epochs. We denote the models trained using the neural trie objective with the \"NT\" subscript. For tokenization, following the current state of the art, we apply byte-pair encoding (Kudo and Richardson, 2018) to solve the out-of-vocabulary problem. We tune $c$ from Section 2.1 for $c = 1, \\ldots, 5$ for all CAT-\\* approaches and pick a beam search width of 10. For more specific training details, refer to the appendix.\n\nDataset. We curate a proprietary dataset from real-life voice queries to our smart TV, the X1 entertainment system, which users interact with using a voice remote. Example queries include navigating to a specific channel (\"Channel 5\"), searching YouTube (\"YouTube funny videos\"), and program lookups (\"Cowboy Bebop\").\n\nIn Figure 1, we present the empirical cumulative distribution functions (ECDFs) of important statistics. From left to right, we plot the frequency rank of the query, the lexical length of the query, the number of ASR outputs, and the duration between the first and the last output. Note that this output activity duration is zero seconds for single-output utterances. We observe that the top-10 queries make up $25\\%$ of the traffic, which is roughly equal to the long tail past a rank of 1000 (see the left-most figure). As the middle two figures show, the final queries are mostly short with few intermediate ASR outputs, with $80\\%$ of them having fewer than 15 characters and yielding no more than 5 intermediate transcripts. Thus, the ASR system actively outputs for less than a second on most queries, as plotted in the rightmost figure. For a detailed analysis of the queries, see our previous work (Li and Ture, 2020; Tang et al., 2019; Rao et al., 2018).\n\nTable 2: The test set results (MRRs) on EntSys1M, taking the median across five randomly seeded runs, with the best bolded. $c$ denotes the best context size from Section 2.1, picked based on the dev set results.   \n\n<table><tr><td>#</td><td>Model</td><td>All</td><td>Seen</td><td>Unseen</td><td>c</td></tr><tr><td>1</td><td>MPC</td><td>0.494</td><td>0.656</td><td>0.0</td><td>-</td></tr><tr><td>2</td><td>MPC-KExt</td><td>0.518</td><td>0.689</td><td>0.0</td><td>-</td></tr><tr><td>3</td><td>NQLM</td><td>0.531</td><td>0.626</td><td>0.245</td><td>-</td></tr><tr><td>4</td><td>CAT-MPC</td><td>0.547</td><td>0.726</td><td>0.0</td><td>1</td></tr><tr><td>5</td><td>CAT-NQLM</td><td>0.625</td><td>0.741</td><td>0.273</td><td>5</td></tr><tr><td>6</td><td>CAT-NQLMNT</td><td>0.629</td><td>0.744</td><td>0.278</td><td>5</td></tr></table>\n\nFor the training and the development sets, we collect the streaming transcripts (provided by a third-party ASR system) of one million voice queries sampled uniformly at random from April $14^{\\mathrm{th}}$ , 2021, setting aside $10\\%$ of it for development and the rest for training. This set represents roughly $3\\%$ of our daily traffic, containing 163K unique final transcripts. For the test set, we sample 100k queries from April $15^{\\mathrm{th}}$ , 2021, a different date from the training set's, as is common in QAC datasets for testing generalizability (Adar, 2007). We call this dataset \"EntSys1M.\"\n\nTo evaluate the models, we compute for each prediction the mean reciprocal rank (MRR), defined as MRR := $\\frac{1}{|\\tilde{\\mathcal{D}}_c|}\\sum_{u_i\\in \\tilde{\\mathcal{D}}_c}\\mathrm{RR}_{u_i}$ , where $\\tilde{\\mathcal{D}}_c$ is the transformed test set using Section 2.1, and $\\mathrm{RR}_{u_i}$ is the reciprocal rank (index) of the first correct prediction in the top- $K$ completions, as produced following Section 2.2. If no correct prediction exists, then $\\mathrm{RR}_{u_i} = 0$ . We further split the test set into two distinct subsets: final transcripts seen at training time and unseen ones.\n\nBaseline models. We implement MPC and NQLMs (Park and Chiba, 2017) trained on the final transcript of each utterance, with the NLM architecture and training procedure matching our CAT-NQLM's for a fair comparison. We also implement and train the error-tolerant version of MPC (Chaudhuri and Kaushik, 2009), named MPC-KExt, which allows for up to an edit distance of $\\hat{k}$ between the lookup prefix and the observed prefixes. We tune $\\hat{k}$ on the development set for $\\hat{k} = 1,\\dots ,10$",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2021.emnlp-main.68::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Titan RTX",
+      "cleaned_hardware_name": "titan rtx",
+      "normalized_hardware_name": "NVIDIA TITAN RTX",
+      "benchmark_hardware_name": "NVIDIA TITAN RTX",
+      "count": null,
+      "count_text": "",
+      "section_number": "A",
+      "section_title": "specifications",
+      "normalized_section_title": "specifications",
+      "evidence": "Our machines use Titan RTX GPUs, CUDA 10.2, PyTorch 1.8.1, Transformers 4.5.0, and Python 3.8.8. Our NLMs are based on a smaller version of DistilGPT-2 from the HuggingFace Transformers library, with a SentencePiece vocabulary of 8,000 learned from our datasets. Specifically, we make the following changes to the configuration:\n\nfrom transformers import GPT2Config, GPT2LMHeadModel   \n```python\ncfg = GPT2Config.from_pretrained('distilgpt2')\ncfg.vocab_size = 8000\ncfg.num_labels = 8000\ncfg.n_embd = 256\ncfg.n_layer = 4\ncfg.n_head = 8\nmodel = GPT2LMHeadModel.cfg) \n```\n\nWe train these models using the Adam optimizer (Kingma and Ba, 2014) with a learning rate of $5 \\times 10^{-4}$ and a linear triangular learning rate schedule with a 300 warmup steps and a linear decay until the end, as implemented by the get_linear_schedule_with_warmup function from Transformers.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "3.1",
+      "A"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA TITAN RTX",
+        "num": null
+      },
+      {
+        "name": "NVIDIA TITAN RTX",
+        "num": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "paper_id": "2023.acl-long.193",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.193::sections::2",
+      "paper_id": "2023.acl-long.193",
+      "section_number": "2",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "This section starts with reviewing the concepts, problem formulations, and challenges of federated learning, followed by providing an overview of the lifecycle of the lawsuit in the Chinese court system.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.193::sections::4",
+      "paper_id": "2023.acl-long.193",
+      "section_number": "4",
+      "section_title": "experiment",
+      "normalized_section_title": "experiment",
+      "window_text": "In this section, we first show the performance of different FL algorithms on FEDLEGAL (see Section\n\n![](images/8e2fdfba3d3712016f6ad65ba26d21f4e6cdb9bdc8e612d2c73a328c7026909b.jpg)  \nFigure 3: The Overview of our framework.\n\n4.2). To obtain a clear understanding of the practical challenges of FL in real-world applications, we conduct an in-depth investigation on FEDLEGAL, covering privacy leakage analysis (see Section 4.3) and resource-constrained FL scenario (see Section 4.4).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.193::sections::4.1",
+      "paper_id": "2023.acl-long.193",
+      "section_number": "4.1",
+      "section_title": "experiment setup",
+      "normalized_section_title": "experiment setup",
+      "window_text": "Baseline Algorithms Our experiment adopts the four typical FL algorithms for each legal task. The first two are classic and global FL algorithms: FedAvg (McMahan et al., 2017) is the oft-cited FL algorithm that collaboratively trains a global FL model across participants, and FedProx (Li et al., 2020) addresses statistical heterogeneity in FL by introducing $L_{2}$ proximal term during the local training process. The last is the personalized FL method FedOPT (Reddi et al., 2021) is an extended version of FedAvg, which respectively uses two gradient based optimizers in participants and servers. Ditto (Li et al., 2021b), which excels at tackling the competing constraints of accuracy, fairness, and robustness in FL. Besides the FL family, we also include the local training algorithm: Standalone refers to the training model only using local data on each participant without collaborations between participants, and Centralized refers to the ideal centralized training setting where the server could collect all participants' data. Since pre-trained language models (PLMs) have been de facto base model architecture in NLP research nowadays, we adopt RoBERTa-WWM (Cui et al., 2019) released by HggingFace for all tasks. More implementa\n\ntion details on each baseline algorithm can be found in Appendix B.\n\nEvaluation Strategies As described in Section 3.2, for a comprehensive evaluation, our experiments test all algorithms using two evaluation strategies: 1) Global test performance (GLOBAL) is evaluated on the global test set and used to determine whether the model has learned global knowledge. The better results of GLOBAL indicate that the model is closer to the centralized training. 2) Local test performance (LOCAL) is evaluated on each local test set and averaged by all participants. The LOCAL is more practical in real-world applications than GLOBAL because it shows performance improvement without centralizing all local data.\n\nTraining Details The number of silos involved in federated training for each task are listed in Table 1. Our experiments mainly focus on the cross-silo FL scenario, where all silos participate in training at each communication round. In silo local training, we adopt AdamW optimizer for RoBERTa-WWM. Considering the trade-off between computation and communication, we set the local training epoch to 1 and the communication rounds to 20 throughout experiments except for FEDLAM. Since FEDLAM is a highly non-IID task, we set the communication round to 50 on this task to ensure that the federated model can be fully trained.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.193::appendix::B",
+      "paper_id": "2023.acl-long.193",
+      "section_number": "B",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "Baseline Algorithms The implementations of all baseline algorithms are from FedLab<sup>6</sup>, which is a lightweight open-source framework (Zeng et al., 2023) for FL simulations. For FedProx, we search its hyper-parameter $\\lambda$ from $\\{0.001, 0.01, 0.05, 0.1, 1.0\\}$ . For Ditto, we tune the hyperparameters $a$ and $a$ from $\\{0.001, 0.01, 0.1, 1.0, 10.0, 100.0\\}$ . For FedOPT, we design AdamW as clients' optimizer while adopting an SGD algorithm with momentum for server optimizer followed by FedNLP(Lin et al., 2022), with server's momentum hyper-parameter $\\beta \\in \\{0.1, 0.3, 0.5, 0.7, 0.9, 0.92, 0.95, 0.98, 0.99, 0.999\\}$ and fixed server learning rate $\\tau = 1.0$ . To make fair comparisons, the total number of local training epochs in the Standalone algorithms will be greater than that of FL algorithms. We set local training epochs as 20. All experiments are done on a server with 8 Nvidia Tesla V100 GPUs with 32GB RAM.\n\nBase Models Pre-trained language models (PLMs) have been de facto base model architecture in NLP research nowadays, so our experiments\n\nchoose PLMs as the base federated model throughout baseline algorithms. We adopt the RoBERTa-WWM (Cui et al., 2019) released by Hggingface for all tasks. The reasons are (1) the corpus of FEDLEGAL is in Chinese, (2) RoBERTa-WWM is prevalent in Chinese version PLMs, which achieves remarkable performance in various downstream Chinese tasks.\n\nDir. Partition Methods Details For fair comparison, we follow Lin et al. (2022) to generate artificial local data partitions in comparison with the natural partitions. Specifically, we generate the non-IID partitions sampled by Dirichlet (Dir.) distributions with hyper-parameter $\\alpha \\in \\{0.1, 1.0, 10\\}$ , and compare the performance of FedAvg under different partitions.\n\nIn the context of FEDLCP and FEDLAM classification tasks, we employ the label-level Dirichlet partition approach, which allocates each client a specific proportion of samples for each label based on a Dirichlet distribution. Specifically, for label $i$ , we sample $q_{i} \\sim \\text{Dir}_{N}(\\alpha)$ for $N$ clients, where $q_{i,j}$ represents the proportion of instances with label $i$ assigned to client $j$ . For FEDLJP and FEDLRE tasks, we utilize quantity-level Dirichlet partition to determine each client's quantity of instances based on Dirichlet distribution, simulating quantity skew. We use FedLab's data partition tool to simulate these two non-IID partition methods. In the FEDLER task, we utilize the clustering-level Dirichlet partition, where sentence embeddings are generated using Roberta-WWM (Cui et al., 2019), and K-Means clustering is performed to obtain latent labels. Subsequently, these latent labels are used to perform label-level Dirichlet partition for label skew simulation.\n\nMetrics We utilize common metrics Micro-F1 and Macro-F1 to evaluate model performance of classification tasks (Zhong et al., 2020), including FEDLCP, FEDLER, FEDLER, FEDLAM. Micro-F1 treats all instances and categories equally, whereas Macro-F1 computes an F1 score individually for each category and then averages them. Precision and recall metrics are employed additionally (Angelidis et al., 2018b) for FEDLER task. For FEDLJP task, we utilize the S-score metric and Acc@0.2 metrics used in (Zhong et al., 2018) to assess the judgment score for each case's prison term. We denote the ground-truth prison term for the $i$ -th\n\ncase as $\\hat{t_i}$ and the predicted result as $t_i$ . The difference $d_{i}$ is defined as $d_{i} = |\\log (\\hat{t_{i}} +1) - \\log (t_{i} + 1)|$ . Based on difference, we calculate prediction score from the score function $f(v)$ as:\n\n$$\nf (v) = \\left\\{ \\begin{array}{l l} 1. 0 & \\text {i f} v \\leq 0. 2, \\\\ 0. 8 & \\text {i f} 0. 2 <   v \\leq 0. 4, \\\\ 0. 6 & \\text {i f} 0. 4 <   v \\leq 0. 6, \\\\ 0. 4 & \\text {i f} 0. 6 <   v \\leq 0. 8, \\\\ 0. 2 & \\text {i f} 0. 8 <   v \\leq 1, \\\\ 0. 0 & \\text {i f} v <   1. \\end{array} \\right. \\tag {1}\n$$\n\nAnd the final score is determined by taking the average score of all case instances:\n\n$$\nS = \\sum_ {i = 1} ^ {M} \\frac {f (d _ {i})}{M} \\tag {2}\n$$\n\nThe Acc@0.2 metric calculates the average accuracy of predictions that fall within a $20\\%$ interval around the corresponding ground-truth values.\n\n$$\n\\begin{array}{l} \\mathrm {A c c} @ 0. 2 = \\frac {1}{M} \\sum_ {i = 1} ^ {M} A _ {i} \\tag {3} \\\\ A _ {i} = \\left\\{ \\begin{array}{l l} 1 & \\text {i f} | t _ {i} - \\hat {t} _ {i} | \\leq 0. 2 | t _ {i} | \\\\ 0 & \\text {o t h e r w i s e} \\end{array} \\right. \\\\ \\end{array}\n$$",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.193::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia Tesla V100 32GB",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Baseline Algorithms The implementations of all baseline algorithms are from FedLab<sup>6</sup>, which is a lightweight open-source framework (Zeng et al., 2023) for FL simulations. For FedProx, we search its hyper-parameter $\\lambda$ from $\\{0.001, 0.01, 0.05, 0.1, 1.0\\}$ . For Ditto, we tune the hyperparameters $a$ and $a$ from $\\{0.001, 0.01, 0.1, 1.0, 10.0, 100.0\\}$ . For FedOPT, we design AdamW as clients' optimizer while adopting an SGD algorithm with momentum for server optimizer followed by FedNLP(Lin et al., 2022), with server's momentum hyper-parameter $\\beta \\in \\{0.1, 0.3, 0.5, 0.7, 0.9, 0.92, 0.95, 0.98, 0.99, 0.999\\}$ and fixed server learning rate $\\tau = 1.0$ . To make fair comparisons, the total number of local training epochs in the Standalone algorithms will be greater than that of FL algorithms. We set local training epochs as 20. All experiments are done on a server with 8 Nvidia Tesla V100 GPUs with 32GB RAM.\n\nBase Models Pre-trained language models (PLMs) have been de facto base model architecture in NLP research nowadays, so our experiments\n\nchoose PLMs as the base federated model throughout baseline algorithms. We adopt the RoBERTa-WWM (Cui et al., 2019) released by Hggingface for all tasks. The reasons are (1) the corpus of FEDLEGAL is in Chinese, (2) RoBERTa-WWM is prevalent in Chinese version PLMs, which achieves remarkable performance in various downstream Chinese tasks.\n\nDir. Partition Methods Details For fair comparison, we follow Lin et al. (2022) to generate artificial local data partitions in comparison with the natural partitions. Specifically, we generate the non-IID partitions sampled by Dirichlet (Dir.) distributions with hyper-parameter $\\alpha \\in \\{0.1, 1.0, 10\\}$ , and compare the performance of FedAvg under different partitions.\n\nIn the context of FEDLCP and FEDLAM classification tasks, we employ the label-level Dirichlet partition approach, which allocates each client a specific proportion of samples for each label based on a Dirichlet distribution. Specifically, for label $i$ , we sample $q_{i} \\sim \\text{Dir}_{N}(\\alpha)$ for $N$ clients, where $q_{i,j}$ represents the proportion of instances with label $i$ assigned to client $j$ . For FEDLJP and FEDLRE tasks, we utilize quantity-level Dirichlet partition to determine each client's quantity of instances based on Dirichlet distribution, simulating quantity skew. We use FedLab's data partition tool to simulate these two non-IID partition methods. In the FEDLER task, we utilize the clustering-level Dirichlet partition, where sentence embeddings are generated using Roberta-WWM (Cui et al., 2019), and K-Means clustering is performed to obtain latent labels. Subsequently, these latent labels are used to perform label-level Dirichlet partition for label skew simulation.\n\nMetrics We utilize common metrics Micro-F1 and Macro-F1 to evaluate model performance of classification tasks (Zhong et al., 2020), including FEDLCP, FEDLER, FEDLER, FEDLAM. Micro-F1 treats all instances and categories equally, whereas Macro-F1 computes an F1 score individually for each category and then averages them. Precision and recall metrics are employed additionally (Angelidis et al., 2018b) for FEDLER task. For FEDLJP task, we utilize the S-score metric and Acc@0.2 metrics used in (Zhong et al., 2018) to assess the judgment score for each case's prison term. We denote the ground-truth prison term for the $i$ -th\n\ncase as $\\hat{t_i}$ and the predicted result as $t_i$ . The difference $d_{i}$ is defined as $d_{i} = |\\log (\\hat{t_{i}} +1) - \\log (t_{i} + 1)|$ . Based on difference, we calculate prediction score from the score function $f(v)$ as:\n\n$$\nf (v) = \\left\\{ \\begin{array}{l l} 1. 0 & \\text {i f} v \\leq 0. 2, \\\\ 0. 8 & \\text {i f} 0. 2 <   v \\leq 0. 4, \\\\ 0. 6 & \\text {i f} 0. 4 <   v \\leq 0. 6, \\\\ 0. 4 & \\text {i f} 0. 6 <   v \\leq 0. 8, \\\\ 0. 2 & \\text {i f} 0. 8 <   v \\leq 1, \\\\ 0. 0 & \\text {i f} v <   1. \\end{array} \\right. \\tag {1}\n$$\n\nAnd the final score is determined by taking the average score of all case instances:\n\n$$\nS = \\sum_ {i = 1} ^ {M} \\frac {f (d _ {i})}{M} \\tag {2}\n$$\n\nThe Acc@0.2 metric calculates the average accuracy of predictions that fall within a $20\\%$ interval around the corresponding ground-truth values.\n\n$$\n\\begin{array}{l} \\mathrm {A c c} @ 0. 2 = \\frac {1}{M} \\sum_ {i = 1} ^ {M} A _ {i} \\tag {3} \\\\ A _ {i} = \\left\\{ \\begin{array}{l l} 1 & \\text {i f} | t _ {i} - \\hat {t} _ {i} | \\leq 0. 2 | t _ {i} | \\\\ 0 & \\text {o t h e r w i s e} \\end{array} \\right. \\\\ \\end{array}\n$$",
+      "section_number": "B",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.193::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia Tesla V100 32GB",
+      "cleaned_hardware_name": "nvidia tesla v100 32gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "B",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "Baseline Algorithms The implementations of all baseline algorithms are from FedLab<sup>6</sup>, which is a lightweight open-source framework (Zeng et al., 2023) for FL simulations. For FedProx, we search its hyper-parameter $\\lambda$ from $\\{0.001, 0.01, 0.05, 0.1, 1.0\\}$ . For Ditto, we tune the hyperparameters $a$ and $a$ from $\\{0.001, 0.01, 0.1, 1.0, 10.0, 100.0\\}$ . For FedOPT, we design AdamW as clients' optimizer while adopting an SGD algorithm with momentum for server optimizer followed by FedNLP(Lin et al., 2022), with server's momentum hyper-parameter $\\beta \\in \\{0.1, 0.3, 0.5, 0.7, 0.9, 0.92, 0.95, 0.98, 0.99, 0.999\\}$ and fixed server learning rate $\\tau = 1.0$ . To make fair comparisons, the total number of local training epochs in the Standalone algorithms will be greater than that of FL algorithms. We set local training epochs as 20. All experiments are done on a server with 8 Nvidia Tesla V100 GPUs with 32GB RAM.\n\nBase Models Pre-trained language models (PLMs) have been de facto base model architecture in NLP research nowadays, so our experiments\n\nchoose PLMs as the base federated model throughout baseline algorithms. We adopt the RoBERTa-WWM (Cui et al., 2019) released by Hggingface for all tasks. The reasons are (1) the corpus of FEDLEGAL is in Chinese, (2) RoBERTa-WWM is prevalent in Chinese version PLMs, which achieves remarkable performance in various downstream Chinese tasks.\n\nDir. Partition Methods Details For fair comparison, we follow Lin et al. (2022) to generate artificial local data partitions in comparison with the natural partitions. Specifically, we generate the non-IID partitions sampled by Dirichlet (Dir.) distributions with hyper-parameter $\\alpha \\in \\{0.1, 1.0, 10\\}$ , and compare the performance of FedAvg under different partitions.\n\nIn the context of FEDLCP and FEDLAM classification tasks, we employ the label-level Dirichlet partition approach, which allocates each client a specific proportion of samples for each label based on a Dirichlet distribution. Specifically, for label $i$ , we sample $q_{i} \\sim \\text{Dir}_{N}(\\alpha)$ for $N$ clients, where $q_{i,j}$ represents the proportion of instances with label $i$ assigned to client $j$ . For FEDLJP and FEDLRE tasks, we utilize quantity-level Dirichlet partition to determine each client's quantity of instances based on Dirichlet distribution, simulating quantity skew. We use FedLab's data partition tool to simulate these two non-IID partition methods. In the FEDLER task, we utilize the clustering-level Dirichlet partition, where sentence embeddings are generated using Roberta-WWM (Cui et al., 2019), and K-Means clustering is performed to obtain latent labels. Subsequently, these latent labels are used to perform label-level Dirichlet partition for label skew simulation.\n\nMetrics We utilize common metrics Micro-F1 and Macro-F1 to evaluate model performance of classification tasks (Zhong et al., 2020), including FEDLCP, FEDLER, FEDLER, FEDLAM. Micro-F1 treats all instances and categories equally, whereas Macro-F1 computes an F1 score individually for each category and then averages them. Precision and recall metrics are employed additionally (Angelidis et al., 2018b) for FEDLER task. For FEDLJP task, we utilize the S-score metric and Acc@0.2 metrics used in (Zhong et al., 2018) to assess the judgment score for each case's prison term. We denote the ground-truth prison term for the $i$ -th\n\ncase as $\\hat{t_i}$ and the predicted result as $t_i$ . The difference $d_{i}$ is defined as $d_{i} = |\\log (\\hat{t_{i}} +1) - \\log (t_{i} + 1)|$ . Based on difference, we calculate prediction score from the score function $f(v)$ as:\n\n$$\nf (v) = \\left\\{ \\begin{array}{l l} 1. 0 & \\text {i f} v \\leq 0. 2, \\\\ 0. 8 & \\text {i f} 0. 2 <   v \\leq 0. 4, \\\\ 0. 6 & \\text {i f} 0. 4 <   v \\leq 0. 6, \\\\ 0. 4 & \\text {i f} 0. 6 <   v \\leq 0. 8, \\\\ 0. 2 & \\text {i f} 0. 8 <   v \\leq 1, \\\\ 0. 0 & \\text {i f} v <   1. \\end{array} \\right. \\tag {1}\n$$\n\nAnd the final score is determined by taking the average score of all case instances:\n\n$$\nS = \\sum_ {i = 1} ^ {M} \\frac {f (d _ {i})}{M} \\tag {2}\n$$\n\nThe Acc@0.2 metric calculates the average accuracy of predictions that fall within a $20\\%$ interval around the corresponding ground-truth values.\n\n$$\n\\begin{array}{l} \\mathrm {A c c} @ 0. 2 = \\frac {1}{M} \\sum_ {i = 1} ^ {M} A _ {i} \\tag {3} \\\\ A _ {i} = \\left\\{ \\begin{array}{l l} 1 & \\text {i f} | t _ {i} - \\hat {t} _ {i} | \\leq 0. 2 | t _ {i} | \\\\ 0 & \\text {o t h e r w i s e} \\end{array} \\right. \\\\ \\end{array}\n$$",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 32 GB",
+        "num": 8
+      }
+    ]
+  }
+}

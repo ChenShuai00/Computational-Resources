@@ -1,0 +1,199 @@
+{
+  "paper_id": "2024.acl-long.347",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.347::sections::1",
+      "paper_id": "2024.acl-long.347",
+      "section_number": "1",
+      "section_title": "introduction",
+      "normalized_section_title": "introduction",
+      "window_text": "Nowadays, many Large Language Models (LLMs) have been developed, based on the transformer architecture (Zhang et al., 2022; Touvron et al., 2023a; Achiam et al., 2023). These models have demonstrated astonishing capabilities across a variety of tasks. However, the deployment of LLMs, characterized by their billions of parameters, demands substantial hardware resources. For instance, the LLAMA2-70B model, with a size of 129GB, necessitates at least two A100-80GB GPUs\n\nfor inference. To mitigate the extensive resource requirements for model deployment, pruning and quantization algorithms emerge as two prevalent strategies. Existing quantization algorithms could compress LLMs to 4 bits without retraining (Frantar et al., 2022; Lin et al., 2023; Dettmers et al., 2023), which could significantly reduce the size of the models.\n\nNetwork pruning is a model compression approach orthogonal to quantization algorithms. Based on the granularity of the pruning algorithm, it is principally categorized into unstructured pruning and structured pruning. Unstructured pruning offers higher flexibility and typically results in less precision loss. It converts dense matrices into sparse matrices by setting certain values in the weight matrix to zero, thereby achieving model compression and acceleration. Considering the significant training overhead of LLMs, some pruning algorithms pursue one-shot pruning—that is, they avoid retraining to recover accuracy (Frantar and Alistarh, 2023; Sun et al., 2023). Such pruning methods have demonstrated minimal accuracy loss but generally could not achieve high levels of sparsity, with an optimal sparsity between $50\\% -60\\%$ . As for the compression of sparse matrices, taking the Compressed Sparse Row (CSR) data format as an example, as shown in Figure 1, a sparsity level of over $70\\%$ is usually required to realize compression benefits. In this context, matrices couldn't be treated as sparse for compression and computation if they do not meet this level of sparsity.\n\nNVIDIA has introduced a solution known as structured sparsity, or 2:4 sparsity (Mishra et al., 2021). This pattern mandates that within every group of 4 values, at most 2 values can be retained. Firstly, this leads to a $50\\%$ degree of sparsity, which is beneficial for the performance of models following one-shot pruning. Moreover, by compressing the indices, it ensures efficient compression under $50\\%$ sparsity. Additionally, this\n\napproach could achieve a 2x math throughput increase on the NVIDIA Ampere GPU architecture. As a result, this pattern and compressed format are more hardware-friendly than unstructured sparsity at $50\\%$ . However, due to its grouping constraints, there is a notable decline in accuracy compared to unstructured pruning at $50\\%$ . For instance, when applying Wanda pruning (Sun et al., 2023) to the LLAMA-7B model, the resulting perplexity on the WikiText dataset under unstructured $50\\%$ and 2:4 pattern conditions are 7.26 and 11.53, respectively. This indicates that there is still room for improvement in performance of 2:4 pattern.\n\nIn this work, we observe a performance gap between the 2:4 pattern and unstructured $50\\%$ pruning. Consequently, our primary objective is to enhance the model performance of the one-shot 2:4 pattern pruning, while ensuring the model compression is achieved. In section 3.1, we observed that some crucial weights might be incorrectly pruned in the 2:4 pattern pruning. Based on this phenomenon, we propose the Weight Recover Prune (WRP) approach, which aims to improve model accuracy by restoring a minor portion of critical weights, while for the majority of the matrix is still adopting a 2:4 pattern. To safeguard the compression efficacy, we partition the weight matrix into two separately stored entities: one is the 2:4 pattern and the other is high sparsity matrix, as shown in Figure 1. This approach allows us to achieve a balance between model size and performance, addressing the challenge inherent in the structured 2:4 sparsity pattern.\n\nThe main contributions of this work are:\n\n- We explore the differences in mask selection between 2:4 pruning and unstructured $50\\%$ pruning. The results indicate that 2:4 pruning might incorrectly prune a small number of values with larger metrics.   \n- We propose the Weight Recover Prune (WRP) approach, which enhances the model performance after 2:4 pruning by recovering the crucial weights.   \n- We evaluate our approach on the LLAMA2 and OPT models. The results indicate that our approach can recover the model performance while ensuring the model compression effect.",
+      "rule_tier": "soft_skip",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.347::sections::4",
+      "paper_id": "2024.acl-long.347",
+      "section_number": "4",
+      "section_title": "experiment",
+      "normalized_section_title": "experiment",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.347::sections::4.1",
+      "paper_id": "2024.acl-long.347",
+      "section_number": "4.1",
+      "section_title": "setup",
+      "normalized_section_title": "setup",
+      "window_text": "Models. We evaluate our approach using the LLAMA2 (Touvron et al., 2023b) and OPT (Zhang et al., 2022) model families. LLAMA2 is a suite of pre-trained and fine-tuned generative text models, comprising models of 7 B, 13 B, and 70 B parameters, respectively. We apply the WRP to each of these configurations. In contrast, OPT is GPT-3 style, with a more classical Transformer decoder-only architecture. Compared to LLAMA2, it offers more selection of model sizes, thereby facilitating our exploration into the scaling trends of LLMs.\n\nEvaluation. We evaluate the performance of the model on language capabilities: perplexity, a metric also utilized by prior works (Frantar et al., 2022; Frantar and Alistarh, 2023; Sun et al., 2023). We\n\nconducted tests on the perplexity metric using WikiText (Merit et al., 2016) and the c4 dataset (Raffel et al., 2019). To enhance the evaluation of LLMs, we use the Language Model Evaluation Harness (Gao et al., 2023) to assess performance on 5 zero-shot tasks of models: HellaSwag (Zellers et al., 2019), PIQA (Bisk et al., 2020), WinoGrande (Sakaguchi et al., 2019), OpenBookQA (Mihaylov et al., 2018), RTE (Wang et al., 2018).\n\nBaselines. We compare our method WRP against two prior pruning methods which could readily adopt a 2:4 pattern:\n\n- Wanda (Sun et al., 2023) is a pruning metric that is simple and effective on LLMs. Furthermore, we use Wanda as the 2:4 pattern pruning for WRP, which implies that Wanda 2:4 could be considered as a scenario of WRP without recovering.   \n- SparseGPT (Frantar and Alistarh, 2023) is a pruning method based on second-order information and uses weight reconstruction to restore model performance. Through comparison, we aim to verify the effectiveness of crucial weights in recovering model accuracy.\n\nBoth approaches adopt a 2:4 pattern. Regarding calibration data, as recommended by SpQR (Dettmers et al., 2023), we utilize the RedPajama dataset (Computer, 2023) for LLAMA2 and the c4 dataset for OPT. The length of the samples is uniformly set at 128.\n\nPruning what? Following the approaches of SparseGPT and Wanda, we skip pruning the embedding layer and the final classification head layer. For the remaining layers in the Transformers architecture, which are all Linear layers, we uniformly apply the 2:4 pattern pruning to all weight matrices.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.347::sections::4.5",
+      "paper_id": "2024.acl-long.347",
+      "section_number": "4.5",
+      "section_title": "inference kernel",
+      "normalized_section_title": "inference kernel",
+      "window_text": "PyTorch has supported the 2:4 pattern SpMM using either CUTLASS or cuSparseLt libraries. Consequently, we directly use PyTorch to evaluate the 2:4 pattern latency. Considering that PyTorch does not support the Blocked-ELL data format, we implement a SpMM kernel for the Blocked-ELL format as a PyTorch Extension using cuSparse. The performance of sparse matrix computations is generally influenced by the matrix sparsity, computing hardware, and the scale of the problem. We assume a density level of $6.25\\%$ for Blocked-ELL, which is enough to offer a balance between recovering model performance and achieving acceleration. Furthermore, we set the batch size to 1 and the sequence length to 2K, controlling problem scales through hidden states. These tests were conducted on both A100 and RTX 4090 GPUs, with the results detailed in Table 5.\n\nFor A100 GPUs, we observe that acceleration is not guaranteed and depend on the scale of the problem. Specifically, for the acceleration using a 2:4\n\npattern on A100 GPUs, we were able to achieve a speedup of approximately $1.3 \\times$ , which aligns with (Cai, 2023). Compared to the theoretical maximum of a $2 \\times$ increase in mathematical throughput, there is still room for improvement. Typically, significant acceleration is observed when dealing with larger matrices. For the RTX 4090 GPUs, a more pronounced acceleration effect could be achieved, with speedup ratios generally exceeding $1.1 \\times$ . We speculate that different GPU architectures might result in different capabilities to process sparse and dense matrices. As a result, the actual acceleration achieved is dependent on the specific application context.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2024.acl-long.347::sections::5",
+      "paper_id": "2024.acl-long.347",
+      "section_number": "5",
+      "section_title": "conclusions",
+      "normalized_section_title": "conclusions",
+      "window_text": "In this work, we propose the Weight Recover Prune (WRP) methodology for achieving structured sparsity in LLMs. Observing the notable performance gap between the 2:4 pruning pattern and the unstructured $50\\%$ pruning, our WRP technique enhances the model performance associated with the 2:4 pattern by recovering a minimal set of crucial weights, thereby ensuring the efficiency of model\n\nTable 5: Kernel test of WRP, including 2:4 and blocked-ELL matmul. The density of blocked-ELL is ${6.25}\\%$ .   \n\n<table><tr><td>Device</td><td>Hidden State</td><td>2:4(ms)</td><td>Blocked-ELL(ms)</td><td>Dense(ms)</td><td>Speedup</td></tr><tr><td>A100</td><td>4096</td><td>0.274</td><td>0.064</td><td>0.324</td><td>0.95×</td></tr><tr><td>A100</td><td>7168</td><td>0.733</td><td>0.147</td><td>0.971</td><td>1.1×</td></tr><tr><td>RTX 4090</td><td>4096</td><td>0.276</td><td>0.081</td><td>0.412</td><td>1.15×</td></tr><tr><td>RTX 4090</td><td>7168</td><td>0.718</td><td>0.230</td><td>1.377</td><td>1.45×</td></tr></table>\n\ncompression. With the recovery of approximately $1.5\\%$ of these crucial weights, the WRP approach can significantly improve the perplexity of models, while the compressed models are approximately $60\\%$ of their original size. We hope that our work could contribute to the semi-structured pruning for LLMs.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.347::sections::4.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "count": null,
+      "count_text": "",
+      "evidence": "PyTorch has supported the 2:4 pattern SpMM using either CUTLASS or cuSparseLt libraries. Consequently, we directly use PyTorch to evaluate the 2:4 pattern latency. Considering that PyTorch does not support the Blocked-ELL data format, we implement a SpMM kernel for the Blocked-ELL format as a PyTorch Extension using cuSparse. The performance of sparse matrix computations is generally influenced by the matrix sparsity, computing hardware, and the scale of the problem. We assume a density level of $6.25\\%$ for Blocked-ELL, which is enough to offer a balance between recovering model performance and achieving acceleration. Furthermore, we set the batch size to 1 and the sequence length to 2K, controlling problem scales through hidden states. These tests were conducted on both A100 and RTX 4090 GPUs, with the results detailed in Table 5.\n\nFor A100 GPUs, we observe that acceleration is not guaranteed and depend on the scale of the problem. Specifically, for the acceleration using a 2:4\n\npattern on A100 GPUs, we were able to achieve a speedup of approximately $1.3 \\times$ , which aligns with (Cai, 2023). Compared to the theoretical maximum of a $2 \\times$ increase in mathematical throughput, there is still room for improvement. Typically, significant acceleration is observed when dealing with larger matrices. For the RTX 4090 GPUs, a more pronounced acceleration effect could be achieved, with speedup ratios generally exceeding $1.1 \\times$ . We speculate that different GPU architectures might result in different capabilities to process sparse and dense matrices. As a result, the actual acceleration achieved is dependent on the specific application context.",
+      "section_number": "4.5",
+      "section_title": "inference kernel",
+      "normalized_section_title": "inference kernel"
+    },
+    {
+      "window_id": "2024.acl-long.347::sections::4.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 4090",
+      "count": null,
+      "count_text": "",
+      "evidence": "PyTorch has supported the 2:4 pattern SpMM using either CUTLASS or cuSparseLt libraries. Consequently, we directly use PyTorch to evaluate the 2:4 pattern latency. Considering that PyTorch does not support the Blocked-ELL data format, we implement a SpMM kernel for the Blocked-ELL format as a PyTorch Extension using cuSparse. The performance of sparse matrix computations is generally influenced by the matrix sparsity, computing hardware, and the scale of the problem. We assume a density level of $6.25\\%$ for Blocked-ELL, which is enough to offer a balance between recovering model performance and achieving acceleration. Furthermore, we set the batch size to 1 and the sequence length to 2K, controlling problem scales through hidden states. These tests were conducted on both A100 and RTX 4090 GPUs, with the results detailed in Table 5.\n\nFor A100 GPUs, we observe that acceleration is not guaranteed and depend on the scale of the problem. Specifically, for the acceleration using a 2:4\n\npattern on A100 GPUs, we were able to achieve a speedup of approximately $1.3 \\times$ , which aligns with (Cai, 2023). Compared to the theoretical maximum of a $2 \\times$ increase in mathematical throughput, there is still room for improvement. Typically, significant acceleration is observed when dealing with larger matrices. For the RTX 4090 GPUs, a more pronounced acceleration effect could be achieved, with speedup ratios generally exceeding $1.1 \\times$ . We speculate that different GPU architectures might result in different capabilities to process sparse and dense matrices. As a result, the actual acceleration achieved is dependent on the specific application context.",
+      "section_number": "4.5",
+      "section_title": "inference kernel",
+      "normalized_section_title": "inference kernel"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.347::sections::4.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "cleaned_hardware_name": "a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": null,
+      "count_text": "",
+      "section_number": "4.5",
+      "section_title": "inference kernel",
+      "normalized_section_title": "inference kernel",
+      "evidence": "PyTorch has supported the 2:4 pattern SpMM using either CUTLASS or cuSparseLt libraries. Consequently, we directly use PyTorch to evaluate the 2:4 pattern latency. Considering that PyTorch does not support the Blocked-ELL data format, we implement a SpMM kernel for the Blocked-ELL format as a PyTorch Extension using cuSparse. The performance of sparse matrix computations is generally influenced by the matrix sparsity, computing hardware, and the scale of the problem. We assume a density level of $6.25\\%$ for Blocked-ELL, which is enough to offer a balance between recovering model performance and achieving acceleration. Furthermore, we set the batch size to 1 and the sequence length to 2K, controlling problem scales through hidden states. These tests were conducted on both A100 and RTX 4090 GPUs, with the results detailed in Table 5.\n\nFor A100 GPUs, we observe that acceleration is not guaranteed and depend on the scale of the problem. Specifically, for the acceleration using a 2:4\n\npattern on A100 GPUs, we were able to achieve a speedup of approximately $1.3 \\times$ , which aligns with (Cai, 2023). Compared to the theoretical maximum of a $2 \\times$ increase in mathematical throughput, there is still room for improvement. Typically, significant acceleration is observed when dealing with larger matrices. For the RTX 4090 GPUs, a more pronounced acceleration effect could be achieved, with speedup ratios generally exceeding $1.1 \\times$ . We speculate that different GPU architectures might result in different capabilities to process sparse and dense matrices. As a result, the actual acceleration achieved is dependent on the specific application context.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.acl-long.347::sections::4.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 4090",
+      "cleaned_hardware_name": "rtx 4090",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 4090",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 4090",
+      "count": null,
+      "count_text": "",
+      "section_number": "4.5",
+      "section_title": "inference kernel",
+      "normalized_section_title": "inference kernel",
+      "evidence": "PyTorch has supported the 2:4 pattern SpMM using either CUTLASS or cuSparseLt libraries. Consequently, we directly use PyTorch to evaluate the 2:4 pattern latency. Considering that PyTorch does not support the Blocked-ELL data format, we implement a SpMM kernel for the Blocked-ELL format as a PyTorch Extension using cuSparse. The performance of sparse matrix computations is generally influenced by the matrix sparsity, computing hardware, and the scale of the problem. We assume a density level of $6.25\\%$ for Blocked-ELL, which is enough to offer a balance between recovering model performance and achieving acceleration. Furthermore, we set the batch size to 1 and the sequence length to 2K, controlling problem scales through hidden states. These tests were conducted on both A100 and RTX 4090 GPUs, with the results detailed in Table 5.\n\nFor A100 GPUs, we observe that acceleration is not guaranteed and depend on the scale of the problem. Specifically, for the acceleration using a 2:4\n\npattern on A100 GPUs, we were able to achieve a speedup of approximately $1.3 \\times$ , which aligns with (Cai, 2023). Compared to the theoretical maximum of a $2 \\times$ increase in mathematical throughput, there is still room for improvement. Typically, significant acceleration is observed when dealing with larger matrices. For the RTX 4090 GPUs, a more pronounced acceleration effect could be achieved, with speedup ratios generally exceeding $1.1 \\times$ . We speculate that different GPU architectures might result in different capabilities to process sparse and dense matrices. As a result, the actual acceleration achieved is dependent on the specific application context.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.acl-long.347::sections::1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "1",
+      "section_title": "introduction",
+      "evidence": "Nowadays, many Large Language Models (LLMs) have been developed, based on the transformer architecture (Zhang et al., 2022; Touvron et al., 2023a; Achiam et al., 2023). These models have demonstrated astonishing capabilities across a variety of tasks. However, the deployment of LLMs, characterized by their billions of parameters, demands substantial hardware resources. For instance, the LLAMA2-70B model, with a size of 129GB, necessitates at least two A100-80GB GPUs\n\nfor inference. To mitigate the extensive resource requirements for model deployment, pruning and quantization algorithms emerge as two prevalent strategies. Existing quantization algorithms could compress LLMs to 4 bits without retraining (Frantar et al., 2022; Lin et al., 2023; Dettmers et al., 2023), which could significantly reduce the size of the models.\n\nNetwork pruning is a model compression approach orthogonal to quantization algorithms. Based on the granularity of the pruning algorithm, it is principally categorized into unstructured pruning and structured pruning. Unstructured pruning offers higher flexibility and typically results in less precision loss. It converts dense matrices into sparse matrices by setting certain values in the weight matrix to zero, thereby achieving model compression and acceleration. Considering the significant training overhead of LLMs, some pruning algorithms pursue one-shot pruning—that is, they avoid retraining to recover accuracy (Frantar and Alistarh, 2023; Sun et al., 2023). Such pruning methods have demonstrated minimal accuracy loss but generally could not achieve high levels of sparsity, with an optimal sparsity between $50\\% -60\\%$ . As for the compression of sparse matrices, taking the Compressed Sparse Row (CSR) data format as an example, as shown in Figure 1, a sparsity level of over $70\\%$ is usually required to realize compression benefits. In this context, matrices couldn't be treated as sparse for compression and computation if they do not meet this level of sparsity.\n\nNVIDIA has introduced a solution known as structured sparsity, or 2:4 sparsity (Mishra et al., 2021). This pattern mandates that within every group of 4 values, at most 2 values can be retained. Firstly, this leads to a $50\\%$ degree of sparsity, which is beneficial for the performance of models following one-shot pruning. Moreover, by compressing the indices, it ensures efficient compression under $50\\%$ sparsity. Additionally, this\n\napproach could achieve a 2x math throughput increase on the NVIDIA Ampere GPU architecture. As a result, this pattern and compressed format are more hardware-friendly than unstructured sparsity at $50\\%$ . However, due to its grouping constraints, there is a notable decline in accuracy compared to unstructured pruning at $50\\%$ . For instance, when applying Wanda pruning (Sun et al., 2023) to the LLAMA-7B model, the resulting perplexity on the WikiText dataset under unstructured $50\\%$ and 2:4 pattern conditions are 7.26 and 11.53, respectively. This indicates that there is still room for improvement in performance of 2:4 pattern.\n\nIn this work, we observe a performance gap between the 2:4 pattern and unstructured $50\\%$ pruning. Consequently, our primary objective is to enhance the model performance of the one-shot 2:4 pattern pruning, while ensuring the model compression is achieved. In section 3.1, we observed that some crucial weights might be incorrectly pruned in the 2:4 pattern pruning. Based on this phenomenon, we propose the Weight Recover Prune (WRP) approach, which aims to improve model accuracy by restoring a minor portion of critical weights, while for the majority of the matrix is still adopting a 2:4 pattern. To safeguard the compression efficacy, we partition the weight matrix into two separately stored entities: one is the 2:4 pattern and the other is high sparsity matrix, as shown in Figure 1. This approach allows us to achieve a balance between model size and performance, addressing the challenge inherent in the structured 2:4 sparsity pattern.\n\nThe main contributions of this work are:\n\n- We explore the differences in mask selection between 2:4 pruning and unstructured $50\\%$ pruning. The results indicate that 2:4 pruning might incorrectly prune a small number of values with larger metrics.   \n- We propose the Weight Recover Prune (WRP) approach, which enhances the model performance after 2:4 pruning by recovering the crucial weights.   \n- We evaluate our approach on the LLAMA2 and OPT models. The results indicate that our approach can recover the model performance while ensuring the model compression effect."
+    },
+    {
+      "source_window_id": "2024.acl-long.347::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiment",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.acl-long.347::sections::4.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "setup",
+      "evidence": "Models. We evaluate our approach using the LLAMA2 (Touvron et al., 2023b) and OPT (Zhang et al., 2022) model families. LLAMA2 is a suite of pre-trained and fine-tuned generative text models, comprising models of 7 B, 13 B, and 70 B parameters, respectively. We apply the WRP to each of these configurations. In contrast, OPT is GPT-3 style, with a more classical Transformer decoder-only architecture. Compared to LLAMA2, it offers more selection of model sizes, thereby facilitating our exploration into the scaling trends of LLMs.\n\nEvaluation. We evaluate the performance of the model on language capabilities: perplexity, a metric also utilized by prior works (Frantar et al., 2022; Frantar and Alistarh, 2023; Sun et al., 2023). We\n\nconducted tests on the perplexity metric using WikiText (Merit et al., 2016) and the c4 dataset (Raffel et al., 2019). To enhance the evaluation of LLMs, we use the Language Model Evaluation Harness (Gao et al., 2023) to assess performance on 5 zero-shot tasks of models: HellaSwag (Zellers et al., 2019), PIQA (Bisk et al., 2020), WinoGrande (Sakaguchi et al., 2019), OpenBookQA (Mihaylov et al., 2018), RTE (Wang et al., 2018).\n\nBaselines. We compare our method WRP against two prior pruning methods which could readily adopt a 2:4 pattern:\n\n- Wanda (Sun et al., 2023) is a pruning metric that is simple and effective on LLMs. Furthermore, we use Wanda as the 2:4 pattern pruning for WRP, which implies that Wanda 2:4 could be considered as a scenario of WRP without recovering.   \n- SparseGPT (Frantar and Alistarh, 2023) is a pruning method based on second-order information and uses weight reconstruction to restore model performance. Through comparison, we aim to verify the effectiveness of crucial weights in recovering model accuracy.\n\nBoth approaches adopt a 2:4 pattern. Regarding calibration data, as recommended by SpQR (Dettmers et al., 2023), we utilize the RedPajama dataset (Computer, 2023) for LLAMA2 and the c4 dataset for OPT. The length of the samples is uniformly set at 128.\n\nPruning what? Following the approaches of SparseGPT and Wanda, we skip pruning the embedding layer and the final classification head layer. For the remaining layers in the Transformers architecture, which are all Linear layers, we uniformly apply the 2:4 pattern pruning to all weight matrices."
+    },
+    {
+      "source_window_id": "2024.acl-long.347::sections::5",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "conclusions",
+      "evidence": "In this work, we propose the Weight Recover Prune (WRP) methodology for achieving structured sparsity in LLMs. Observing the notable performance gap between the 2:4 pruning pattern and the unstructured $50\\%$ pruning, our WRP technique enhances the model performance associated with the 2:4 pattern by recovering a minimal set of crucial weights, thereby ensuring the efficiency of model\n\nTable 5: Kernel test of WRP, including 2:4 and blocked-ELL matmul. The density of blocked-ELL is ${6.25}\\%$ .   \n\n<table><tr><td>Device</td><td>Hidden State</td><td>2:4(ms)</td><td>Blocked-ELL(ms)</td><td>Dense(ms)</td><td>Speedup</td></tr><tr><td>A100</td><td>4096</td><td>0.274</td><td>0.064</td><td>0.324</td><td>0.95×</td></tr><tr><td>A100</td><td>7168</td><td>0.733</td><td>0.147</td><td>0.971</td><td>1.1×</td></tr><tr><td>RTX 4090</td><td>4096</td><td>0.276</td><td>0.081</td><td>0.412</td><td>1.15×</td></tr><tr><td>RTX 4090</td><td>7168</td><td>0.718</td><td>0.230</td><td>1.377</td><td>1.45×</td></tr></table>\n\ncompression. With the recovery of approximately $1.5\\%$ of these crucial weights, the WRP approach can significantly improve the perplexity of models, while the compressed models are approximately $60\\%$ of their original size. We hope that our work could contribute to the semi-structured pruning for LLMs."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.5"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": null
+      },
+      {
+        "name": "NVIDIA GeForce RTX 4090",
+        "num": null
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2024\\2024.acl-long.347\\auto\\full.md",
+    "source_md_sha256": "e3d522503e38b24669202a1b4afbd43676737809d9c1d2a79d4019802b30b0f5",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "ad96f3b6ca003898756db958dd17467668c845886fa3f1f835d26a866c8af3f0"
+  }
+}

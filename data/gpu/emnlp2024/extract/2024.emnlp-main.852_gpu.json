@@ -1,0 +1,183 @@
+{
+  "paper_id": "2024.emnlp-main.852",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.852::sections::2",
+      "paper_id": "2024.emnlp-main.852",
+      "section_number": "2",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "The RLHF framework is structured around three core stages: Supervised Fine-Tuning (SFT), Pref\n\nerence Sampling alongside Reward Model (RM) Training, and RL Fine-Tuning through Proximal Policy Optimization (PPO) (Schulman et al., 2017). Initially, a language model is refined through supervised training on a curated dataset tailored for specific tasks, yielding a model we refer to as $\\pi^{\\mathrm{SFT}}$ .",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.852::appendix::A",
+      "paper_id": "2024.emnlp-main.852",
+      "section_number": "A",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.852::appendix::A.2",
+      "paper_id": "2024.emnlp-main.852",
+      "section_number": "A.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "All three stages of our model's training are executed on a high-performance computing node outfitted with 8 A100-SXM-80GB GPUs, utilizing the efficiency of Data Parallelism (DP) and Automatic Mixed Precision (AMP) with bfloat16 facilitated by the Deepspeed Zero framework.\n\nSFT Phase During the SFT phase, we use a global batch size of 32, a learning rate of $2e^{-5}$ , and train for only one epoch. The first $10\\%$ of training steps are considered a warm-up phase, after which the learning rate gradually decays to 0.\n\nRM Training For reward modeling, the learning rate is set to $5e - 6$ , and the global batch size is 16 for the contrastive learning-based method and 32 for others. Specifically, for contrastive learning methods, data augmentation is performed using dropout with a rate of 0.05 to introduce perturbations. In the SimCSE method, the RM optimization objective's beta parameter is set to 1. For the SwAV method, in the context of SwAV-diff, we choose 20 prototypes $(K = 20)$ with a beta of 0.5, and for SwAV, 50 prototypes $(K = 50)$ are selected with a beta of 0.1. The model is trained on human preferences for only 1 epoch across all methods.\n\nRL Fine-tuning During the PPO training phase, we set the learning rate to $5e - 7$ for the actor model and $1.5e - 6$ for the critic model. The training was executed over 2000 iterations with a global batch size of 32. For each query, 4 roll-out samples were generated per GPU, utilizing nucleus sampling (Holtzman et al., 2020). We configure the sampling parameters to include a temperature of 0.8, a top-p value of 0.9, a repetition penalty of 1.1, and a maximum token number of the response that is limited to 512. The critic model initializes its training using the weights from the reward model. The Advantage Estimation (Schulman et al., 2018) parameter $\\lambda$ , is set to 0.95, and the RL discount factor $\\gamma$ was fixed at 1.\n\nDPO Training In addition to the above methods, we also conduct experiments using the DPO method. The DPO method is trained under similar conditions as PPO, using identical datasets and settings where applicable. Specifically, for DPO, the beta parameter is set to 0.1. The learning rate is set to $1 \\times 10^{-6}$ and a global batch size of 32. These parameters are chosen to reflect the best practices for DPO and ensure a fair comparison with the PPO results.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2024.emnlp-main.852::appendix::A.3",
+      "paper_id": "2024.emnlp-main.852",
+      "section_number": "A.3",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "In this study, we propose a method primarily aimed at aligning the reward model under shifted distribution after PPO training. Our baselines include the SFT model, the PPO model trained with the vanilla reward model, and another RLHF method, DPO, to better illustrate the effectiveness of our approach through comprehensive comparisons.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.852::appendix::A.5",
+      "paper_id": "2024.emnlp-main.852",
+      "section_number": "A.5",
+      "section_title": "contrastive reward modeling in ppo training",
+      "normalized_section_title": "contrastive reward modeling in ppo training",
+      "window_text": "During training on the Anthropic-HH dataset, we monitor the performance through training curves of models enhanced by contrastive learning techniques in comparison with those trained using standard Vanilla PPO. These visualizations aim to elucidate the advantages of embedding contrastive learning within reinforcement learning frameworks. Figure 2 captures the performance dynamics, demonstrating the relative stability and efficiency of contrastive learning methods in generating rewards and ensuring consistent returns throughout the training process.\n\nThe key takeaway from our experiments is the notable stability improvement offered by contrastive learning techniques over traditional Vanilla\n\n![](images/bf4414a46614a42869257bc05e265f9c3870111d1ec063d36559c2279a953d7d.jpg)\n\n![](images/af37c4acd4b092762d7725aaae96b5d3d735ddf200ff56ed0df0ba64ab7784bd.jpg)\n\n![](images/69dfb7ef2e654a310bc402c320cf591f5dbd85873789573d6918c6a66343596c.jpg)\n\n![](images/08afa04646dea2a3cf6433283e2c6e91c35a8af0e6a986f4957a4062980df1f6.jpg)\n\n![](images/3847d14420424506dcacd1557e9a889a5f9a976ddccd806beaf4f20fa402b4ac.jpg)\n\n![](images/db62229698d86a6ff481d16c4157346ca3e512938df02007ed7c8a0a34266a7f.jpg)\n\n![](images/76b7c957f66333de075cb84dc8b8fa9b74228d62a530a4bc4ade5894f05d3a48.jpg)\n\n![](images/e9c271ab0abc4fedba77708756047bd70a5a9fc01fe8c1ee70810d83a5256988.jpg)\n\n![](images/b3c0c8d6e49c66e19d28f7f8ed29d51f76110cfb06fefa02142fae1425528f25.jpg)  \nFigure 2: Using a reward model trained through contrastive learning to optimize the language model. The reward model obtained through contrastive learning leads to more stable returns and rewards during the PPO training process.\n\nPPO. Not applying a KL penalty in our contrastive learning setup did not compromise the effectiveness; instead, it showcases the robustness of these methods in maintaining performance consistency. The contrastive methods lead to more stable returns and rewards during PPO training, indicating their potential to enhance model training efficiency and effectiveness on complex datasets like AnthropicHH.\n\nWe reference the assertion from (Ouyang et al., 2022) that a KL penalty with a very small value $(\\lambda \\mathrm{KL} = 0.001)$ often has a minimal impact during RL training and might not be necessary. Our focus is on showcasing the enhanced generalizability and stability improvements brought by our reward model trained via contrastive learning, as demonstrated in Figure 2. By omitting the KL penalty, we aim to present the advantages of our proposed method more clearly and directly.\n\nThese findings support the premise that contrastive learning can serve as a powerful tool in refining the training processes for reinforcement learning models, particularly by providing a stable learning environment that could potentially improve long-term training outcomes.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.852::appendix::C",
+      "paper_id": "2024.emnlp-main.852",
+      "section_number": "C",
+      "section_title": "evaluation",
+      "normalized_section_title": "evaluation",
+      "window_text": "To evaluate the effectiveness of the proposed methods, we assess them by comparing their win rate with other baselines. Specifically, we randomly select 100 prompts from the test dataset to evaluate the model's helpfulness and choose 100 red-teaming<sup>3</sup> prompts to assess the harmlessness. We then provide these pairs of prompts and responses to human evaluators, asking them to determine which response is of higher quality, more useful, and harmless. During the entire evaluation process,\n\nthe human evaluators are unaware of the responses' sources.\n\nOur annotation process involves two informed members of our team independently reviewing a set of 200 responses. This set includes 100 responses to questions requiring helpful information (each response consisting of two distinct answers to the same question) and 100 responses assessed for harmlessness. Neither annotator has prior exposure to GPT-4's evaluations to ensure unbiased judgment. To calculate the agreement rates, we first measure the inter-annotator reliability between the two human annotators, then calculate the agreement between each human annotator and GPT-4's annotations. The average agreement rate between human annotators is $93\\%$ , while the average agreement between human annotations and GPT-4 annotations is $91\\%$ .\n\nAdditionally, some studies indicate that GPT-4's evaluation of the responses aligns closely with that of human evaluators (Chang et al., 2023; Zheng et al., 2023a; Xi et al., 2023). Meanwhile, GPT-4 is noted for being more cost-effective and efficient compared to human evaluators, while also offering greater consistency in evaluation results (Zheng et al., 2023c). Therefore, we also utilize gpt-4-1106-preview to evaluate the performance of our methods against other baselines. To mitigate the impact of irrelevant bias on GPT-4 evaluations, such as response length and position, we randomly assign the order of the responses in GPT-4 evaluation prompts. Due to the high cost of manual annotation, we primarily rely on GPT-4 for evaluation.\n\nThe evaluation prompts used for GPT-4 are as follows:",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.852::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100-SXM-80GB",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "All three stages of our model's training are executed on a high-performance computing node outfitted with 8 A100-SXM-80GB GPUs, utilizing the efficiency of Data Parallelism (DP) and Automatic Mixed Precision (AMP) with bfloat16 facilitated by the Deepspeed Zero framework.\n\nSFT Phase During the SFT phase, we use a global batch size of 32, a learning rate of $2e^{-5}$ , and train for only one epoch. The first $10\\%$ of training steps are considered a warm-up phase, after which the learning rate gradually decays to 0.\n\nRM Training For reward modeling, the learning rate is set to $5e - 6$ , and the global batch size is 16 for the contrastive learning-based method and 32 for others. Specifically, for contrastive learning methods, data augmentation is performed using dropout with a rate of 0.05 to introduce perturbations. In the SimCSE method, the RM optimization objective's beta parameter is set to 1. For the SwAV method, in the context of SwAV-diff, we choose 20 prototypes $(K = 20)$ with a beta of 0.5, and for SwAV, 50 prototypes $(K = 50)$ are selected with a beta of 0.1. The model is trained on human preferences for only 1 epoch across all methods.\n\nRL Fine-tuning During the PPO training phase, we set the learning rate to $5e - 7$ for the actor model and $1.5e - 6$ for the critic model. The training was executed over 2000 iterations with a global batch size of 32. For each query, 4 roll-out samples were generated per GPU, utilizing nucleus sampling (Holtzman et al., 2020). We configure the sampling parameters to include a temperature of 0.8, a top-p value of 0.9, a repetition penalty of 1.1, and a maximum token number of the response that is limited to 512. The critic model initializes its training using the weights from the reward model. The Advantage Estimation (Schulman et al., 2018) parameter $\\lambda$ , is set to 0.95, and the RL discount factor $\\gamma$ was fixed at 1.\n\nDPO Training In addition to the above methods, we also conduct experiments using the DPO method. The DPO method is trained under similar conditions as PPO, using identical datasets and settings where applicable. Specifically, for DPO, the beta parameter is set to 0.1. The learning rate is set to $1 \\times 10^{-6}$ and a global batch size of 32. These parameters are chosen to reflect the best practices for DPO and ensure a fair comparison with the PPO results.",
+      "section_number": "A.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.852::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100-SXM-80GB",
+      "cleaned_hardware_name": "a100 sxm 80gb",
+      "normalized_hardware_name": "NVIDIA A100 SXM4 80 GB",
+      "benchmark_hardware_name": "NVIDIA A100 SXM4 80 GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "A.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "All three stages of our model's training are executed on a high-performance computing node outfitted with 8 A100-SXM-80GB GPUs, utilizing the efficiency of Data Parallelism (DP) and Automatic Mixed Precision (AMP) with bfloat16 facilitated by the Deepspeed Zero framework.\n\nSFT Phase During the SFT phase, we use a global batch size of 32, a learning rate of $2e^{-5}$ , and train for only one epoch. The first $10\\%$ of training steps are considered a warm-up phase, after which the learning rate gradually decays to 0.\n\nRM Training For reward modeling, the learning rate is set to $5e - 6$ , and the global batch size is 16 for the contrastive learning-based method and 32 for others. Specifically, for contrastive learning methods, data augmentation is performed using dropout with a rate of 0.05 to introduce perturbations. In the SimCSE method, the RM optimization objective's beta parameter is set to 1. For the SwAV method, in the context of SwAV-diff, we choose 20 prototypes $(K = 20)$ with a beta of 0.5, and for SwAV, 50 prototypes $(K = 50)$ are selected with a beta of 0.1. The model is trained on human preferences for only 1 epoch across all methods.\n\nRL Fine-tuning During the PPO training phase, we set the learning rate to $5e - 7$ for the actor model and $1.5e - 6$ for the critic model. The training was executed over 2000 iterations with a global batch size of 32. For each query, 4 roll-out samples were generated per GPU, utilizing nucleus sampling (Holtzman et al., 2020). We configure the sampling parameters to include a temperature of 0.8, a top-p value of 0.9, a repetition penalty of 1.1, and a maximum token number of the response that is limited to 512. The critic model initializes its training using the weights from the reward model. The Advantage Estimation (Schulman et al., 2018) parameter $\\lambda$ , is set to 0.95, and the RL discount factor $\\gamma$ was fixed at 1.\n\nDPO Training In addition to the above methods, we also conduct experiments using the DPO method. The DPO method is trained under similar conditions as PPO, using identical datasets and settings where applicable. Specifically, for DPO, the beta parameter is set to 0.1. The learning rate is set to $1 \\times 10^{-6}$ and a global batch size of 32. These parameters are chosen to reflect the best practices for DPO and ensure a fair comparison with the PPO results.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.emnlp-main.852::sections::2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "2",
+      "section_title": "preliminaries",
+      "evidence": "The RLHF framework is structured around three core stages: Supervised Fine-Tuning (SFT), Pref\n\nerence Sampling alongside Reward Model (RM) Training, and RL Fine-Tuning through Proximal Policy Optimization (PPO) (Schulman et al., 2017). Initially, a language model is refined through supervised training on a curated dataset tailored for specific tasks, yielding a model we refer to as $\\pi^{\\mathrm{SFT}}$ ."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.852::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.852::appendix::A.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.3",
+      "section_title": "baselines",
+      "evidence": "In this study, we propose a method primarily aimed at aligning the reward model under shifted distribution after PPO training. Our baselines include the SFT model, the PPO model trained with the vanilla reward model, and another RLHF method, DPO, to better illustrate the effectiveness of our approach through comprehensive comparisons."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.852::appendix::A.5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.5",
+      "section_title": "contrastive reward modeling in ppo training",
+      "evidence": "During training on the Anthropic-HH dataset, we monitor the performance through training curves of models enhanced by contrastive learning techniques in comparison with those trained using standard Vanilla PPO. These visualizations aim to elucidate the advantages of embedding contrastive learning within reinforcement learning frameworks. Figure 2 captures the performance dynamics, demonstrating the relative stability and efficiency of contrastive learning methods in generating rewards and ensuring consistent returns throughout the training process.\n\nThe key takeaway from our experiments is the notable stability improvement offered by contrastive learning techniques over traditional Vanilla\n\n![](images/bf4414a46614a42869257bc05e265f9c3870111d1ec063d36559c2279a953d7d.jpg)\n\n![](images/af37c4acd4b092762d7725aaae96b5d3d735ddf200ff56ed0df0ba64ab7784bd.jpg)\n\n![](images/69dfb7ef2e654a310bc402c320cf591f5dbd85873789573d6918c6a66343596c.jpg)\n\n![](images/08afa04646dea2a3cf6433283e2c6e91c35a8af0e6a986f4957a4062980df1f6.jpg)\n\n![](images/3847d14420424506dcacd1557e9a889a5f9a976ddccd806beaf4f20fa402b4ac.jpg)\n\n![](images/db62229698d86a6ff481d16c4157346ca3e512938df02007ed7c8a0a34266a7f.jpg)\n\n![](images/76b7c957f66333de075cb84dc8b8fa9b74228d62a530a4bc4ade5894f05d3a48.jpg)\n\n![](images/e9c271ab0abc4fedba77708756047bd70a5a9fc01fe8c1ee70810d83a5256988.jpg)\n\n![](images/b3c0c8d6e49c66e19d28f7f8ed29d51f76110cfb06fefa02142fae1425528f25.jpg)  \nFigure 2: Using a reward model trained through contrastive learning to optimize the language model. The reward model obtained through contrastive learning leads to more stable returns and rewards during the PPO training process.\n\nPPO. Not applying a KL penalty in our contrastive learning setup did not compromise the effectiveness; instead, it showcases the robustness of these methods in maintaining performance consistency. The contrastive methods lead to more stable returns and rewards during PPO training, indicating their potential to enhance model training efficiency and effectiveness on complex datasets like AnthropicHH.\n\nWe reference the assertion from (Ouyang et al., 2022) that a KL penalty with a very small value $(\\lambda \\mathrm{KL} = 0.001)$ often has a minimal impact during RL training and might not be necessary. Our focus is on showcasing the enhanced generalizability and stability improvements brought by our reward model trained via contrastive learning, as demonstrated in Figure 2. By omitting the KL penalty, we aim to present the advantages of our proposed method more clearly and directly.\n\nThese findings support the premise that contrastive learning can serve as a powerful tool in refining the training processes for reinforcement learning models, particularly by providing a stable learning environment that could potentially improve long-term training outcomes."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.852::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "evaluation",
+      "evidence": "To evaluate the effectiveness of the proposed methods, we assess them by comparing their win rate with other baselines. Specifically, we randomly select 100 prompts from the test dataset to evaluate the model's helpfulness and choose 100 red-teaming<sup>3</sup> prompts to assess the harmlessness. We then provide these pairs of prompts and responses to human evaluators, asking them to determine which response is of higher quality, more useful, and harmless. During the entire evaluation process,\n\nthe human evaluators are unaware of the responses' sources.\n\nOur annotation process involves two informed members of our team independently reviewing a set of 200 responses. This set includes 100 responses to questions requiring helpful information (each response consisting of two distinct answers to the same question) and 100 responses assessed for harmlessness. Neither annotator has prior exposure to GPT-4's evaluations to ensure unbiased judgment. To calculate the agreement rates, we first measure the inter-annotator reliability between the two human annotators, then calculate the agreement between each human annotator and GPT-4's annotations. The average agreement rate between human annotators is $93\\%$ , while the average agreement between human annotations and GPT-4 annotations is $91\\%$ .\n\nAdditionally, some studies indicate that GPT-4's evaluation of the responses aligns closely with that of human evaluators (Chang et al., 2023; Zheng et al., 2023a; Xi et al., 2023). Meanwhile, GPT-4 is noted for being more cost-effective and efficient compared to human evaluators, while also offering greater consistency in evaluation results (Zheng et al., 2023c). Therefore, we also utilize gpt-4-1106-preview to evaluate the performance of our methods against other baselines. To mitigate the impact of irrelevant bias on GPT-4 evaluations, such as response length and position, we randomly assign the order of the responses in GPT-4 evaluation prompts. Due to the high cost of manual annotation, we primarily rely on GPT-4 for evaluation.\n\nThe evaluation prompts used for GPT-4 are as follows:"
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 SXM4 80 GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2024\\2024.emnlp-main.852\\auto\\full.md",
+    "source_md_sha256": "5281c3a1e854474710306be4523c1d2d67e3a70b61008f02909f763447402a94",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "749fdb433714bfa003499fb1c90f58c9bb6de4daf647bf52f54e32986186b91c"
+  }
+}

@@ -1,0 +1,310 @@
+{
+  "paper_id": "2024.emnlp-main.721",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.721::sections::5",
+      "paper_id": "2024.emnlp-main.721",
+      "section_number": "5",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Game Construction We construct reference game contexts using the KILOGRAM dataset (Ji et al., 2022) of 1,016 abstract tangram shapes. Each context comprises 10 images drawn from this dataset. We use a CLIP model (Radford et al., 2021) finetuned on KILOGRAM annotations\n\nfrom Ji et al. (2022) to ensure visual similarity between images in each context and increase task difficulty. Appendix B provides further details.\n\nModel and Initialization We fine-tune the instruction-tuned IDEFICS2-8B (Laurençon et al., 2024). The tasks are delineated via prompting. Training hyperparameters are kept fixed throughout different continual learning rounds and system variants. For systems with joint inference, we set $\\lambda_{L} = 0.5$ and $\\lambda_{S} = 0$ . Appendix A details prompt design, hyperparameters, and training. Before the first round of interactions, we initialize the model by fine-tuning IDEFICS2 with a small set of 104 successful human-human games. We also add this data to the later rounds of re-training, by assigning all these examples a reward of 1. We use 280 successful human-human games as a validation set for model selection throughout our experiments.\n\nSystem Variants We refer to our proposed system coupling comprehension and generation with joint inference and data sharing as FULL. We compare against three other systems: ablations without data sharing (NO-DS; Section 4.1) or joint inference (NO-JI; Section 4.2), and a baseline that uses neither (BASELINE). We additionally collect human-human interaction data (HUMAN) to contextualize performance over time relative to human performance. We also use this human-human data for language analysis.\n\nDeployment We conduct four rounds of deployment, including interactions with human partners and learning. All interactions for each round are collected concurrently in a randomized experiment. We collect an equal number of interactions for the speaker and listener roles for each system and round. We collect 2,000 interactions for each role for each system in the first round, and increase the number by 500 each round, as the marginal benefit of more examples decreases as the data grows. Because data sharing is not applicable for the first round, the FULL and NO-DS, and the NO-JI and BASELINE systems are identical on the first round. We deploy our systems to interact with human workers on MTurk, at a total cost of $12,980USD. Appendix E provides crowdsourcing details.\n\nEvaluation At each round, we evaluate comprehension performance from interactions in the listener role using the target selection accuracy. We\n\n![](images/a63f70af8eafbcc195eb9090bbfd380f8b52cbe320fe04198e139f52db84b329.jpg)  \nCumulative # Interactions   \nCumulative # Interactions\n\n![](images/98bbcd25df8dc76ea99e4f0661cd67ad6099b216b4798bcd3babc8595b010ce6.jpg)\n\n![](images/386a66d6bdf267ac5bf4ad41ad733bbff841582c576b27ce3343ce1c5f7c27c5.jpg)  \nFigure 3: Comprehension and generation performance for system variants across four rounds of deployment, with $95\\%$ confidence intervals. The top $x$ -axis indicates the total number of interactions collected for a role up to the deployment round. Coupling comprehension and generation leads to FULL outperforming all ablations throughout.\n\nevaluate a system's generation performance (i.e., as a speaker) as the accuracy of the human interlocutor's target selections. For HUMAN, comprehension and generation performance are identical.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.721::appendix::A",
+      "paper_id": "2024.emnlp-main.721",
+      "section_number": "A",
+      "section_title": "training and inference details",
+      "normalized_section_title": "training and inference details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.721::appendix::A.1",
+      "paper_id": "2024.emnlp-main.721",
+      "section_number": "A.1",
+      "section_title": "training hyperparameters",
+      "normalized_section_title": "training hyperparameters",
+      "window_text": "We use the instruction-tuned IDEFICS2-8B model (Laurençon et al., 2024) for all our experiments, and optimize with AdamW (Loshchilov and Hutter, 2019) with a learning rate of 0.0001 and a weight decay of 0.1. Each gradient step is computed over independently sampled minibatches of size 32 for comprehension and generation tasks.\n\nWe use LoRA for finetuning (Hu et al., 2022), where $r = 16$ and $\\alpha = 8$ . We apply adapters to all feedforward layers in the vision encoder, the modality projection and the perceiver-resampler block, but only to the key, query and value projections of the text decoder. We found applying further adapters for the text decoder to exacerbate overfitting. We load and train models with BF16 precision to reduce memory and compute costs.\n\nWe observe the IPS term for negatively rewarded examples (Section 3.2) to infrequently attain high values in early epochs during pilot experiments. To increase training stability, we clip the IPS term at 5. During our main experiment, clipping is activated for $2 - 3\\%$ of negatively rewarded generation\n\nexamples in the first epoch, with the proportion declining afterwards.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.721::appendix::A.3",
+      "paper_id": "2024.emnlp-main.721",
+      "section_number": "A.3",
+      "section_title": "hyperparameter search",
+      "normalized_section_title": "hyperparameter search",
+      "window_text": "Hyperparameter search is done on the seed initialization data, using comprehension accuracy on the validation set as the metric. We vary learning rates $\\{1e - 5,5e - 5,1e - 4,2e - 4\\}$ , weight decay $\\{0,1e - 3,1e - 1\\}$ , LoRA $\\alpha$ $\\{8,32\\}$ and adapter placements (only key-query-value projections; all forward projections; and all forward projections except for the language decoder, which used key-query-value projections) and prompt designs. The selection of LoRA adapters is the most important hyperparameter, showing a strong impact on overfitting at the data scales we work in.\n\nThe $\\lambda_{l}$ hyperparameter for the joint comprehension distribution is tuned on the seed data with the hyperparameters described on Appendix A.1. We save model checkpoints for each epoch of training and inspect comprehension accuracy values on the validation set for different settings of $\\lambda_{l}$ . We find $\\lambda_{l} = 0.5$ consistently perform well.\n\nWe choose $\\lambda_{s}$ by training models with the joint inference strategy with $\\lambda_l = 0.5$ and using the hyperparameters and stopping criterion from Appendix A.1 and Appendix A.2. We sample utterances on the validation set and inspect the reranking behavior of the joint generation distribution $P_{s}^{j}(u|\\mathcal{I},t;\\theta)$ with different $\\lambda_{s}$ values. We observe that the utterance the joint distribution $P_{s}^{j}(u|\\mathcal{I},t;\\theta)$ ranked as the best was often equivalent to the utterance the base generation distribution $P_{s}(u|\\mathcal{I},t;\\theta)$ ranked as the most likely. This skew towards the base generation distribution is additionally exacerbated with longer training times.\n\nTo determine $\\lambda_{s}$ in light of this, we probe how accurately the joint generation distribution could\n\nrank utterances on the validation set. Specifically, for each context-target pair on the validation set, we measure whether the distribution $P_{s}^{j}(u|\\mathcal{I},t;\\theta)$ assigned higher probabilities to the ground-truth utterance for that pair than distractor utterances collected for other target images in that context. We vary $\\lambda_{s}$ in [0,1] with increments of 0.01 and find that $\\lambda_{s} = 0$ achieved the best accuracy at selecting the ground-truth utterance.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.721::appendix::A.6",
+      "paper_id": "2024.emnlp-main.721",
+      "section_number": "A.6",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources",
+      "window_text": "Each model is trained with a single GPU, RTX A6000 or NVIDIA A100. Hyperparameter tuning experiments took 100-200 GPU hours total, while training for the main continual learning experiment took approximately 225 GPU hours. For deployment, on the other hand, Models are deployed using RTX A6000 and V100 GPUs, with Ray for inference parallelization (Moritz et al., 2018).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2024.emnlp-main.721::appendix::C",
+      "paper_id": "2024.emnlp-main.721",
+      "section_number": "C",
+      "section_title": "experiment details",
+      "normalized_section_title": "experiment details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.721::appendix::D.2",
+      "paper_id": "2024.emnlp-main.721",
+      "section_number": "D.2",
+      "section_title": "impact of data sharing on training set size",
+      "normalized_section_title": "impact of data sharing on training set size",
+      "window_text": "Figure 8 shows how the number of datapoints models train on for comprehension and generation tasks change over time. Coupling with data sharing leads to a strong data augmentation effect for FULL and No-JI, with the number of datapoints shared from\n\n![](images/52f746675f40f402db001e1efc6c643e7ca01472fa118ec96d5e859535ac78f1.jpg)  \nFigure 7: IDEFICS2 generation prompt. The caption is not provided during inference time.\n\n![](images/4de366d4c13144b3613f0b88ee0c1cc20b3cc70de6980e21824296f4d516e051.jpg)\n\n![](images/b88fbe000789d3c0d63a045b4864608737b7e64bbf1710637e646016b95257b3.jpg)  \nFigure 8: Number of training examples for comprehension and generation tasks across four rounds of deployment. The plots account for datapoints converted from the opposing role when data sharing is applied.\n\nthe opposing role increasing as the model performance increases.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.721::appendix::F.2",
+      "paper_id": "2024.emnlp-main.721",
+      "section_number": "F.2",
+      "section_title": "data release",
+      "normalized_section_title": "data release",
+      "window_text": "We release all of the data collected during our experiments alongside the code used to conduct them. This includes the seed training and validation sets of 104 and 280 successful human-human reference games as well as all of the interactions collected during continual learning, comprising 10,811 rounds of human-human reference games, and 43,442 and 43,492 rounds of human-model reference games where the model is in the listener or speaker roles. We do not include rounds where the human partner idled.\n\nDuring data collection, all worker IDs were encrypted with MD5 hashes. Worker information is further anonymized during the release by mapping each ID hash to a numeric index.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.721::appendix::A.6",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX A6000",
+      "count": null,
+      "count_text": "",
+      "evidence": "Each model is trained with a single GPU, RTX A6000 or NVIDIA A100. Hyperparameter tuning experiments took 100-200 GPU hours total, while training for the main continual learning experiment took approximately 225 GPU hours. For deployment, on the other hand, Models are deployed using RTX A6000 and V100 GPUs, with Ray for inference parallelization (Moritz et al., 2018).",
+      "section_number": "A.6",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources"
+    },
+    {
+      "window_id": "2024.emnlp-main.721::appendix::A.6",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": null,
+      "count_text": "",
+      "evidence": "Each model is trained with a single GPU, RTX A6000 or NVIDIA A100. Hyperparameter tuning experiments took 100-200 GPU hours total, while training for the main continual learning experiment took approximately 225 GPU hours. For deployment, on the other hand, Models are deployed using RTX A6000 and V100 GPUs, with Ray for inference parallelization (Moritz et al., 2018).",
+      "section_number": "A.6",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources"
+    },
+    {
+      "window_id": "2024.emnlp-main.721::appendix::A.6",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX A6000",
+      "count": null,
+      "count_text": "",
+      "evidence": "Each model is trained with a single GPU, RTX A6000 or NVIDIA A100. Hyperparameter tuning experiments took 100-200 GPU hours total, while training for the main continual learning experiment took approximately 225 GPU hours. For deployment, on the other hand, Models are deployed using RTX A6000 and V100 GPUs, with Ray for inference parallelization (Moritz et al., 2018).",
+      "section_number": "A.6",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources"
+    },
+    {
+      "window_id": "2024.emnlp-main.721::appendix::A.6",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "count": null,
+      "count_text": "",
+      "evidence": "Each model is trained with a single GPU, RTX A6000 or NVIDIA A100. Hyperparameter tuning experiments took 100-200 GPU hours total, while training for the main continual learning experiment took approximately 225 GPU hours. For deployment, on the other hand, Models are deployed using RTX A6000 and V100 GPUs, with Ray for inference parallelization (Moritz et al., 2018).",
+      "section_number": "A.6",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.721::appendix::A.6",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX A6000",
+      "cleaned_hardware_name": "rtx a6000",
+      "normalized_hardware_name": "NVIDIA RTX A6000",
+      "benchmark_hardware_name": "NVIDIA RTX A6000",
+      "count": null,
+      "count_text": "",
+      "section_number": "A.6",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources",
+      "evidence": "Each model is trained with a single GPU, RTX A6000 or NVIDIA A100. Hyperparameter tuning experiments took 100-200 GPU hours total, while training for the main continual learning experiment took approximately 225 GPU hours. For deployment, on the other hand, Models are deployed using RTX A6000 and V100 GPUs, with Ray for inference parallelization (Moritz et al., 2018).",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.emnlp-main.721::appendix::A.6",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100",
+      "benchmark_hardware_name": "NVIDIA A100",
+      "count": null,
+      "count_text": "",
+      "section_number": "A.6",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources",
+      "evidence": "Each model is trained with a single GPU, RTX A6000 or NVIDIA A100. Hyperparameter tuning experiments took 100-200 GPU hours total, while training for the main continual learning experiment took approximately 225 GPU hours. For deployment, on the other hand, Models are deployed using RTX A6000 and V100 GPUs, with Ray for inference parallelization (Moritz et al., 2018).",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.emnlp-main.721::appendix::A.6",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "cleaned_hardware_name": "v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": null,
+      "count_text": "",
+      "section_number": "A.6",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources",
+      "evidence": "Each model is trained with a single GPU, RTX A6000 or NVIDIA A100. Hyperparameter tuning experiments took 100-200 GPU hours total, while training for the main continual learning experiment took approximately 225 GPU hours. For deployment, on the other hand, Models are deployed using RTX A6000 and V100 GPUs, with Ray for inference parallelization (Moritz et al., 2018).",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.emnlp-main.721::sections::5",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experimental setup",
+      "evidence": "Game Construction We construct reference game contexts using the KILOGRAM dataset (Ji et al., 2022) of 1,016 abstract tangram shapes. Each context comprises 10 images drawn from this dataset. We use a CLIP model (Radford et al., 2021) finetuned on KILOGRAM annotations\n\nfrom Ji et al. (2022) to ensure visual similarity between images in each context and increase task difficulty. Appendix B provides further details.\n\nModel and Initialization We fine-tune the instruction-tuned IDEFICS2-8B (Laurençon et al., 2024). The tasks are delineated via prompting. Training hyperparameters are kept fixed throughout different continual learning rounds and system variants. For systems with joint inference, we set $\\lambda_{L} = 0.5$ and $\\lambda_{S} = 0$ . Appendix A details prompt design, hyperparameters, and training. Before the first round of interactions, we initialize the model by fine-tuning IDEFICS2 with a small set of 104 successful human-human games. We also add this data to the later rounds of re-training, by assigning all these examples a reward of 1. We use 280 successful human-human games as a validation set for model selection throughout our experiments.\n\nSystem Variants We refer to our proposed system coupling comprehension and generation with joint inference and data sharing as FULL. We compare against three other systems: ablations without data sharing (NO-DS; Section 4.1) or joint inference (NO-JI; Section 4.2), and a baseline that uses neither (BASELINE). We additionally collect human-human interaction data (HUMAN) to contextualize performance over time relative to human performance. We also use this human-human data for language analysis.\n\nDeployment We conduct four rounds of deployment, including interactions with human partners and learning. All interactions for each round are collected concurrently in a randomized experiment. We collect an equal number of interactions for the speaker and listener roles for each system and round. We collect 2,000 interactions for each role for each system in the first round, and increase the number by 500 each round, as the marginal benefit of more examples decreases as the data grows. Because data sharing is not applicable for the first round, the FULL and NO-DS, and the NO-JI and BASELINE systems are identical on the first round. We deploy our systems to interact with human workers on MTurk, at a total cost of $12,980USD. Appendix E provides crowdsourcing details.\n\nEvaluation At each round, we evaluate comprehension performance from interactions in the listener role using the target selection accuracy. We\n\n![](images/a63f70af8eafbcc195eb9090bbfd380f8b52cbe320fe04198e139f52db84b329.jpg)  \nCumulative # Interactions   \nCumulative # Interactions\n\n![](images/98bbcd25df8dc76ea99e4f0661cd67ad6099b216b4798bcd3babc8595b010ce6.jpg)\n\n![](images/386a66d6bdf267ac5bf4ad41ad733bbff841582c576b27ce3343ce1c5f7c27c5.jpg)  \nFigure 3: Comprehension and generation performance for system variants across four rounds of deployment, with $95\\%$ confidence intervals. The top $x$ -axis indicates the total number of interactions collected for a role up to the deployment round. Coupling comprehension and generation leads to FULL outperforming all ablations throughout.\n\nevaluate a system's generation performance (i.e., as a speaker) as the accuracy of the human interlocutor's target selections. For HUMAN, comprehension and generation performance are identical."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.721::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "training and inference details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.721::appendix::A.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.1",
+      "section_title": "training hyperparameters",
+      "evidence": "We use the instruction-tuned IDEFICS2-8B model (Laurençon et al., 2024) for all our experiments, and optimize with AdamW (Loshchilov and Hutter, 2019) with a learning rate of 0.0001 and a weight decay of 0.1. Each gradient step is computed over independently sampled minibatches of size 32 for comprehension and generation tasks.\n\nWe use LoRA for finetuning (Hu et al., 2022), where $r = 16$ and $\\alpha = 8$ . We apply adapters to all feedforward layers in the vision encoder, the modality projection and the perceiver-resampler block, but only to the key, query and value projections of the text decoder. We found applying further adapters for the text decoder to exacerbate overfitting. We load and train models with BF16 precision to reduce memory and compute costs.\n\nWe observe the IPS term for negatively rewarded examples (Section 3.2) to infrequently attain high values in early epochs during pilot experiments. To increase training stability, we clip the IPS term at 5. During our main experiment, clipping is activated for $2 - 3\\%$ of negatively rewarded generation\n\nexamples in the first epoch, with the proportion declining afterwards."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.721::appendix::A.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.3",
+      "section_title": "hyperparameter search",
+      "evidence": "Hyperparameter search is done on the seed initialization data, using comprehension accuracy on the validation set as the metric. We vary learning rates $\\{1e - 5,5e - 5,1e - 4,2e - 4\\}$ , weight decay $\\{0,1e - 3,1e - 1\\}$ , LoRA $\\alpha$ $\\{8,32\\}$ and adapter placements (only key-query-value projections; all forward projections; and all forward projections except for the language decoder, which used key-query-value projections) and prompt designs. The selection of LoRA adapters is the most important hyperparameter, showing a strong impact on overfitting at the data scales we work in.\n\nThe $\\lambda_{l}$ hyperparameter for the joint comprehension distribution is tuned on the seed data with the hyperparameters described on Appendix A.1. We save model checkpoints for each epoch of training and inspect comprehension accuracy values on the validation set for different settings of $\\lambda_{l}$ . We find $\\lambda_{l} = 0.5$ consistently perform well.\n\nWe choose $\\lambda_{s}$ by training models with the joint inference strategy with $\\lambda_l = 0.5$ and using the hyperparameters and stopping criterion from Appendix A.1 and Appendix A.2. We sample utterances on the validation set and inspect the reranking behavior of the joint generation distribution $P_{s}^{j}(u|\\mathcal{I},t;\\theta)$ with different $\\lambda_{s}$ values. We observe that the utterance the joint distribution $P_{s}^{j}(u|\\mathcal{I},t;\\theta)$ ranked as the best was often equivalent to the utterance the base generation distribution $P_{s}(u|\\mathcal{I},t;\\theta)$ ranked as the most likely. This skew towards the base generation distribution is additionally exacerbated with longer training times.\n\nTo determine $\\lambda_{s}$ in light of this, we probe how accurately the joint generation distribution could\n\nrank utterances on the validation set. Specifically, for each context-target pair on the validation set, we measure whether the distribution $P_{s}^{j}(u|\\mathcal{I},t;\\theta)$ assigned higher probabilities to the ground-truth utterance for that pair than distractor utterances collected for other target images in that context. We vary $\\lambda_{s}$ in [0,1] with increments of 0.01 and find that $\\lambda_{s} = 0$ achieved the best accuracy at selecting the ground-truth utterance."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.721::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "experiment details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.721::appendix::D.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D.2",
+      "section_title": "impact of data sharing on training set size",
+      "evidence": "Figure 8 shows how the number of datapoints models train on for comprehension and generation tasks change over time. Coupling with data sharing leads to a strong data augmentation effect for FULL and No-JI, with the number of datapoints shared from\n\n![](images/52f746675f40f402db001e1efc6c643e7ca01472fa118ec96d5e859535ac78f1.jpg)  \nFigure 7: IDEFICS2 generation prompt. The caption is not provided during inference time.\n\n![](images/4de366d4c13144b3613f0b88ee0c1cc20b3cc70de6980e21824296f4d516e051.jpg)\n\n![](images/b88fbe000789d3c0d63a045b4864608737b7e64bbf1710637e646016b95257b3.jpg)  \nFigure 8: Number of training examples for comprehension and generation tasks across four rounds of deployment. The plots account for datapoints converted from the opposing role when data sharing is applied.\n\nthe opposing role increasing as the model performance increases."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.721::appendix::F.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "F.2",
+      "section_title": "data release",
+      "evidence": "We release all of the data collected during our experiments alongside the code used to conduct them. This includes the seed training and validation sets of 104 and 280 successful human-human reference games as well as all of the interactions collected during continual learning, comprising 10,811 rounds of human-human reference games, and 43,442 and 43,492 rounds of human-model reference games where the model is in the listener or speaker roles. We do not include rounds where the human partner idled.\n\nDuring data collection, all worker IDs were encrypted with MD5 hashes. Worker information is further anonymized during the release by mapping each ID hash to a numeric index."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.6"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA RTX A6000",
+        "num": null
+      },
+      {
+        "name": "NVIDIA A100",
+        "num": null
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": null
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2024\\2024.emnlp-main.721\\auto\\full.md",
+    "source_md_sha256": "ffc05b6b296f0c286b4afd63d7b54b90c08989f4b01e46babf6f28357722838a",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "749fdb433714bfa003499fb1c90f58c9bb6de4daf647bf52f54e32986186b91c"
+  }
+}

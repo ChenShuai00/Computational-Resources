@@ -1,0 +1,162 @@
+{
+  "paper_id": "2024.emnlp-main.786",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.786::sections::2.3",
+      "paper_id": "2024.emnlp-main.786",
+      "section_number": "2.3",
+      "section_title": "model fine-tuning",
+      "normalized_section_title": "model fine-tuning",
+      "window_text": "The dataset $\\mathcal{D}_{ft}$ has term/mnemonic pairs $(v, m)$ , so we can use $\\mathcal{D}_{ft}$ to train an initial seq2seq SMART model $p_0(m \\mid v)$ to create $m$ from $v$ . Upon inspection, we find some quality issues in the mnemonics,\n\nso we use GPT-4 to clean grammar errors in $m$ via a 0-shot prompt, and discard any $m$ with offensive or overly culturally-specific text (see Appendix A.1). We end up with 889 pairs for fine-tuning SMART.\n\nEach $(v, m) \\in \\mathcal{D}_{ft}$ forms prompt $\\mathcal{P} =$ \"Term: $v \\backslash nM$ nemonic:\" and output text $m$ . Our initial model $p_0(m \\mid v)$ fine-tunes LLaMA-2 70B (Touvron et al., 2023) to minimize the cross-entropy loss $\\mathcal{L}_{CE}$ of predicting tokens $m_j \\in m$ given $\\mathcal{P}$ :\n\n$$\n\\mathcal {L} _ {C E} = \\sum_ {j = 1} ^ {| m |} \\log p \\left(m _ {j} \\mid m _ {1}, \\dots , m _ {j - 1}, \\mathcal {P}\\right). \\tag {3}\n$$\n\nWe use QLoRA (Dettmers et al., 2023) to minimize $\\mathcal{L}_{CE}$ . All parameters are listed in Appendix B.1.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.786::appendix::A.3",
+      "paper_id": "2024.emnlp-main.786",
+      "section_number": "A.3",
+      "section_title": "experiment dataset splits",
+      "normalized_section_title": "experiment dataset splits",
+      "window_text": "When conducting the analysis of human preferences and training most DPO models, we filter all mnemonic pairs with less than two human preference annotations to form $\\mathcal{D}_{\\text{pref}}$ . For the pairwise preferences, this means that we filtered mnemonics where the sum of votes for A and B was less than or equal to two. However, for the comparison between $p_{\\text{bayes}}(m|v)$ and $p_{\\text{pair}}(m|v)$ in §6.2, we also use mnemonic pairs with exactly two votes. We did this because otherwise, the Bayesian label $y_{\\text{bayes}}$ and pairwise label $y_{\\text{pair}}$ had very high agreement in which mnemonic in the pair was winning, so we would not be able to meaningfully study the differences between optimizing on just pairwise or multiple preferences. Essentially, our filtering strategy removed the annotator noise in the pairwise preferences, so the clear pairwise preference towards one mnemonic caused $y_{\\text{bayes}}$ to nearly always be in agreement with $y_{\\text{pair}}$ . However, by adding back noisy annotations, we were able to better study the differences between $y_{\\text{bayes}}$ and $y_{\\text{pair}}$ , as these two labels ended up with 20% disagreement.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.786::appendix::B",
+      "paper_id": "2024.emnlp-main.786",
+      "section_number": "B",
+      "section_title": "model and experiment details",
+      "normalized_section_title": "model and experiment details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.786::appendix::B.1",
+      "paper_id": "2024.emnlp-main.786",
+      "section_number": "B.1",
+      "section_title": "training setup",
+      "normalized_section_title": "training setup",
+      "window_text": "All of our models are trained for a maximum of 24 hours using eight NVIDIA RTX:A5000 GPUs. In practice, we find that both fine-tuning and Direct Preference Optimization (DPO) converge in around 6 hours. Parameters were manually selected. Fine-tuning and DPO were both implemented using theTRL library using a 90/10 train/evaluation split on their respective datasets. Both fine-tuning and DPO use QLoRA with LLaMA-2 (70B) with 8-bit quantization, $\\alpha = 32$ , a dropout of 0.05, a bias of 0, and update the default attention query and value projection layers. We use 5 training epochs for fine-tuning. We perform DPO with a training batch size of 1, a beta value of 0.1, a maximum prompt length of 16 tokens, a maximum output length of 64 tokens, and use the accuracy of the reward model as the metric for the best model. We use 5 training epochs for each DPO model (Table 3)\n\nAll unspecified hyperparameters are the default values. All evaluations are from a single run.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.786::appendix::B.3",
+      "paper_id": "2024.emnlp-main.786",
+      "section_number": "B.3",
+      "section_title": "gpt-4 classifier implementation",
+      "normalized_section_title": "gpt-4 classifier implementation",
+      "window_text": "Our classifier to judge the quality of mnemonics is implemented with DSPy $^6$ (Khattab et al., 2024) and based on gpt-4-turbo-2024-04-09. To train and evaluate this classifier, we select 250 pairs of mnemonics for the same vocabulary term from MnemonicDictionary with the highest difference in our latent quality scores ( $\\S 2.2$ ), indicating a set of mnemonics with clear human preferences. We use 25 random training examples and 25 random validation examples to optimize this prompt with DSPy and after optimization, we run inference with the classifier on a held-out set of the 200 remaining examples. The prompt is optimized using bootstrap few-shot with random search with a maximum of 3 bootstrapped demos, a maximum of 3 labeled demos, and 10 candidate programs. As features, the classifier uses the two mnemonics to choose from, the vocab term, and a sample sentence containing the vocabulary word from WordsAPI. $^7$ This choice of inputs was selected by assessing validation set accuracy while adding different vocabulary features, including the definition of the word, synonyms, antonyms, and part-of-speech information. The instruction given in the DSPy signature is: Given a vocabulary term, a sentence using the term, and two candidate mnemonics (Mnemonic A and Mnemonic B), classify whether Mnemonic A or Mnemonic B is a better mnemonic device. Output just the letter of the better mnemonic (\"A\" or \"B\"). Our classifier prompt will be released.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.786::appendix::B.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX A5000",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "All of our models are trained for a maximum of 24 hours using eight NVIDIA RTX:A5000 GPUs. In practice, we find that both fine-tuning and Direct Preference Optimization (DPO) converge in around 6 hours. Parameters were manually selected. Fine-tuning and DPO were both implemented using theTRL library using a 90/10 train/evaluation split on their respective datasets. Both fine-tuning and DPO use QLoRA with LLaMA-2 (70B) with 8-bit quantization, $\\alpha = 32$ , a dropout of 0.05, a bias of 0, and update the default attention query and value projection layers. We use 5 training epochs for fine-tuning. We perform DPO with a training batch size of 1, a beta value of 0.1, a maximum prompt length of 16 tokens, a maximum output length of 64 tokens, and use the accuracy of the reward model as the metric for the best model. We use 5 training epochs for each DPO model (Table 3)\n\nAll unspecified hyperparameters are the default values. All evaluations are from a single run.",
+      "section_number": "B.1",
+      "section_title": "training setup",
+      "normalized_section_title": "training setup"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.786::appendix::B.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX A5000",
+      "cleaned_hardware_name": "nvidia rtx a5000",
+      "normalized_hardware_name": "NVIDIA RTX A5000",
+      "benchmark_hardware_name": "NVIDIA RTX A5000",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "B.1",
+      "section_title": "training setup",
+      "normalized_section_title": "training setup",
+      "evidence": "All of our models are trained for a maximum of 24 hours using eight NVIDIA RTX:A5000 GPUs. In practice, we find that both fine-tuning and Direct Preference Optimization (DPO) converge in around 6 hours. Parameters were manually selected. Fine-tuning and DPO were both implemented using theTRL library using a 90/10 train/evaluation split on their respective datasets. Both fine-tuning and DPO use QLoRA with LLaMA-2 (70B) with 8-bit quantization, $\\alpha = 32$ , a dropout of 0.05, a bias of 0, and update the default attention query and value projection layers. We use 5 training epochs for fine-tuning. We perform DPO with a training batch size of 1, a beta value of 0.1, a maximum prompt length of 16 tokens, a maximum output length of 64 tokens, and use the accuracy of the reward model as the metric for the best model. We use 5 training epochs for each DPO model (Table 3)\n\nAll unspecified hyperparameters are the default values. All evaluations are from a single run.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.emnlp-main.786::sections::2.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "2.3",
+      "section_title": "model fine-tuning",
+      "evidence": "The dataset $\\mathcal{D}_{ft}$ has term/mnemonic pairs $(v, m)$ , so we can use $\\mathcal{D}_{ft}$ to train an initial seq2seq SMART model $p_0(m \\mid v)$ to create $m$ from $v$ . Upon inspection, we find some quality issues in the mnemonics,\n\nso we use GPT-4 to clean grammar errors in $m$ via a 0-shot prompt, and discard any $m$ with offensive or overly culturally-specific text (see Appendix A.1). We end up with 889 pairs for fine-tuning SMART.\n\nEach $(v, m) \\in \\mathcal{D}_{ft}$ forms prompt $\\mathcal{P} =$ \"Term: $v \\backslash nM$ nemonic:\" and output text $m$ . Our initial model $p_0(m \\mid v)$ fine-tunes LLaMA-2 70B (Touvron et al., 2023) to minimize the cross-entropy loss $\\mathcal{L}_{CE}$ of predicting tokens $m_j \\in m$ given $\\mathcal{P}$ :\n\n$$\n\\mathcal {L} _ {C E} = \\sum_ {j = 1} ^ {| m |} \\log p \\left(m _ {j} \\mid m _ {1}, \\dots , m _ {j - 1}, \\mathcal {P}\\right). \\tag {3}\n$$\n\nWe use QLoRA (Dettmers et al., 2023) to minimize $\\mathcal{L}_{CE}$ . All parameters are listed in Appendix B.1."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.786::appendix::A.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.3",
+      "section_title": "experiment dataset splits",
+      "evidence": "When conducting the analysis of human preferences and training most DPO models, we filter all mnemonic pairs with less than two human preference annotations to form $\\mathcal{D}_{\\text{pref}}$ . For the pairwise preferences, this means that we filtered mnemonics where the sum of votes for A and B was less than or equal to two. However, for the comparison between $p_{\\text{bayes}}(m|v)$ and $p_{\\text{pair}}(m|v)$ in §6.2, we also use mnemonic pairs with exactly two votes. We did this because otherwise, the Bayesian label $y_{\\text{bayes}}$ and pairwise label $y_{\\text{pair}}$ had very high agreement in which mnemonic in the pair was winning, so we would not be able to meaningfully study the differences between optimizing on just pairwise or multiple preferences. Essentially, our filtering strategy removed the annotator noise in the pairwise preferences, so the clear pairwise preference towards one mnemonic caused $y_{\\text{bayes}}$ to nearly always be in agreement with $y_{\\text{pair}}$ . However, by adding back noisy annotations, we were able to better study the differences between $y_{\\text{bayes}}$ and $y_{\\text{pair}}$ , as these two labels ended up with 20% disagreement."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.786::appendix::B",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B",
+      "section_title": "model and experiment details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.786::appendix::B.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B.3",
+      "section_title": "gpt-4 classifier implementation",
+      "evidence": "Our classifier to judge the quality of mnemonics is implemented with DSPy $^6$ (Khattab et al., 2024) and based on gpt-4-turbo-2024-04-09. To train and evaluate this classifier, we select 250 pairs of mnemonics for the same vocabulary term from MnemonicDictionary with the highest difference in our latent quality scores ( $\\S 2.2$ ), indicating a set of mnemonics with clear human preferences. We use 25 random training examples and 25 random validation examples to optimize this prompt with DSPy and after optimization, we run inference with the classifier on a held-out set of the 200 remaining examples. The prompt is optimized using bootstrap few-shot with random search with a maximum of 3 bootstrapped demos, a maximum of 3 labeled demos, and 10 candidate programs. As features, the classifier uses the two mnemonics to choose from, the vocab term, and a sample sentence containing the vocabulary word from WordsAPI. $^7$ This choice of inputs was selected by assessing validation set accuracy while adding different vocabulary features, including the definition of the word, synonyms, antonyms, and part-of-speech information. The instruction given in the DSPy signature is: Given a vocabulary term, a sentence using the term, and two candidate mnemonics (Mnemonic A and Mnemonic B), classify whether Mnemonic A or Mnemonic B is a better mnemonic device. Output just the letter of the better mnemonic (\"A\" or \"B\"). Our classifier prompt will be released."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA RTX A5000",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2024\\2024.emnlp-main.786\\auto\\full.md",
+    "source_md_sha256": "ad8916590983efad4f415a25195262ebc1d50b5b74b5425e39216c49f65be3a1",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "749fdb433714bfa003499fb1c90f58c9bb6de4daf647bf52f54e32986186b91c"
+  }
+}

@@ -1,0 +1,183 @@
+{
+  "paper_id": "2025.acl-long.1031",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.1031::sections::4",
+      "paper_id": "2025.acl-long.1031",
+      "section_number": "4",
+      "section_title": "experiment setup",
+      "normalized_section_title": "experiment setup",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1031::sections::4.4",
+      "paper_id": "2025.acl-long.1031",
+      "section_number": "4.4",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "We select 10 base models from various model families, including Deepseek (Bi et al., 2024; Guo et al., 2024), Qwen (Yang et al., 2024a; Hui et al., 2024), Llama (Dubey et al., 2024; Roziere et al., 2023), and CodeS (Li et al., 2024a). These models cover different specialties (general-purpose, code or SQL-specific) and range from 6.7B to 15B parameters. For each LLM, we conduct SFT and DPO using either the original training dataset (Vanilla) or\n\nthe CoT-enhanced dataset (Syn CoT). More implementation details are listed in Appendix D. Details about training data can be found in Appendix E.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1031::appendix::A",
+      "paper_id": "2025.acl-long.1031",
+      "section_number": "A",
+      "section_title": "preliminary experiments on dpo tricks",
+      "normalized_section_title": "preliminary experiments on dpo tricks",
+      "window_text": "Before exploring chain-of-thought reasoning, we extensively experiment with applying various DPO tricks to the original Bird dataset. This included hyperparameter tuning, using different loss variants, and exploring alternative preference data construction strategies. Specifically, for hyperparameter tuning, we evaluate different values of the $\\beta$ parameter in DPO, testing 0.05 and 0.2 (the default value is 0.1). For loss variants, we experiment with augmenting the DPO loss by incorporating the SFT loss for correct responses (i.e., the correct sampled SQL queries). Additionally, we explore replacing DPO with its variant, KTO (Ethayarajh et al., 2024). For preference data construction strategies, we follow SENSE (Yang et al., 2024c) to fine-tune a small-scale language model, Deepseek-coder-1.3b-instruct, on Bird's training set to collect preference data. The results, summarized in Table 7, show that none of these approaches yield significant performance improvements for DPO.\n\nTable 7: Even with tricks applied, DPO still struggles to improve model performance on the Bird dataset (greedy decoding). The base model is Qwen2.5-7B-Instruct.   \n\n<table><tr><td colspan=\"2\">DPO Tricks (SFT=58.8%)</td></tr><tr><td colspan=\"2\">Hyper-parameter Tuning</td></tr><tr><td>β=0.05</td><td>β=0.2</td></tr><tr><td>57.6% (-1.2%)</td><td>57.8% (-1.0%)</td></tr><tr><td colspan=\"2\">Loss Variants</td></tr><tr><td>+SFT Loss</td><td>KTO</td></tr><tr><td>60.0% (+1.2%)</td><td>59.8% (+1.0%)</td></tr><tr><td colspan=\"2\">Data Construction Strategies</td></tr><tr><td colspan=\"2\">SENSE (Yang et al., 2024c)</td></tr><tr><td colspan=\"2\">58.4% (-0.4%)</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1031::appendix::D",
+      "paper_id": "2025.acl-long.1031",
+      "section_number": "D",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "The computational environment used in our experiments is equipped with a 64-core Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz and 8 NVIDIA A800 GPUs with 80GB of memory each, running CUDA version 12.1.1.\n\nTraining is conducted using Llama Factory (Zheng et al., 2024), with FlashAttention 2.0 (Dao,\n\n2023) and DeepSpeed ZeRO-3 (Rasley et al., 2020) enabled. For models larger than 10B parameters, the DPO stage utilizes CPU offloading for both model parameters and optimizer states. During inference, the trained models are hosted with vLLM (Kwon et al., 2023).\n\nFor training, we employ full-parameter finetuning with bf16 mixed-precision (Micikevicius et al., 2018). The optimizer used was AdamW (Loshchilov and Hutter, 2019) with default parameters $(\\beta_{1} = 0.9, \\beta_{2} = 0.99)$ . A cosine decay learning rate schedule and a linear warmup over the first $5\\%$ of training steps are also applied. The context window of models is set to 4096 tokens.\n\nAcross all training phases, we adopt a consistent batch size of 64. The learning rates for the SFT and DPO phases are set to $1 \\times 10^{-5}$ and $1 \\times 10^{-6}$ , respectively, for models smaller than 10B, and $7 \\times 10^{-6}$ and $7 \\times 10^{-7}$ , respectively, for models larger than 10B. The $\\beta$ parameter for DPO is set to 0.1.\n\nAll models are trained for 4 epochs during the SFT phase, and the best checkpoint is selected to serve as the reference model in DPO, based on the maj@K metric on the development set. Training is then continued for 8 epochs during the DPO phase.\n\nUnless otherwise specified, during inference time across all stages (including chain-of-thought synthesis), the sampling budget is set to 16, with the temperature and top $K$ parameters set to 1.0 and 32, respectively.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.acl-long.1031::appendix::E",
+      "paper_id": "2025.acl-long.1031",
+      "section_number": "E",
+      "section_title": "training data details",
+      "normalized_section_title": "training data details",
+      "window_text": "Quantity. In Bird dataset, the Vanilla SFT data consists of 9,428 instances, while the CoT SFT data consists of $9,428 \\times K$ instances (for Table 1, $K = 16$ , as we generate 16 CoT solutions for each training sample in the original dataset).\n\nThe size of the DPO training data is smaller than that of the SFT training data and is model-dependent. This is because, during the construction of the preference data, we exclude data samples for which all SFT model-generated CoT solutions are either entirely correct or entirely incorrect. As a result, both Vanilla and Syn CoT preference datasets contain approximately 1.5k-2.5k preference pairs (e.g., Qwen-7b-Instruct Syn CoT has 1,546 pairs). The relationship between sample budgets and the quantity of DPO training data is illustrated in Figure 15 and Figure 16.\n\nConstruction of Input-Output Sequences and Their Average Length. Input prompt has an av\n\nerage length of 965 tokens, which is the same for Vanilla and Syn CoT settings. The input prompt includes not only the question but also database information, such as table and column names, primary and foreign key relationships, and potentially useful database values. Following CodeS (Li et al., 2024a), we first use a schema item classifier to identify the most relevant tables and columns based on the question. To improve recall accuracy, we replace the backbone model of the classifier from RoBERTa-Large (355M) (Liu, 2019) to XLM-RoBERTa-XL (3.5B) (Goyal et al., 2021). We then use the \"coarse-to-fine\" database value-matching approach to retrieve question-related values from the database. The retrieved tables, columns, values, and remaining primary and foreign keys form the database prompt.\n\nThe output label of Vanilla (gold SQL in the Bird dataset) has an average length of 44 tokens, while the synthesized chain-of-thought solutions have an average length of 404 tokens. Reported token numbers is measured by the tokenizer of Qwen-7b-Instruct.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1031::appendix::J",
+      "paper_id": "2025.acl-long.1031",
+      "section_number": "J",
+      "section_title": "experiment design",
+      "normalized_section_title": "experiment design",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.1031::appendix::D",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A800 80GB",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "The computational environment used in our experiments is equipped with a 64-core Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz and 8 NVIDIA A800 GPUs with 80GB of memory each, running CUDA version 12.1.1.\n\nTraining is conducted using Llama Factory (Zheng et al., 2024), with FlashAttention 2.0 (Dao,\n\n2023) and DeepSpeed ZeRO-3 (Rasley et al., 2020) enabled. For models larger than 10B parameters, the DPO stage utilizes CPU offloading for both model parameters and optimizer states. During inference, the trained models are hosted with vLLM (Kwon et al., 2023).\n\nFor training, we employ full-parameter finetuning with bf16 mixed-precision (Micikevicius et al., 2018). The optimizer used was AdamW (Loshchilov and Hutter, 2019) with default parameters $(\\beta_{1} = 0.9, \\beta_{2} = 0.99)$ . A cosine decay learning rate schedule and a linear warmup over the first $5\\%$ of training steps are also applied. The context window of models is set to 4096 tokens.\n\nAcross all training phases, we adopt a consistent batch size of 64. The learning rates for the SFT and DPO phases are set to $1 \\times 10^{-5}$ and $1 \\times 10^{-6}$ , respectively, for models smaller than 10B, and $7 \\times 10^{-6}$ and $7 \\times 10^{-7}$ , respectively, for models larger than 10B. The $\\beta$ parameter for DPO is set to 0.1.\n\nAll models are trained for 4 epochs during the SFT phase, and the best checkpoint is selected to serve as the reference model in DPO, based on the maj@K metric on the development set. Training is then continued for 8 epochs during the DPO phase.\n\nUnless otherwise specified, during inference time across all stages (including chain-of-thought synthesis), the sampling budget is set to 16, with the temperature and top $K$ parameters set to 1.0 and 32, respectively.",
+      "section_number": "D",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.1031::appendix::D",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A800 80GB",
+      "cleaned_hardware_name": "nvidia a800 80gb",
+      "normalized_hardware_name": "NVIDIA A800 PCIe 80 GB",
+      "benchmark_hardware_name": "NVIDIA A800 PCIe 80 GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "D",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "The computational environment used in our experiments is equipped with a 64-core Intel(R) Xeon(R) Platinum 8358 CPU @ 2.60GHz and 8 NVIDIA A800 GPUs with 80GB of memory each, running CUDA version 12.1.1.\n\nTraining is conducted using Llama Factory (Zheng et al., 2024), with FlashAttention 2.0 (Dao,\n\n2023) and DeepSpeed ZeRO-3 (Rasley et al., 2020) enabled. For models larger than 10B parameters, the DPO stage utilizes CPU offloading for both model parameters and optimizer states. During inference, the trained models are hosted with vLLM (Kwon et al., 2023).\n\nFor training, we employ full-parameter finetuning with bf16 mixed-precision (Micikevicius et al., 2018). The optimizer used was AdamW (Loshchilov and Hutter, 2019) with default parameters $(\\beta_{1} = 0.9, \\beta_{2} = 0.99)$ . A cosine decay learning rate schedule and a linear warmup over the first $5\\%$ of training steps are also applied. The context window of models is set to 4096 tokens.\n\nAcross all training phases, we adopt a consistent batch size of 64. The learning rates for the SFT and DPO phases are set to $1 \\times 10^{-5}$ and $1 \\times 10^{-6}$ , respectively, for models smaller than 10B, and $7 \\times 10^{-6}$ and $7 \\times 10^{-7}$ , respectively, for models larger than 10B. The $\\beta$ parameter for DPO is set to 0.1.\n\nAll models are trained for 4 epochs during the SFT phase, and the best checkpoint is selected to serve as the reference model in DPO, based on the maj@K metric on the development set. Training is then continued for 8 epochs during the DPO phase.\n\nUnless otherwise specified, during inference time across all stages (including chain-of-thought synthesis), the sampling budget is set to 16, with the temperature and top $K$ parameters set to 1.0 and 32, respectively.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.1031::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiment setup",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.1031::sections::4.4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.4",
+      "section_title": "implementation details",
+      "evidence": "We select 10 base models from various model families, including Deepseek (Bi et al., 2024; Guo et al., 2024), Qwen (Yang et al., 2024a; Hui et al., 2024), Llama (Dubey et al., 2024; Roziere et al., 2023), and CodeS (Li et al., 2024a). These models cover different specialties (general-purpose, code or SQL-specific) and range from 6.7B to 15B parameters. For each LLM, we conduct SFT and DPO using either the original training dataset (Vanilla) or\n\nthe CoT-enhanced dataset (Syn CoT). More implementation details are listed in Appendix D. Details about training data can be found in Appendix E."
+    },
+    {
+      "source_window_id": "2025.acl-long.1031::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "preliminary experiments on dpo tricks",
+      "evidence": "Before exploring chain-of-thought reasoning, we extensively experiment with applying various DPO tricks to the original Bird dataset. This included hyperparameter tuning, using different loss variants, and exploring alternative preference data construction strategies. Specifically, for hyperparameter tuning, we evaluate different values of the $\\beta$ parameter in DPO, testing 0.05 and 0.2 (the default value is 0.1). For loss variants, we experiment with augmenting the DPO loss by incorporating the SFT loss for correct responses (i.e., the correct sampled SQL queries). Additionally, we explore replacing DPO with its variant, KTO (Ethayarajh et al., 2024). For preference data construction strategies, we follow SENSE (Yang et al., 2024c) to fine-tune a small-scale language model, Deepseek-coder-1.3b-instruct, on Bird's training set to collect preference data. The results, summarized in Table 7, show that none of these approaches yield significant performance improvements for DPO.\n\nTable 7: Even with tricks applied, DPO still struggles to improve model performance on the Bird dataset (greedy decoding). The base model is Qwen2.5-7B-Instruct.   \n\n<table><tr><td colspan=\"2\">DPO Tricks (SFT=58.8%)</td></tr><tr><td colspan=\"2\">Hyper-parameter Tuning</td></tr><tr><td>β=0.05</td><td>β=0.2</td></tr><tr><td>57.6% (-1.2%)</td><td>57.8% (-1.0%)</td></tr><tr><td colspan=\"2\">Loss Variants</td></tr><tr><td>+SFT Loss</td><td>KTO</td></tr><tr><td>60.0% (+1.2%)</td><td>59.8% (+1.0%)</td></tr><tr><td colspan=\"2\">Data Construction Strategies</td></tr><tr><td colspan=\"2\">SENSE (Yang et al., 2024c)</td></tr><tr><td colspan=\"2\">58.4% (-0.4%)</td></tr></table>"
+    },
+    {
+      "source_window_id": "2025.acl-long.1031::appendix::E",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "E",
+      "section_title": "training data details",
+      "evidence": "Quantity. In Bird dataset, the Vanilla SFT data consists of 9,428 instances, while the CoT SFT data consists of $9,428 \\times K$ instances (for Table 1, $K = 16$ , as we generate 16 CoT solutions for each training sample in the original dataset).\n\nThe size of the DPO training data is smaller than that of the SFT training data and is model-dependent. This is because, during the construction of the preference data, we exclude data samples for which all SFT model-generated CoT solutions are either entirely correct or entirely incorrect. As a result, both Vanilla and Syn CoT preference datasets contain approximately 1.5k-2.5k preference pairs (e.g., Qwen-7b-Instruct Syn CoT has 1,546 pairs). The relationship between sample budgets and the quantity of DPO training data is illustrated in Figure 15 and Figure 16.\n\nConstruction of Input-Output Sequences and Their Average Length. Input prompt has an av\n\nerage length of 965 tokens, which is the same for Vanilla and Syn CoT settings. The input prompt includes not only the question but also database information, such as table and column names, primary and foreign key relationships, and potentially useful database values. Following CodeS (Li et al., 2024a), we first use a schema item classifier to identify the most relevant tables and columns based on the question. To improve recall accuracy, we replace the backbone model of the classifier from RoBERTa-Large (355M) (Liu, 2019) to XLM-RoBERTa-XL (3.5B) (Goyal et al., 2021). We then use the \"coarse-to-fine\" database value-matching approach to retrieve question-related values from the database. The retrieved tables, columns, values, and remaining primary and foreign keys form the database prompt.\n\nThe output label of Vanilla (gold SQL in the Bird dataset) has an average length of 44 tokens, while the synthesized chain-of-thought solutions have an average length of 404 tokens. Reported token numbers is measured by the tokenizer of Qwen-7b-Instruct."
+    },
+    {
+      "source_window_id": "2025.acl-long.1031::appendix::J",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "J",
+      "section_title": "experiment design",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "D"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A800 PCIe 80 GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.1031\\auto\\full.md",
+    "source_md_sha256": "97a964af3c765acea3d8a700657e73d3e232be12e03435b020df9a154ed79c60",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

@@ -1,0 +1,135 @@
+{
+  "paper_id": "2025.emnlp-main.144",
+  "candidate_windows": [
+    {
+      "window_id": "2025.emnlp-main.144::sections::3",
+      "paper_id": "2025.emnlp-main.144",
+      "section_number": "3",
+      "section_title": "methods",
+      "normalized_section_title": "methods",
+      "window_text": "We introduce NUTMEG, a Bayesian model that estimates annotator competence and predicts item labels while retaining subpopulation-level disagreement (Figure 2). Our approach builds upon Bayesian model designs for items' and annotators' variation (e.g., Paun et al., 2O18). NUTMEG most closely resembles MACE (Hovy etal., 2013) which attempts to simultaneously learn the spamming rates of annotators and the item's likely label.\n\nOne key assumption of prior Bayesian models is that there exists a single correct label for each item agreed upon by annotators. In NUTMEG,we relax this assumption so that there exists a single correct label for each subpopulation that is always given by an annotator in that subpopulation when they try to. While real data likely has additional within-group variation, this simplifying assumption allows our model to focus on capturing systematic variation that is most relevant to downstream applications.\n\nTo incorporate subpopulation identity, the generative step of our model works as follows (also shown in 3): First, for each item $i$ and subpopulation $k$ , we sample the true subpopulation label $T _ { i k }$ from a uniform prior. Then, for each annotator $j$ ，\n\n![](images/0e43822e32054d10449ab5b65502703166dec3d0702b759f90374dbebe1420e0.jpg)  \nFigure 2: Plate diagram of NUTMEG. Annotator $j$ from subpopulation $k$ produces label $A _ { i j }$ on item $i$ . The label choice depends on the item's true label for subpopulation $k$ ， $T _ { i k }$ , and whether $j$ is spamming on $i$ ,modeled by binary variable $S _ { i j }$ $N = | i t e m s |$ ， $M = | a n n o t a t o r s |$ ， and $P = | s u b p o p u l a t i o n s |$   \nFigure 3: The generative process for NUTMEG. See the text for a full description of variables.\n\n$$\nT _ { i k } \\sim \\mathrm { U n i f o r m }\n$$\n\n$$\nS _ { i j } \\sim \\mathrm { B e r n o u l l i } ( 1 - \\theta _ { j } )\n$$\n\n$$\nA _ { i j } = T _ { i k }\n$$\n\n$$\nA _ { i j } \\sim \\mathrm { M u l t i n o m i a l } ( \\xi _ { j } )\n$$\n\nwe sample a binary variable $S _ { i j }$ from a Bernoulli distribution with parameter $1 - \\theta _ { j }$ $S _ { i j }$ represents whether annotator $j$ is spamming on item $i$ .If the annotator is not spamming,then they use the true label of their subpopulation to produce annotation $A _ { i j }$ . Otherwise, their annotation $A _ { i j }$ is sampled from a multinomial with parameter $\\xi _ { j }$ . The parameter $\\theta _ { j }$ represents the probability that annotator $j$ is not spamming on a given item; this is a measure of their competence. The parameter $\\xi _ { j }$ represents annotator $j$ 's individual behavior when they are spamming,which could produce the correct label, but only by chance.\n\nTo fit the model, we use Variational-Bayes training to maximize the probability of the observed\n\ndata:\n\n$$\n\\begin{array} { l } { { \\displaystyle P ( A ; \\theta , \\xi ) = \\sum _ { T , S } \\left[ \\prod _ { i = 1 } ^ { N } \\prod _ { k = 1 } ^ { P } P ( T _ { i k } ) \\cdot \\right. } } \\\\ { { \\displaystyle \\left. \\prod _ { i = 1 } ^ { N } \\prod _ { j = 1 } ^ { M } P ( S _ { i j } ; \\theta _ { j } ) \\cdot P ( A _ { i j } | S _ { i j } , T _ { i k } ; \\xi _ { j } ) \\right] } } \\end{array}\n$$\n\nWe train with symmetric Beta priors with parameters of 0.5 on $\\theta _ { j }$ and symmetric Dirichlet priors on $\\xi _ { j }$ . As identified in MACE, these priors model the extremes of behavior common in annotation (i.e., either an annotator often gives the correct label or they rarely give the correct label).However, NUTMEG also supports adjusting these priors should an end-user desire a more informed prior.\n\nBecause not every subpopulation is guaranteed to label every item,NUTMEG must handle items where there is an unobserved subpopulation $k _ { x }$ for item $i _ { x }$ . In those cases,we calculate the estimated label for the observed subpopulations of $i _ { x }$ ,then we identify the set of items that have the same estimated labels for those subpopulations and contain annotations from $k _ { x }$ . Finally, we take the average of the posterior probabilities for the items in this set to estimate the posterior of $T _ { i _ { x } k _ { x } }$ . For this process, we make the simplifying assumption that observed labels from different subpopulations are independent. Though this is often not the case, it allows us to use a larger number of items to estimate unobserved instances.Future work could explore more robust methods for estimating items’labels for unobserved subpopulations.We note that NUTMEG does not require the use of these imputed subpopulation truths,and for Experiment 3 (§6), we choose not to estimate unobserved samples to reduce the risk of introducing additional label noise.\n\nNUTMEG requires that each annotator be associated with a subpopulation label.  Given the NLP community's recent recognition of the importance of collecting information about the annotators themselves (Lerner et al., 2024; Santy et al., 2023; Mihalcea et al., 2O25) and the recent uptick in the creation of such datasets (e.g., Kumar et al., 2021; Sap et al., 2022; Pei and Jurgens, 2023), we believe that annotator data, like demographics, will be increasingly important and available.NUTMEG can use this data to better separate signal from noise in annotator disagreement. However, we note that NUTMEG does not require that subpopulations be derived from additional annotator data, like those collected from questionnaires. Instead, it can be combined with any unsupervised method for grouping annotators based on behavior (e.g., Vitsakis et al.,2O24),and the subpopulations can be derived from the resultant inferred groups.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.144::sections::4.1",
+      "paper_id": "2025.emnlp-main.144",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "To generate the synthetic data, we first create a set of 150 annotators and assign them randomly to one of two subpopulations, a majority and a minority, using an $80 \\%$ and $20 \\%$ split for this experiment. We then assign each annotator a spamming rate in [O,1]; these rates represent the probability that an annotator ignores their subpopulation's true label when labeling an item. The mean spamming rateacross individuals indicates the overall level of spam in the data. After generating our annotators,we create a set of 5OO items with two possible labels. We designate a proportion of the items as divisive according to a global divisiveness rate. For divisive items, the subpopulations will hold different true opinions,and for non-divisive items, they will hold the same true opinion. The divisiveness rate indicates the level of systematic disagreement in the data.\n\nTo simulate the annotation process for an item, we first decide whether each annotator is spamming based on their competence score. Spammers assign labels to the item randomly, while non-spammers provide the true opinion of their subpopulation. Finally, to simulate the availability of crowdsourced annotations we randomly sample from this dataset so that each item has 5 annotations and each annotator labels more than 2O items (average of 16.67 items per annotator). We will release this synthetic data and evaluation framework for future research on modeling subpopulation variation in annotation.\n\nTo evaluate how effective NUTMEG is at recovering ground truth, we use the above procedure to generate multiple synthetic datasets with different divisiveness rates varying from O to 1 and global spamming rates varying from O to O.25. We com",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.144::sections::5.1",
+      "paper_id": "2025.emnlp-main.144",
+      "section_number": "5.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "To test for the effect of minority subpopulation size during annotation, we repeat our synthetic data generation procedure from $\\ S 4$ ,but fix the global spam rate of O.1 and a global divisiveness rate of O.2. We then vary the size of the minority subpopulation from $10 \\%$ to $50 \\%$ and the total number of annotators sampled for each item from 3 to 15. Note that because annotators are randomly assigned to items, for settings with few annotations per item, some items may not receive any annotators by a person of the minority subpopulation, which mirrors real world settings.Finally, we run NUTMEG on the datasets and calculate an accuracy score to compare its estimates to the true opinions of the minority subpopulation.\n\n![](images/1d69146fc2f92d9544e402a0cdf23ee3e616316a42a61b888b4bca59feb6960c.jpg)  \nFigure 6: As the size of a subpopulation decreases, NUTMEG needs more annotations to ensure that the subpopulation is sufficiently represented and estimate its true opinions.This result highlights the importance of data collection strategies for representing minority subpopulations.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.144::sections::6.1",
+      "paper_id": "2025.emnlp-main.144",
+      "section_number": "6.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Dataset To effectively use NUTMEG, we require annotated data with metadata indicating which annotators belong to which subgroups.While NUTMEG can be used with inferred subpopulations that do not require additional data collection (as explained in $\\ S 3$ ),we opt to use demographics as a way to partition annotators to reduce potential confounds to the interpretation of the results introduced by clustering methods. Multiple works have noted meaningful variation by race and gender (Larimore et al.,2021; Sap et al., 2022; Pei and Jurgens,2023; Wan et al., 2023). We use data from PoPQUORN (Pei and Jurgens,2O23) which provides annotations on a 1-5 Likert scale for two classification tasks (i) offensiveness and (ii) politeness,and age, race,and education demographics of annotators. We replicate their preprocessing steps with two additions. We binarize the Likert ratings in their data at ${ \\ge } 3$ to simplify the analysis and communication of our results.We also remove subpopulations with $leq 5 \\%$ of annotations to ensure that the models are being trained with sufficient representation.\n\nWe note that though we choose to evaluate on data using annotator demographics to split subpopulations,NUTMEG does not necessarily require additional data collection as recent work has demonstrated the effcacy of clustering annotators into subpopulations based on annotator behaviors(Vitsakis et al., 2024).\n\nModeling For each task,we traina multi-task classification model, where a base model has separate classification heads for each subpopulation. This setup uses multiple tasks to represent salient disagreements and is a popular approach in learning from disagreement (e.g., Fornaciari et al., 2021; Mostafazadeh Davani et al.， 2O22; Mokhberian et al., 2024; Wang and Plank, 2023). Prior to training,we run NUTMEG on the training and validation sets using separate runs for each demographic category (i.e., gender, age, race,and education). We then fine-tune ModernBERT (Warner et al., 2024) models with additional classification layers for each subpopulation in a demographic (e.g., Man and Woman in gender). In this case, our multiple tasks are predicting the true subpopulation labels.\n\n![](images/49fb3adc00d9b8d7d8dd0eb209c8f2baff278e99a0926cd8da200800e2a3e861.jpg)  \nFigure 7: Performance at replicating the ground truth label distribution by subgroup (lower is bettr)using learning from disagreement models trained with diferent types of label aggregation.The bar height indicates the mean JSD across all subpopulations’labeldistribution in the test set,and eror bars indicate the total range of JSDacross all subpopulations. Our results show that any type of aggregation is helpful to reduce noise, but by jointly modeling subpopulation-preference with anotator competence,NUTMEG is better able to match the true label distributions.\n\nAs a baseline for standard aggregation methods, we also fine-tune single-task ModernBERT models on labels aggregated by either majority vote or MACE.³ Finally as a baseline for training on the full distribution of disaggregated annotations, we follow the popular approach of training a multitask model where each task is a different annotator in the dataset (Mostafazadeh Davani etal., 2022; Wang and Plank, 2023; Mokhberian et al., 2024). The final prediction for each subpopulation is then the average of the predicted probabilities for annotators in that subpopulation. Additional details on the training procedure are in Appendix B.\n\nEvaluation Recognizing the many causes of human label variation (Plank, 2022)，we measure model performance by comparing the predicted probabilities output by the model for each subpopulation (if it is multi-task) to the true distribution of labels provided by that subpopulation in the test set; in the single task setups,we use the same probability for each group. Following previous work, we quantify the similarity of these distributions with Jensen-Shannon divergence (JSD; Uma et al.,\n\n2021),where lower is better. Note that the set of annotators in the training and validation sets is entirely separate from the set of annotators in the test set, and we score using the label distribution of the full, disaggregated labels in the test set.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.144::sections::7",
+      "paper_id": "2025.emnlp-main.144",
+      "section_number": "7",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "In synthetic experiments, we show that NUTMEG is highly effective at distinguishing genuine systematic disagreement from noise in annotations.Then, through real-world experiments,we demonstrate that NUTMEG's ability to distinguish systematic disagreement can be combined with Learning from Disagreement models to improve performance on subjective classification tasks.In real scenarios, annotators may disagree for a variety of reasons (Sandri et al., 2O23), not all of which relate to a subpopulation identity. However, our results show subpopulation modeling is a promising direction for improving the representation and evaluation for the diverse stakeholders of NLP models(Cabitza et al., 2O23). This direction has many useful applications, like tailoring content moderation to differing community standards,helping social scientists identify differences in perceptions of bias based on political affliation, or enabling mental health models to distinguish between humor and expressions of depression in differing age groups.\n\nThough we consider these compelling use cases for NUTMEG, we also find that it does not always improve performance.For example,in the offensiveness detection task,we often encounter difficult cases that cannot be explained by the model. Some cases arise from inherent textual ambiguity, such as the statement “I'd almost forgotten that one.What a gem!,where it is unclear whether the author is being sincere or sarcastic, a well-known confound (cf. Basile et al., 2021; Sandri et al., 2023). Others depend on personal preferences not captured by our subpopulation splits,as in “You're a f—ing legend’, where the decision relies on whether an annotator considers vulgar language offensive. Such Though, we note that in this task,NUTMEG does not hurt performance compared to other methods.\n\nFrom these findings,we conclude that NUTMEG will be most effective when applied to tasks where there is a prior belief that subpopulations differ in their judgments or attitudes.Future work should consider how to balance the differing degrees of within-group variation, between-group variation, and inherent item difficulty in the diverse set of NLP tasks—as well as new approaches to automatically learn annotator subpopulations directly from annotations (e.g., Lo et al., 2023; Vitsakis et al., 2024).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.144::appendix::B",
+      "paper_id": "2025.emnlp-main.144",
+      "section_number": "B",
+      "section_title": "modeling details",
+      "normalized_section_title": "modeling details",
+      "window_text": "NUTMEG runs entirely on CPU and can be run on any reasonably equipped computer.\n\nWe trained the ModernBERT models with149M parameters on a single NVIDIA RTX A6OOO GPU Hugging Face Transformers 4.48.1 (Wolf et al., 2020) and PyTorch 2.5.1 (Paszke et al., 2019) on a CUDA 12.4 environment. All models were trained for 12 epochs with a batch size of 192 and were tuned for a learning rate in the range $[ 1 \\times 1 0 ^ { - 5 }$ ， $2 \\times$ $1 0 ^ { - 3 } ]$ with Optuna (Akiba et al., 2019). We use the train,validation,and test splits provided by the original PoPQUORN dataset (Pei and Jurgens, 2023). To ensure reproducibility, we set all random seeds in Python to be 42.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.emnlp-main.144::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX A6000",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "NUTMEG runs entirely on CPU and can be run on any reasonably equipped computer.\n\nWe trained the ModernBERT models with149M parameters on a single NVIDIA RTX A6OOO GPU Hugging Face Transformers 4.48.1 (Wolf et al., 2020) and PyTorch 2.5.1 (Paszke et al., 2019) on a CUDA 12.4 environment. All models were trained for 12 epochs with a batch size of 192 and were tuned for a learning rate in the range $[ 1 \\times 1 0 ^ { - 5 }$ ， $2 \\times$ $1 0 ^ { - 3 } ]$ with Optuna (Akiba et al., 2019). We use the train,validation,and test splits provided by the original PoPQUORN dataset (Pei and Jurgens, 2023). To ensure reproducibility, we set all random seeds in Python to be 42.",
+      "section_number": "B",
+      "section_title": "modeling details",
+      "normalized_section_title": "modeling details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.emnlp-main.144::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX A6000",
+      "cleaned_hardware_name": "nvidia rtx a6000",
+      "normalized_hardware_name": "NVIDIA RTX A6000",
+      "benchmark_hardware_name": "NVIDIA RTX A6000",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "B",
+      "section_title": "modeling details",
+      "normalized_section_title": "modeling details",
+      "evidence": "NUTMEG runs entirely on CPU and can be run on any reasonably equipped computer.\n\nWe trained the ModernBERT models with149M parameters on a single NVIDIA RTX A6OOO GPU Hugging Face Transformers 4.48.1 (Wolf et al., 2020) and PyTorch 2.5.1 (Paszke et al., 2019) on a CUDA 12.4 environment. All models were trained for 12 epochs with a batch size of 192 and were tuned for a learning rate in the range $[ 1 \\times 1 0 ^ { - 5 }$ ， $2 \\times$ $1 0 ^ { - 3 } ]$ with Optuna (Akiba et al., 2019). We use the train,validation,and test splits provided by the original PoPQUORN dataset (Pei and Jurgens, 2023). To ensure reproducibility, we set all random seeds in Python to be 42.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA RTX A6000",
+        "num": 1
+      }
+    ]
+  }
+}

@@ -1,0 +1,162 @@
+{
+  "paper_id": "2024.acl-long.320",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.320::sections::2",
+      "paper_id": "2024.acl-long.320",
+      "section_number": "2",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.320::sections::3",
+      "paper_id": "2024.acl-long.320",
+      "section_number": "3",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.320::appendix::B.4",
+      "paper_id": "2024.acl-long.320",
+      "section_number": "B.4",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "Relation to RL Fine-Tuning. Our method can be regarded as a special case of Eq. (3) with the following assumption: 1) We relax the reward computation in Eq. (3) and assume that every token in the ground-truth data can provide a positive process reward. 2) Sampling masked position has a similar effect with sampling new paths.Example: Sampled Correct Reasoning Paths of a SFT Model Question: Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did Natalia sell altogether in April and May?Answer1: 1. Natalia sold $48 / 2 = 24$ clips in May.   \n2. Natalia sold $48 + 24 = 72$ clips altogether in April and May.   \n3. The answer is 72Answer2: 1. Natalia sold $48 / 2 = 24$ clips in May.   \n2. She sold $48 + 24 = 72$ clips altogether in April and May.   \n3. The answer is 72Answer3: 1. Natalia sold $48 / 2 = 24$ clips in May.   \n2. The total number of clips sold by Natalia in April and May is $48 + 24 = 72$   \n3. The answer is 72Answer4: 1. The number of clips sold in May is $1 / 2 * 48 = 24$ .   \n2. Altogether, Natalia sold $48 + 24 = 72$ clips in April and May.   \n3. The answer is 72\n\nFigure 6: The sampled reasoning paths have minor differences, such as word substitution (orange part), rewriting of formulas(red part), rearrangement of syntax(brown part), but the correct intermediate steps are consistent (green part).\n\n$$\n\\begin{array}{l} \\mathcal {L} _ {M F T} = - \\sum_ {t = 1} ^ {T} \\log p (w _ {t} ^ {g t} | w _ {1: t - 1} ^ {s}) \\\\ = - \\sum_ {t = 1} ^ {T} R \\left(w _ {t}\\right) \\log p \\left(w _ {t} \\mid w _ {1: t - 1}; q\\right), \\tag {5} \\\\ \\end{array}\n$$\n\n$$\nR (w _ {t}) = \\left\\{ \\begin{array}{l l} 1, & \\text {i f} w _ {t} = w _ {t} ^ {g t}, \\\\ 0, & \\text {o t h e r w i s e}. \\end{array} \\right.\n$$\n\nFor assumption 1, since the ground truth is correct, there is no need to use the reward model for labeling, and most tokens are supposed to be associated with positive reward signals. For assumption 2, we think that it may hold when sampling of online RL is insufficient:\n\nDifferences in Sampling Compared to Online RL. Standard auto-regressive sampling can bring more reasoning paths to one query. However, we find that the sampled reasoning paths have minor differences in Fig. 6, such as word substitution (orange part), rewriting of formulas (red part), rearrangement of syntax (brown part), but the correct intermediate steps are consistent (green part).\n\nTherefore, for queries in the dataset, each of them already includes a ground truth response, which can provide rich process supervision signals of correct intermediate steps. MFT does not sample new correct reasoning steps but rather different preceding reasoning steps, allowing the model to predict the correct steps given different contexts. In short, the online RL sample new actions and states in a Markov Decision Process, while we sampled the state to make it partially observed. Adding noise to the state is verified to be helpful in generalizing for offline RL (Sinha et al., 2022), such as continuous noise on state embedding. We compare with other noise in Tab. 5, and we find that the discrete noise of MFT is more efficient.\n\nSample Efficiency. For online RL, it is necessary to sample diverse and better reasoning paths to achieve better results than using a static dataset. However, after SFT for initialization, the sampled paths of\n\nthe trained query will be very similar to the ground truth. If the sampling is sufficient and the reward model is strong enough to find high-quality reasoning paths that may have better generality and conciseness, RL can achieve better results. This can be the reason why RFT, which uses much more samples, performs similarly to ours, as RFT only samples for multiple paths at once and only uses outcome supervision. On the contrary, online RL can gain more benefits (Wang et al., 2023b).\n\nFor MFT, the sample efficiency is related to the mask ratio. A small mask ratio gives the model a chance to exploit current high-confidence context tokens, while a higher mask ratio requires the model to explore the use of other distant tokens.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.320::appendix::C",
+      "paper_id": "2024.acl-long.320",
+      "section_number": "C",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "Table 9: The table lists the implementation details with different datasets. The default setting for the mask ratio warmup steps is two-thirds of the total steps. We use random tokens as the noise for GSM8K-7K and [mask] for other datasets. We train on 8 NVIDIA A100 GPUs.   \n\n<table><tr><td>Base Model</td><td>Training Dataset</td><td>Learning Rate</td><td>Epoch</td><td>Method</td><td>batch size</td><td>Mask Ratio</td></tr><tr><td rowspan=\"12\">llama2-7B</td><td rowspan=\"2\">GSM8K</td><td>1e-5</td><td>3</td><td>SFT</td><td>64</td><td>0</td></tr><tr><td>1e-5</td><td>10</td><td>MFT</td><td>64</td><td>0.4</td></tr><tr><td rowspan=\"2\">MATH</td><td>1e-5</td><td>3</td><td>SFT</td><td>64</td><td>0</td></tr><tr><td>1e-5</td><td>10</td><td>MFT</td><td>64</td><td>0.2</td></tr><tr><td rowspan=\"2\">GSM8K-RFT-U33</td><td>1e-5</td><td>3</td><td>SFT</td><td>64</td><td>0</td></tr><tr><td>1e-5</td><td>5</td><td>MFT</td><td>64</td><td>0.4</td></tr><tr><td rowspan=\"2\">GSM8K-RFT-100</td><td>1e-5</td><td>3</td><td>SFT</td><td>64</td><td>0</td></tr><tr><td>1e-5</td><td>5</td><td>SFT</td><td>64</td><td>0.4</td></tr><tr><td rowspan=\"2\">MetaMathQA</td><td>2e-5</td><td>3</td><td>SFT</td><td>128</td><td>0</td></tr><tr><td>2e-5</td><td>5</td><td>MFT</td><td>128</td><td>0.2</td></tr><tr><td rowspan=\"2\">MathInstruct</td><td>2e-5</td><td>3</td><td>SFT</td><td>128</td><td>0</td></tr><tr><td>2e-5</td><td>5</td><td>MFT</td><td>128</td><td>0.2</td></tr><tr><td rowspan=\"10\">Mistral-7B</td><td rowspan=\"2\">GSM8K</td><td>1e-6</td><td>3</td><td>SFT</td><td>64</td><td>0</td></tr><tr><td>1e-6</td><td>10</td><td>MFT</td><td>64</td><td>0.4</td></tr><tr><td rowspan=\"2\">MATH</td><td>1e-6</td><td>3</td><td>SFT</td><td>64</td><td>0</td></tr><tr><td>1e-6</td><td>3</td><td>MFT</td><td>64</td><td>0.1</td></tr><tr><td rowspan=\"2\">GSM8K-RFT-U33</td><td>1e-6</td><td>3</td><td>SFT</td><td>128</td><td>0</td></tr><tr><td>1e-6</td><td>3</td><td>MFT</td><td>128</td><td>0.4</td></tr><tr><td rowspan=\"2\">MetaMathQA</td><td>3e-6</td><td>3</td><td>SFT</td><td>256</td><td>0</td></tr><tr><td>3e-6</td><td>5</td><td>MFT</td><td>256</td><td>0.2</td></tr><tr><td rowspan=\"2\">MathInstruct</td><td>5e-6</td><td>3</td><td>SFT</td><td>256</td><td>0</td></tr><tr><td>5e-6</td><td>5</td><td>MFT</td><td>256</td><td>0.2</td></tr><tr><td rowspan=\"4\">llama2-13B</td><td rowspan=\"2\">GSM8K</td><td>1e-5</td><td>3</td><td>SFT</td><td>64</td><td>0</td></tr><tr><td>1e-5</td><td>10</td><td>MFT</td><td>64</td><td>0.4</td></tr><tr><td rowspan=\"2\">GSM8K-RFT-100</td><td>1e-5</td><td>3</td><td>SFT</td><td>64</td><td>0</td></tr><tr><td>1e-5</td><td>5</td><td>MFT</td><td>64</td><td>0.4</td></tr></table>\n\n![](images/a1f61f75c8d0f331dcf200660379ec30389e598eb3b9b961e3aab75911806f86.jpg)  \n(a) Both tokens are in the chain of thought.\n\n![](images/58ce37e19c1e8da380565355645e1dc53f0e9e2e69463fd6b3ac8f192e0f24a2.jpg)  \n(b) The first token is in the mathematical question and the second is in the chain of thought.   \nFigure 7: Mistral-7B, GSM8K\n\n![](images/13d44d6c2b47b2894f8c3ffccc102d61ea882dddc212c6d0bcc4b9565f74d000.jpg)  \n(a) Both tokens are in the chain of thought.\n\n![](images/8054c553c53da09f198eea346e1636b8eea14fe7078e580f7c3ebd2223a1b664.jpg)  \n(b) The first token is in the mathematical question and the second is in the chain of thought.   \nFigure 8: Mistral-7B, MetaMathQA\n\n![](images/963a999f9a5a6d718d7c06d91b31ef570cbe99ac014171b3b21f52b55d01d3d0.jpg)  \n(a) Both tokens are in the chain of thought.\n\n![](images/d4acb5de3ae3bbce25ac1468f1007108b16aaba8c60a040a54fb6331b66f4d28.jpg)  \n(b) The first token is in the mathematical question and the second is in the chain of thought.   \nFigure 9: Lllama-2-7B, MathInstruct",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2024.acl-long.320::appendix::I",
+      "paper_id": "2024.acl-long.320",
+      "section_number": "I",
+      "section_title": "experiments on alpaca",
+      "normalized_section_title": "experiments on alpaca",
+      "window_text": "![](images/a1ea051ecb86892b56446b12e35becacb869d6b99e0760379fa46eec7bbd0f05.jpg)\n\n![](images/a877279691581ff9bd4b17eebac87faa59c5fee05d17f6f902b9670ac6a98ffc.jpg)  \nFigure 13: We conduct experiments across two datasets to investigate the impacts of datasets on dependency. Left: Llama-GSM8K. Right: Llama-Alpaca. Training on Alpaca does not enhance the dependency as well as on GSM8K. Impact of Datasets on Learning Dependency. We investigate the impact of different datasets on the effectiveness of the MFT technique, specifically, which types of data are best suited for MFT in Fig. 13. Our experiments focus on the Alpaca dataset (Taori et al., 2023), a general instruction set with minimal mathematical reasoning content. The results reveal significant differences between the Alpaca and GSM8K datasets. Training with MFT using the Alpaca dataset does not alter dependency relationships a lot, verifying our hypothesis. MFT enhances the model's ability to learn long-distance dependencies within the data. The absence of such dependencies in data renders MFT less effective. Additionally, we assess whether MFT could detrimentally influence the model's general conversational capabilities. According to the results presented in Appendix I, the scores of Alpaca-eval (Li et al., 2023b) using both MFT and SFT were comparable.\n\nTable 16: Comparison of different methods trained on Alpaca. MFT does not hurt the performance but also has no gain.   \n\n<table><tr><td>Model Name</td><td>Alpaca-eval</td><td>Length</td></tr><tr><td>llama7B_Alpaca_mft</td><td>23.00</td><td>414</td></tr><tr><td>llama7B_Alpaca_sft</td><td>23.00</td><td>394</td></tr><tr><td>llama7B_Alpaca_NEFTune5</td><td>63.93</td><td>1063</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.320::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Table 9: The table lists the implementation details with different datasets. The default setting for the mask ratio warmup steps is two-thirds of the total steps. We use random tokens as the noise for GSM8K-7K and [mask] for other datasets. We train on 8 NVIDIA A100 GPUs.   \n\n<table><tr><td>Base Model</td><td>Training Dataset</td><td>Learning Rate</td><td>Epoch</td><td>Method</td><td>batch size</td><td>Mask Ratio</td></tr><tr><td rowspan=\"12\">llama2-7B</td><td rowspan=\"2\">GSM8K</td><td>1e-5</td><td>3</td><td>SFT</td><td>64</td><td>0</td></tr><tr><td>1e-5</td><td>10</td><td>MFT</td><td>64</td><td>0.4</td></tr><tr><td rowspan=\"2\">MATH</td><td>1e-5</td><td>3</td><td>SFT</td><td>64</td><td>0</td></tr><tr><td>1e-5</td><td>10</td><td>MFT</td><td>64</td><td>0.2</td></tr><tr><td rowspan=\"2\">GSM8K-RFT-U33</td><td>1e-5</td><td>3</td><td>SFT</td><td>64</td><td>0</td></tr><tr><td>1e-5</td><td>5</td><td>MFT</td><td>64</td><td>0.4</td></tr><tr><td rowspan=\"2\">GSM8K-RFT-100</td><td>1e-5</td><td>3</td><td>SFT</td><td>64</td><td>0</td></tr><tr><td>1e-5</td><td>5</td><td>SFT</td><td>64</td><td>0.4</td></tr><tr><td rowspan=\"2\">MetaMathQA</td><td>2e-5</td><td>3</td><td>SFT</td><td>128</td><td>0</td></tr><tr><td>2e-5</td><td>5</td><td>MFT</td><td>128</td><td>0.2</td></tr><tr><td rowspan=\"2\">MathInstruct</td><td>2e-5</td><td>3</td><td>SFT</td><td>128</td><td>0</td></tr><tr><td>2e-5</td><td>5</td><td>MFT</td><td>128</td><td>0.2</td></tr><tr><td rowspan=\"10\">Mistral-7B</td><td rowspan=\"2\">GSM8K</td><td>1e-6</td><td>3</td><td>SFT</td><td>64</td><td>0</td></tr><tr><td>1e-6</td><td>10</td><td>MFT</td><td>64</td><td>0.4</td></tr><tr><td rowspan=\"2\">MATH</td><td>1e-6</td><td>3</td><td>SFT</td><td>64</td><td>0</td></tr><tr><td>1e-6</td><td>3</td><td>MFT</td><td>64</td><td>0.1</td></tr><tr><td rowspan=\"2\">GSM8K-RFT-U33</td><td>1e-6</td><td>3</td><td>SFT</td><td>128</td><td>0</td></tr><tr><td>1e-6</td><td>3</td><td>MFT</td><td>128</td><td>0.4</td></tr><tr><td rowspan=\"2\">MetaMathQA</td><td>3e-6</td><td>3</td><td>SFT</td><td>256</td><td>0</td></tr><tr><td>3e-6</td><td>5</td><td>MFT</td><td>256</td><td>0.2</td></tr><tr><td rowspan=\"2\">MathInstruct</td><td>5e-6</td><td>3</td><td>SFT</td><td>256</td><td>0</td></tr><tr><td>5e-6</td><td>5</td><td>MFT</td><td>256</td><td>0.2</td></tr><tr><td rowspan=\"4\">llama2-13B</td><td rowspan=\"2\">GSM8K</td><td>1e-5</td><td>3</td><td>SFT</td><td>64</td><td>0</td></tr><tr><td>1e-5</td><td>10</td><td>MFT</td><td>64</td><td>0.4</td></tr><tr><td rowspan=\"2\">GSM8K-RFT-100</td><td>1e-5</td><td>3</td><td>SFT</td><td>64</td><td>0</td></tr><tr><td>1e-5</td><td>5</td><td>MFT</td><td>64</td><td>0.4</td></tr></table>\n\n![](images/a1f61f75c8d0f331dcf200660379ec30389e598eb3b9b961e3aab75911806f86.jpg)  \n(a) Both tokens are in the chain of thought.\n\n![](images/58ce37e19c1e8da380565355645e1dc53f0e9e2e69463fd6b3ac8f192e0f24a2.jpg)  \n(b) The first token is in the mathematical question and the second is in the chain of thought.   \nFigure 7: Mistral-7B, GSM8K\n\n![](images/13d44d6c2b47b2894f8c3ffccc102d61ea882dddc212c6d0bcc4b9565f74d000.jpg)  \n(a) Both tokens are in the chain of thought.\n\n![](images/8054c553c53da09f198eea346e1636b8eea14fe7078e580f7c3ebd2223a1b664.jpg)  \n(b) The first token is in the mathematical question and the second is in the chain of thought.   \nFigure 8: Mistral-7B, MetaMathQA\n\n![](images/963a999f9a5a6d718d7c06d91b31ef570cbe99ac014171b3b21f52b55d01d3d0.jpg)  \n(a) Both tokens are in the chain of thought.\n\n![](images/d4acb5de3ae3bbce25ac1468f1007108b16aaba8c60a040a54fb6331b66f4d28.jpg)  \n(b) The first token is in the mathematical question and the second is in the chain of thought.   \nFigure 9: Lllama-2-7B, MathInstruct",
+      "section_number": "C",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.320::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "C",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "Table 9: The table lists the implementation details with different datasets. The default setting for the mask ratio warmup steps is two-thirds of the total steps. We use random tokens as the noise for GSM8K-7K and [mask] for other datasets. We train on 8 NVIDIA A100 GPUs.   \n\n<table><tr><td>Base Model</td><td>Training Dataset</td><td>Learning Rate</td><td>Epoch</td><td>Method</td><td>batch size</td><td>Mask Ratio</td></tr><tr><td rowspan=\"12\">llama2-7B</td><td rowspan=\"2\">GSM8K</td><td>1e-5</td><td>3</td><td>SFT</td><td>64</td><td>0</td></tr><tr><td>1e-5</td><td>10</td><td>MFT</td><td>64</td><td>0.4</td></tr><tr><td rowspan=\"2\">MATH</td><td>1e-5</td><td>3</td><td>SFT</td><td>64</td><td>0</td></tr><tr><td>1e-5</td><td>10</td><td>MFT</td><td>64</td><td>0.2</td></tr><tr><td rowspan=\"2\">GSM8K-RFT-U33</td><td>1e-5</td><td>3</td><td>SFT</td><td>64</td><td>0</td></tr><tr><td>1e-5</td><td>5</td><td>MFT</td><td>64</td><td>0.4</td></tr><tr><td rowspan=\"2\">GSM8K-RFT-100</td><td>1e-5</td><td>3</td><td>SFT</td><td>64</td><td>0</td></tr><tr><td>1e-5</td><td>5</td><td>SFT</td><td>64</td><td>0.4</td></tr><tr><td rowspan=\"2\">MetaMathQA</td><td>2e-5</td><td>3</td><td>SFT</td><td>128</td><td>0</td></tr><tr><td>2e-5</td><td>5</td><td>MFT</td><td>128</td><td>0.2</td></tr><tr><td rowspan=\"2\">MathInstruct</td><td>2e-5</td><td>3</td><td>SFT</td><td>128</td><td>0</td></tr><tr><td>2e-5</td><td>5</td><td>MFT</td><td>128</td><td>0.2</td></tr><tr><td rowspan=\"10\">Mistral-7B</td><td rowspan=\"2\">GSM8K</td><td>1e-6</td><td>3</td><td>SFT</td><td>64</td><td>0</td></tr><tr><td>1e-6</td><td>10</td><td>MFT</td><td>64</td><td>0.4</td></tr><tr><td rowspan=\"2\">MATH</td><td>1e-6</td><td>3</td><td>SFT</td><td>64</td><td>0</td></tr><tr><td>1e-6</td><td>3</td><td>MFT</td><td>64</td><td>0.1</td></tr><tr><td rowspan=\"2\">GSM8K-RFT-U33</td><td>1e-6</td><td>3</td><td>SFT</td><td>128</td><td>0</td></tr><tr><td>1e-6</td><td>3</td><td>MFT</td><td>128</td><td>0.4</td></tr><tr><td rowspan=\"2\">MetaMathQA</td><td>3e-6</td><td>3</td><td>SFT</td><td>256</td><td>0</td></tr><tr><td>3e-6</td><td>5</td><td>MFT</td><td>256</td><td>0.2</td></tr><tr><td rowspan=\"2\">MathInstruct</td><td>5e-6</td><td>3</td><td>SFT</td><td>256</td><td>0</td></tr><tr><td>5e-6</td><td>5</td><td>MFT</td><td>256</td><td>0.2</td></tr><tr><td rowspan=\"4\">llama2-13B</td><td rowspan=\"2\">GSM8K</td><td>1e-5</td><td>3</td><td>SFT</td><td>64</td><td>0</td></tr><tr><td>1e-5</td><td>10</td><td>MFT</td><td>64</td><td>0.4</td></tr><tr><td rowspan=\"2\">GSM8K-RFT-100</td><td>1e-5</td><td>3</td><td>SFT</td><td>64</td><td>0</td></tr><tr><td>1e-5</td><td>5</td><td>MFT</td><td>64</td><td>0.4</td></tr></table>\n\n![](images/a1f61f75c8d0f331dcf200660379ec30389e598eb3b9b961e3aab75911806f86.jpg)  \n(a) Both tokens are in the chain of thought.\n\n![](images/58ce37e19c1e8da380565355645e1dc53f0e9e2e69463fd6b3ac8f192e0f24a2.jpg)  \n(b) The first token is in the mathematical question and the second is in the chain of thought.   \nFigure 7: Mistral-7B, GSM8K\n\n![](images/13d44d6c2b47b2894f8c3ffccc102d61ea882dddc212c6d0bcc4b9565f74d000.jpg)  \n(a) Both tokens are in the chain of thought.\n\n![](images/8054c553c53da09f198eea346e1636b8eea14fe7078e580f7c3ebd2223a1b664.jpg)  \n(b) The first token is in the mathematical question and the second is in the chain of thought.   \nFigure 8: Mistral-7B, MetaMathQA\n\n![](images/963a999f9a5a6d718d7c06d91b31ef570cbe99ac014171b3b21f52b55d01d3d0.jpg)  \n(a) Both tokens are in the chain of thought.\n\n![](images/d4acb5de3ae3bbce25ac1468f1007108b16aaba8c60a040a54fb6331b66f4d28.jpg)  \n(b) The first token is in the mathematical question and the second is in the chain of thought.   \nFigure 9: Lllama-2-7B, MathInstruct",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.acl-long.320::sections::2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "2",
+      "section_title": "methodology",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.acl-long.320::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.acl-long.320::appendix::B.4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B.4",
+      "section_title": "discussion",
+      "evidence": "Relation to RL Fine-Tuning. Our method can be regarded as a special case of Eq. (3) with the following assumption: 1) We relax the reward computation in Eq. (3) and assume that every token in the ground-truth data can provide a positive process reward. 2) Sampling masked position has a similar effect with sampling new paths.Example: Sampled Correct Reasoning Paths of a SFT Model Question: Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did Natalia sell altogether in April and May?Answer1: 1. Natalia sold $48 / 2 = 24$ clips in May.   \n2. Natalia sold $48 + 24 = 72$ clips altogether in April and May.   \n3. The answer is 72Answer2: 1. Natalia sold $48 / 2 = 24$ clips in May.   \n2. She sold $48 + 24 = 72$ clips altogether in April and May.   \n3. The answer is 72Answer3: 1. Natalia sold $48 / 2 = 24$ clips in May.   \n2. The total number of clips sold by Natalia in April and May is $48 + 24 = 72$   \n3. The answer is 72Answer4: 1. The number of clips sold in May is $1 / 2 * 48 = 24$ .   \n2. Altogether, Natalia sold $48 + 24 = 72$ clips in April and May.   \n3. The answer is 72\n\nFigure 6: The sampled reasoning paths have minor differences, such as word substitution (orange part), rewriting of formulas(red part), rearrangement of syntax(brown part), but the correct intermediate steps are consistent (green part).\n\n$$\n\\begin{array}{l} \\mathcal {L} _ {M F T} = - \\sum_ {t = 1} ^ {T} \\log p (w _ {t} ^ {g t} | w _ {1: t - 1} ^ {s}) \\\\ = - \\sum_ {t = 1} ^ {T} R \\left(w _ {t}\\right) \\log p \\left(w _ {t} \\mid w _ {1: t - 1}; q\\right), \\tag {5} \\\\ \\end{array}\n$$\n\n$$\nR (w _ {t}) = \\left\\{ \\begin{array}{l l} 1, & \\text {i f} w _ {t} = w _ {t} ^ {g t}, \\\\ 0, & \\text {o t h e r w i s e}. \\end{array} \\right.\n$$\n\nFor assumption 1, since the ground truth is correct, there is no need to use the reward model for labeling, and most tokens are supposed to be associated with positive reward signals. For assumption 2, we think that it may hold when sampling of online RL is insufficient:\n\nDifferences in Sampling Compared to Online RL. Standard auto-regressive sampling can bring more reasoning paths to one query. However, we find that the sampled reasoning paths have minor differences in Fig. 6, such as word substitution (orange part), rewriting of formulas (red part), rearrangement of syntax (brown part), but the correct intermediate steps are consistent (green part).\n\nTherefore, for queries in the dataset, each of them already includes a ground truth response, which can provide rich process supervision signals of correct intermediate steps. MFT does not sample new correct reasoning steps but rather different preceding reasoning steps, allowing the model to predict the correct steps given different contexts. In short, the online RL sample new actions and states in a Markov Decision Process, while we sampled the state to make it partially observed. Adding noise to the state is verified to be helpful in generalizing for offline RL (Sinha et al., 2022), such as continuous noise on state embedding. We compare with other noise in Tab. 5, and we find that the discrete noise of MFT is more efficient.\n\nSample Efficiency. For online RL, it is necessary to sample diverse and better reasoning paths to achieve better results than using a static dataset. However, after SFT for initialization, the sampled paths of\n\nthe trained query will be very similar to the ground truth. If the sampling is sufficient and the reward model is strong enough to find high-quality reasoning paths that may have better generality and conciseness, RL can achieve better results. This can be the reason why RFT, which uses much more samples, performs similarly to ours, as RFT only samples for multiple paths at once and only uses outcome supervision. On the contrary, online RL can gain more benefits (Wang et al., 2023b).\n\nFor MFT, the sample efficiency is related to the mask ratio. A small mask ratio gives the model a chance to exploit current high-confidence context tokens, while a higher mask ratio requires the model to explore the use of other distant tokens."
+    },
+    {
+      "source_window_id": "2024.acl-long.320::appendix::I",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "I",
+      "section_title": "experiments on alpaca",
+      "evidence": "![](images/a1ea051ecb86892b56446b12e35becacb869d6b99e0760379fa46eec7bbd0f05.jpg)\n\n![](images/a877279691581ff9bd4b17eebac87faa59c5fee05d17f6f902b9670ac6a98ffc.jpg)  \nFigure 13: We conduct experiments across two datasets to investigate the impacts of datasets on dependency. Left: Llama-GSM8K. Right: Llama-Alpaca. Training on Alpaca does not enhance the dependency as well as on GSM8K. Impact of Datasets on Learning Dependency. We investigate the impact of different datasets on the effectiveness of the MFT technique, specifically, which types of data are best suited for MFT in Fig. 13. Our experiments focus on the Alpaca dataset (Taori et al., 2023), a general instruction set with minimal mathematical reasoning content. The results reveal significant differences between the Alpaca and GSM8K datasets. Training with MFT using the Alpaca dataset does not alter dependency relationships a lot, verifying our hypothesis. MFT enhances the model's ability to learn long-distance dependencies within the data. The absence of such dependencies in data renders MFT less effective. Additionally, we assess whether MFT could detrimentally influence the model's general conversational capabilities. According to the results presented in Appendix I, the scores of Alpaca-eval (Li et al., 2023b) using both MFT and SFT were comparable.\n\nTable 16: Comparison of different methods trained on Alpaca. MFT does not hurt the performance but also has no gain.   \n\n<table><tr><td>Model Name</td><td>Alpaca-eval</td><td>Length</td></tr><tr><td>llama7B_Alpaca_mft</td><td>23.00</td><td>414</td></tr><tr><td>llama7B_Alpaca_sft</td><td>23.00</td><td>394</td></tr><tr><td>llama7B_Alpaca_NEFTune5</td><td>63.93</td><td>1063</td></tr></table>"
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "C"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2024\\2024.acl-long.320\\auto\\full.md",
+    "source_md_sha256": "6a431c7fa3377f5998bbfa834ea321b1e753155f535d2de74eac3b157d352547",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "ad96f3b6ca003898756db958dd17467668c845886fa3f1f835d26a866c8af3f0"
+  }
+}

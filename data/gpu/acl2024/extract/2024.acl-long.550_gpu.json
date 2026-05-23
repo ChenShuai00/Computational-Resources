@@ -1,0 +1,172 @@
+{
+  "paper_id": "2024.acl-long.550",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.550::sections::3.1",
+      "paper_id": "2024.acl-long.550",
+      "section_number": "3.1",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "We consider facts, such as \"The mother of Stevie Wonder is Lula\", as triplets $(e,r,e^{\\prime})$ of a subject entity $e$ (e.g., Superstition), a relation $r$ (e.g., mother), and an object entity $e^{\\prime}$ (e.g., Lula). Specifically, in our analysis, we focus on triplets where $e^{\\prime}$ is the only or the most well-known object entity for the relation $r$ for $e$ (e.g. the only mother of Stevie Wonder is Lula), and view $r$ as a function $e^{\\prime} = r(e)$ , where $r(e)$ is the function expression and $e^{\\prime}$ is the value of the expression. We analyze how LLMs process the composition of two facts with a bridge entity $e_2$ connecting them, $((e_1,r_1,e_2),(e_2,r_2,e_3))$ , of which the composition is represented as $r_2(r_1(e_1))$ . An example is shown in Table 1.\n\nTo query LLMs, we use a template $\\tau(\\cdot)$ to convert expressions $r_2(e_2)$ or $r_2(r_1(e_1))$ into a prompt that can be completed correctly by the value of the given expression. For instance, the single-hop expression mother(Stevie Wonder) could be converted by $\\tau(\\text{mother}(\\text{Stevie Wonder}))$ to the prompt \"The mother of Stevie Wonder is\", which can be correctly completed with \"Lula\". Similarly, the two-hop expression\n\nmother(singer(Superstition)) could be phrased by $\\tau$ (mother(singer(Superstition))) as \"The mother of the singer of 'Superstition' is\" with the same correct completion. While $\\tau (r_{2}(e_{2}))$ and $\\tau (r_2(r_1(e_1)))$ have the same answer (\"Lula\"), the latter requires recalling two facts rather than one. Therefore, we call $\\tau (r_2(e_2))$ a one-hop prompt and $\\tau (r_2(r_1(e_1)))$ a two-hop prompt, and denote them as $\\tau_{\\mathrm{1H}}$ and $\\tau_{\\mathrm{2H}}$ , respectively.\n\nWe assume that the two-hop prompts yielded by $\\tau(\\cdot)$ for $r_2(r_1(e_1))$ always contain a noun phrase description of the bridge entity $e_2$ using $e_1$ and $r_1$ , e.g., \"the singer of 'Superstition'\" for Stevie Wonder. We denote this description as $\\mu(r_1(e_1))$ and call it the descriptive mention of the bridge entity $e_2$ .\n\nLast, we denote the type of the fact composition of a two-hop prompt as \"type $(r_2)$ of type $(e_1)$ 's type $(r_1)$ \", where \"type $(e_1)$ 's type $(r_1)$ \" represents the type of the bridge entity's descriptive mention in the prompt. For example, the fact composition type of $\\tau$ (mother(singer(Superstition))) would be \"mother of song's singer\".",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.550::sections::5.2",
+      "paper_id": "2024.acl-long.550",
+      "section_number": "5.2",
+      "section_title": "experiment",
+      "normalized_section_title": "experiment",
+      "window_text": "Given ENTREC, we answer RQ1 by measuring how often the internal recall of $e_2$ improves at layer $l$ when modifying a two-hop prompt from $\\tau_{2\\mathrm{H}}^{\\prime}$ to $\\tau_{2\\mathrm{H}}$ , where $\\tau_{2\\mathrm{H}}^{\\prime}$ does not contain the descriptive mention of $e_2$ while $\\tau_{2\\mathrm{H}}$ does. To be specific, we measure the relative frequency of $\\tau_{2\\mathrm{H}}$ in TWOHOPFACT where $\\mathrm{ENTREC}^{l}(e_{2},\\tau_{2\\mathrm{H}}) > \\mathrm{ENTREC}^{l}(e_{2},\\tau_{2\\mathrm{H}}^{\\prime})$ .\n\nTo construct $\\tau_{2\\mathrm{H}}^{\\prime}$ , we alter the descriptive mention of the bridge entity in $\\tau_{2\\mathrm{H}}$ in two ways: by replacing $e_1$ with $e_1^\\prime$ such that $\\mu (r_1(e_1'))$ does not point to $e_2$ , or $r_1$ with $r_1^\\prime$ to ensure $\\mu (r_1'(e_1))$ does not refer to $e_2$ . Examples include substituting \"the singer of 'Superstition'\" in $\\tau_{2\\mathrm{H}}$ to \"the singer of 'Thriller'\" or \"a plagiarist of 'Superstition'\". These adjustments are termed entity substitution and relation substitution, respectively.\n\nFor each two-hop prompt $\\tau_{2\\mathrm{H}}$ in TWOHOPFACT, we randomly select one $e_1^\\prime$ from the same fact composition type and one $r_1^\\prime$ from a set of predefined candidate relations (provided in Appendix Table 5) to create $\\tau_{2\\mathrm{H}}^{\\prime}$ . We then measure the relative frequency of cases where replacing $\\tau_{2\\mathrm{H}}^{\\prime}$ with $\\tau_{2\\mathrm{H}}$ via entity or relation substitution increases the recall of $e_2$ . A relative frequency above 0.5 suggests the LLM's chance to perform first-hop reasoning exceeds the random chance for these prompts.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.550::sections::6.2",
+      "paper_id": "2024.acl-long.550",
+      "section_number": "6.2",
+      "section_title": "experiment",
+      "normalized_section_title": "experiment",
+      "window_text": "Given ENTREC and CNSTSCORE, we answer RQ2 by measuring how often increasing the recall of the bridge entity $e_2$ at the $l$ -th layer increases the LLM's consistency in answering the two-hop prompt with respect to the one-hop prompt. In other words, we examine whether in\n\ncreasing $\\mathrm{ENTREC}^l (e_2,\\tau_{\\mathrm{2H}})$ leads to increasing CNSTSCORE( $\\tau_{\\mathrm{2H}},\\tau_{\\mathrm{1H}}$\n\nWe would have been able to use differential calculus to obtain the answer by calculating the direction of change if $\\mathrm{CNSTSCORE}(\\tau_{2\\mathrm{H}},\\tau_{1\\mathrm{H}})$ were directly dependent on $\\mathrm{ENTREC}^l (e_2,\\tau_{2\\mathrm{H}})$ . However, there exists no direct functional dependency between the two values. Instead, we leverage the shared reliance of both metrics on $\\mathbf{x}^l$ for computation where $l\\in [0,L - 1),^3$ redefining them as $\\mathrm{ENTREC}(\\mathbf{x}^l)$ and $\\mathrm{CNSTSCORE}(\\mathbf{x}^l)$ relative to $\\mathbf{x}^l$ . This reparameterization allows us to change the question to: if $\\mathrm{ENTREC}(\\mathbf{x}^l)$ is increased by altering $\\mathbf{x}^l$ , does $\\mathrm{CNSTSCORE}(\\mathbf{x}^l)$ also increase?\n\nTo explore this, we adjust $\\mathrm{ENTREC}(\\mathbf{x}^l)$ in the direction of its steepest increase, represented by $\\nabla_{\\mathbf{x}^l}\\mathrm{ENTREC}(\\mathbf{x}^l)$ , and observe the impact on CNSTSCORE $(\\mathbf{x}^l)$ by modifying $\\mathbf{x}^l$ according to a magnitude of change $\\alpha$ :\n\n$$\n\\hat {\\mathbf {x}} ^ {l} (\\alpha) = \\mathbf {x} ^ {l} + \\alpha \\nabla_ {\\mathbf {x} ^ {l}} \\operatorname {E N T R E C} \\left(\\mathbf {x} ^ {l}\\right).\n$$\n\nSubsequently, we calculate $\\mathrm{CNSTSCORE}(\\mathbf{x}^l)$ using $\\hat{\\mathbf{x}}^{l}(\\alpha),^{4}$ which allows us to express it as a function $\\mathrm{CNSTSCORE}(\\alpha)$ of $\\alpha$ . Then, we examine its derivative, $\\left.\\frac{d}{d\\alpha}\\mathrm{CNSTSCORE}(\\alpha)\\right|_{\\alpha = 0}$ to understand the direction of change at the current value. A positive derivative indicates that an increase in $\\mathrm{ENTREC}(\\mathbf{x}^l)$ leads to an increase in $\\mathrm{CNSTSCORE}(\\tau_{2\\mathrm{H}},\\tau_{1\\mathrm{H}})$ , while a negative one suggests the opposite. By assessing the relative frequency of positive gradients among the two-hop prompts in TwoHopFACT, we quantify how often the LLM performs the second hop of the reasoning, with frequencies above 0.5 suggesting that the LLM's chance to perform the second-hop reasoning exceeds random chance for these prompts.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.550::appendix::C",
+      "paper_id": "2024.acl-long.550",
+      "section_number": "C",
+      "section_title": "justification of internal entity recall score: appostive generation experiment",
+      "normalized_section_title": "justification of internal entity recall score: appostive generation experiment",
+      "window_text": "Experiment We demonstrate that ENTREC is a reasonable approximation of the internal recall of the bridge entity with indirect evidence. Note that $\\mathrm{ENTREC}^l (e_2,\\tau_{\\mathrm{2H}})$ is calculated not at the last token of $\\tau_{\\mathrm{2H}}$ but at the last token of the bridge entity's descriptive mention, where it is grammatically natural to prepend a comma followed by the name of $e_2$ (e.g., \"The mother of the singer of 'Superstition', Stevie Wonder\"). In the resulting string, grammatically $\\mu (r_1(e_1))$ becomes the antecedent and $e_2$ becomes the apposite; an apposite is a noun phrase that follows another noun phrase in opposition to it and provides information that further identifies or defines it, and the antecedent is the noun phrase that the apposite describes. Then, if $\\mathrm{ENTREC}^l (e_2,\\tau_{\\mathrm{2H}})$ reasonably approximates the internal recall of the bridge entity $e_2$ , it is expected\n\n![](images/db16f0935beb758043691ce117693a7c8b080d94821f3b36921aa96eb3985204.jpg)  \n(a) Percentage of majority bridge entity $e_2$\n\n![](images/e3d3cf5bf27c8eb3e9afc34f363a3aad5506564ccbd406833bb7496a1db0d98d.jpg)  \n(b) Percentage of majority $e_3$\n\n![](images/fd855aed28172582c5fac993c0417acab7d54867983a956603ed71dacb0072c9.jpg)  \nFigure 7: Percentage of the most frequent entities for each fact composition type of TWOHOPFACT. The expanded forms of the abbreviations used for the fact composition types are listed in Table 4.   \nFigure 8: The relative frequency of the cases where increasing the entity recall score at a layer increases the probability of the model to output $e_2^{(0)}$ as the next token of a comma following the prefix of $\\tau_{2\\mathrm{H}}$ ending at the descriptive mention (\"The mother of the singer of 'Superstition',\" for LLaMA-2 7B.\n\nthat there will be at least some layers $l$ where increasing $\\mathrm{ENTREC}^l (e_2,\\tau_{2H})$ increases the relative frequency of the LLM to generate $e_2^{(0)}$ with a relative frequency higher than random chance. In other\n\nwords, we check the relative frequency of the cases where increasing the entity recall score at a layer increases the probability of the model to output $e_2^{(0)}$ as the next token of a comma following the prefix of $\\tau_{2\\mathrm{H}}$ ending at the descriptive mention (\"The mother of the singer of 'Superstition'\"). We calculate this relative frequency as described in Section 6.2 but using the probability instead of CNSTSCORE.\n\nResult Figure 8 demonstrates that, in most of the mid-late layers, increasing the latent recall of the bridge entity when the LLM processes $\\mu (r_{1}(e_{1})))$ also increases the relative frequency of the LLM to output $e_2^{(0)}$ to generate the apposite of $\\mu (r_1(e_1))$ followed by a comma. The result indicates that\n\n![](images/b884596c42e432f581fd62467bff2a96f5260dbfbbaaaf17fa678170dd4419b2.jpg)  \nFigure 9: Distribution of CNSTSCORE calculated for different styles of prompts $\\tau'$ for LLaMA-2 7B.\n\nENTREC at the $n$ -th token has controllability of the token to be generated as the $n + 2$ -th token to make it more likely to be the first token of the apposite, serving as an indirect evidence that $\\mathrm{ENTREC}^l (e_2,\\tau_{2\\mathrm{H}})$ is a reasonable proxy of the internal recall of the bridge entity.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.550::appendix::D",
+      "paper_id": "2024.acl-long.550",
+      "section_number": "D",
+      "section_title": "justification of consistency score: comparative experiment with chain-of-thought cases",
+      "normalized_section_title": "justification of consistency score: comparative experiment with chain-of-thought cases",
+      "window_text": "Experiment We demonstrate that the proposed definition of $\\mathrm{CNSTSCORE}(\\tau_{2\\mathrm{H}},\\tau_{1\\mathrm{H}})$ is a reasonable proxy of the utilization of what the LLM knows about the bridge entity's attribute - the latent recall of its answer to $\\tau_{1\\mathrm{H}}$ - with indirect evidence. If the information to reason with is given as part of the input, e.g., if the given prompt is \"The singer of 'Superstition' is Stevie Wonder: The mother of Stevie Wonder is named Lula. The mother of the singer of 'Superstition' is\", the LLM would not need to internally perform the multi-hop reasoning to refer to what its output to the one-hop prompt \"The mother of Stevie Wonder is\" is, but just copy the answer from the input. Therefore, CNSTSCORE of such a case will be lower than the case where the LLM needs to internally figure out what its answer to the one-hop prompt given the hint of who the descriptive mention refers to, e.g., \"The singer of 'Superstition' is Stevie Wonder: The mother of the singer of 'Superstition' is\". Therefore, to check whether this is the case, we compare CNSTSCORE computed with the several Chain-of-Thought (CoT) style prompts $\\tau^{\\prime}$ , i.e., CNSTSCORE $(\\tau^{\\prime},\\tau_{1\\mathrm{H}})$ .\n\nResult Figure 9 shows the distribution of CNSTSCORE computed with different styles of prompts $\\tau^{\\prime}$ as written in the y-axis. The red case is the consistency score of the two-hop prompt that we mainly study in our work, which requires full multi-hop reasoning. Because no information to reason from is given in the input, CNSTSCORE is significantly lower than the cases of other CoT-style prompts. The blue case is where what the descriptive mention refers to is given as the input, but what the LLM knows about the bridge entity's attribute\n\nneeds to be internally recalled and referred to. The green cases are where the bridge entity's attribute, i.e., the answer to the prompt, is explicitly given in the input, and thus, the LLM does not need to refer to its answer to the one-hop prompt. The result demonstrates that the mean of CNSTSCORE is higher for the blue cases where the model is forced to refer to its answer to the one-hop prompt than in the green cases where the model does not need to refer to the answer. The difference between the red and the blue cases would have come from the existence of the information of the descriptive mention's identity in the input prompt, which would have helped the LLM to use the connection to refer to what it knows about the bridge entity.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.550::appendix::E",
+      "paper_id": "2024.acl-long.550",
+      "section_number": "E",
+      "section_title": "technical details",
+      "normalized_section_title": "technical details",
+      "window_text": "We modify the codebase of Nanda and Bloom (2022) to run the experiments before refactoring. We use 1-8 40GB A100 GPUs for the experiments. All experiments run in less than 24 hours. We use the model weights from HuggingFace Transformers (Wolf et al., 2020) and use full precision for LLaMA-2 7B and 13B and half-precision for 70B. The SPARQL queries for querying Wikidata are written with the help of GPT-4 (OpenAI et al., 2023).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.550::appendix::E",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 40GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We modify the codebase of Nanda and Bloom (2022) to run the experiments before refactoring. We use 1-8 40GB A100 GPUs for the experiments. All experiments run in less than 24 hours. We use the model weights from HuggingFace Transformers (Wolf et al., 2020) and use full precision for LLaMA-2 7B and 13B and half-precision for 70B. The SPARQL queries for querying Wikidata are written with the help of GPT-4 (OpenAI et al., 2023).",
+      "section_number": "E",
+      "section_title": "technical details",
+      "normalized_section_title": "technical details"
+    },
+    {
+      "window_id": "2024.acl-long.550::appendix::E",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 40GB",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "We modify the codebase of Nanda and Bloom (2022) to run the experiments before refactoring. We use 1-8 40GB A100 GPUs for the experiments. All experiments run in less than 24 hours. We use the model weights from HuggingFace Transformers (Wolf et al., 2020) and use full precision for LLaMA-2 7B and 13B and half-precision for 70B. The SPARQL queries for querying Wikidata are written with the help of GPT-4 (OpenAI et al., 2023).",
+      "section_number": "E",
+      "section_title": "technical details",
+      "normalized_section_title": "technical details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.550::appendix::E",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 40GB",
+      "cleaned_hardware_name": "a100 40gb",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "E",
+      "section_title": "technical details",
+      "normalized_section_title": "technical details",
+      "evidence": "We modify the codebase of Nanda and Bloom (2022) to run the experiments before refactoring. We use 1-8 40GB A100 GPUs for the experiments. All experiments run in less than 24 hours. We use the model weights from HuggingFace Transformers (Wolf et al., 2020) and use full precision for LLaMA-2 7B and 13B and half-precision for 70B. The SPARQL queries for querying Wikidata are written with the help of GPT-4 (OpenAI et al., 2023).",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.acl-long.550::appendix::E",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 40GB",
+      "cleaned_hardware_name": "a100 40gb",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "E",
+      "section_title": "technical details",
+      "normalized_section_title": "technical details",
+      "evidence": "We modify the codebase of Nanda and Bloom (2022) to run the experiments before refactoring. We use 1-8 40GB A100 GPUs for the experiments. All experiments run in less than 24 hours. We use the model weights from HuggingFace Transformers (Wolf et al., 2020) and use full precision for LLaMA-2 7B and 13B and half-precision for 70B. The SPARQL queries for querying Wikidata are written with the help of GPT-4 (OpenAI et al., 2023).",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "E"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 8
+      }
+    ]
+  }
+}

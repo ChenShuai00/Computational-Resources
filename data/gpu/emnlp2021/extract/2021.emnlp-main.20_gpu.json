@@ -1,0 +1,83 @@
+{
+  "paper_id": "2021.emnlp-main.20",
+  "candidate_windows": [
+    {
+      "window_id": "2021.emnlp-main.20::sections::4",
+      "paper_id": "2021.emnlp-main.20",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Task and Domains We experiment with the task of cross-domain AE (Jakob and Gurevych, 2010). We consider data from the Amazon laptop reviews (L) and the Yelp restaurant reviews (R) domains. The labeled data from the L domain is taken from the SemEval 2014 task on ABSA (Pontiki et al., 2014). We follow Gong et al. (2020) and combine the SemEval 2014, 2015 and 2016 restaurant datasets (Pontiki et al., 2014, 2015, 2016) into a single dataset, removing all duplicated examples. This results in 3045/800 and 3845/2158 train/validation\n\nexamples for the L and R domains, respectively. At test time the target domain validation set serves as a test set. We obtain the list of category names for each domain from Pontiki et al. (2016).<sup>5</sup> We used 863,000 laptop reviews from the Amazon reviews dataset of McAuley et al. (2015), and 570,000 reviews from the Yelp open dataset<sup>6</sup> as our unlabeled dataset for both domains, respectively.\n\nTo consider a more challenging setup, we experiment with the MAMS dataset (Jiang et al., 2019), consisting of 5297 labeled reviews from the restaurant domain (M). We used 4297 reviews as a training set and 1000 as a validation set, and the same unlabeled data as for the R domain. Each review in the MAMS dataset has at least two aspects with different sentiment polarities, making it harder to adapt to, as the label distribution is different from that of the SemEval datasets. We consider adaptation from the L to the M domain and vice versa, adding two source-target pairs to our experiments (the M and R domains both address the same topic, and we consider them too similar for adaptation).\n\nExperimental Protocol Focusing on unsupervised DA, we have access to unlabeled data from the source and target domains and labeled data from the source domain only. Following the protocol of representation learning for DA (§ 2), we learn a domain-invariant representation model using the unlabeled data from both domains. Then, we use the source domain labeled data to fine-tune the representation model on the downstream task. This model is eventually applied to the target domain test set data.\n\nFor DILBERT, our representation learning phase consists of two fine-tuning tasks. First, we use the large unlabeled reviews data from both domains to further train a BERT model on the CMLM task. In all our experiments (for DILBERT and the baselines) we employ the BERT-Base-Uncased model of the Hugging-Face (Wolf et al., 2019) transformers package. Following Devlin et al. (2019), we fine-tune all of BERT model layers. For the CMLM task, we mask full words instead of the default subword masking, i.e., if we choose to mask a word, all its corresponding sub-words are masked.\n\nThen, we use target unlabeled data to further fine-tune on the CPP task. We add a linear layer\n\non top of the [CLS] token, and then feed forward the outputs through a sigmoid layer, using the sum of per-category binary cross-entropy losses. Once the representation learning phase is completed, we remove the CPP additional layer and the CMLM sequence classification heads. Then, we add a logistic regression head on top of all the word-level outputs and fine-tune the model on the source labeled data for the aspect. Finally, we use the fine-tuned model for predictions on the target domain test set.\n\nTo compute the similarity between words and aspect categories, we experiment with two word embedding sets: (a) The fastText pre-trained word embeddings (we refer to the DILBERT model that uses these embeddings as DILBERT-PT-WE);[8] and (b) FastText word embeddings trained on the unlabeled data from both domains (DILBERT-CT-WE; with a learning rate of 5e-5, a batch size of 4, and one training epoch.). We report results with DILBERT-CT-WE as they are better (see § 5).\n\nFor all the baselines, we keep the same protocol and design choices, unless otherwise stated.\n\nBaselines The first baseline is UDA (Gong et al., 2020), a pre-trained transformer-based neural network that performs pre-training using syntactic-driven auxiliary tasks, combined with an adversarial component (§ 2). There are two variants of UDA, differing with respect to their initialization. UDA-BASE (UDA-B) is initialized to the BERT-BASE model, while UDA-EXTENDED (UDA-E) is initialized with a BERT model which was further fine-tuned with over 20GB from the Yelp Challenge dataset and the Amazon Electronics dataset (Xu et al., 2019). As shown in Gong et al. (2020), UDA-E outperforms all previous cross-domain AE work by a large margin (§ 2.3), and hence UDA-E and UDA-B are the previous works we compare to.\n\nTo better understand the effect of our customized pre-training method, we also compare our model to a variant where everything is kept fixed except that the fine-tuning stage on the source and target unlabeled data is performed with the standard BERT model rather with DILBERT (BERT-S&T). We further compare to two similar variants that reflect a condition where we do not have access to target domain data (no domain adaptation (No-DA) setups): BERT-S, where the fine-tuning stage is performed with the standard BERT model and on unlabeled\n\nTable 1: F1 results for both DA (top label) and indomain (bottom table, provided for reference) setups. In the top table, column titles correspond to source-target domain pairs.   \n\n<table><tr><td></td><td>M-L</td><td>L-M</td><td>R-L</td><td>L-R</td><td>Average</td></tr><tr><td colspan=\"6\">DILBERT Methods</td></tr><tr><td>DILBERT</td><td>43.72</td><td>58.96</td><td>56.07</td><td>61.04</td><td>54.95</td></tr><tr><td>D-CMLM</td><td>41.97</td><td>52.74</td><td>55.48</td><td>59.36</td><td>52.39</td></tr><tr><td>D-CPP</td><td>31.08</td><td>29.06</td><td>36.16</td><td>40.55</td><td>34.21</td></tr><tr><td colspan=\"6\">Previous Baselines</td></tr><tr><td>UDA-E</td><td>41.29</td><td>45.62</td><td>53.51</td><td>56.12</td><td>49.14</td></tr><tr><td>UDA-B</td><td>36.52</td><td>39.59</td><td>48.35</td><td>49.52</td><td>43.50</td></tr><tr><td>BERT-S&amp;T</td><td>34.30</td><td>29.82</td><td>45.89</td><td>39.92</td><td>37.48</td></tr><tr><td colspan=\"6\">No-DA</td></tr><tr><td>BERT-S</td><td>28.9</td><td>27.53</td><td>36.35</td><td>44.12</td><td>34.22</td></tr><tr><td>Vanilla</td><td>32.21</td><td>22.7</td><td>32.12</td><td>34.25</td><td>30.32</td></tr><tr><td colspan=\"6\">In Domain</td></tr><tr><td></td><td>M</td><td>L</td><td>R</td><td colspan=\"2\">Average</td></tr><tr><td>BERT-ID</td><td>77.87</td><td>83.8</td><td>78.82</td><td colspan=\"2\">80.16</td></tr></table>\n\nsource domain data only, and Vanilla, where no unlabeled data fine-tuning is performed.\n\nFinally, in order to understand the relative importance of the two DILBERT pre-training tasks, we experiment with the D-CMLM model (where unlabeled data fine-tuning is done with DILBERT, but only with the CMLM task), and with the D-CPP model (where unlabeled data fine-tuning is done with DILBERT, but only with the CPP task). We also evaluate the performance of an in-domain classifier (BERT-ID) - i.e., our classifier when trained on the target domain training set and evaluated on the target domain test set. This model can be seen as an upper bound on the performance we can realistically hope a DA model to achieve.\n\nHyper-parameter Tuning All experiments are repeated five times using different random seeds and the average results are reported. As stated, all models are based on the HuggingFace BERT-base Uncased pre-trained model. All models were tuned on the same set of hyper-parameters and the same data splits. The validation examples, used for hyper-parameter tuning, are from the source domain. $^{10}$",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.emnlp-main.20::appendix::A.2",
+      "paper_id": "2021.emnlp-main.20",
+      "section_number": "A.2",
+      "section_title": "computing infrastructure, run-time and number of parameters",
+      "normalized_section_title": "computing infrastructure, run-time and number of parameters",
+      "window_text": "All models were trained on a Quadro RTX 6000 machine, using 1 GPU card. The average run-time for the CMLM training was about 2 hours. The average run-time for the CPP training was about 6 minutes. The average run-time for the AE training was about 6 minutes. The inference time on the test set for the AE task was about 1 minute. The BERT-base model has 109.5M parameters. The CMLM architecture has additional 620K parameters. The CPP architecture has additional 21.5K parameters. The AE task classifier has additional 2307 parameters.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2021.emnlp-main.20::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Quadro RTX 6000",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "All models were trained on a Quadro RTX 6000 machine, using 1 GPU card. The average run-time for the CMLM training was about 2 hours. The average run-time for the CPP training was about 6 minutes. The average run-time for the AE training was about 6 minutes. The inference time on the test set for the AE task was about 1 minute. The BERT-base model has 109.5M parameters. The CMLM architecture has additional 620K parameters. The CPP architecture has additional 21.5K parameters. The AE task classifier has additional 2307 parameters.",
+      "section_number": "A.2",
+      "section_title": "computing infrastructure, run-time and number of parameters",
+      "normalized_section_title": "computing infrastructure, run-time and number of parameters"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2021.emnlp-main.20::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Quadro RTX 6000",
+      "cleaned_hardware_name": "quadro rtx 6000",
+      "normalized_hardware_name": "Quadro RTX 6000",
+      "benchmark_hardware_name": "Quadro RTX 6000",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.2",
+      "section_title": "computing infrastructure, run-time and number of parameters",
+      "normalized_section_title": "computing infrastructure, run-time and number of parameters",
+      "evidence": "All models were trained on a Quadro RTX 6000 machine, using 1 GPU card. The average run-time for the CMLM training was about 2 hours. The average run-time for the CPP training was about 6 minutes. The average run-time for the AE training was about 6 minutes. The inference time on the test set for the AE task was about 1 minute. The BERT-base model has 109.5M parameters. The CMLM architecture has additional 620K parameters. The CPP architecture has additional 21.5K parameters. The AE task classifier has additional 2307 parameters.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.2"
+    ],
+    "pred": [
+      {
+        "name": "Quadro RTX 6000",
+        "num": 1
+      }
+    ]
+  }
+}

@@ -1,0 +1,199 @@
+{
+  "paper_id": "2023.acl-long.810",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.810::sections::1",
+      "paper_id": "2023.acl-long.810",
+      "section_number": "1",
+      "section_title": "introduction",
+      "normalized_section_title": "introduction",
+      "window_text": "Sequence-to-sequence models have been very successfully applied to many structural tasks in NLP such as semantic parsing. However, they have also been shown to struggle with compositional generalization (Lake and Baroni, 2018; Finegan-Dollak et al., 2018; Kim and Linzen, 2020; Hupkes et al., 2020), i.e. the model fails on examples that contain unseen compositions or deeper recursion of phenomena that it handles correctly in isolation. For example, a model which correctly parses 'Mary knew that Jim slept' should also be able to parse sentences with deeper recursion than it has seen during training such as 'Paul said that Mary knew that Jim slept'. This sort of generalization is easy for humans but challenging for neural models.\n\n![](images/27bf8d3de9e679c7320397d012e876d0481213ac7647e1244e377086d7cfaad2.jpg)  \nFigure 1: We model seq2seq tasks by first predicting a multiset (dashed boxes) for every input token, and then permuting the tokens to put them into order. We realize the permutation using the red edges: if there is an edge from token $i$ to $j$ , then $i$ is the predecessor of $j$ in the output. Every token is visited exactly once.\n\nIn order for a model to generalize compositionally in semantic parsing, it has to identify reusable 'fragments' and be able to systematically combine them in novel ways. One way to make a model sensitive to fragments is to make it rely on a tree that makes the compositional structure explicit. However, this complicates the training because these trees need to be obtained or induced. This is computationally demanding or at least requires structural preprocessing informed by domain knowledge.\n\nIn this paper, we propose a two-step sequence-based approach with a structural inductive bias that does not rely on trees: the 'fragments' are multisets of output tokens that we predict for every input token in a first step. A second step then arranges the tokens we predicted in the previous step into a single sequence using a permutation model. In contrast to prior work (Wang et al., 2021; Lindemann et al., 2023), there are no hard constraints on the permutations that our model can predict. We show that this enables structural generalization on tasks that go beyond the class of synchronous context-free languages.\n\nWe overcome two key technical challenges in this work: Firstly, we do not have supervision for the correspondence between input tokens and output tokens. Therefore, we induce the correspondence during training. Secondly, predicting permutations without restrictions is computationally challenging. For this, we develop a differentiable GPU-friendly algorithm.\n\nOn realistic semantic parsing tasks our approach outperforms previous work on generalization to longer examples than seen at training. We also outperform all other non-tree models on the structural generalization tasks in semantic parsing on COGS (Kim and Linzen, 2020). For the first time, we also show that a model without an inductive bias towards trees can obtain high accuracy on generalization to deeper recursion on COGS.\n\nTo summarize, our main contributions are:\n\n- a flexible seq2seq model that performs well on structural generalization in semantic parsing without assuming that input and output are related to each other via a tree structure.   \n- a differentiable algorithm to parameterize and predict permutations without a priori restrictions on what permutations are possible.",
+      "rule_tier": "soft_skip",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.810::sections::5.2",
+      "paper_id": "2023.acl-long.810",
+      "section_number": "5.2",
+      "section_title": "bregman's method for eq. (6)",
+      "normalized_section_title": "bregman's method for eq. (6)",
+      "window_text": "In order to apply Bregmans' method to solve the entropy regularized version of Eq. (6), we need to decompose the constraints into sets which we can efficiently project onto. We choose the following three sets here: (i), containing Eq. (6a) and Eq. (6c), and (ii), containing Eq. (6a) and Eq. (6d), and finally (iii), containing only Eq. (6b). We now need to establish what the KL projections are for our chosen sets. For (iii), the projection is simple:\n\nProposition 1. (Benamou et al. (2015), Prop. 1) For $\\mathbf{A},\\mathbf{m} > 0$ , the KL projection $\\arg \\min_{\\mathbf{U}}\\mathrm{KL}(\\mathbf{U}\\parallel \\mathbf{A})$ subject to $\\sum_{j}\\mathbf{U}_{ij} = \\mathbf{m}_i$ is given by $\\mathbf{U}_{ij}^{*} = \\mathbf{m}_{i}\\frac{\\mathbf{A}_{ij}}{\\sum_{j'}\\mathbf{A}_{ij'}}$ .\n\nLet us now turn to (i) and (ii). The constraints Eq. (6d) and Eq. (6c) are structurally essentially the same, meaning that we can project onto (ii) in basically the same manner as onto (i). We project onto (i), with the following proposition:\n\nProposition 2. For $\\mathbf{A},\\mathbf{B} > \\mathbf{0}$ , the KL projection\n\n$$\n\\operatorname * {a r g   m i n} _ {\\mathbf {U}, \\mathbf {W}} \\qquad \\mathrm {K L} (\\mathbf {U}   |   |   \\mathbf {A}) + \\mathrm {K L} (\\mathbf {W}   |   |   \\mathbf {B})\n$$\n\n$$\n\\text {s u b j e c t} \\quad \\sum_ {i} \\mathbf {U} _ {i j} = 1 \\quad \\forall j \\tag {11}\n$$\n\n$$\n\\sum_ {k} \\mathbf {W} _ {i j k} = \\mathbf {U} _ {i j} \\forall j, i\n$$\n\nis given by:\n\n$$\n\\mathbf {U} _ {i j} ^ {*} = \\frac {\\mathbf {T} _ {i j}}{\\sum_ {i ^ {\\prime}} \\mathbf {T} _ {i ^ {\\prime} j}}\n$$\n\n$$\n\\mathbf {W} _ {i j k} ^ {*} = \\mathbf {U} _ {i j} ^ {*} \\frac {\\mathbf {B} _ {i j k}}{\\sum_ {k ^ {\\prime}} \\mathbf {B} _ {i j k ^ {\\prime}}}\n$$\n\nwhere $\\mathbf{T}_{ij} = \\sqrt{\\mathbf{A}_{ij}\\cdot\\sum_k\\mathbf{B}_{ijk}}$\n\nThe proof can be found in Appendix A.2. We present the overall algorithm in Algorithm 1, and note that it is easy to implement for GPUs. In practice, we implement all projections in log space for numerical stability.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.810::sections::6",
+      "paper_id": "2023.acl-long.810",
+      "section_number": "6",
+      "section_title": "evaluation",
+      "normalized_section_title": "evaluation",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.810::appendix::F",
+      "paper_id": "2023.acl-long.810",
+      "section_number": "F",
+      "section_title": "hyperparameters",
+      "normalized_section_title": "hyperparameters",
+      "window_text": "We use the same hyperparameters for all splits of a dataset. For our model, we only tune the hyperparameters of the multiset tagging model; the permutation model is fixed, and we use the same configuration for all tasks where we use RoBERTa. For model ablations where we use an LSTM instead of RoBERTa, we use the same hyperparameters for Okapi and ATIS, and a smaller model for the doubling task. These configurations were determined by hand without tuning. For BART, we use the same hyperparameter as Lindemann et al. (2023).\n\nWe follow the random hyperparameter search procedure of Lindemann et al. (2023) for the multiset tagging models and the LSTM/transformer we train from scratch: we sample 20 configurations and evaluate them on the development set. We run the two best-performing configurations again with a different random seed and pick the one with the highest accuracy (comparing the union of the predicted multisets with the gold multiset). We then train and evaluate our model with entirely different random seeds.\n\nTable 8: Average runtime for train/evaluate on dev and test in minutes. For the doubling task, we note that our model has converged usually after $\\frac{1}{4}$ of the time in the table.   \n\n<table><tr><td>Dataset</td><td>Model</td><td>First stage</td><td>Second stage</td></tr><tr><td rowspan=\"3\">Doubling</td><td>LSTM</td><td>5</td><td>-</td></tr><tr><td>Transformer</td><td>3</td><td>-</td></tr><tr><td>Ours</td><td>3</td><td>14*</td></tr><tr><td>COGS</td><td>Ours</td><td>20</td><td>80</td></tr><tr><td rowspan=\"2\">ATIS</td><td>Ours</td><td>30</td><td>50</td></tr><tr><td>Ours/LSTM</td><td>30</td><td>110</td></tr><tr><td rowspan=\"2\">Okapi/Calendar</td><td>Ours</td><td>9</td><td>35</td></tr><tr><td>Ours/LSTM</td><td>5</td><td>30</td></tr><tr><td rowspan=\"2\">Okapi/Email</td><td>Ours</td><td>12</td><td>40</td></tr><tr><td>Ours/LSTM</td><td>9</td><td>40</td></tr><tr><td rowspan=\"2\">Okapi/Document</td><td>Ours</td><td>12</td><td>70</td></tr><tr><td>Ours/LSTM</td><td>10</td><td>55</td></tr></table>\n\nTable 9: Number of parameters in millions in the models we train. This includes the $124.646\\mathrm{m}$ params of RoBERTa when we finetune it.   \n\n<table><tr><td>Dataset</td><td>Model</td><td>First stage</td><td>Second stage</td></tr><tr><td rowspan=\"3\">Doubling</td><td>LSTM</td><td></td><td>2.462</td></tr><tr><td>Transformer</td><td></td><td>10.424</td></tr><tr><td>Ours</td><td>0.273</td><td>0.463</td></tr><tr><td>COGS</td><td>Ours</td><td>125.091</td><td>127.16</td></tr><tr><td rowspan=\"2\">ATIS</td><td>Ours</td><td>125.506</td><td>127.119</td></tr><tr><td>Ours/LSTM</td><td>3.345</td><td>1.816</td></tr><tr><td rowspan=\"2\">Okapi/Calendar</td><td>Ours</td><td>124.927</td><td>127.03</td></tr><tr><td>Ours/LSTM</td><td>1.493</td><td>1.876</td></tr></table>\n\nThe chosen hyperparameters along with the search space are provided in the github repository.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.810::appendix::G",
+      "paper_id": "2023.acl-long.810",
+      "section_number": "G",
+      "section_title": "number of parameters, computing infrastructure and runtime",
+      "normalized_section_title": "number of parameters, computing infrastructure and runtime",
+      "window_text": "We show the number of parameters in the models we train in Table 9.\n\nAll experiments were run on GeForce GTX 1080 Ti or GeForce GTX 2080 Ti with 12GB RAM and Intel Xeon Silver or Xeon E5 CPUs.\n\nThe runtime of one run contains the time for training, evaluation on the devset after each epoch and running the model on the test set. We show runtimes of the model we train in Table 8. Since we evaluate on 5 random seeds (10 for COGS due to high variance of results), our experiments overall took around 64 hours of compute time on our computing infrastructure.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.810::appendix::G",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GeForce GTX 1080 Ti 12GB",
+      "count": null,
+      "count_text": "",
+      "evidence": "We show the number of parameters in the models we train in Table 9.\n\nAll experiments were run on GeForce GTX 1080 Ti or GeForce GTX 2080 Ti with 12GB RAM and Intel Xeon Silver or Xeon E5 CPUs.\n\nThe runtime of one run contains the time for training, evaluation on the devset after each epoch and running the model on the test set. We show runtimes of the model we train in Table 8. Since we evaluate on 5 random seeds (10 for COGS due to high variance of results), our experiments overall took around 64 hours of compute time on our computing infrastructure.",
+      "section_number": "G",
+      "section_title": "number of parameters, computing infrastructure and runtime",
+      "normalized_section_title": "number of parameters, computing infrastructure and runtime"
+    },
+    {
+      "window_id": "2023.acl-long.810::appendix::G",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GeForce GTX 2080 Ti 12GB",
+      "count": null,
+      "count_text": "",
+      "evidence": "We show the number of parameters in the models we train in Table 9.\n\nAll experiments were run on GeForce GTX 1080 Ti or GeForce GTX 2080 Ti with 12GB RAM and Intel Xeon Silver or Xeon E5 CPUs.\n\nThe runtime of one run contains the time for training, evaluation on the devset after each epoch and running the model on the test set. We show runtimes of the model we train in Table 8. Since we evaluate on 5 random seeds (10 for COGS due to high variance of results), our experiments overall took around 64 hours of compute time on our computing infrastructure.",
+      "section_number": "G",
+      "section_title": "number of parameters, computing infrastructure and runtime",
+      "normalized_section_title": "number of parameters, computing infrastructure and runtime"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.810::appendix::G",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GeForce GTX 1080 Ti 12GB",
+      "cleaned_hardware_name": "geforce gtx 1080 ti 12gb",
+      "normalized_hardware_name": "NVIDIA GeForce GTX 1080 Ti",
+      "benchmark_hardware_name": "NVIDIA GeForce GTX 1080 Ti",
+      "count": null,
+      "count_text": "",
+      "section_number": "G",
+      "section_title": "number of parameters, computing infrastructure and runtime",
+      "normalized_section_title": "number of parameters, computing infrastructure and runtime",
+      "evidence": "We show the number of parameters in the models we train in Table 9.\n\nAll experiments were run on GeForce GTX 1080 Ti or GeForce GTX 2080 Ti with 12GB RAM and Intel Xeon Silver or Xeon E5 CPUs.\n\nThe runtime of one run contains the time for training, evaluation on the devset after each epoch and running the model on the test set. We show runtimes of the model we train in Table 8. Since we evaluate on 5 random seeds (10 for COGS due to high variance of results), our experiments overall took around 64 hours of compute time on our computing infrastructure.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized GeForce GTX shorthand rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.acl-long.810::appendix::G",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GeForce GTX 2080 Ti 12GB",
+      "cleaned_hardware_name": "geforce rtx 2080 ti 12gb",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "count": null,
+      "count_text": "",
+      "section_number": "G",
+      "section_title": "number of parameters, computing infrastructure and runtime",
+      "normalized_section_title": "number of parameters, computing infrastructure and runtime",
+      "evidence": "We show the number of parameters in the models we train in Table 9.\n\nAll experiments were run on GeForce GTX 1080 Ti or GeForce GTX 2080 Ti with 12GB RAM and Intel Xeon Silver or Xeon E5 CPUs.\n\nThe runtime of one run contains the time for training, evaluation on the devset after each epoch and running the model on the test set. We show runtimes of the model we train in Table 8. Since we evaluate on 5 random seeds (10 for COGS due to high variance of results), our experiments overall took around 64 hours of compute time on our computing infrastructure.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized GeForce RTX shorthand rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.acl-long.810::sections::1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "1",
+      "section_title": "introduction",
+      "evidence": "Sequence-to-sequence models have been very successfully applied to many structural tasks in NLP such as semantic parsing. However, they have also been shown to struggle with compositional generalization (Lake and Baroni, 2018; Finegan-Dollak et al., 2018; Kim and Linzen, 2020; Hupkes et al., 2020), i.e. the model fails on examples that contain unseen compositions or deeper recursion of phenomena that it handles correctly in isolation. For example, a model which correctly parses 'Mary knew that Jim slept' should also be able to parse sentences with deeper recursion than it has seen during training such as 'Paul said that Mary knew that Jim slept'. This sort of generalization is easy for humans but challenging for neural models.\n\n![](images/27bf8d3de9e679c7320397d012e876d0481213ac7647e1244e377086d7cfaad2.jpg)  \nFigure 1: We model seq2seq tasks by first predicting a multiset (dashed boxes) for every input token, and then permuting the tokens to put them into order. We realize the permutation using the red edges: if there is an edge from token $i$ to $j$ , then $i$ is the predecessor of $j$ in the output. Every token is visited exactly once.\n\nIn order for a model to generalize compositionally in semantic parsing, it has to identify reusable 'fragments' and be able to systematically combine them in novel ways. One way to make a model sensitive to fragments is to make it rely on a tree that makes the compositional structure explicit. However, this complicates the training because these trees need to be obtained or induced. This is computationally demanding or at least requires structural preprocessing informed by domain knowledge.\n\nIn this paper, we propose a two-step sequence-based approach with a structural inductive bias that does not rely on trees: the 'fragments' are multisets of output tokens that we predict for every input token in a first step. A second step then arranges the tokens we predicted in the previous step into a single sequence using a permutation model. In contrast to prior work (Wang et al., 2021; Lindemann et al., 2023), there are no hard constraints on the permutations that our model can predict. We show that this enables structural generalization on tasks that go beyond the class of synchronous context-free languages.\n\nWe overcome two key technical challenges in this work: Firstly, we do not have supervision for the correspondence between input tokens and output tokens. Therefore, we induce the correspondence during training. Secondly, predicting permutations without restrictions is computationally challenging. For this, we develop a differentiable GPU-friendly algorithm.\n\nOn realistic semantic parsing tasks our approach outperforms previous work on generalization to longer examples than seen at training. We also outperform all other non-tree models on the structural generalization tasks in semantic parsing on COGS (Kim and Linzen, 2020). For the first time, we also show that a model without an inductive bias towards trees can obtain high accuracy on generalization to deeper recursion on COGS.\n\nTo summarize, our main contributions are:\n\n- a flexible seq2seq model that performs well on structural generalization in semantic parsing without assuming that input and output are related to each other via a tree structure.   \n- a differentiable algorithm to parameterize and predict permutations without a priori restrictions on what permutations are possible."
+    },
+    {
+      "source_window_id": "2023.acl-long.810::sections::5.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.2",
+      "section_title": "bregman's method for eq. (6)",
+      "evidence": "In order to apply Bregmans' method to solve the entropy regularized version of Eq. (6), we need to decompose the constraints into sets which we can efficiently project onto. We choose the following three sets here: (i), containing Eq. (6a) and Eq. (6c), and (ii), containing Eq. (6a) and Eq. (6d), and finally (iii), containing only Eq. (6b). We now need to establish what the KL projections are for our chosen sets. For (iii), the projection is simple:\n\nProposition 1. (Benamou et al. (2015), Prop. 1) For $\\mathbf{A},\\mathbf{m} > 0$ , the KL projection $\\arg \\min_{\\mathbf{U}}\\mathrm{KL}(\\mathbf{U}\\parallel \\mathbf{A})$ subject to $\\sum_{j}\\mathbf{U}_{ij} = \\mathbf{m}_i$ is given by $\\mathbf{U}_{ij}^{*} = \\mathbf{m}_{i}\\frac{\\mathbf{A}_{ij}}{\\sum_{j'}\\mathbf{A}_{ij'}}$ .\n\nLet us now turn to (i) and (ii). The constraints Eq. (6d) and Eq. (6c) are structurally essentially the same, meaning that we can project onto (ii) in basically the same manner as onto (i). We project onto (i), with the following proposition:\n\nProposition 2. For $\\mathbf{A},\\mathbf{B} > \\mathbf{0}$ , the KL projection\n\n$$\n\\operatorname * {a r g   m i n} _ {\\mathbf {U}, \\mathbf {W}} \\qquad \\mathrm {K L} (\\mathbf {U}   |   |   \\mathbf {A}) + \\mathrm {K L} (\\mathbf {W}   |   |   \\mathbf {B})\n$$\n\n$$\n\\text {s u b j e c t} \\quad \\sum_ {i} \\mathbf {U} _ {i j} = 1 \\quad \\forall j \\tag {11}\n$$\n\n$$\n\\sum_ {k} \\mathbf {W} _ {i j k} = \\mathbf {U} _ {i j} \\forall j, i\n$$\n\nis given by:\n\n$$\n\\mathbf {U} _ {i j} ^ {*} = \\frac {\\mathbf {T} _ {i j}}{\\sum_ {i ^ {\\prime}} \\mathbf {T} _ {i ^ {\\prime} j}}\n$$\n\n$$\n\\mathbf {W} _ {i j k} ^ {*} = \\mathbf {U} _ {i j} ^ {*} \\frac {\\mathbf {B} _ {i j k}}{\\sum_ {k ^ {\\prime}} \\mathbf {B} _ {i j k ^ {\\prime}}}\n$$\n\nwhere $\\mathbf{T}_{ij} = \\sqrt{\\mathbf{A}_{ij}\\cdot\\sum_k\\mathbf{B}_{ijk}}$\n\nThe proof can be found in Appendix A.2. We present the overall algorithm in Algorithm 1, and note that it is easy to implement for GPUs. In practice, we implement all projections in log space for numerical stability."
+    },
+    {
+      "source_window_id": "2023.acl-long.810::sections::6",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6",
+      "section_title": "evaluation",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.810::appendix::F",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "F",
+      "section_title": "hyperparameters",
+      "evidence": "We use the same hyperparameters for all splits of a dataset. For our model, we only tune the hyperparameters of the multiset tagging model; the permutation model is fixed, and we use the same configuration for all tasks where we use RoBERTa. For model ablations where we use an LSTM instead of RoBERTa, we use the same hyperparameters for Okapi and ATIS, and a smaller model for the doubling task. These configurations were determined by hand without tuning. For BART, we use the same hyperparameter as Lindemann et al. (2023).\n\nWe follow the random hyperparameter search procedure of Lindemann et al. (2023) for the multiset tagging models and the LSTM/transformer we train from scratch: we sample 20 configurations and evaluate them on the development set. We run the two best-performing configurations again with a different random seed and pick the one with the highest accuracy (comparing the union of the predicted multisets with the gold multiset). We then train and evaluate our model with entirely different random seeds.\n\nTable 8: Average runtime for train/evaluate on dev and test in minutes. For the doubling task, we note that our model has converged usually after $\\frac{1}{4}$ of the time in the table.   \n\n<table><tr><td>Dataset</td><td>Model</td><td>First stage</td><td>Second stage</td></tr><tr><td rowspan=\"3\">Doubling</td><td>LSTM</td><td>5</td><td>-</td></tr><tr><td>Transformer</td><td>3</td><td>-</td></tr><tr><td>Ours</td><td>3</td><td>14*</td></tr><tr><td>COGS</td><td>Ours</td><td>20</td><td>80</td></tr><tr><td rowspan=\"2\">ATIS</td><td>Ours</td><td>30</td><td>50</td></tr><tr><td>Ours/LSTM</td><td>30</td><td>110</td></tr><tr><td rowspan=\"2\">Okapi/Calendar</td><td>Ours</td><td>9</td><td>35</td></tr><tr><td>Ours/LSTM</td><td>5</td><td>30</td></tr><tr><td rowspan=\"2\">Okapi/Email</td><td>Ours</td><td>12</td><td>40</td></tr><tr><td>Ours/LSTM</td><td>9</td><td>40</td></tr><tr><td rowspan=\"2\">Okapi/Document</td><td>Ours</td><td>12</td><td>70</td></tr><tr><td>Ours/LSTM</td><td>10</td><td>55</td></tr></table>\n\nTable 9: Number of parameters in millions in the models we train. This includes the $124.646\\mathrm{m}$ params of RoBERTa when we finetune it.   \n\n<table><tr><td>Dataset</td><td>Model</td><td>First stage</td><td>Second stage</td></tr><tr><td rowspan=\"3\">Doubling</td><td>LSTM</td><td></td><td>2.462</td></tr><tr><td>Transformer</td><td></td><td>10.424</td></tr><tr><td>Ours</td><td>0.273</td><td>0.463</td></tr><tr><td>COGS</td><td>Ours</td><td>125.091</td><td>127.16</td></tr><tr><td rowspan=\"2\">ATIS</td><td>Ours</td><td>125.506</td><td>127.119</td></tr><tr><td>Ours/LSTM</td><td>3.345</td><td>1.816</td></tr><tr><td rowspan=\"2\">Okapi/Calendar</td><td>Ours</td><td>124.927</td><td>127.03</td></tr><tr><td>Ours/LSTM</td><td>1.493</td><td>1.876</td></tr></table>\n\nThe chosen hyperparameters along with the search space are provided in the github repository."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "G"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce GTX 1080 Ti",
+        "num": null
+      },
+      {
+        "name": "NVIDIA GeForce RTX 2080 Ti",
+        "num": null
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2023\\2023.acl-long.810\\auto\\full.md",
+    "source_md_sha256": "6b3b7c90ef3d355bb940ab84de4095b5fd992237a8921a781b24558fef00380a",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

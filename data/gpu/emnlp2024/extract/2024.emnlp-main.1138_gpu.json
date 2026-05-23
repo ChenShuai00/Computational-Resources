@@ -1,0 +1,309 @@
+{
+  "paper_id": "2024.emnlp-main.1138",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.1138::sections::4",
+      "paper_id": "2024.emnlp-main.1138",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1138::sections::4.1",
+      "paper_id": "2024.emnlp-main.1138",
+      "section_number": "4.1",
+      "section_title": "data ownership",
+      "normalized_section_title": "data ownership",
+      "window_text": "For watermarking of text articles, we demonstrate the effectiveness of WATERFALL with experiments using text samples $T_{0}$ from the c4 realnewslike dataset (Raffel et al., 2020), comprising articles with mean token length of 412. The experiments mirror realistic scenarios, for e.g., news outlets watermarking their articles before publishing them to be able to effectively scan the internet for, and verify, plagiarized content (Brewster et al., 2023). For this setting, we evaluate the semantic similarity $S$ using the Semantic Textual Similarity (STS) score based on the all-mpnet-base-v2 model $^{3}$ ( $S$ for sample text pairs are provided in Appendix E.5).\n\nFor benchmarks, we consider two recent linguistics-based watermarking methods: M-BIT by Yoo et al. (2023) and P-NLW by Qiang et al. (2023). These methods are advanced variants of BASIC that use deep learning to improve watermarking performance (details in Appendix E.3). To implement WATERFALL, we use $1\\text{lama}-2-13\\text{b}-\\text{hf}^4$ as the paraphrase, and the Fourier basis for the perturbation functions. Additional\n\ndetails such as paraphrasing prompts are in Appendix E.\n\nFidelity-verifiability. We consider the fidelity and verifiability of the schemes before adversarial attacks. Verifiability is computed as the AUROC based on varying their respective classification thresholds, i.e., the verification score threshold $\\bar{q}$ for WATERFALL, and bit-error rate threshold for M-BIT and P-NLW.\n\nWATERFALL allows for adjustable watermarking strength to calibrate the fidelity-verifiability trade-off based on the clients' needs. Figure 4a shows the Pareto frontier of the trade-off. Stronger watermark strength $\\kappa$ improves verifiability but also introduces larger distortions to the LLM paraphrasing process, decreasing the fidelity of watermarked text. For our experiments, we mainly used $\\kappa = 6$ , achieving a mean AUROC of 0.992 and STS of 0.887. Even for shorter texts of just 100 tokens (about 65 words), WATERFALL achieves high verifiability with an AUROC of 0.98 (Figure 4b). Additional results are in Appendix E.4. Note that M-BIT and P-NLW allows for only a single fidelity-verifiability score, with mean STS scores of 0.998 and 0.942 respectively, and corresponding AUROC scores of 0.987 and 0.882. While the STS scores are high, it is expected as the schemes only make minor edits to $T_{\\mathrm{o}}$ which would be more fragile to attacks, as we will see later.\n\nText fluency and quality. In fact, both M-BIT and P-NLW causes significant degradation in text fluency and quality despite their high STS scores, significantly impacting its practicality in real-life applications. For example, the word replacements by M-BIT and P-NLW introduced noticeable linguistic errors that are not captured by the STS score (shown in Appendix E.5). In contrast, WATERFALL consistently produce high quality watermarked text. To systematically analyze this, we quantify text quality via evaluations using ChatGPT, which has been shown to be a good evaluation metric for text fluency (Wang et al., 2023a). Details of the evaluation method, along with results using another text quality metric (GPTScore (Fu et al., 2024)) which further corroborate our findings, are in Appendix E.6. We can see in Figure 4b that WATERFALL significantly outperforms benchmark methods for the fluency score across the different watermark strengths while achieving high verifiability (AUROC), and the results of M-bit and P-nlw lie far within the Pareto frontier of WATERFALL.\n\nRobust verifiability. We consider the various classes of attacks A mentioned in Section 2. Details of the setup for each attack and additional results are in Appendix F.\n\n$\\mathbb{A}_1$ attacks are insertion, deletion, and synonym substitution attacks that are often considered in past works. As shown in Figure 6, robust verifiability of WATERFALL shows only a slight decrease even with strong attacks on $20\\%$ of words, while that of M-BIT and P-NLW fall drastically with increasing attack strength.\n\n$\\mathbb{A}_2$ involves translation and paraphrasing attacks, which are more realistic and effective attacks that can achieve higher fidelity and verification reduction than\n\n![](images/a5c34323c4e93181a0feb7063b71e3e23ac58d7e5220208a16d5ddd2f0e97b57.jpg)  \nFigure 6: WATERFALL demonstrates robust verifiability under $\\mathbb{A}_1$ (insertion, deletion, and synonym substitution attacks) with minimal degradation in AUROC compared to M-BIT and P-NLW.\n\nTable 1: Robust verifiability under attacks: translation $\\mathbb{A}_{2 - T}$ , paraphrase $\\mathbb{A}_{2 - P}$ , overlap watermark $\\mathbb{A}_3$ and in-context prompting $\\mathbb{A}_4$ .   \n\n<table><tr><td></td><td>Pre-attack</td><td>A2-T</td><td>A2-P</td><td>A3</td><td>A4</td></tr><tr><td>WATERFALL</td><td>0.992</td><td>0.951</td><td>0.881</td><td>0.815</td><td>0.775</td></tr><tr><td>P-NLW</td><td>0.885</td><td>0.475</td><td>0.508</td><td>0.724</td><td>0.502</td></tr><tr><td>M-BIT</td><td>0.988</td><td>0.567</td><td>0.363</td><td>0.664</td><td>0.525</td></tr></table>\n\n$\\mathbb{A}_1$ and had not been considered by past text watermarking works. We perform translation attack to translate the watermarked text to Spanish and back to English, and paraphrasing attack to paraphrase the watermarked text. Again, the verifiability of WATERFALL remains significantly higher than benchmarks post-attack.\n\n$\\mathbb{A}_3$ involves using the same scheme to try overwrite the existing watermark with another watermark. For WATERFALL, the $1^{\\mathrm{st}}$ watermark remains verifiable even after the $2^{\\mathrm{nd}}$ is added, given the design of $\\mathcal{P}$ and $\\mathcal{F}$ with vocab permutation and orthogonal perturbation functions that minimizes interference of the $2^{\\mathrm{nd}}$ watermark on the $1^{\\mathrm{st}}$ . However, this attack destroys the verifiability of M-BIT and P-NLW, as the $2^{\\mathrm{nd}}$ watermark process almost always chooses the same word positions as the original process, overwriting $\\mu_1$ . Furthermore, the benchmark schemes extracts $\\mu_1$ as part of verification, enabling targeted overlap watermark attacks which we demonstrated in Appendix F.3.\n\n$\\mathbb{A}_4$ uses $T_{\\mathrm{w}}$ for in-context prompting of any LLM to perform tasks that rely on the IP or semantic content of $T_{\\mathrm{w}}$ . For illustration, we considered the case where adversaries use an LLM to answer questions regarding watermarked articles. As this attack totally changed the structure of the texts, the watermarks of M-BIT and P-NLW were removed. However, with WATERFALL, watermarks were still verifiable due to the preservation of watermarked $n$ -grams from the context to the response.\n\n$\\mathbb{A}_5$ which involves using text containing IP for unauthorized LLM training such as fine-tuning will be discussed in Section 4.3.\n\nScalability. As mentioned in Section 3.3, WATER-FALL has a large maximum scalability of $M = |\\mathcal{F}_1| \\cdot |\\mathbb{V}|! \\sim 10^{130274}$ based on our implementation using the Fourier perturbation function, and Llama-2 model as LLM paraphraseR. In comparison, M-BIT and P-NLW,\n\nTable 2: Mean compute time over 100 texts on 1 Nvidia RTX A5000. *Note that verification for WATERFALL was performed only on CPU without requiring a GPU.   \n\n<table><tr><td></td><td>WATERFALL</td><td>M-BIT</td><td>P-NLW</td></tr><tr><td>Watermark</td><td>24.8s</td><td>2.97s</td><td>147s</td></tr><tr><td>Verification</td><td>0.035s*</td><td>2.61s</td><td>148s</td></tr></table>\n\nhave scalability dependent on the number of possible synonym replacements in any given text, which is limited by text length and varies for different text. On the c4 dataset with a mean article length of 355 words, M-BIT and P-NLW can only embed a mean of 9.5 bits $(M\\sim 10^{3})$ and 23.2 bits $(M\\sim 10^{10})$ respectively.\n\nIn practice, scalability is further limited by how well the schemes can differentiate among similar watermarks. For e.g., the verification operation of M-BIT and P-NLW may not be able to distinguish 2 IDs differing by 1 bit (see Appendix E.8.3 for details). To demonstrate this, we watermarked $T_{\\mathrm{w}}^{(i)}$ with $\\mu_{i}$ and computed the verifiability of $T_{\\mathrm{w}}^{(i)}$ against 1000 randomly selected IDs $\\mu_{j \\neq i}$ . We found that for WATERFALL, all of the IDs achieved very high AUROC, while M-BIT and P-NLW have many IDs with low AUROC: The $1^{\\mathrm{st}}$ percentile AUROC for WATERFALL, M-BIT, P-NLW are 0.976, 0.614, 0.766 respectively. Details and further results on scalability up to 100,000 IDs are in Appendix E.8.\n\nMetadata extraction. We also demonstrate how WATERFALL could be used to embed metadata while watermarking. We consider metadata $k_{p} \\in \\{1,2,\\dots,31999\\}$ , and the task is to extract the embedded $k_{p}$ if the text has been verified as watermarked with $\\mu$ . We do so by using $k_{p}$ as the frequency of the Fourier perturbation function $\\mathcal{F}_1$ , and perform extraction with the DFT. Figure 5b shows the extraction accuracy of WATERFALL for different perturbation magnitudes $\\kappa$ . By taking multiple samples of $T_{\\mathrm{w}}$ , multiple articles could be combined together to improve extraction accuracy. For $\\kappa = 6$ , accuracy increases from $48\\%$ to $99\\%$ with only 5 pieces of text. Details are in Appendix E.9.\n\nComputational costs. We note that WATERFALL also has lower computational cost compared to benchmarks (Table 2). WATERFALL verification can be run in parallel on a CPU, requiring only 0.035s when ran on a single 16-core CPU, which is $75\\mathrm{x}$ and $4237\\mathrm{x}$ faster than M-BIT and P-NLW respectively, both which require inference using deep learning models. This is important in the context of protection of IP, e.g., where data providers may have to scan through large amount of online data for any IP infringement. Further discussion on the deployment costs are in Appendix L.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1138::appendix::E",
+      "paper_id": "2024.emnlp-main.1138",
+      "section_number": "E",
+      "section_title": "data ownership experimental setting",
+      "normalized_section_title": "data ownership experimental setting",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1138::appendix::E.3",
+      "paper_id": "2024.emnlp-main.1138",
+      "section_number": "E.3",
+      "section_title": "benchmark experiment settings",
+      "normalized_section_title": "benchmark experiment settings",
+      "window_text": "P-NLW (Qiang et al., 2023) proposes a watermarking process by incorporating a paraphraseer-based lexical substitution model. While M-BIT (Yoo et al., 2023) carefully chooses the potential original word to replace via finding features that are invariant to minor corruption, and a BERT-based lexical substitution model. We use these two approaches as the benchmark for text watermarking in the data ownership problem setting.\n\nKey generation As default, both M-BIT and P-NLW use binary keys as watermark signals. The bits for the keys we use for experiments were generated with a seeded pseudo-random number generator. Specifically, we used 0 as the seed to NumPy's Random Generator to generate the key used in the experiments<sup>8</sup>.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1138::appendix::F",
+      "paper_id": "2024.emnlp-main.1138",
+      "section_number": "F",
+      "section_title": "experimental details and additional results for attacks",
+      "normalized_section_title": "experimental details and additional results for attacks",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1138::appendix::G.1",
+      "paper_id": "2024.emnlp-main.1138",
+      "section_number": "G.1",
+      "section_title": "code watermarking experiment settings",
+      "normalized_section_title": "code watermarking experiment settings",
+      "window_text": "In the main paper, we report the result of code watermarking on the MBJSP dataset (Athiwaratkun et al., 2023) with the data ownership problem setting. This is a JavaScript dataset including around 800 crowd-sourced JavaScript programming problems. To show the ability of WATERFALL on watermarking other programming languages, we also perform data ownership watermarking on Python datasets, which can be found in Appendix G.5.\n\nIn this setting, we use Phind-CodeLlama-34B-v2 $^{12}$ , as LLM paraphraseer for code watermarking, the square wave basis with $k_{p} = 1$ (Appendix C) for watermark perturbation and randomly choose $\\mu = 10$ in all code experiments. As default, we denote WATERFALL code to indicate WATERFALL in this code watermarking settings. Moreover, we also show that prompt engineering techniques, such as Reflexion (Shinn et al., 2023) could improve the fidelity of watermarked code while preserving the verifiability (Appendix G.2). For SRCMARKER (Yang et al., 2024), we configured their algorithm for 16-bit watermarks, to demonstrate scalability of at least $10^{5}$ .\n\nFor verifiability evaluation, we use the same evaluation protocol as article watermarking in Section 4.1. As a result, the ROC curve and AUROC values for WATERFALL code are shown in Figure 19\n\n![](images/59c01fb10ec4b0e3c419defd414c2a50460c204e6220de487b5a90ad372492a2.jpg)  \nFigure 19: The ROC curves and corresponding AUROC values on the MBJSP dataset using WATERFALL code.\n\nWatermarked code fidelity evaluation As mentioned in the main paper, we evaluate the fidelity of the watermarked code by evaluating its accuracy based on functional tests for the original code and use the standard pass@k metric (Kulal et al., 2019; Chen et al., 2021) for evaluating functional correctness. Given the deterministic nature of the baseline SRCMARKER (Yang et al., 2024), which inherently upholds fidelity, the pass@10 metric is adopted to facilitate a fair comparison between WATERFALL and SRCMARKER in terms of fidelity performance. This metric specifically measures the likelihood of WATERFALL producing watermarked code that passes unit tests within 10 generation attempts. The pass@10 metric is also realistic in practice as it aligns with real-world scenarios where clients can assess the quality of watermarked code through predefined tests and subsequently regenerate the code if test failures arise.\n\nTo evaluate the functional correctness of code, we adapt the JavaScript evaluation protocol from Athiwaratkun et al. (2023) for the MBJSP dataset. On the other hand, for Python evaluation, we adapt the HumanEval (Chen et al., 2021) code evaluation protocol<sup>13</sup> and test script from both datasets (Chen et al., 2021; Austin et al., 2021). However, the watermarked code usually modifies the original function name into some related names, so we use Levenshtein distance to find the new text function in the watermarked code. For a more precise evaluation of the watermarked code, this related function name-finding process can be improved by using other similarity distances, such as the Semantic Textual Similarity (STS) score.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1138::appendix::H",
+      "paper_id": "2024.emnlp-main.1138",
+      "section_number": "H",
+      "section_title": "details of experiments on llm data provenance",
+      "normalized_section_title": "details of experiments on llm data provenance",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1138::appendix::H.1",
+      "paper_id": "2024.emnlp-main.1138",
+      "section_number": "H.1",
+      "section_title": "llm fine-tuning experimental setup",
+      "normalized_section_title": "llm fine-tuning experimental setup",
+      "window_text": "To fine-tune the 1.5B parameter gpt2-x1 model, we used the LoRA framework (Hu et al., 2022), with LoRA rank of 16 and target modules c_attn, c_prog, c_fc. The models were fine-tuned for a total of 5 epochs, with default batch size of 128 and learning rate of 0.0003. Fine-tuning was performed on a single Nvidia L40 GPU, requiring an average of approximately 15 minutes per client (4000 data samples for each client) for the fine-tuning of the model.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1138::appendix::H.3",
+      "paper_id": "2024.emnlp-main.1138",
+      "section_number": "H.3",
+      "section_title": "fidelity of model fine-tuned over watermarked text",
+      "normalized_section_title": "fidelity of model fine-tuned over watermarked text",
+      "window_text": "We used lm-evaluation-harness $^{14}$ (Gao et al., 2021) to evaluate the fine-tuned models for its fidelity over several different datasets (Gao et al., 2020; Merity et al., 2016; Wang et al., 2018; Dolan and Brockett, 2005; Bisk et al., 2020; Levesque et al., 2011). Table 10 reports the models fine-tuned over the watermarked datasets results in minimal differences in fidelity as compared to the model fine-tuned over the unwatermarked datasets. This shows that act of watermarking data used for fine-tuning does not significantly affect its value for fine-tuning.\n\nTable 10: Fidelity of model fine-tuned using watermarked text (Watermarked) and unwatermarked text (Unwatermarked) of different number of clients $M$ , evaluated over the various datasets.   \n\n<table><tr><td colspan=\"2\">Dataset</td><td>1</td><td>5</td><td>M 10</td><td>20</td><td>100</td></tr><tr><td rowspan=\"2\">Pile-ArXiv (ppl)</td><td>Watermarked</td><td>2.209</td><td>2.218</td><td>2.218</td><td>2.180</td><td>2.166</td></tr><tr><td>Unwatermarked</td><td>2.192</td><td>2.210</td><td>2.197</td><td>2.170</td><td>2.154</td></tr><tr><td rowspan=\"2\">Wikitext (ppl)</td><td>Watermarked</td><td>1.771</td><td>1.770</td><td>1.780</td><td>1.787</td><td>1.818</td></tr><tr><td>Unwatermarked</td><td>1.766</td><td>1.769</td><td>1.774</td><td>1.783</td><td>1.814</td></tr><tr><td rowspan=\"2\">MRPC (acc)</td><td>Watermarked</td><td>0.662</td><td>0.618</td><td>0.674</td><td>0.581</td><td>0.326</td></tr><tr><td>Unwatermarked</td><td>0.679</td><td>0.627</td><td>0.627</td><td>0.380</td><td>0.314</td></tr><tr><td rowspan=\"2\">PIQA (acc)</td><td>Watermarked</td><td>0.687</td><td>0.676</td><td>0.682</td><td>0.676</td><td>0.673</td></tr><tr><td>Unwatermarked</td><td>0.686</td><td>0.682</td><td>0.683</td><td>0.680</td><td>0.678</td></tr><tr><td rowspan=\"2\">WNLI (acc)</td><td>Watermarked</td><td>0.563</td><td>0.620</td><td>0.535</td><td>0.549</td><td>0.493</td></tr><tr><td>Unwatermarked</td><td>0.620</td><td>0.577</td><td>0.592</td><td>0.563</td><td>0.535</td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1138::appendix::L.1",
+      "paper_id": "2024.emnlp-main.1138",
+      "section_number": "L.1",
+      "section_title": "decentralized deployment",
+      "normalized_section_title": "decentralized deployment",
+      "window_text": "In this approach, clients randomly generate their own IDs (given the large space of supportable IDs), and can do watermark and verification operations on their own using their laptops with minimal setup.\n\nSetup For most common text typeslanguages supported by LLMs, clients could immediately run WATERFALL with no setup, given a default LLM and WATERFALL settings, to generate the watermarked text $T_{\\mathrm{w}}$\n\nComputational cost WATERFALL's watermarking computational cost is just that of running inference of the LLM paraphraseer, with negligible overheads. Using a GPU available in many laptops (Nvidia RTX 5000), a user could use the Llama-2-13b model to watermark a text in $< 25$ s to already achieve great performance, as shown in Table 2 in our paper. We expect that the cost of running high performance LLMs on personal devices (e.g., MacBooks, laptops with GPUs) will get cheaper and cheaper, given the rapidly evolving landscape of LLMs.\n\nWATERFALL's verification operation is extremely fast and can be run on just CPU ( $< 0.04\\mathrm{s}$ per text), without the need for any LLM. For practical applications, the verification operation will be the main operation run multiple times, rather than the watermarking operation (typically only once before the user publishes the text). WATERFALL's verification operator is 2-5 orders of magnitude faster than baseline text watermarking methods (Table 2 in our paper).",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1138::appendix::L.4",
+      "paper_id": "2024.emnlp-main.1138",
+      "section_number": "L.4",
+      "section_title": "selection of watermarking llm and hyperparameter",
+      "normalized_section_title": "selection of watermarking llm and hyperparameter",
+      "window_text": "As with any adaptable methods, WATERFALL would require some effort to gain boosted performance in specific domains (e.g., text type or language). That said, the WATERFALL framework is designed to reduce such efforts, and it is relatively easy for a user to perform such fine-tuning given only 1 hyperparameter to tune (watermarking strength $\\kappa$ ) and the choice of LLM paraphraseer. For example, the user could just follow these simple steps:\n\n1. Identify the SOTA LLM for the domain, to use as the LLM paraphraseer component. As a domain expert and content creator (of the text to be watermarked), the client should be familiar with what is available. Given the evolving landscape of LLMs, we believe that it is realistic for each domain to have a relatively capable fine-tuned model.   \n2. Run WATERFALL with default watermarking strength $\\kappa$ and assess if the fidelity and robust verifiability of the text meets expectation. As a domain expert, the client can assess if the text has sufficient fidelity or use a domain-specific fidelity metric to automate the check. The client can also use an automated suite of robustness checks (comprising standard attacks) would assess the expected robust verifiability of the watermarked text.   \n3. If the results are not up to expectation, perform optimization over the $\\kappa$ hyperparameter using standard AutoML methods like Bayesian Optimization (BO). This could be automated especially if a fidelity metric is provided but manual sequential checks could also be used given just 1 hyperparameter and a query-efficient approach like BO.\n\nIn practice, if WATERFALL is widely adopted, an open research or developer community would also likely be able to share such configurations and fine-tuning, similar to how fine-tuned deep learning models are also being shared today. Even if WATERFALL is implemented by closed-source companies, economies of scale would make it worth fine-tuning and optimizing WATERFALL across languages and text types.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1138::appendix::L.6",
+      "paper_id": "2024.emnlp-main.1138",
+      "section_number": "L.6",
+      "section_title": "additional implementation methods like beam search",
+      "normalized_section_title": "additional implementation methods like beam search",
+      "window_text": "Instead of performing conventional sampling of the perturbed logits during the watermarking text generation phase, we could apply beam search for generation. This allows us to generate several alternative versions of the watermarked text, while ensuring that the tokens being selected retains fidelity and achieves verifiability by selecting\n\nhigh scoring logits with strong watermark perturbations. This provides a more computationally efficient alternative to the multi-round refinement in Appendix L.5. Finally, the final watermarked text can be selected from the list of generations based on some criterion that balances fidelity and verifiability. We have implemented a version of this in our code release, available at https://github.com/aoi3142/Waterfall.\n\n![](images/71b11237ee66468446f9f26247e7e86871735a1d1bae190af1c72ab854da102e.jpg)  \nFigure 22: Example of watermarked code with WATERFALL. WATERFALL code changes not only the variable names but also the ways of representing the same code logic (e.g., ternary operator vs. conditional statement), which results in high verifiability while preserving code functionality (high fidelity).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.1138::appendix::H.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia L40",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "To fine-tune the 1.5B parameter gpt2-x1 model, we used the LoRA framework (Hu et al., 2022), with LoRA rank of 16 and target modules c_attn, c_prog, c_fc. The models were fine-tuned for a total of 5 epochs, with default batch size of 128 and learning rate of 0.0003. Fine-tuning was performed on a single Nvidia L40 GPU, requiring an average of approximately 15 minutes per client (4000 data samples for each client) for the fine-tuning of the model.",
+      "section_number": "H.1",
+      "section_title": "llm fine-tuning experimental setup",
+      "normalized_section_title": "llm fine-tuning experimental setup"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.1138::appendix::H.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia L40",
+      "cleaned_hardware_name": "nvidia l40",
+      "normalized_hardware_name": "NVIDIA L40",
+      "benchmark_hardware_name": "NVIDIA L40",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "H.1",
+      "section_title": "llm fine-tuning experimental setup",
+      "normalized_section_title": "llm fine-tuning experimental setup",
+      "evidence": "To fine-tune the 1.5B parameter gpt2-x1 model, we used the LoRA framework (Hu et al., 2022), with LoRA rank of 16 and target modules c_attn, c_prog, c_fc. The models were fine-tuned for a total of 5 epochs, with default batch size of 128 and learning rate of 0.0003. Fine-tuning was performed on a single Nvidia L40 GPU, requiring an average of approximately 15 minutes per client (4000 data samples for each client) for the fine-tuning of the model.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.emnlp-main.1138::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.1138::sections::4.1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "data ownership",
+      "evidence": "For watermarking of text articles, we demonstrate the effectiveness of WATERFALL with experiments using text samples $T_{0}$ from the c4 realnewslike dataset (Raffel et al., 2020), comprising articles with mean token length of 412. The experiments mirror realistic scenarios, for e.g., news outlets watermarking their articles before publishing them to be able to effectively scan the internet for, and verify, plagiarized content (Brewster et al., 2023). For this setting, we evaluate the semantic similarity $S$ using the Semantic Textual Similarity (STS) score based on the all-mpnet-base-v2 model $^{3}$ ( $S$ for sample text pairs are provided in Appendix E.5).\n\nFor benchmarks, we consider two recent linguistics-based watermarking methods: M-BIT by Yoo et al. (2023) and P-NLW by Qiang et al. (2023). These methods are advanced variants of BASIC that use deep learning to improve watermarking performance (details in Appendix E.3). To implement WATERFALL, we use $1\\text{lama}-2-13\\text{b}-\\text{hf}^4$ as the paraphrase, and the Fourier basis for the perturbation functions. Additional\n\ndetails such as paraphrasing prompts are in Appendix E.\n\nFidelity-verifiability. We consider the fidelity and verifiability of the schemes before adversarial attacks. Verifiability is computed as the AUROC based on varying their respective classification thresholds, i.e., the verification score threshold $\\bar{q}$ for WATERFALL, and bit-error rate threshold for M-BIT and P-NLW.\n\nWATERFALL allows for adjustable watermarking strength to calibrate the fidelity-verifiability trade-off based on the clients' needs. Figure 4a shows the Pareto frontier of the trade-off. Stronger watermark strength $\\kappa$ improves verifiability but also introduces larger distortions to the LLM paraphrasing process, decreasing the fidelity of watermarked text. For our experiments, we mainly used $\\kappa = 6$ , achieving a mean AUROC of 0.992 and STS of 0.887. Even for shorter texts of just 100 tokens (about 65 words), WATERFALL achieves high verifiability with an AUROC of 0.98 (Figure 4b). Additional results are in Appendix E.4. Note that M-BIT and P-NLW allows for only a single fidelity-verifiability score, with mean STS scores of 0.998 and 0.942 respectively, and corresponding AUROC scores of 0.987 and 0.882. While the STS scores are high, it is expected as the schemes only make minor edits to $T_{\\mathrm{o}}$ which would be more fragile to attacks, as we will see later.\n\nText fluency and quality. In fact, both M-BIT and P-NLW causes significant degradation in text fluency and quality despite their high STS scores, significantly impacting its practicality in real-life applications. For example, the word replacements by M-BIT and P-NLW introduced noticeable linguistic errors that are not captured by the STS score (shown in Appendix E.5). In contrast, WATERFALL consistently produce high quality watermarked text. To systematically analyze this, we quantify text quality via evaluations using ChatGPT, which has been shown to be a good evaluation metric for text fluency (Wang et al., 2023a). Details of the evaluation method, along with results using another text quality metric (GPTScore (Fu et al., 2024)) which further corroborate our findings, are in Appendix E.6. We can see in Figure 4b that WATERFALL significantly outperforms benchmark methods for the fluency score across the different watermark strengths while achieving high verifiability (AUROC), and the results of M-bit and P-nlw lie far within the Pareto frontier of WATERFALL.\n\nRobust verifiability. We consider the various classes of attacks A mentioned in Section 2. Details of the setup for each attack and additional results are in Appendix F.\n\n$\\mathbb{A}_1$ attacks are insertion, deletion, and synonym substitution attacks that are often considered in past works. As shown in Figure 6, robust verifiability of WATERFALL shows only a slight decrease even with strong attacks on $20\\%$ of words, while that of M-BIT and P-NLW fall drastically with increasing attack strength.\n\n$\\mathbb{A}_2$ involves translation and paraphrasing attacks, which are more realistic and effective attacks that can achieve higher fidelity and verification reduction than\n\n![](images/a5c34323c4e93181a0feb7063b71e3e23ac58d7e5220208a16d5ddd2f0e97b57.jpg)  \nFigure 6: WATERFALL demonstrates robust verifiability under $\\mathbb{A}_1$ (insertion, deletion, and synonym substitution attacks) with minimal degradation in AUROC compared to M-BIT and P-NLW.\n\nTable 1: Robust verifiability under attacks: translation $\\mathbb{A}_{2 - T}$ , paraphrase $\\mathbb{A}_{2 - P}$ , overlap watermark $\\mathbb{A}_3$ and in-context prompting $\\mathbb{A}_4$ .   \n\n<table><tr><td></td><td>Pre-attack</td><td>A2-T</td><td>A2-P</td><td>A3</td><td>A4</td></tr><tr><td>WATERFALL</td><td>0.992</td><td>0.951</td><td>0.881</td><td>0.815</td><td>0.775</td></tr><tr><td>P-NLW</td><td>0.885</td><td>0.475</td><td>0.508</td><td>0.724</td><td>0.502</td></tr><tr><td>M-BIT</td><td>0.988</td><td>0.567</td><td>0.363</td><td>0.664</td><td>0.525</td></tr></table>\n\n$\\mathbb{A}_1$ and had not been considered by past text watermarking works. We perform translation attack to translate the watermarked text to Spanish and back to English, and paraphrasing attack to paraphrase the watermarked text. Again, the verifiability of WATERFALL remains significantly higher than benchmarks post-attack.\n\n$\\mathbb{A}_3$ involves using the same scheme to try overwrite the existing watermark with another watermark. For WATERFALL, the $1^{\\mathrm{st}}$ watermark remains verifiable even after the $2^{\\mathrm{nd}}$ is added, given the design of $\\mathcal{P}$ and $\\mathcal{F}$ with vocab permutation and orthogonal perturbation functions that minimizes interference of the $2^{\\mathrm{nd}}$ watermark on the $1^{\\mathrm{st}}$ . However, this attack destroys the verifiability of M-BIT and P-NLW, as the $2^{\\mathrm{nd}}$ watermark process almost always chooses the same word positions as the original process, overwriting $\\mu_1$ . Furthermore, the benchmark schemes extracts $\\mu_1$ as part of verification, enabling targeted overlap watermark attacks which we demonstrated in Appendix F.3.\n\n$\\mathbb{A}_4$ uses $T_{\\mathrm{w}}$ for in-context prompting of any LLM to perform tasks that rely on the IP or semantic content of $T_{\\mathrm{w}}$ . For illustration, we considered the case where adversaries use an LLM to answer questions regarding watermarked articles. As this attack totally changed the structure of the texts, the watermarks of M-BIT and P-NLW were removed. However, with WATERFALL, watermarks were still verifiable due to the preservation of watermarked $n$ -grams from the context to the response.\n\n$\\mathbb{A}_5$ which involves using text containing IP for unauthorized LLM training such as fine-tuning will be discussed in Section 4.3.\n\nScalability. As mentioned in Section 3.3, WATER-FALL has a large maximum scalability of $M = |\\mathcal{F}_1| \\cdot |\\mathbb{V}|! \\sim 10^{130274}$ based on our implementation using the Fourier perturbation function, and Llama-2 model as LLM paraphraseR. In comparison, M-BIT and P-NLW,\n\nTable 2: Mean compute time over 100 texts on 1 Nvidia RTX A5000. *Note that verification for WATERFALL was performed only on CPU without requiring a GPU.   \n\n<table><tr><td></td><td>WATERFALL</td><td>M-BIT</td><td>P-NLW</td></tr><tr><td>Watermark</td><td>24.8s</td><td>2.97s</td><td>147s</td></tr><tr><td>Verification</td><td>0.035s*</td><td>2.61s</td><td>148s</td></tr></table>\n\nhave scalability dependent on the number of possible synonym replacements in any given text, which is limited by text length and varies for different text. On the c4 dataset with a mean article length of 355 words, M-BIT and P-NLW can only embed a mean of 9.5 bits $(M\\sim 10^{3})$ and 23.2 bits $(M\\sim 10^{10})$ respectively.\n\nIn practice, scalability is further limited by how well the schemes can differentiate among similar watermarks. For e.g., the verification operation of M-BIT and P-NLW may not be able to distinguish 2 IDs differing by 1 bit (see Appendix E.8.3 for details). To demonstrate this, we watermarked $T_{\\mathrm{w}}^{(i)}$ with $\\mu_{i}$ and computed the verifiability of $T_{\\mathrm{w}}^{(i)}$ against 1000 randomly selected IDs $\\mu_{j \\neq i}$ . We found that for WATERFALL, all of the IDs achieved very high AUROC, while M-BIT and P-NLW have many IDs with low AUROC: The $1^{\\mathrm{st}}$ percentile AUROC for WATERFALL, M-BIT, P-NLW are 0.976, 0.614, 0.766 respectively. Details and further results on scalability up to 100,000 IDs are in Appendix E.8.\n\nMetadata extraction. We also demonstrate how WATERFALL could be used to embed metadata while watermarking. We consider metadata $k_{p} \\in \\{1,2,\\dots,31999\\}$ , and the task is to extract the embedded $k_{p}$ if the text has been verified as watermarked with $\\mu$ . We do so by using $k_{p}$ as the frequency of the Fourier perturbation function $\\mathcal{F}_1$ , and perform extraction with the DFT. Figure 5b shows the extraction accuracy of WATERFALL for different perturbation magnitudes $\\kappa$ . By taking multiple samples of $T_{\\mathrm{w}}$ , multiple articles could be combined together to improve extraction accuracy. For $\\kappa = 6$ , accuracy increases from $48\\%$ to $99\\%$ with only 5 pieces of text. Details are in Appendix E.9.\n\nComputational costs. We note that WATERFALL also has lower computational cost compared to benchmarks (Table 2). WATERFALL verification can be run in parallel on a CPU, requiring only 0.035s when ran on a single 16-core CPU, which is $75\\mathrm{x}$ and $4237\\mathrm{x}$ faster than M-BIT and P-NLW respectively, both which require inference using deep learning models. This is important in the context of protection of IP, e.g., where data providers may have to scan through large amount of online data for any IP infringement. Further discussion on the deployment costs are in Appendix L."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.1138::appendix::E",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "E",
+      "section_title": "data ownership experimental setting",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.1138::appendix::E.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "E.3",
+      "section_title": "benchmark experiment settings",
+      "evidence": "P-NLW (Qiang et al., 2023) proposes a watermarking process by incorporating a paraphraseer-based lexical substitution model. While M-BIT (Yoo et al., 2023) carefully chooses the potential original word to replace via finding features that are invariant to minor corruption, and a BERT-based lexical substitution model. We use these two approaches as the benchmark for text watermarking in the data ownership problem setting.\n\nKey generation As default, both M-BIT and P-NLW use binary keys as watermark signals. The bits for the keys we use for experiments were generated with a seeded pseudo-random number generator. Specifically, we used 0 as the seed to NumPy's Random Generator to generate the key used in the experiments<sup>8</sup>."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.1138::appendix::F",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "F",
+      "section_title": "experimental details and additional results for attacks",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.1138::appendix::G.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "G.1",
+      "section_title": "code watermarking experiment settings",
+      "evidence": "In the main paper, we report the result of code watermarking on the MBJSP dataset (Athiwaratkun et al., 2023) with the data ownership problem setting. This is a JavaScript dataset including around 800 crowd-sourced JavaScript programming problems. To show the ability of WATERFALL on watermarking other programming languages, we also perform data ownership watermarking on Python datasets, which can be found in Appendix G.5.\n\nIn this setting, we use Phind-CodeLlama-34B-v2 $^{12}$ , as LLM paraphraseer for code watermarking, the square wave basis with $k_{p} = 1$ (Appendix C) for watermark perturbation and randomly choose $\\mu = 10$ in all code experiments. As default, we denote WATERFALL code to indicate WATERFALL in this code watermarking settings. Moreover, we also show that prompt engineering techniques, such as Reflexion (Shinn et al., 2023) could improve the fidelity of watermarked code while preserving the verifiability (Appendix G.2). For SRCMARKER (Yang et al., 2024), we configured their algorithm for 16-bit watermarks, to demonstrate scalability of at least $10^{5}$ .\n\nFor verifiability evaluation, we use the same evaluation protocol as article watermarking in Section 4.1. As a result, the ROC curve and AUROC values for WATERFALL code are shown in Figure 19\n\n![](images/59c01fb10ec4b0e3c419defd414c2a50460c204e6220de487b5a90ad372492a2.jpg)  \nFigure 19: The ROC curves and corresponding AUROC values on the MBJSP dataset using WATERFALL code.\n\nWatermarked code fidelity evaluation As mentioned in the main paper, we evaluate the fidelity of the watermarked code by evaluating its accuracy based on functional tests for the original code and use the standard pass@k metric (Kulal et al., 2019; Chen et al., 2021) for evaluating functional correctness. Given the deterministic nature of the baseline SRCMARKER (Yang et al., 2024), which inherently upholds fidelity, the pass@10 metric is adopted to facilitate a fair comparison between WATERFALL and SRCMARKER in terms of fidelity performance. This metric specifically measures the likelihood of WATERFALL producing watermarked code that passes unit tests within 10 generation attempts. The pass@10 metric is also realistic in practice as it aligns with real-world scenarios where clients can assess the quality of watermarked code through predefined tests and subsequently regenerate the code if test failures arise.\n\nTo evaluate the functional correctness of code, we adapt the JavaScript evaluation protocol from Athiwaratkun et al. (2023) for the MBJSP dataset. On the other hand, for Python evaluation, we adapt the HumanEval (Chen et al., 2021) code evaluation protocol<sup>13</sup> and test script from both datasets (Chen et al., 2021; Austin et al., 2021). However, the watermarked code usually modifies the original function name into some related names, so we use Levenshtein distance to find the new text function in the watermarked code. For a more precise evaluation of the watermarked code, this related function name-finding process can be improved by using other similarity distances, such as the Semantic Textual Similarity (STS) score."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.1138::appendix::H",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "H",
+      "section_title": "details of experiments on llm data provenance",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.1138::appendix::H.3",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "H.3",
+      "section_title": "fidelity of model fine-tuned over watermarked text",
+      "evidence": "We used lm-evaluation-harness $^{14}$ (Gao et al., 2021) to evaluate the fine-tuned models for its fidelity over several different datasets (Gao et al., 2020; Merity et al., 2016; Wang et al., 2018; Dolan and Brockett, 2005; Bisk et al., 2020; Levesque et al., 2011). Table 10 reports the models fine-tuned over the watermarked datasets results in minimal differences in fidelity as compared to the model fine-tuned over the unwatermarked datasets. This shows that act of watermarking data used for fine-tuning does not significantly affect its value for fine-tuning.\n\nTable 10: Fidelity of model fine-tuned using watermarked text (Watermarked) and unwatermarked text (Unwatermarked) of different number of clients $M$ , evaluated over the various datasets.   \n\n<table><tr><td colspan=\"2\">Dataset</td><td>1</td><td>5</td><td>M 10</td><td>20</td><td>100</td></tr><tr><td rowspan=\"2\">Pile-ArXiv (ppl)</td><td>Watermarked</td><td>2.209</td><td>2.218</td><td>2.218</td><td>2.180</td><td>2.166</td></tr><tr><td>Unwatermarked</td><td>2.192</td><td>2.210</td><td>2.197</td><td>2.170</td><td>2.154</td></tr><tr><td rowspan=\"2\">Wikitext (ppl)</td><td>Watermarked</td><td>1.771</td><td>1.770</td><td>1.780</td><td>1.787</td><td>1.818</td></tr><tr><td>Unwatermarked</td><td>1.766</td><td>1.769</td><td>1.774</td><td>1.783</td><td>1.814</td></tr><tr><td rowspan=\"2\">MRPC (acc)</td><td>Watermarked</td><td>0.662</td><td>0.618</td><td>0.674</td><td>0.581</td><td>0.326</td></tr><tr><td>Unwatermarked</td><td>0.679</td><td>0.627</td><td>0.627</td><td>0.380</td><td>0.314</td></tr><tr><td rowspan=\"2\">PIQA (acc)</td><td>Watermarked</td><td>0.687</td><td>0.676</td><td>0.682</td><td>0.676</td><td>0.673</td></tr><tr><td>Unwatermarked</td><td>0.686</td><td>0.682</td><td>0.683</td><td>0.680</td><td>0.678</td></tr><tr><td rowspan=\"2\">WNLI (acc)</td><td>Watermarked</td><td>0.563</td><td>0.620</td><td>0.535</td><td>0.549</td><td>0.493</td></tr><tr><td>Unwatermarked</td><td>0.620</td><td>0.577</td><td>0.592</td><td>0.563</td><td>0.535</td></tr></table>"
+    },
+    {
+      "source_window_id": "2024.emnlp-main.1138::appendix::L.1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "L.1",
+      "section_title": "decentralized deployment",
+      "evidence": "In this approach, clients randomly generate their own IDs (given the large space of supportable IDs), and can do watermark and verification operations on their own using their laptops with minimal setup.\n\nSetup For most common text typeslanguages supported by LLMs, clients could immediately run WATERFALL with no setup, given a default LLM and WATERFALL settings, to generate the watermarked text $T_{\\mathrm{w}}$\n\nComputational cost WATERFALL's watermarking computational cost is just that of running inference of the LLM paraphraseer, with negligible overheads. Using a GPU available in many laptops (Nvidia RTX 5000), a user could use the Llama-2-13b model to watermark a text in $< 25$ s to already achieve great performance, as shown in Table 2 in our paper. We expect that the cost of running high performance LLMs on personal devices (e.g., MacBooks, laptops with GPUs) will get cheaper and cheaper, given the rapidly evolving landscape of LLMs.\n\nWATERFALL's verification operation is extremely fast and can be run on just CPU ( $< 0.04\\mathrm{s}$ per text), without the need for any LLM. For practical applications, the verification operation will be the main operation run multiple times, rather than the watermarking operation (typically only once before the user publishes the text). WATERFALL's verification operator is 2-5 orders of magnitude faster than baseline text watermarking methods (Table 2 in our paper)."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.1138::appendix::L.4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "L.4",
+      "section_title": "selection of watermarking llm and hyperparameter",
+      "evidence": "As with any adaptable methods, WATERFALL would require some effort to gain boosted performance in specific domains (e.g., text type or language). That said, the WATERFALL framework is designed to reduce such efforts, and it is relatively easy for a user to perform such fine-tuning given only 1 hyperparameter to tune (watermarking strength $\\kappa$ ) and the choice of LLM paraphraseer. For example, the user could just follow these simple steps:\n\n1. Identify the SOTA LLM for the domain, to use as the LLM paraphraseer component. As a domain expert and content creator (of the text to be watermarked), the client should be familiar with what is available. Given the evolving landscape of LLMs, we believe that it is realistic for each domain to have a relatively capable fine-tuned model.   \n2. Run WATERFALL with default watermarking strength $\\kappa$ and assess if the fidelity and robust verifiability of the text meets expectation. As a domain expert, the client can assess if the text has sufficient fidelity or use a domain-specific fidelity metric to automate the check. The client can also use an automated suite of robustness checks (comprising standard attacks) would assess the expected robust verifiability of the watermarked text.   \n3. If the results are not up to expectation, perform optimization over the $\\kappa$ hyperparameter using standard AutoML methods like Bayesian Optimization (BO). This could be automated especially if a fidelity metric is provided but manual sequential checks could also be used given just 1 hyperparameter and a query-efficient approach like BO.\n\nIn practice, if WATERFALL is widely adopted, an open research or developer community would also likely be able to share such configurations and fine-tuning, similar to how fine-tuned deep learning models are also being shared today. Even if WATERFALL is implemented by closed-source companies, economies of scale would make it worth fine-tuning and optimizing WATERFALL across languages and text types."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.1138::appendix::L.6",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "L.6",
+      "section_title": "additional implementation methods like beam search",
+      "evidence": "Instead of performing conventional sampling of the perturbed logits during the watermarking text generation phase, we could apply beam search for generation. This allows us to generate several alternative versions of the watermarked text, while ensuring that the tokens being selected retains fidelity and achieves verifiability by selecting\n\nhigh scoring logits with strong watermark perturbations. This provides a more computationally efficient alternative to the multi-round refinement in Appendix L.5. Finally, the final watermarked text can be selected from the list of generations based on some criterion that balances fidelity and verifiability. We have implemented a version of this in our code release, available at https://github.com/aoi3142/Waterfall.\n\n![](images/71b11237ee66468446f9f26247e7e86871735a1d1bae190af1c72ab854da102e.jpg)  \nFigure 22: Example of watermarked code with WATERFALL. WATERFALL code changes not only the variable names but also the ways of representing the same code logic (e.g., ternary operator vs. conditional statement), which results in high verifiability while preserving code functionality (high fidelity)."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "H.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA L40",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2024\\2024.emnlp-main.1138\\auto\\full.md",
+    "source_md_sha256": "37dab075786d0b2721fc40ee209780929a81e9d2a3d7ac63651a8143e8f8f125",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "c528636f3bbfba595f8edb98c2892f86618e38f5077330ffb55606b0029e9d1d"
+  }
+}

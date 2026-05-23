@@ -1,0 +1,162 @@
+{
+  "paper_id": "2025.acl-long.24",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.24::sections::3",
+      "paper_id": "2025.acl-long.24",
+      "section_number": "3",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "Previous compression methods are not tailored for ICL, and they are either bound by serious inference latency or poor performance, as demonstrated in Appendix A. We propose UniICL, a unified ICL framework that unifies demonstration compression, demonstration selection, and response generation. As for the selection of the underlying LLM, previ\n\n![](images/9163c3d3e948d21af1e0501296d68257f30227c63e13e5ee4393cbc1b946a11a.jpg)  \nFigure 3: Demonstration compression. $k$ Memory Slots are attached behind each demonstration.\n\nous work has proved that the Decoder-only model performs better than the Encoder-Decoder model in prompt compression (Mu et al., 2023). We follow this conclusion and adopt Vicuna-7B (Zheng et al., 2023) as the underlying backbone in UniICL.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.24::sections::4",
+      "paper_id": "2025.acl-long.24",
+      "section_number": "4",
+      "section_title": "experiment",
+      "normalized_section_title": "experiment",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.24::sections::4.1",
+      "paper_id": "2025.acl-long.24",
+      "section_number": "4.1",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "Unmodified Vicuna-7b serves as the fundamental baseline fed with actual demonstrations. Auto\n\nTable 1: The composition training set of UniICL. (m,n] represents the range of the number of words in each instance. XSum (Ctr) is used for the second-phase training in Eq. 6.   \n\n<table><tr><td rowspan=\"2\">Dataset</td><td colspan=\"3\"># words</td></tr><tr><td>(96,512]</td><td>(512,1024]</td><td>(1024,1536]</td></tr><tr><td>XSum (Narayan et al., 2018)</td><td>-</td><td>10,000</td><td>4,697</td></tr><tr><td>CICERO (Ghosal et al., 2022)</td><td>10,000</td><td>-</td><td>-</td></tr><tr><td>SUPER-NI (Wang et al., 2022b)</td><td>-</td><td>10,000</td><td>7,000</td></tr><tr><td>XSum (Ctr)</td><td></td><td>5,000</td><td></td></tr></table>\n\nTable 2: The details of the involved evaluation datasets. -dev represents employing the development set due to their test sets are inaccessible. # Demonstrations represent the number of demonstrations to be selected in high/low-resource ICL settings.   \n\n<table><tr><td>Dataset</td><td>In-Domain</td><td># Test</td><td># Demonstrations</td></tr><tr><td>MS MARCO-dev</td><td>X</td><td>6,980</td><td>-</td></tr><tr><td>XSum</td><td>✓</td><td>1,500</td><td>204,045/20</td></tr><tr><td>Arxiv</td><td>X</td><td>1,500</td><td>203,037/20</td></tr><tr><td>CoLA-dev</td><td>X</td><td>1,041</td><td>67,349/20</td></tr><tr><td>SST-2-dev</td><td>X</td><td>872</td><td>8,551/20</td></tr><tr><td>IMDb</td><td>X</td><td>1,500</td><td>25,000/20</td></tr><tr><td>MMLU</td><td>X</td><td>13,985</td><td>25,000/20</td></tr></table>\n\nCompressor compresses prompts into 50 virtual tokens in different rounds recurrently. Previous compressed virtual tokens are put at the beginning of the current segment. Finally, virtual tokens of different compression rounds are concatenated for generation. We employ their Llama2-7b version for comparison. LLMLingua is a coarse-to-fine demonstration pruning method based on dropping uninformative words. We employ their released 7b version, of which the compressor is a fine-tuned Llama2. For a meaningful comparison, we replace target LLMs of LLMLingua (GPT-3.5-Turbo or Claude-v1.3) with the Vicuna-7b. ICAE compresses demonstrations into 128 virtual tokens via a LoRA-adapted Llama2-7b. Additionally, since selection augmentation is involved in the training of UniICL, we utilize the popular Sentence-BERT (S-BERT) (Reimers and Gurevych, 2019) as the dense retriever to construct an ICL pipeline for the above methods, serving as simple but effective selection-based baselines.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.24::sections::4.2",
+      "paper_id": "2025.acl-long.24",
+      "section_number": "4.2",
+      "section_title": "settings",
+      "normalized_section_title": "settings",
+      "window_text": "We construct the training set by mixing up XSum, CICERO, and SUPER-NI according to their length as shown in Tab. 1 and evaluate UniICL on extensive out-of-domain datasets as listed in Tab. 2, with more details reported in Appendix H. Considering\n\ncomputation efficiency, we set the max allowed input length limit to 512 for both compression and generation for both training and inference. For a fair comparison, we set the allowed window of baselines to 512, and the compression ratio of default UniICL and baselines is set to 12, which is determined by the validation in Fig. 7. We fix the learning rate to 8e-5 and use Adam as the optimizer, and the effective batch size is 32 (8 GPUs data parallelism and 4 steps gradient accumulation). We train 10 epochs and 2 epochs respectively for the first- and second-phase training. The best checkpoints are selected according to their performance on in-domain validation sets. Additionally, we conducted all experiments on 8*NVIDIA A5000 24G GPUs based on BFloat 16 data type, and we set the evaluated shots to 8 for understanding tasks and 5 for generative tasks for illustration, because of marginal ICL gains and memory costs.\n\nWe apply S-BERT to pre-rank and output the top 10 similar candidates from training sets according to each inference input for all baselines. UniICL is employed to perform selection among them in practice due to computational efficiency for high-resource ICL. On the contrary, the low-resource ICL setting utilizes the randomly sampled 20 candidate demonstrations for all inference inputs, while UniICL performs selection as normal.\n\nTo verify the universality, we further build Uni-ICL on BlueLM-7B (Team, 2023) and Llama2-7B (Touvron et al., 2023). Results of BlueLM and Llama2 will be reported in Appendix C and Appendix D.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.acl-long.24::sections::5.2",
+      "paper_id": "2025.acl-long.24",
+      "section_number": "5.2",
+      "section_title": "efficiency analysis",
+      "normalized_section_title": "efficiency analysis",
+      "window_text": "In UniICL, we incorporate an additional 17M trainable parameters into the 7b backbone, accounting\n\nfor an approximate increase of $0.24\\%$ . We evaluate the memory costs and inference latency of UniICL and other compression methods in Fig. 8. With the help of the Demonstration Bank (DB), UniICL will eliminate the extra latency if the selected demonstrations have been compressed and cached (UniICL+Caching). Despite this, parallel computation facilitates the compression process, resulting in minimal throughput degradation (UniICL and Baseline). The unmodified 7B LLM causes a memory explosion for 8-shot settings, and other compression methods perform up to 32-shot, while UniICL successfully scales up to 64-shot within a 24GB CUDA allocation.\n\nAdditionally, we demonstrate the inference computation and GPU hours in Tab. 7, by using 1,024 random legal tokens as inputs and forcing models to generate 128 tokens. Notably, UniICL (without DB) compresses the former half, and the latter half is fed into the generator directly, while Vicuna and Vicuna-1k are distinguished in window limitations. Results indicate that minimal GPU hours increased due to the parallel computation of forward, although the extra compression of UniICL surges the computation. Additionally, Vicuna, with a 1k window limitation, surges both GPU hours and TFLOPs because long input brings significant computation and latency in generation.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.24::sections::4.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A5000 24G",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "We construct the training set by mixing up XSum, CICERO, and SUPER-NI according to their length as shown in Tab. 1 and evaluate UniICL on extensive out-of-domain datasets as listed in Tab. 2, with more details reported in Appendix H. Considering\n\ncomputation efficiency, we set the max allowed input length limit to 512 for both compression and generation for both training and inference. For a fair comparison, we set the allowed window of baselines to 512, and the compression ratio of default UniICL and baselines is set to 12, which is determined by the validation in Fig. 7. We fix the learning rate to 8e-5 and use Adam as the optimizer, and the effective batch size is 32 (8 GPUs data parallelism and 4 steps gradient accumulation). We train 10 epochs and 2 epochs respectively for the first- and second-phase training. The best checkpoints are selected according to their performance on in-domain validation sets. Additionally, we conducted all experiments on 8*NVIDIA A5000 24G GPUs based on BFloat 16 data type, and we set the evaluated shots to 8 for understanding tasks and 5 for generative tasks for illustration, because of marginal ICL gains and memory costs.\n\nWe apply S-BERT to pre-rank and output the top 10 similar candidates from training sets according to each inference input for all baselines. UniICL is employed to perform selection among them in practice due to computational efficiency for high-resource ICL. On the contrary, the low-resource ICL setting utilizes the randomly sampled 20 candidate demonstrations for all inference inputs, while UniICL performs selection as normal.\n\nTo verify the universality, we further build Uni-ICL on BlueLM-7B (Team, 2023) and Llama2-7B (Touvron et al., 2023). Results of BlueLM and Llama2 will be reported in Appendix C and Appendix D.",
+      "section_number": "4.2",
+      "section_title": "settings",
+      "normalized_section_title": "settings"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.24::sections::4.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A5000 24G",
+      "cleaned_hardware_name": "nvidia a5000 24gb",
+      "normalized_hardware_name": "NVIDIA RTX A5000",
+      "benchmark_hardware_name": "NVIDIA RTX A5000",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "4.2",
+      "section_title": "settings",
+      "normalized_section_title": "settings",
+      "evidence": "We construct the training set by mixing up XSum, CICERO, and SUPER-NI according to their length as shown in Tab. 1 and evaluate UniICL on extensive out-of-domain datasets as listed in Tab. 2, with more details reported in Appendix H. Considering\n\ncomputation efficiency, we set the max allowed input length limit to 512 for both compression and generation for both training and inference. For a fair comparison, we set the allowed window of baselines to 512, and the compression ratio of default UniICL and baselines is set to 12, which is determined by the validation in Fig. 7. We fix the learning rate to 8e-5 and use Adam as the optimizer, and the effective batch size is 32 (8 GPUs data parallelism and 4 steps gradient accumulation). We train 10 epochs and 2 epochs respectively for the first- and second-phase training. The best checkpoints are selected according to their performance on in-domain validation sets. Additionally, we conducted all experiments on 8*NVIDIA A5000 24G GPUs based on BFloat 16 data type, and we set the evaluated shots to 8 for understanding tasks and 5 for generative tasks for illustration, because of marginal ICL gains and memory costs.\n\nWe apply S-BERT to pre-rank and output the top 10 similar candidates from training sets according to each inference input for all baselines. UniICL is employed to perform selection among them in practice due to computational efficiency for high-resource ICL. On the contrary, the low-resource ICL setting utilizes the randomly sampled 20 candidate demonstrations for all inference inputs, while UniICL performs selection as normal.\n\nTo verify the universality, we further build Uni-ICL on BlueLM-7B (Team, 2023) and Llama2-7B (Touvron et al., 2023). Results of BlueLM and Llama2 will be reported in Appendix C and Appendix D.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.24::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methodology",
+      "evidence": "Previous compression methods are not tailored for ICL, and they are either bound by serious inference latency or poor performance, as demonstrated in Appendix A. We propose UniICL, a unified ICL framework that unifies demonstration compression, demonstration selection, and response generation. As for the selection of the underlying LLM, previ\n\n![](images/9163c3d3e948d21af1e0501296d68257f30227c63e13e5ee4393cbc1b946a11a.jpg)  \nFigure 3: Demonstration compression. $k$ Memory Slots are attached behind each demonstration.\n\nous work has proved that the Decoder-only model performs better than the Encoder-Decoder model in prompt compression (Mu et al., 2023). We follow this conclusion and adopt Vicuna-7B (Zheng et al., 2023) as the underlying backbone in UniICL."
+    },
+    {
+      "source_window_id": "2025.acl-long.24::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiment",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.24::sections::4.1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "baselines",
+      "evidence": "Unmodified Vicuna-7b serves as the fundamental baseline fed with actual demonstrations. Auto\n\nTable 1: The composition training set of UniICL. (m,n] represents the range of the number of words in each instance. XSum (Ctr) is used for the second-phase training in Eq. 6.   \n\n<table><tr><td rowspan=\"2\">Dataset</td><td colspan=\"3\"># words</td></tr><tr><td>(96,512]</td><td>(512,1024]</td><td>(1024,1536]</td></tr><tr><td>XSum (Narayan et al., 2018)</td><td>-</td><td>10,000</td><td>4,697</td></tr><tr><td>CICERO (Ghosal et al., 2022)</td><td>10,000</td><td>-</td><td>-</td></tr><tr><td>SUPER-NI (Wang et al., 2022b)</td><td>-</td><td>10,000</td><td>7,000</td></tr><tr><td>XSum (Ctr)</td><td></td><td>5,000</td><td></td></tr></table>\n\nTable 2: The details of the involved evaluation datasets. -dev represents employing the development set due to their test sets are inaccessible. # Demonstrations represent the number of demonstrations to be selected in high/low-resource ICL settings.   \n\n<table><tr><td>Dataset</td><td>In-Domain</td><td># Test</td><td># Demonstrations</td></tr><tr><td>MS MARCO-dev</td><td>X</td><td>6,980</td><td>-</td></tr><tr><td>XSum</td><td>✓</td><td>1,500</td><td>204,045/20</td></tr><tr><td>Arxiv</td><td>X</td><td>1,500</td><td>203,037/20</td></tr><tr><td>CoLA-dev</td><td>X</td><td>1,041</td><td>67,349/20</td></tr><tr><td>SST-2-dev</td><td>X</td><td>872</td><td>8,551/20</td></tr><tr><td>IMDb</td><td>X</td><td>1,500</td><td>25,000/20</td></tr><tr><td>MMLU</td><td>X</td><td>13,985</td><td>25,000/20</td></tr></table>\n\nCompressor compresses prompts into 50 virtual tokens in different rounds recurrently. Previous compressed virtual tokens are put at the beginning of the current segment. Finally, virtual tokens of different compression rounds are concatenated for generation. We employ their Llama2-7b version for comparison. LLMLingua is a coarse-to-fine demonstration pruning method based on dropping uninformative words. We employ their released 7b version, of which the compressor is a fine-tuned Llama2. For a meaningful comparison, we replace target LLMs of LLMLingua (GPT-3.5-Turbo or Claude-v1.3) with the Vicuna-7b. ICAE compresses demonstrations into 128 virtual tokens via a LoRA-adapted Llama2-7b. Additionally, since selection augmentation is involved in the training of UniICL, we utilize the popular Sentence-BERT (S-BERT) (Reimers and Gurevych, 2019) as the dense retriever to construct an ICL pipeline for the above methods, serving as simple but effective selection-based baselines."
+    },
+    {
+      "source_window_id": "2025.acl-long.24::sections::5.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.2",
+      "section_title": "efficiency analysis",
+      "evidence": "In UniICL, we incorporate an additional 17M trainable parameters into the 7b backbone, accounting\n\nfor an approximate increase of $0.24\\%$ . We evaluate the memory costs and inference latency of UniICL and other compression methods in Fig. 8. With the help of the Demonstration Bank (DB), UniICL will eliminate the extra latency if the selected demonstrations have been compressed and cached (UniICL+Caching). Despite this, parallel computation facilitates the compression process, resulting in minimal throughput degradation (UniICL and Baseline). The unmodified 7B LLM causes a memory explosion for 8-shot settings, and other compression methods perform up to 32-shot, while UniICL successfully scales up to 64-shot within a 24GB CUDA allocation.\n\nAdditionally, we demonstrate the inference computation and GPU hours in Tab. 7, by using 1,024 random legal tokens as inputs and forcing models to generate 128 tokens. Notably, UniICL (without DB) compresses the former half, and the latter half is fed into the generator directly, while Vicuna and Vicuna-1k are distinguished in window limitations. Results indicate that minimal GPU hours increased due to the parallel computation of forward, although the extra compression of UniICL surges the computation. Additionally, Vicuna, with a 1k window limitation, surges both GPU hours and TFLOPs because long input brings significant computation and latency in generation."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA RTX A5000",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.24\\auto\\full.md",
+    "source_md_sha256": "35f9943019612dede7e56b3e7cf70a6f73025784601fdf572cfd7ece222a3d18",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "ad96f3b6ca003898756db958dd17467668c845886fa3f1f835d26a866c8af3f0"
+  }
+}

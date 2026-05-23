@@ -1,0 +1,148 @@
+{
+  "paper_id": "2025.emnlp-main.4",
+  "candidate_windows": [
+    {
+      "window_id": "2025.emnlp-main.4::sections::4",
+      "paper_id": "2025.emnlp-main.4",
+      "section_number": "4",
+      "section_title": "evaluation",
+      "normalized_section_title": "evaluation",
+      "window_text": "We thoroughly demonstrate the effectiveness of TraceLLM in two major aspects: (1) synthetic trace quality in terms of structural validity (S4.1), distribution similarity (§4.2),and usefulness to train and evaluate machine learning-driven microservice management tasks (§4.3),and (2) benefits from our use of LLMs in terms of instruction-following capabilities (§4.4) and trace-related downstream task performance (§4.5).\n\nWe initialize our model from Llama-2 7B (Touvron et al., 2O23) and train with LoRA (Hu et al., 2022) on 1.36 million microservice call graph samples from the Alibaba v2O22 dataset (Luo et al., 2022), corresponding to 1.1B tokens.Further details on data preprocessing and training hyperparameters are provided in Appendix B. We compare synthetic trace quality with various structured data generation methods such as GReaT(Borisov et al., 2023) and TVAE (Xu et al.,2019), and downstream task performance with one of the state-of-the-art LLMs, Llama-3.1 405B (Dubey et al., 2024).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.4::appendix::B",
+      "paper_id": "2025.emnlp-main.4",
+      "section_number": "B",
+      "section_title": "training details",
+      "normalized_section_title": "training details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.4::appendix::B.1",
+      "paper_id": "2025.emnlp-main.4",
+      "section_number": "B.1",
+      "section_title": "training setup",
+      "normalized_section_title": "training setup",
+      "window_text": "We train all models with $4 \\times$ A100 80GB GPUs in our cluster with the hyperparameters described in Table 1. We apply LoRA (Hu et al., 2022) adapters to query and key projection matrices of attention layers with $r a n k = 8$ ，alpha $= 1 6$ ,and dropout $= ~ 0 . 1$ . For the downstream task training in $\\ S 4 . 5$ ，we freeze the backbone model and only train the last classification layer for the prediction task. For the infilling downstream task, we use LoRA adapters with the same configuration as mentioned earlier. During inference,we use a temperature of O.8 and top-K of 5O for trace generation, unless otherwise specified. We use models (Llama 2 and 3.1) under appropriate community license.\n\n![](images/1a9861e6aef1378121242d2c6db604fe719ca9e2e0dcf5ed88fdcfbb467798f7.jpg)  \nFigure 8: Training data distribution after preprocessing.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.4::appendix::B.2",
+      "paper_id": "2025.emnlp-main.4",
+      "section_number": "B.2",
+      "section_title": "training data preprocessing",
+      "normalized_section_title": "training data preprocessing",
+      "window_text": "From the Alibaba microservice v2O22 traces (Luo et al., 2O22), we use the first-hour call graph traces as our training data, which consist of 6434 unique microservices collected from more than 1O clusters. We reserve $10 \\%$ of these samples for validation. The traces are collections of API calls,where each API call includes communication information between the two microservices. Service ID is a ninedigit number starting with the prefix $\" \\mathrm { { S } } _ { - } \" $ instead of using a real service name (e.g., social network), and microservice is a five-digit number starting with the prefix \"MS_\". We construct call graphs using the trace ID field (i.e., API calls with the same trace ID belong to one call graph). When constructing call graphs,we remove calls with missing information (e.g., destination microservice IDs are unknown) and remove call graphs that are not connected (e.g., missing edges). To remove redundancy, we filter out call graphs that have the same structure and fields (e.g., service ID,latency) for all API calls. The distributions of training data after removing redundancy are shown in Figure 8.\n\nNote that the dataset anonymizes service and microservice names,ensuring our model does not disclose sensitive information.However, if the training dataset contains sensitive data, models trained with our method may still risk exposing privacyrelated information.\n\nThe instruction-tuning datasets were created by\n\nTable 1: Training setup and hyperparameters.   \n\n<table><tr><td>Model</td><td>Hyperparameter</td><td>Value</td></tr><tr><td rowspan=\"4\">Pre-Training &amp; Instruction Tuning</td><td>Optimizer</td><td>AdamW (Loshchilov and Hutter, 2017)</td></tr><tr><td>Learning rate</td><td>3e-4 with cosine scheduler</td></tr><tr><td>Batch size</td><td>64</td></tr><tr><td>Gradient clipping</td><td>1.0</td></tr><tr><td rowspan=\"4\">Downstream Task Fine-tuning</td><td>Optimizer</td><td>AdamW</td></tr><tr><td>Learning rate</td><td>1e-4 with cosine scheduler</td></tr><tr><td>Batch size</td><td>2</td></tr><tr><td>Gradient clipping</td><td>1.0</td></tr></table>\n\n![](images/b9e7b7bd5826b2984a4de3e3e1472390bc81d9a5313a7a55a0fcce817ff884c5.jpg)  \nFigure 9: A training data sample of a cal graph with 3 edges represented in tabular format.\n\n[GENERATE GRAPH]   \nnum_edges:3/id:S_058367691/max_depth:2   \n<edges>   \n(sourceis   \nc   \nuiat   \n</edges>\n\n![](images/7973c35932ab0df67a03787d4d34837473b7c446326b97308883f983dff65206.jpg)\n\n![](images/224c3e9fa55ba2b8f2ba393d27d0d33b1b23822f7bd3792ac12f2d02324dff34.jpg)  \nFigure 1O: A training data sample of a cal graph with 3 edges for recursive generation.Instruction You are a trace generator that creates traces based on given requirements.   \nRequirements:   \nstart_communication_at:0/start_node:USER/remainin_depth:2/num_curent_edges:1/num_edges:4/latency:12/id:S_032647104 Conditions:   \nIn each edge, communication start time should NOT be greater than latency 12 miliseconds   \nGenerate subgraph instructions if necessary   \nthe first start_communication_at should be requirement's start_communication_at 0   \nAlso,communication should finish before latency 12 milliseconds   \ncopy caller from requirement's start_node:USER   \ngenerate 1 edges following num_current_edgesOutput ![](images/8781cc1f28d2b0eb6365d78449030ee3ead4714084f07ce16a4aea0cce097bd2.jpg)  \nFigure 11: A training data sample of a cal graph layer for instruction-tuning.\n\nrandomly selecting $5 \\%$ of the training graphs and reformatting them for instruction tuning. The instruction-tuning lasted four epochs.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.4::appendix::B.3",
+      "paper_id": "2025.emnlp-main.4",
+      "section_number": "B.3",
+      "section_title": "training data examples",
+      "normalized_section_title": "training data examples",
+      "window_text": "From the call graph traces,we create text-based representations of call graphs as described in Section 3.1.1. First of all, Figure 9 is a training data example of converting a call graph into a tabular data format, which is the baseline in $\\ S 4 . 1$ . At the beginning,we provide high-level information about the call graph, including the service ID,number of edges,and graph depth.Each line inside the <edges> block corresponds to a call in a call graph. 6 fields exist for each call including the edge ID, source/destination microservices,communication type,and communication start/finish time.\n\nFigure 1O shows an example training data sample for recursive generation as described in Section 3.1.2. Each sample consists of a sequence of layers,where each layer includes the edges and the conditions for the next layers. At the beginning of each layer, we provide high-level information to explain connections with the previous layers (e.g.,start_node,caller),structure in the call graph (e.g.,remaining_depth,num_edges, start_edge_id),and time-related information (e.g.,latency,start_communication_at).Note that the number of fields in each edge is reduced from 6 to 5 since the edges share the same start node. Also, the edge ID field is an integer, not a dot-decimal number. For each next layer, the condition is described in each <subgraph> block starting with the edge ID to be extended.\n\nFigure 11 is an example of instruction-tuning data. The instruction starts with a system prompt followed by conditions as in Figure 1O. We further explain the condition in natural language along with user-requested features,as studied in $\\ S 4 . 4$ .In the output section, we include Chain-of-Thought scratchpads at the end of <edges> block and at the beginning of<subgraph> blocks,which elaborate on the number of edges to generate and constraints of subgraph conditions.For example, the scratchpad includes descriptions of the depth requirement to help LLMs understand that the depth field should be reduced by 1 from the current layer's depth.\n\nAs described in Section 3.1.1, we drop each call graph attribute randomly with probability $p _ { d r o p }$ We set $p _ { d r o p }$ to 0.9 for all attributes except for the service ID field, which is always kept $( p _ { d r o p } = 1 ) $ ， to ensure minimal conditioning.\n\n![](images/1f541d0f8f95f858cf3f5fe9beb9600ab6f8360732d52181c0a6c0aa257fb8c4.jpg)  \nFigure 12: Accuracy heatmap.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.4::appendix::D.4",
+      "paper_id": "2025.emnlp-main.4",
+      "section_number": "D.4",
+      "section_title": "more experiments on similarity between real and synthetic traces",
+      "normalized_section_title": "more experiments on similarity between real and synthetic traces",
+      "window_text": "To further evaluate the effectiveness of our method in capturing the complexity of microservice interactions,we analyze the distribution similarities of microservice branching and response times using 10K synthetic traces.For consistency, we include only correct call graphs in the evaluation, following the accuracy criteria outlined in $\\ S 4 . 1$ . The same baselines as in $\\ S 4 . 2$ are used, including GReaT and\n\n![](images/f4249ee6053b5ba7a16ae4c42220f6ca445f7fd213e580101408e8a2de91e699.jpg)  \nFigure 16: Distribution similarities in microservice branching (in-degree and out-degree) and response times between real and synthetic traces.\n\nTable 2: Accuracy of prediction tasks by fine-tuning Llama-2 7B with real and synthetic traces.   \n\n<table><tr><td>Accuracy (%)</td><td>High Latency</td><td>Uncommon Communications</td></tr><tr><td>Real</td><td>68.3 %</td><td>65.3 %</td></tr><tr><td>Synthetic</td><td>67.1 %</td><td>62.5 %</td></tr></table>\n\nAlibaba probabilistic model. To extend the probabilistic model to include time-related felds, we augment it to generate response times by sampling from the training data statistics.\n\nFigure 16 presents the distribution similarities for microservice branching and response times. We use normalized Earth Mover's Distance (EMD) as the similarity metric, ensuring comparability across fields with varying scales. In-Degree represents the distribution of the number of communications received by each microservice,while Out-Degree reflects the number of communications initiated by each microservice. Response Time measures the distribution similarity of the duration required to complete each communication. Across all three metrics, our method consistently achieves the closest results to the training data, achieving a $2 . 6 \\mathrm { x }$ to $1 0 \\mathrm { x }$ reduction in EMD compared to GReaT and the probabilistic model. We attribute its higher EMD values to an inability to generate complex call graph structures effectively.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.4::appendix::D.5",
+      "paper_id": "2025.emnlp-main.4",
+      "section_number": "D.5",
+      "section_title": "more experiments on using synthetic traces in ml use cases",
+      "normalized_section_title": "more experiments on using synthetic traces in ml use cases",
+      "window_text": "Building on the two evaluation tasks in $\\ S 4 . 3$ ，we conducted similar experiments using two classification tasks, fine-tuning the original Llama-2 7B models. We predict high latency in call graphs, defined as latency equal to or above the 9Oth percentile for each service, without providing latencyrelated information in the input data. Secondly, we predict uncommon communications in direct neighbors within a call graph,as defined in $\\ S 4 . 4$\n\nWe fine-tune the original Llama-2 7B as a classifier by replacing the last layer with a classification layer and training only the last layer for one epoch As in the experiments in $\\ S 4 . 3$ ,we train one model using real and one using synthetic data. Table 2 reports the test accuracy on real test data. Although synthetic traces have a slight accuracy drop compared to real traces, they still exhibit similar characteristics and can be effectively used in real-world tasks.ForLlama-2 7B fine-tuning,We use a few thousand call graphs as training,validation, and test data (ratio 8:1:1) for each classification task and conduct a grid search over learning rates and batch size.\n\nTable 3: Trace generation accuracy using a reasoning model (QwQ-32B).   \n\n<table><tr><td>Depth</td><td>1 2</td><td>3</td><td>4</td><td>5</td></tr><tr><td>QwQ-32B</td><td>11.11 %</td><td>32.5 %</td><td>37.14 %</td><td>33.33 %</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.emnlp-main.4::appendix::B.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80GB",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "We train all models with $4 \\times$ A100 80GB GPUs in our cluster with the hyperparameters described in Table 1. We apply LoRA (Hu et al., 2022) adapters to query and key projection matrices of attention layers with $r a n k = 8$ ，alpha $= 1 6$ ,and dropout $= ~ 0 . 1$ . For the downstream task training in $\\ S 4 . 5$ ，we freeze the backbone model and only train the last classification layer for the prediction task. For the infilling downstream task, we use LoRA adapters with the same configuration as mentioned earlier. During inference,we use a temperature of O.8 and top-K of 5O for trace generation, unless otherwise specified. We use models (Llama 2 and 3.1) under appropriate community license.\n\n![](images/1a9861e6aef1378121242d2c6db604fe719ca9e2e0dcf5ed88fdcfbb467798f7.jpg)  \nFigure 8: Training data distribution after preprocessing.",
+      "section_number": "B.1",
+      "section_title": "training setup",
+      "normalized_section_title": "training setup"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.emnlp-main.4::appendix::B.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80GB",
+      "cleaned_hardware_name": "a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "B.1",
+      "section_title": "training setup",
+      "normalized_section_title": "training setup",
+      "evidence": "We train all models with $4 \\times$ A100 80GB GPUs in our cluster with the hyperparameters described in Table 1. We apply LoRA (Hu et al., 2022) adapters to query and key projection matrices of attention layers with $r a n k = 8$ ，alpha $= 1 6$ ,and dropout $= ~ 0 . 1$ . For the downstream task training in $\\ S 4 . 5$ ，we freeze the backbone model and only train the last classification layer for the prediction task. For the infilling downstream task, we use LoRA adapters with the same configuration as mentioned earlier. During inference,we use a temperature of O.8 and top-K of 5O for trace generation, unless otherwise specified. We use models (Llama 2 and 3.1) under appropriate community license.\n\n![](images/1a9861e6aef1378121242d2c6db604fe719ca9e2e0dcf5ed88fdcfbb467798f7.jpg)  \nFigure 8: Training data distribution after preprocessing.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 4
+      }
+    ]
+  }
+}

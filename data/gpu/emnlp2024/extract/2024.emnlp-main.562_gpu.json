@@ -1,0 +1,234 @@
+{
+  "paper_id": "2024.emnlp-main.562",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.562::sections::4",
+      "paper_id": "2024.emnlp-main.562",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.562::sections::4.1",
+      "paper_id": "2024.emnlp-main.562",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Datasets. We extract 150 hours of $16\\mathrm{kHz}$ multilingual clean speech from the DNS Challenge dataset (Reddy et al., 2021). Training samples are clipped into 3-second segments, and validation samples into 10-second segments. For evaluation, we compile 1158 multilingual 10-second speech clips with non-overlapping speakers from the LibriSpeech (Panayotov et al., 2015), Multilingual LibriSpeech (Pratap et al., 2020), and AISHell (Shi et al., 2020) datasets.\n\nBaselines. We compare our ESC against the current state-of-the-art time-domain codec DAC, by reproducing three versions<sup>2</sup> on our dataset:\n\n1) DAC-Base (adversarial): Describe's original released codec, operating on $16\\mathrm{kHz}$ audio signals. It has 74M parameter count in total. Its associated discriminator has 42M additional parameter count.   \n2) DAC-Tiny (adversarial): A smaller version of DAC-Base, with reduced encoder and decoder dimensions, for a fair comparison with ESC.   \n3) DAC-Tiny (non-adversarial): A smaller and non-adversarial version of DAC to assess the impact of discriminators on improving audio fidelity.\n\n![](images/d8f612cc40830e4abe5dff6fe021f1d381c39889bb099835f13fbcf926fc17f6.jpg)\n\n![](images/11ebb1386f614bda71c25ce19eddb4c45979179d750d0e10ea0fc1aecafaa0d1.jpg)\n\n![](images/fa1d5f7937f4bc872e0f7ddb67b65f4a609a468d20f4acb9168f5d688baeedd7.jpg)\n\n![](images/a0a93faa6879aa0172423e89dc833b5b1e2c5aae0475a409a770341750628c9b.jpg)  \nFigure 2: Reconstruction quality evaluation of different baseline codes: dashed lines represent DAC baselines and solid lines represent our ESC models, with x-axis being transmission bits per second and y-axis being PESQ (↑), Mel-Distance (↓) and SI-SDR(↑). The metrics are averaged over our composed 1158 10-second speech clips.\n\nImplementation details. Similar to DAC baselines, we provide different versions of $\\mathrm{ESC}^3$ :\n\n1) ESC-Base (non-adversarial): A base version codec consisting of 6 encoder/decoder layers, with bitrates ranging from 1.5 to 9.0 kbps. It contains 8.39M parameters when operating at 9.0 kbps.   \n2) ESC-Base (adversarial): An adversarial version using the same multi-scale multi-band waveform and spectrogram discriminator in DAC.   \n3) ESC-Large (non-adversarial): A scaled-up version with increased Swin Transformer layer depth, having 15.58M parameters at 9.0 kbps.\n\nOur ESC variants are trained using the AdamW optimizer (Loshchilov, 2017) with a learning rate of 1e-4 and a weight decay of 1e-2. Training runs up to 0.4 million iterations without learning rate schedulers. The proposed pre-training phase consists of 0.75 million iterations. After pre-training, the codebooks are initialized with a Kaiming normalization distribution (He et al., 2015). The quantization dropout rate $p$ is set to 0.75. Loss weighting hyperparameters are set as $\\lambda_1 = 0.25$ , $\\lambda_2 = 1.0$ , and the commitment loss weighting $\\beta = 0.25$ . For ESC-Base (adversarial), the $\\mathcal{L}_{stft}$ component is eliminated. We use the HingeGAN (Lim and Ye, 2017) adversarial loss formulation and the $l_{1}$ feature matching loss (Kumar et al., 2019), following the approach of DAC.\n\nAutomatic evaluation metrics. We use objective metrics to efficiently evaluate reconstruction performance. These include the PESQ score (Union,\n\nTable 1: Complexity evaluation results of different baseline codescs: RTFs are measured from 100 10-second speech clips on an Intel Xeon Platinum 8352V CPU.   \n\n<table><tr><td rowspan=\"2\">Codec</td><td rowspan=\"2\">Bitrate</td><td rowspan=\"2\">#Param.</td><td colspan=\"2\">Real Time Factor ↑</td></tr><tr><td>Enc.</td><td>Dec.</td></tr><tr><td rowspan=\"3\">ESC-Base</td><td>3.0 kbps</td><td>8.10M</td><td>33.66</td><td>34.97</td></tr><tr><td>6.0 kbps</td><td>8.21M</td><td>27.84</td><td>33.02</td></tr><tr><td>9.0 kbps</td><td>8.39M</td><td>24.45</td><td>33.95</td></tr><tr><td rowspan=\"3\">DAC-Tiny</td><td>3.0 kbps</td><td>7.96M</td><td>42.26</td><td>49.52</td></tr><tr><td>6.0 kbps</td><td>8.07M</td><td>44.66</td><td>48.63</td></tr><tr><td>9.0 kbps</td><td>8.17M</td><td>43.00</td><td>49.10</td></tr><tr><td rowspan=\"3\">ESC-Large</td><td>3.0 kbps</td><td>15.30M</td><td>17.91</td><td>20.81</td></tr><tr><td>6.0 kbps</td><td>15.41M</td><td>15.48</td><td>19.87</td></tr><tr><td>9.0 kbps</td><td>15.58M</td><td>13.73</td><td>20.56</td></tr><tr><td rowspan=\"3\">DAC-Base</td><td>3.0 kbps</td><td>73.99M</td><td>12.77</td><td>3.36</td></tr><tr><td>6.0 kbps</td><td>74.15M</td><td>11.43</td><td>3.13</td></tr><tr><td>9.0 kbps</td><td>74.31M</td><td>11.81</td><td>3.25</td></tr></table>\n\n2007) from the speech enhancement domain, following Jiang et al. (2022a); the $l_{1}$ distance between log mel-spectrograms of reference and decoded waveforms (Mel-Distance) (Kumar et al., 2023); and the scale-invariant source-to-distortion ratio (SI-SDR) (Le Roux et al., 2019). To measure codec inference latency, we use the real-time factor (RTF), defined as the ratio of speech audio duration to model processing time (Défossez et al., 2023).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.562::appendix::A",
+      "paper_id": "2024.emnlp-main.562",
+      "section_number": "A",
+      "section_title": "pre-training paradigm",
+      "normalized_section_title": "pre-training paradigm",
+      "window_text": "The proposed pre-training paradigm for optimizing vector quantization layers is detailed in Algorithm 3. During the pre-training phase, all vector quantization layers are bypassed, effectively reducing the codec to a standard autoencoder trained solely on reconstruction losses (Lines 2-4). Once the encoder and decoder reach a certain level of convergence, the VQ layers are reactivated, and joint optimization resumes. In the pre-training phase, we set the arg min nearest-neighbor selection as an identity function, making $z_{q}$ equal to the input vector $z_{e}$ .Algorithm 3 Pre-training Paradigm 1: repeat   \n2: $\\hat{\\mathcal{X}} = G_{\\psi}(F_{\\phi}(\\mathcal{X}))$   \n3: $\\mathcal{L} = \\mathcal{L}_{\\text{recon}}(\\mathcal{X}, \\dot{\\mathcal{X}})$   \n4: take gradient descent step on $\\nabla_{\\phi}\\mathcal{L},\\nabla_{\\psi}\\mathcal{L}$   \n5: until converged   \n6: activate VQs and continue learning as usual",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.562::appendix::B",
+      "paper_id": "2024.emnlp-main.562",
+      "section_number": "B",
+      "section_title": "experiment details",
+      "normalized_section_title": "experiment details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.562::appendix::B.2",
+      "paper_id": "2024.emnlp-main.562",
+      "section_number": "B.2",
+      "section_title": "esc architecture configurations",
+      "normalized_section_title": "esc architecture configurations",
+      "window_text": "Overall, all three ESC variants are trained in distributed setups for 0.4 million iterations across 4 NVIDIA RTX 4090 GPUs with a total batch size\n\nof 36. These experiments took approximately 100 GPU hours.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2024.emnlp-main.562::appendix::B.2.2",
+      "paper_id": "2024.emnlp-main.562",
+      "section_number": "B.2.2",
+      "section_title": "adversarial training setup",
+      "normalized_section_title": "adversarial training setup",
+      "window_text": "In the ESC-Base (adversarial) variant, the GAN discriminator is identical to the one used in DAC, consisting of a multi-period discriminator (MPD), multi-band discriminator (MBD), and multi-scale STFT discriminator (MSD), totaling over 42 million parameters. The adversarial loss formulation follows the official DAC-Base (adversarial) configuration. Additionally, we maintain the pre-training paradigm for 0.75 million iterations in this variant,\n\nwith the discriminator intervening in training only after the pre-training stage finishes.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.562::appendix::B.3",
+      "paper_id": "2024.emnlp-main.562",
+      "section_number": "B.3",
+      "section_title": "details on ablation experiments",
+      "normalized_section_title": "details on ablation experiments",
+      "window_text": "All ablation models operate on the complex STFT spectrum, as in ESC (SwinT + CS-RVQ), using the same STFT configurations specified in Table 3. These models were trained for 0.25 million iterations, with 0.025 million iterations allocated for pre-training. The Swin Transformer configurations mirror those used in ESC-Base. Similarly, the vector quantization setup in the CS-RVQ models follows that of ESC-Base. In total, the ablation experiments required approximately 80 hours on 4 RTX 4090 GPUs.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.562::appendix::B.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 4090",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "Overall, all three ESC variants are trained in distributed setups for 0.4 million iterations across 4 NVIDIA RTX 4090 GPUs with a total batch size\n\nof 36. These experiments took approximately 100 GPU hours.",
+      "section_number": "B.2",
+      "section_title": "esc architecture configurations",
+      "normalized_section_title": "esc architecture configurations"
+    },
+    {
+      "window_id": "2024.emnlp-main.562::appendix::B.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 4090",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "All ablation models operate on the complex STFT spectrum, as in ESC (SwinT + CS-RVQ), using the same STFT configurations specified in Table 3. These models were trained for 0.25 million iterations, with 0.025 million iterations allocated for pre-training. The Swin Transformer configurations mirror those used in ESC-Base. Similarly, the vector quantization setup in the CS-RVQ models follows that of ESC-Base. In total, the ablation experiments required approximately 80 hours on 4 RTX 4090 GPUs.",
+      "section_number": "B.3",
+      "section_title": "details on ablation experiments",
+      "normalized_section_title": "details on ablation experiments"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.562::appendix::B.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 4090",
+      "cleaned_hardware_name": "nvidia rtx 4090",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 4090",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 4090",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "B.2",
+      "section_title": "esc architecture configurations",
+      "normalized_section_title": "esc architecture configurations",
+      "evidence": "Overall, all three ESC variants are trained in distributed setups for 0.4 million iterations across 4 NVIDIA RTX 4090 GPUs with a total batch size\n\nof 36. These experiments took approximately 100 GPU hours.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.emnlp-main.562::appendix::B.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 4090",
+      "cleaned_hardware_name": "rtx 4090",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 4090",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 4090",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "B.3",
+      "section_title": "details on ablation experiments",
+      "normalized_section_title": "details on ablation experiments",
+      "evidence": "All ablation models operate on the complex STFT spectrum, as in ESC (SwinT + CS-RVQ), using the same STFT configurations specified in Table 3. These models were trained for 0.25 million iterations, with 0.025 million iterations allocated for pre-training. The Swin Transformer configurations mirror those used in ESC-Base. Similarly, the vector quantization setup in the CS-RVQ models follows that of ESC-Base. In total, the ablation experiments required approximately 80 hours on 4 RTX 4090 GPUs.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.emnlp-main.562::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.562::sections::4.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "evidence": "Datasets. We extract 150 hours of $16\\mathrm{kHz}$ multilingual clean speech from the DNS Challenge dataset (Reddy et al., 2021). Training samples are clipped into 3-second segments, and validation samples into 10-second segments. For evaluation, we compile 1158 multilingual 10-second speech clips with non-overlapping speakers from the LibriSpeech (Panayotov et al., 2015), Multilingual LibriSpeech (Pratap et al., 2020), and AISHell (Shi et al., 2020) datasets.\n\nBaselines. We compare our ESC against the current state-of-the-art time-domain codec DAC, by reproducing three versions<sup>2</sup> on our dataset:\n\n1) DAC-Base (adversarial): Describe's original released codec, operating on $16\\mathrm{kHz}$ audio signals. It has 74M parameter count in total. Its associated discriminator has 42M additional parameter count.   \n2) DAC-Tiny (adversarial): A smaller version of DAC-Base, with reduced encoder and decoder dimensions, for a fair comparison with ESC.   \n3) DAC-Tiny (non-adversarial): A smaller and non-adversarial version of DAC to assess the impact of discriminators on improving audio fidelity.\n\n![](images/d8f612cc40830e4abe5dff6fe021f1d381c39889bb099835f13fbcf926fc17f6.jpg)\n\n![](images/11ebb1386f614bda71c25ce19eddb4c45979179d750d0e10ea0fc1aecafaa0d1.jpg)\n\n![](images/fa1d5f7937f4bc872e0f7ddb67b65f4a609a468d20f4acb9168f5d688baeedd7.jpg)\n\n![](images/a0a93faa6879aa0172423e89dc833b5b1e2c5aae0475a409a770341750628c9b.jpg)  \nFigure 2: Reconstruction quality evaluation of different baseline codes: dashed lines represent DAC baselines and solid lines represent our ESC models, with x-axis being transmission bits per second and y-axis being PESQ (↑), Mel-Distance (↓) and SI-SDR(↑). The metrics are averaged over our composed 1158 10-second speech clips.\n\nImplementation details. Similar to DAC baselines, we provide different versions of $\\mathrm{ESC}^3$ :\n\n1) ESC-Base (non-adversarial): A base version codec consisting of 6 encoder/decoder layers, with bitrates ranging from 1.5 to 9.0 kbps. It contains 8.39M parameters when operating at 9.0 kbps.   \n2) ESC-Base (adversarial): An adversarial version using the same multi-scale multi-band waveform and spectrogram discriminator in DAC.   \n3) ESC-Large (non-adversarial): A scaled-up version with increased Swin Transformer layer depth, having 15.58M parameters at 9.0 kbps.\n\nOur ESC variants are trained using the AdamW optimizer (Loshchilov, 2017) with a learning rate of 1e-4 and a weight decay of 1e-2. Training runs up to 0.4 million iterations without learning rate schedulers. The proposed pre-training phase consists of 0.75 million iterations. After pre-training, the codebooks are initialized with a Kaiming normalization distribution (He et al., 2015). The quantization dropout rate $p$ is set to 0.75. Loss weighting hyperparameters are set as $\\lambda_1 = 0.25$ , $\\lambda_2 = 1.0$ , and the commitment loss weighting $\\beta = 0.25$ . For ESC-Base (adversarial), the $\\mathcal{L}_{stft}$ component is eliminated. We use the HingeGAN (Lim and Ye, 2017) adversarial loss formulation and the $l_{1}$ feature matching loss (Kumar et al., 2019), following the approach of DAC.\n\nAutomatic evaluation metrics. We use objective metrics to efficiently evaluate reconstruction performance. These include the PESQ score (Union,\n\nTable 1: Complexity evaluation results of different baseline codescs: RTFs are measured from 100 10-second speech clips on an Intel Xeon Platinum 8352V CPU.   \n\n<table><tr><td rowspan=\"2\">Codec</td><td rowspan=\"2\">Bitrate</td><td rowspan=\"2\">#Param.</td><td colspan=\"2\">Real Time Factor ↑</td></tr><tr><td>Enc.</td><td>Dec.</td></tr><tr><td rowspan=\"3\">ESC-Base</td><td>3.0 kbps</td><td>8.10M</td><td>33.66</td><td>34.97</td></tr><tr><td>6.0 kbps</td><td>8.21M</td><td>27.84</td><td>33.02</td></tr><tr><td>9.0 kbps</td><td>8.39M</td><td>24.45</td><td>33.95</td></tr><tr><td rowspan=\"3\">DAC-Tiny</td><td>3.0 kbps</td><td>7.96M</td><td>42.26</td><td>49.52</td></tr><tr><td>6.0 kbps</td><td>8.07M</td><td>44.66</td><td>48.63</td></tr><tr><td>9.0 kbps</td><td>8.17M</td><td>43.00</td><td>49.10</td></tr><tr><td rowspan=\"3\">ESC-Large</td><td>3.0 kbps</td><td>15.30M</td><td>17.91</td><td>20.81</td></tr><tr><td>6.0 kbps</td><td>15.41M</td><td>15.48</td><td>19.87</td></tr><tr><td>9.0 kbps</td><td>15.58M</td><td>13.73</td><td>20.56</td></tr><tr><td rowspan=\"3\">DAC-Base</td><td>3.0 kbps</td><td>73.99M</td><td>12.77</td><td>3.36</td></tr><tr><td>6.0 kbps</td><td>74.15M</td><td>11.43</td><td>3.13</td></tr><tr><td>9.0 kbps</td><td>74.31M</td><td>11.81</td><td>3.25</td></tr></table>\n\n2007) from the speech enhancement domain, following Jiang et al. (2022a); the $l_{1}$ distance between log mel-spectrograms of reference and decoded waveforms (Mel-Distance) (Kumar et al., 2023); and the scale-invariant source-to-distortion ratio (SI-SDR) (Le Roux et al., 2019). To measure codec inference latency, we use the real-time factor (RTF), defined as the ratio of speech audio duration to model processing time (Défossez et al., 2023)."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.562::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "pre-training paradigm",
+      "evidence": "The proposed pre-training paradigm for optimizing vector quantization layers is detailed in Algorithm 3. During the pre-training phase, all vector quantization layers are bypassed, effectively reducing the codec to a standard autoencoder trained solely on reconstruction losses (Lines 2-4). Once the encoder and decoder reach a certain level of convergence, the VQ layers are reactivated, and joint optimization resumes. In the pre-training phase, we set the arg min nearest-neighbor selection as an identity function, making $z_{q}$ equal to the input vector $z_{e}$ .Algorithm 3 Pre-training Paradigm 1: repeat   \n2: $\\hat{\\mathcal{X}} = G_{\\psi}(F_{\\phi}(\\mathcal{X}))$   \n3: $\\mathcal{L} = \\mathcal{L}_{\\text{recon}}(\\mathcal{X}, \\dot{\\mathcal{X}})$   \n4: take gradient descent step on $\\nabla_{\\phi}\\mathcal{L},\\nabla_{\\psi}\\mathcal{L}$   \n5: until converged   \n6: activate VQs and continue learning as usual"
+    },
+    {
+      "source_window_id": "2024.emnlp-main.562::appendix::B",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B",
+      "section_title": "experiment details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.562::appendix::B.2.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B.2.2",
+      "section_title": "adversarial training setup",
+      "evidence": "In the ESC-Base (adversarial) variant, the GAN discriminator is identical to the one used in DAC, consisting of a multi-period discriminator (MPD), multi-band discriminator (MBD), and multi-scale STFT discriminator (MSD), totaling over 42 million parameters. The adversarial loss formulation follows the official DAC-Base (adversarial) configuration. Additionally, we maintain the pre-training paradigm for 0.75 million iterations in this variant,\n\nwith the discriminator intervening in training only after the pre-training stage finishes."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B.2",
+      "B.3"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce RTX 4090",
+        "num": 4
+      },
+      {
+        "name": "NVIDIA GeForce RTX 4090",
+        "num": 4
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2024\\2024.emnlp-main.562\\auto\\full.md",
+    "source_md_sha256": "8499f11b1da4fa0449233ea0c37d70cd7bd7e8697d1e9b2a3aadadabb87c20c4",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "749fdb433714bfa003499fb1c90f58c9bb6de4daf647bf52f54e32986186b91c"
+  }
+}

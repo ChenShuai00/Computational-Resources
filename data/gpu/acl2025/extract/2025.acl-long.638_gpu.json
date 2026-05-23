@@ -1,0 +1,264 @@
+{
+  "paper_id": "2025.acl-long.638",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.638::sections::3",
+      "paper_id": "2025.acl-long.638",
+      "section_number": "3",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "MapNav pursues a novel end-to-end vision-and-language navigation model based on VLM, leveraging Annotated Semantic Maps (ASM) to replace traditional historical frames. We introduce a top-down annotated semantic map at the start of each episode, updating it at each timestep for precise object mapping and structured navigation information, while enhancing it with textual labels for key regions to clarify navigation cues. The MapNav agent uses the constructed ASM as input, harnessing VLM's powerful end-to-end capabilities to enhance vision-and-language navigation (VLN). The framework overview of MapNav is shown in Fig. 2.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.638::sections::4",
+      "paper_id": "2025.acl-long.638",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.638::sections::4.1",
+      "paper_id": "2025.acl-long.638",
+      "section_number": "4.1",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "window_text": "Dataset. We constructed a comprehensive dataset of approximately 1 Million training pairs using a hybrid collection strategy, which includes ground truth trajectories from the R2R and RxR datasets ( $\\approx$ 300k pairs from both), DAgger-collected data ( $\\approx$ 200k pairs from both), and specialized collision recovery samples ( $\\approx$ 25k pairs from both). This approach ensures diverse coverage of navigation scenarios and incorporates samples from general vision-language tasks for co-training.\n\nFor fair comparison, we trained on 500k pairs from R2R and evaluated Zero-Shot capability on RxR, in addition to conducting separate training and evaluation on the RxR dataset. Detailed strategies for dataset construction are provided in Appendix A.\n\nSimulated Environments. We evaluate our MapNav agent using the VLN-CE benchmark in Habitat, which offers a continuous environment for navigation in reconstructed, photo-realistic indoor scenes. We focus on the val-unseen split of the R2R and RxR datasets in VLN-CE, which are two of the most recognized benchmarks in VLN, comprising 1,839 and 1,517 episodes, respectively.\n\nReal-world environments. To evaluate the sim-to-real performance of our model, we designed diverse real-world experiments featuring 50 instructions across five environments: office, conference room, lecture hall, living room, and tea room. Simple instructions require basic actions like moving forward and turning, while semantic instructions involve navigating to specific objects (e.g., \"move forward to the refrigerator and then turn right\").\n\nMetrics. We utilize several widely used evaluation metrics for VLN tasks: Navigation Error (NE), Oracle Success rate (OS), Success Rate (SR), Success weighted Path Length (SPL), and normalized Dynamic Temporal Wrapping (nDTW). SPL is the primary metric, as it effectively reflects both navigation accuracy and efficiency.\n\nImplementation Details. Our model is trained on a cluster server with 8 NVIDIA A100 GPUs for about 30 hours, totaling 240 GPU hours. We employ the LLaVA-Onevision (Li et al., 2024a) architecture, using Google's SigLIP-so400M (Zhai et al., 2023) as the vision encoder, Qwen2-7B-Instruct (Wang et al., 2024) as the language model backbone, and Mask2Former (Cheng et al., 2022) for semantic segmentation during ASM generation.\n\nTable 3: Memory consumption and average processing time comparison between Navid and MapNav (our method) across different numbers of navigation steps.   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"4\">Memory Consumption↓</td><td rowspan=\"2\">Avg. Time↓</td></tr><tr><td>1 Step</td><td>10 Steps</td><td>100 Steps</td><td>300 Steps</td></tr><tr><td>Navid</td><td>0.92MB</td><td>9.2 MB</td><td>92 MB</td><td>276 MB</td><td>1.22s</td></tr><tr><td>MapNav (Ours)</td><td>0.17MB</td><td>0.17MB</td><td>0.17MB</td><td>0.17MB</td><td>0.25s</td></tr></table>\n\nFor detailed experimental details, see Appendix B.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.acl-long.638::sections::4.3",
+      "paper_id": "2025.acl-long.638",
+      "section_number": "4.3",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "window_text": "Efficiency Analysis. For the efficiency analysis, we compare memory consumption and inference time between MapNav and Navid. As shown in Tab. 3, MapNav demonstrates significant improvements in both areas. Specifically, our semantic map-based method maintains a constant memory footprint of 0.17MB, regardless of trajectory length, while Navid's frame-based approach scales linearly, reaching 276MB at 300 steps. This is because MapNav only stores and updates a compact ASM, whereas Navid accumulates all historical RGB observations. In terms of inference speed, MapNav reduces average processing time by $79.5\\%$ (from 1.22 seconds per step to 0.25 seconds). This improvement arises because MapNav only calculates features from the current RGB frame and ASM, avoiding the need to process all historical frames.\n\nEffect of ASM. To validate the efficacy of our proposed ASM, we conducted a comparative analysis using multiple map variants. We evaluated three conditions: (1) the original top-down map from the simulator, (2) a semantic map with categorical information but no textual annotations, and (3) complete removal of map-based features. Quantitative results in Tab. 4 show a clear performance hierarchy: the RGB-only baseline performed the worst, with moderate improvements from the original and semantic map variants. The ASM outperformed all evaluated metrics, highlighting the benefits of semantic enrichment and the importance of textual annotations for spatial reasoning tasks.\n\nImpact of different training dataset composi\n\n![](images/06b2913f61839e131db53bafe44a4635c6067d6f9221642c766a2c82443b9ea9.jpg)  \nFigure 5: Comparison of MapNav using different numbers of historical RGB frames. Cur. RGB and His. RGB refer to methods using the current and historical RGB frames, respectively.\n\ntion. To evaluate the impact of different training data compositions, we conducted a dataset ablation study with five configurations: (1) MapNav trained on 100K R2R samples (baseline), (2) 300K R2R samples, (3) DAgger-generated samples on R2R, (4) integration of DAgger and RxR datasets, and (5) all previous components plus collision-aware training. As shown in Tab. 5, increasing from 100K to 300K R2R samples resulted in substantial performance improvements. The integration of DAgger samples yielded the most significant gains, underscoring the importance of interactive learning. The RxR dataset provided modest improvements, particularly in diverse linguistic instructions. Our final configuration, with collision-aware training, achieved marginally better performance across metrics, setting a new performance benchmark. These results highlight that data diversity and interactive learning enhance model performance, with the greatest benefits stemming from ample base training data and DAgger augmentation.\n\nEffect of Varying Numbers of Historical RGB Frames. We conducted a systematic ablation study to evaluate the effect of varying historical RGB frames. As shown in Fig. 5, the most significant improvement occurs with ASM in the single current RGB frame setting, enhancing SR from $27\\%$ to $36\\%$ , SPL from $23\\%$ to $34\\%$ , OS from $41\\%$ to $50\\%$ , and NE from $7.2\\mathrm{m}$ to $5.2\\mathrm{m}$ . This highlights the effectiveness of our ASM-based approach in capturing spatial information. While adding historical RGB frames (1, 2, and 4 His.RGB) results in gradual improvements, these gains are modest compared to the initial ASM integration. Notably, with just two historical RGB frames, our model achieves state-of-the-art performance (SR: $39\\%$ , SPL: $37\\%$ ) compared to the baseline NaVid (Zhang et al., 2024a). The final configuration with four his\n\ntorical RGB frames shows only slight gains (SR: $41\\%$ , SPL: $38\\%$ ), indicating that the core advantage lies in the ASM-based representation rather than temporal accumulation. These findings validate our choice of ASM as a more efficient alternative to extensive historical RGB frame sequences, delivering superior performance while maintaining computational efficiency.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.638::appendix::B",
+      "paper_id": "2025.acl-long.638",
+      "section_number": "B",
+      "section_title": "details of training",
+      "normalized_section_title": "details of training",
+      "window_text": "Model Setting. Our model builds upon the LLaVA-Onevision (Li et al., 2024a) framework and consists of three main components: the visual encoder, projector, and large language model (LLM). For the visual encoder, we employed Google's SigLIPso400m-patch14-384 (Zhai et al., 2023), which processes input images at a resolution of $384\\mathrm{x}384$ using patches of size $14\\mathrm{x}14$ . The SigLIP model serves as our vision backbone, converting input images into visual embeddings with a hidden dimension of 1152. The projector is implemented as a two-layer MLP with GELU activation, which maps the visual features to the language model's embedding space. For the language model, we utilized Qwen2-7B-Instruct (Wang et al., 2024) as our backbone, which features 28 transformer layers with 28 attention heads and a hidden size of 3584. The model supports a context length of up\n\n![](images/89740adb0634ce5303b0ec8711282e61fb0694bce11a4c1dc7a8c57b6c0457d7.jpg)  \nFigure 6: The real-world MapNav robot setup.\n\nto 32,768 tokens and incorporates sliding window attention with a window size of 131,072 tokens.\n\nTraining Setting. We conducted our training on 8 NVIDIA A100 GPUs for approximately 30 hours, totaling 240 GPU hours ( $\\approx$ 500k step-wise samples). During the fine-tuning process, we froze the vision encoder and only fine-tuned the multimodal projector and language model components for one epoch with a learning rate of 1e-6. We utilized bfloat16 precision for training efficiency. The model processes images using bilinear spatial pooling and selects features from the penultimate layer of the vision tower. For multi-modal integration, we employed patch-level features without using image patch tokens or explicit image start/end tokens. The projector adopts a spatial unpadded patch merge strategy to handle varying image sizes effectively.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.acl-long.638::appendix::C",
+      "paper_id": "2025.acl-long.638",
+      "section_number": "C",
+      "section_title": "real-world robot setup",
+      "normalized_section_title": "real-world robot setup",
+      "window_text": "As shown in Fig. 6, our real-world experiments were conducted using a Unitree Go2 Edu quadrupedal robot equipped with an Intel RealSense D435i depth camera mounted $40\\mathrm{cm}$ above the robot. The system streams RGB-D images from a D435i camera to a server powered by NVIDIA A100 GPUs, where our MapNav agent processes the observations to generate our ASMs. Based on the generated ASM, the system infers executable actions which are then transmitted back to the Go2 for execution. Notably, our system demonstrated robust sim-to-real transfer capabilities, maintaining accurate ASM generation and high task performance despite real-world challenges such as depth measurement uncertainties, pose estimation errors, and environmental variations.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.638::appendix::E",
+      "paper_id": "2025.acl-long.638",
+      "section_number": "E",
+      "section_title": "more experiments",
+      "normalized_section_title": "more experiments",
+      "window_text": "Ablation on Different Input Modals. To systematically investigate the contribution of each input modality, we conducted an extensive ablation study on the input representations. The experimental configurations encompassed three variants: (1) RGB-only input, serving as the base\n\nline condition, (2) RGB augmented with depth information (RGB+Depth), and (3) our complete model utilizing the ASM alongside RGB inputs. Quantitative results, as presented in Tab . 6, reveal an interesting pattern across these configurations. While the RGB-only baseline achieved moderate performance, the addition of depth information (RGB+Depth) led to a notable performance degradation. This counterintuitive result can be attributed to the Vision-Language Model's inherent limitations in processing depth modalities, as these models are primarily trained on RGB images and natural language. In contrast, the integration of our proposed ASM demonstrated substantial performance gains across all evaluation metrics, significantly outperforming both baseline configurations. These results not only validate the effectiveness of our ASM approach but also highlight the importance of selecting input modalities that align with the pre-trained model's capabilities.\n\nAblation Experiment on Different Semantic Segmentation Modules. We conducted another ab\n\nTable 6: Comparison of different input modals.   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"4\">VLN-CE R2R Val-Unseen</td></tr><tr><td>NE↓</td><td>OS↑</td><td>SR↑</td><td>SPL↑</td></tr><tr><td>MapNav (Only RGB)</td><td>7.26</td><td>41.2</td><td>27.1</td><td>23.5</td></tr><tr><td>MapNav (RGB+Depth)</td><td>8.82</td><td>35.6</td><td>23.1</td><td>19.9</td></tr><tr><td>MapNav (Annotated Semantic Map)</td><td>5.22</td><td>50.3</td><td>36.5</td><td>34.3</td></tr></table>\n\nTable 7: Comparison of different semantic segmentation modules' performance on R2R Val-Unseen split.   \n\n<table><tr><td rowspan=\"2\">VLMs</td><td colspan=\"4\">VLN-CE R2R Val-Unseen</td></tr><tr><td>NE↓</td><td>OS↑</td><td>SR↑</td><td>SPL↑</td></tr><tr><td>YOLOv8 (Jocher et al., 2023)</td><td>6.43</td><td>45.2</td><td>31.5</td><td>29.6</td></tr><tr><td>MobileSAM (Zhang et al., 2023)</td><td>6.02</td><td>48.9</td><td>34.8</td><td>31.6</td></tr><tr><td>Mask2Former (Our Use) (Cheng et al., 2022)</td><td>5.22</td><td>50.3</td><td>36.5</td><td>34.3</td></tr></table>\n\nlation study to evaluate the impact of different semantic segmentation modules on our ASM generation process, with results presented in Tab. 7. We compared three state-of-the-art semantic segmentation approaches: YOLOv8 (Jocher et al., 2023), MobileSAM (Zhang et al., 2023), and our chosen Mask2Former (Cheng et al., 2022). The experiments were conducted on the R2R Val-Unseen split to assess generalization capability. Results show that Mask2Former achieves the best performance across all metrics, with a Navigation Error (NE) of $5.22\\mathrm{m}$ , Success Rate (SR) of $36.5\\%$ , and SPL of $34\\%$ , outperforming both YOLOv8 and MobileSAM. The superior performance of Mask2Former can be attributed to its more precise segmentation boundaries and better handling of complex indoor scenes. While MobileSAM shows moderate performance with an SR of $34.8\\%$ and SPL of $31.6\\%$ , YOLOv8 exhibits relatively lower performance with an SR of $31.5\\%$ and SPL of $29.6\\%$ . These results suggest that the quality of semantic segmentation significantly impacts the overall navigation performance, highlighting the importance of accurate semantic objects segmentation in ASM generation.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.638::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Dataset. We constructed a comprehensive dataset of approximately 1 Million training pairs using a hybrid collection strategy, which includes ground truth trajectories from the R2R and RxR datasets ( $\\approx$ 300k pairs from both), DAgger-collected data ( $\\approx$ 200k pairs from both), and specialized collision recovery samples ( $\\approx$ 25k pairs from both). This approach ensures diverse coverage of navigation scenarios and incorporates samples from general vision-language tasks for co-training.\n\nFor fair comparison, we trained on 500k pairs from R2R and evaluated Zero-Shot capability on RxR, in addition to conducting separate training and evaluation on the RxR dataset. Detailed strategies for dataset construction are provided in Appendix A.\n\nSimulated Environments. We evaluate our MapNav agent using the VLN-CE benchmark in Habitat, which offers a continuous environment for navigation in reconstructed, photo-realistic indoor scenes. We focus on the val-unseen split of the R2R and RxR datasets in VLN-CE, which are two of the most recognized benchmarks in VLN, comprising 1,839 and 1,517 episodes, respectively.\n\nReal-world environments. To evaluate the sim-to-real performance of our model, we designed diverse real-world experiments featuring 50 instructions across five environments: office, conference room, lecture hall, living room, and tea room. Simple instructions require basic actions like moving forward and turning, while semantic instructions involve navigating to specific objects (e.g., \"move forward to the refrigerator and then turn right\").\n\nMetrics. We utilize several widely used evaluation metrics for VLN tasks: Navigation Error (NE), Oracle Success rate (OS), Success Rate (SR), Success weighted Path Length (SPL), and normalized Dynamic Temporal Wrapping (nDTW). SPL is the primary metric, as it effectively reflects both navigation accuracy and efficiency.\n\nImplementation Details. Our model is trained on a cluster server with 8 NVIDIA A100 GPUs for about 30 hours, totaling 240 GPU hours. We employ the LLaVA-Onevision (Li et al., 2024a) architecture, using Google's SigLIP-so400M (Zhai et al., 2023) as the vision encoder, Qwen2-7B-Instruct (Wang et al., 2024) as the language model backbone, and Mask2Former (Cheng et al., 2022) for semantic segmentation during ASM generation.\n\nTable 3: Memory consumption and average processing time comparison between Navid and MapNav (our method) across different numbers of navigation steps.   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"4\">Memory Consumption↓</td><td rowspan=\"2\">Avg. Time↓</td></tr><tr><td>1 Step</td><td>10 Steps</td><td>100 Steps</td><td>300 Steps</td></tr><tr><td>Navid</td><td>0.92MB</td><td>9.2 MB</td><td>92 MB</td><td>276 MB</td><td>1.22s</td></tr><tr><td>MapNav (Ours)</td><td>0.17MB</td><td>0.17MB</td><td>0.17MB</td><td>0.17MB</td><td>0.25s</td></tr></table>\n\nFor detailed experimental details, see Appendix B.",
+      "section_number": "4.1",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details"
+    },
+    {
+      "window_id": "2025.acl-long.638::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Model Setting. Our model builds upon the LLaVA-Onevision (Li et al., 2024a) framework and consists of three main components: the visual encoder, projector, and large language model (LLM). For the visual encoder, we employed Google's SigLIPso400m-patch14-384 (Zhai et al., 2023), which processes input images at a resolution of $384\\mathrm{x}384$ using patches of size $14\\mathrm{x}14$ . The SigLIP model serves as our vision backbone, converting input images into visual embeddings with a hidden dimension of 1152. The projector is implemented as a two-layer MLP with GELU activation, which maps the visual features to the language model's embedding space. For the language model, we utilized Qwen2-7B-Instruct (Wang et al., 2024) as our backbone, which features 28 transformer layers with 28 attention heads and a hidden size of 3584. The model supports a context length of up\n\n![](images/89740adb0634ce5303b0ec8711282e61fb0694bce11a4c1dc7a8c57b6c0457d7.jpg)  \nFigure 6: The real-world MapNav robot setup.\n\nto 32,768 tokens and incorporates sliding window attention with a window size of 131,072 tokens.\n\nTraining Setting. We conducted our training on 8 NVIDIA A100 GPUs for approximately 30 hours, totaling 240 GPU hours ( $\\approx$ 500k step-wise samples). During the fine-tuning process, we froze the vision encoder and only fine-tuned the multimodal projector and language model components for one epoch with a learning rate of 1e-6. We utilized bfloat16 precision for training efficiency. The model processes images using bilinear spatial pooling and selects features from the penultimate layer of the vision tower. For multi-modal integration, we employed patch-level features without using image patch tokens or explicit image start/end tokens. The projector adopts a spatial unpadded patch merge strategy to handle varying image sizes effectively.",
+      "section_number": "B",
+      "section_title": "details of training",
+      "normalized_section_title": "details of training"
+    },
+    {
+      "window_id": "2025.acl-long.638::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": null,
+      "count_text": "",
+      "evidence": "As shown in Fig. 6, our real-world experiments were conducted using a Unitree Go2 Edu quadrupedal robot equipped with an Intel RealSense D435i depth camera mounted $40\\mathrm{cm}$ above the robot. The system streams RGB-D images from a D435i camera to a server powered by NVIDIA A100 GPUs, where our MapNav agent processes the observations to generate our ASMs. Based on the generated ASM, the system infers executable actions which are then transmitted back to the Go2 for execution. Notably, our system demonstrated robust sim-to-real transfer capabilities, maintaining accurate ASM generation and high task performance despite real-world challenges such as depth measurement uncertainties, pose estimation errors, and environmental variations.",
+      "section_number": "C",
+      "section_title": "real-world robot setup",
+      "normalized_section_title": "real-world robot setup"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.638::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "4.1",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "evidence": "Dataset. We constructed a comprehensive dataset of approximately 1 Million training pairs using a hybrid collection strategy, which includes ground truth trajectories from the R2R and RxR datasets ( $\\approx$ 300k pairs from both), DAgger-collected data ( $\\approx$ 200k pairs from both), and specialized collision recovery samples ( $\\approx$ 25k pairs from both). This approach ensures diverse coverage of navigation scenarios and incorporates samples from general vision-language tasks for co-training.\n\nFor fair comparison, we trained on 500k pairs from R2R and evaluated Zero-Shot capability on RxR, in addition to conducting separate training and evaluation on the RxR dataset. Detailed strategies for dataset construction are provided in Appendix A.\n\nSimulated Environments. We evaluate our MapNav agent using the VLN-CE benchmark in Habitat, which offers a continuous environment for navigation in reconstructed, photo-realistic indoor scenes. We focus on the val-unseen split of the R2R and RxR datasets in VLN-CE, which are two of the most recognized benchmarks in VLN, comprising 1,839 and 1,517 episodes, respectively.\n\nReal-world environments. To evaluate the sim-to-real performance of our model, we designed diverse real-world experiments featuring 50 instructions across five environments: office, conference room, lecture hall, living room, and tea room. Simple instructions require basic actions like moving forward and turning, while semantic instructions involve navigating to specific objects (e.g., \"move forward to the refrigerator and then turn right\").\n\nMetrics. We utilize several widely used evaluation metrics for VLN tasks: Navigation Error (NE), Oracle Success rate (OS), Success Rate (SR), Success weighted Path Length (SPL), and normalized Dynamic Temporal Wrapping (nDTW). SPL is the primary metric, as it effectively reflects both navigation accuracy and efficiency.\n\nImplementation Details. Our model is trained on a cluster server with 8 NVIDIA A100 GPUs for about 30 hours, totaling 240 GPU hours. We employ the LLaVA-Onevision (Li et al., 2024a) architecture, using Google's SigLIP-so400M (Zhai et al., 2023) as the vision encoder, Qwen2-7B-Instruct (Wang et al., 2024) as the language model backbone, and Mask2Former (Cheng et al., 2022) for semantic segmentation during ASM generation.\n\nTable 3: Memory consumption and average processing time comparison between Navid and MapNav (our method) across different numbers of navigation steps.   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"4\">Memory Consumption↓</td><td rowspan=\"2\">Avg. Time↓</td></tr><tr><td>1 Step</td><td>10 Steps</td><td>100 Steps</td><td>300 Steps</td></tr><tr><td>Navid</td><td>0.92MB</td><td>9.2 MB</td><td>92 MB</td><td>276 MB</td><td>1.22s</td></tr><tr><td>MapNav (Ours)</td><td>0.17MB</td><td>0.17MB</td><td>0.17MB</td><td>0.17MB</td><td>0.25s</td></tr></table>\n\nFor detailed experimental details, see Appendix B.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.638::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "B",
+      "section_title": "details of training",
+      "normalized_section_title": "details of training",
+      "evidence": "Model Setting. Our model builds upon the LLaVA-Onevision (Li et al., 2024a) framework and consists of three main components: the visual encoder, projector, and large language model (LLM). For the visual encoder, we employed Google's SigLIPso400m-patch14-384 (Zhai et al., 2023), which processes input images at a resolution of $384\\mathrm{x}384$ using patches of size $14\\mathrm{x}14$ . The SigLIP model serves as our vision backbone, converting input images into visual embeddings with a hidden dimension of 1152. The projector is implemented as a two-layer MLP with GELU activation, which maps the visual features to the language model's embedding space. For the language model, we utilized Qwen2-7B-Instruct (Wang et al., 2024) as our backbone, which features 28 transformer layers with 28 attention heads and a hidden size of 3584. The model supports a context length of up\n\n![](images/89740adb0634ce5303b0ec8711282e61fb0694bce11a4c1dc7a8c57b6c0457d7.jpg)  \nFigure 6: The real-world MapNav robot setup.\n\nto 32,768 tokens and incorporates sliding window attention with a window size of 131,072 tokens.\n\nTraining Setting. We conducted our training on 8 NVIDIA A100 GPUs for approximately 30 hours, totaling 240 GPU hours ( $\\approx$ 500k step-wise samples). During the fine-tuning process, we froze the vision encoder and only fine-tuned the multimodal projector and language model components for one epoch with a learning rate of 1e-6. We utilized bfloat16 precision for training efficiency. The model processes images using bilinear spatial pooling and selects features from the penultimate layer of the vision tower. For multi-modal integration, we employed patch-level features without using image patch tokens or explicit image start/end tokens. The projector adopts a spatial unpadded patch merge strategy to handle varying image sizes effectively.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.638::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": null,
+      "count_text": "",
+      "section_number": "C",
+      "section_title": "real-world robot setup",
+      "normalized_section_title": "real-world robot setup",
+      "evidence": "As shown in Fig. 6, our real-world experiments were conducted using a Unitree Go2 Edu quadrupedal robot equipped with an Intel RealSense D435i depth camera mounted $40\\mathrm{cm}$ above the robot. The system streams RGB-D images from a D435i camera to a server powered by NVIDIA A100 GPUs, where our MapNav agent processes the observations to generate our ASMs. Based on the generated ASM, the system infers executable actions which are then transmitted back to the Go2 for execution. Notably, our system demonstrated robust sim-to-real transfer capabilities, maintaining accurate ASM generation and high task performance despite real-world challenges such as depth measurement uncertainties, pose estimation errors, and environmental variations.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.638::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methodology",
+      "evidence": "MapNav pursues a novel end-to-end vision-and-language navigation model based on VLM, leveraging Annotated Semantic Maps (ASM) to replace traditional historical frames. We introduce a top-down annotated semantic map at the start of each episode, updating it at each timestep for precise object mapping and structured navigation information, while enhancing it with textual labels for key regions to clarify navigation cues. The MapNav agent uses the constructed ASM as input, harnessing VLM's powerful end-to-end capabilities to enhance vision-and-language navigation (VLN). The framework overview of MapNav is shown in Fig. 2."
+    },
+    {
+      "source_window_id": "2025.acl-long.638::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.638::sections::4.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.3",
+      "section_title": "ablation studies",
+      "evidence": "Efficiency Analysis. For the efficiency analysis, we compare memory consumption and inference time between MapNav and Navid. As shown in Tab. 3, MapNav demonstrates significant improvements in both areas. Specifically, our semantic map-based method maintains a constant memory footprint of 0.17MB, regardless of trajectory length, while Navid's frame-based approach scales linearly, reaching 276MB at 300 steps. This is because MapNav only stores and updates a compact ASM, whereas Navid accumulates all historical RGB observations. In terms of inference speed, MapNav reduces average processing time by $79.5\\%$ (from 1.22 seconds per step to 0.25 seconds). This improvement arises because MapNav only calculates features from the current RGB frame and ASM, avoiding the need to process all historical frames.\n\nEffect of ASM. To validate the efficacy of our proposed ASM, we conducted a comparative analysis using multiple map variants. We evaluated three conditions: (1) the original top-down map from the simulator, (2) a semantic map with categorical information but no textual annotations, and (3) complete removal of map-based features. Quantitative results in Tab. 4 show a clear performance hierarchy: the RGB-only baseline performed the worst, with moderate improvements from the original and semantic map variants. The ASM outperformed all evaluated metrics, highlighting the benefits of semantic enrichment and the importance of textual annotations for spatial reasoning tasks.\n\nImpact of different training dataset composi\n\n![](images/06b2913f61839e131db53bafe44a4635c6067d6f9221642c766a2c82443b9ea9.jpg)  \nFigure 5: Comparison of MapNav using different numbers of historical RGB frames. Cur. RGB and His. RGB refer to methods using the current and historical RGB frames, respectively.\n\ntion. To evaluate the impact of different training data compositions, we conducted a dataset ablation study with five configurations: (1) MapNav trained on 100K R2R samples (baseline), (2) 300K R2R samples, (3) DAgger-generated samples on R2R, (4) integration of DAgger and RxR datasets, and (5) all previous components plus collision-aware training. As shown in Tab. 5, increasing from 100K to 300K R2R samples resulted in substantial performance improvements. The integration of DAgger samples yielded the most significant gains, underscoring the importance of interactive learning. The RxR dataset provided modest improvements, particularly in diverse linguistic instructions. Our final configuration, with collision-aware training, achieved marginally better performance across metrics, setting a new performance benchmark. These results highlight that data diversity and interactive learning enhance model performance, with the greatest benefits stemming from ample base training data and DAgger augmentation.\n\nEffect of Varying Numbers of Historical RGB Frames. We conducted a systematic ablation study to evaluate the effect of varying historical RGB frames. As shown in Fig. 5, the most significant improvement occurs with ASM in the single current RGB frame setting, enhancing SR from $27\\%$ to $36\\%$ , SPL from $23\\%$ to $34\\%$ , OS from $41\\%$ to $50\\%$ , and NE from $7.2\\mathrm{m}$ to $5.2\\mathrm{m}$ . This highlights the effectiveness of our ASM-based approach in capturing spatial information. While adding historical RGB frames (1, 2, and 4 His.RGB) results in gradual improvements, these gains are modest compared to the initial ASM integration. Notably, with just two historical RGB frames, our model achieves state-of-the-art performance (SR: $39\\%$ , SPL: $37\\%$ ) compared to the baseline NaVid (Zhang et al., 2024a). The final configuration with four his\n\ntorical RGB frames shows only slight gains (SR: $41\\%$ , SPL: $38\\%$ ), indicating that the core advantage lies in the ASM-based representation rather than temporal accumulation. These findings validate our choice of ASM as a more efficient alternative to extensive historical RGB frame sequences, delivering superior performance while maintaining computational efficiency."
+    },
+    {
+      "source_window_id": "2025.acl-long.638::appendix::E",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "E",
+      "section_title": "more experiments",
+      "evidence": "Ablation on Different Input Modals. To systematically investigate the contribution of each input modality, we conducted an extensive ablation study on the input representations. The experimental configurations encompassed three variants: (1) RGB-only input, serving as the base\n\nline condition, (2) RGB augmented with depth information (RGB+Depth), and (3) our complete model utilizing the ASM alongside RGB inputs. Quantitative results, as presented in Tab . 6, reveal an interesting pattern across these configurations. While the RGB-only baseline achieved moderate performance, the addition of depth information (RGB+Depth) led to a notable performance degradation. This counterintuitive result can be attributed to the Vision-Language Model's inherent limitations in processing depth modalities, as these models are primarily trained on RGB images and natural language. In contrast, the integration of our proposed ASM demonstrated substantial performance gains across all evaluation metrics, significantly outperforming both baseline configurations. These results not only validate the effectiveness of our ASM approach but also highlight the importance of selecting input modalities that align with the pre-trained model's capabilities.\n\nAblation Experiment on Different Semantic Segmentation Modules. We conducted another ab\n\nTable 6: Comparison of different input modals.   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"4\">VLN-CE R2R Val-Unseen</td></tr><tr><td>NE↓</td><td>OS↑</td><td>SR↑</td><td>SPL↑</td></tr><tr><td>MapNav (Only RGB)</td><td>7.26</td><td>41.2</td><td>27.1</td><td>23.5</td></tr><tr><td>MapNav (RGB+Depth)</td><td>8.82</td><td>35.6</td><td>23.1</td><td>19.9</td></tr><tr><td>MapNav (Annotated Semantic Map)</td><td>5.22</td><td>50.3</td><td>36.5</td><td>34.3</td></tr></table>\n\nTable 7: Comparison of different semantic segmentation modules' performance on R2R Val-Unseen split.   \n\n<table><tr><td rowspan=\"2\">VLMs</td><td colspan=\"4\">VLN-CE R2R Val-Unseen</td></tr><tr><td>NE↓</td><td>OS↑</td><td>SR↑</td><td>SPL↑</td></tr><tr><td>YOLOv8 (Jocher et al., 2023)</td><td>6.43</td><td>45.2</td><td>31.5</td><td>29.6</td></tr><tr><td>MobileSAM (Zhang et al., 2023)</td><td>6.02</td><td>48.9</td><td>34.8</td><td>31.6</td></tr><tr><td>Mask2Former (Our Use) (Cheng et al., 2022)</td><td>5.22</td><td>50.3</td><td>36.5</td><td>34.3</td></tr></table>\n\nlation study to evaluate the impact of different semantic segmentation modules on our ASM generation process, with results presented in Tab. 7. We compared three state-of-the-art semantic segmentation approaches: YOLOv8 (Jocher et al., 2023), MobileSAM (Zhang et al., 2023), and our chosen Mask2Former (Cheng et al., 2022). The experiments were conducted on the R2R Val-Unseen split to assess generalization capability. Results show that Mask2Former achieves the best performance across all metrics, with a Navigation Error (NE) of $5.22\\mathrm{m}$ , Success Rate (SR) of $36.5\\%$ , and SPL of $34\\%$ , outperforming both YOLOv8 and MobileSAM. The superior performance of Mask2Former can be attributed to its more precise segmentation boundaries and better handling of complex indoor scenes. While MobileSAM shows moderate performance with an SR of $34.8\\%$ and SPL of $31.6\\%$ , YOLOv8 exhibits relatively lower performance with an SR of $31.5\\%$ and SPL of $29.6\\%$ . These results suggest that the quality of semantic segmentation significantly impacts the overall navigation performance, highlighting the importance of accurate semantic objects segmentation in ASM generation."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.1",
+      "B",
+      "C"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 8
+      },
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 8
+      },
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": null
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.638\\auto\\full.md",
+    "source_md_sha256": "9a8efba6bad42019d90e9f05b9a23ec126463240217a1161630b6d5341ab9429",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

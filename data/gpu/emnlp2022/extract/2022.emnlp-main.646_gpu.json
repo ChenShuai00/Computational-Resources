@@ -1,0 +1,223 @@
+{
+  "paper_id": "2022.emnlp-main.646",
+  "candidate_windows": [
+    {
+      "window_id": "2022.emnlp-main.646::sections::5.1",
+      "paper_id": "2022.emnlp-main.646",
+      "section_number": "5.1",
+      "section_title": "fairberta: perturbation augmented pretraining",
+      "normalized_section_title": "fairberta: perturbation augmented pretraining",
+      "window_text": "Setting: We train FairBERTa with the RoBERTa<sub>BASE</sub> architecture (Liu et al., 2019) using 256 32GB V100 GPUs for 500k steps. To generate training data for FairBERTa, we apply the perturber to the RoBERTa training corpus (Liu et al., 2019) to help balance the representation of underrepresented groups (see Figure 2) and thereby reduce the prevalence and severity of unwanted demographic associations. During perturbation augmentation, we sample contiguous sequences of 256 tokens\n\nand select a demographic word and target attribute with uniform probability, which are provided as inputs to the perturber. Although it would be in principle straightforward to upsample the training data size appreciably, keeping data size fixed allows us to make a direct comparison between FairBERTa and RoBERTa on a variety of fairness metrics and downstream tasks. We train FairBERTa and RoBERTa on the full RoBERTa training corpus (160GB) and the BookWiki subset (16GB), and show that our observations on fairness and accuracy are consistent.\n\nFairness Evaluations: We compare FairBERTa to RoBERTa trained with the same settings according to their performance on three fairness evaluation datasets. For CrowS-Pairs (Nangia et al., 2020), we report the percentage of examples for which a model assigns a higher (pseudo-)likelihood to the stereotyping sentence over the less stereotyping sentence. For the template-based Word Embedding Association Test (WEAT, Caliskan et al. 2017) and Sentence Encoder Association Test (SEAT, May et al. 2019), we report the percentage of statistically significant tests and their average effect size. Lastly, for HolisticBias (HB, Smith et al. 2022), we measure the percentage of pairs of descriptors by axis for which the distribution of pseudo-log-likelihoods (Nangia et al., 2020) in populated sentences significantly differs.\n\nFairBERTa is more fair: Overall, FairBERTa shows improvements in fairness scores over training-size-matched RoBERTa models across our evaluations, and across two training dataset sizes (see Table 3). FairBERTa models show reduced demographic associations overall across HB templates, and have notably fewer statistically significant associations on WEAT/SEAT. CrowS-Pairs is more equivocal: e.g., FairBERTa (16GB) is closer than RoBERTA (16GB) to the desired score of $50\\%$ (demographic parity) for gender, but not for age. Worse performance on the age category is possibly due to the varied ways in which age is conveyed in language, e.g., I was born 25 years ago vs. I am a child. While the perturber is capable of perturbing phrases with numbers such as eleven years old, general issues with numerical reasoning (Dua et al., 2019; Geva et al., 2020; Lin et al., 2020) may still be present.\n\nWe find that fairness metrics sometimes report conflicting results, corroborating other recent findings (Delobelle et al., 2021; Goldfarb-Tarrant et al., 2021). While WEAT/SEAT tests and HB evaluation find FairBERTa (160GB) to be more fair along the race axis, CrowS-Pairs reported a better score for RoBERTa (160GB). Inconsistencies may be partly explained by data noise in CrowS-Pairs (Blodgett et al., 2021), but we believe that the agreement (or lack thereof) of different NLP bias measurements warrants further exploration, and closer examinations of fairness evaluation datasets.\n\nFairBERTa has no Fairness-Accuracy Tradeoff: Previously, a fairer model often meant accepting lower task\n\n<table><tr><td></td><td></td><td>RoBERTa 16GB of training data</td><td>FairBERTa 16GB of training data</td><td>RoBERTa† 160GB of training data</td><td>FairBERTa</td></tr><tr><td rowspan=\"3\">HolisticBias</td><td>gender</td><td>36.1</td><td>19.9</td><td>40.6</td><td>35.7</td></tr><tr><td>race</td><td>27.3</td><td>23.8</td><td>28.4</td><td>27.6</td></tr><tr><td>age</td><td>42.9</td><td>38.9</td><td>36.4</td><td>41.7</td></tr><tr><td>WEAT/SEAT</td><td>% sig. tests</td><td>53.5</td><td>40.0</td><td>60.0</td><td>36.7</td></tr><tr><td rowspan=\"3\">CrowS-Pairs</td><td>gender</td><td>52.3</td><td>51.9</td><td>55.0</td><td>51.5</td></tr><tr><td>race</td><td>55.0</td><td>55.0</td><td>53.9</td><td>57.6</td></tr><tr><td>age</td><td>50.6</td><td>63.2</td><td>66.7</td><td>63.2</td></tr></table>\n\nTable 3: Results of FairBERTa and RoBERTa on 3 fairness metrics across varying training dataset sizes. Numbers are percentages of metric tests revealing bias. RoBERTa† refers to the model from Liu et al. (2019); all other models were trained from scratch. For CrowS-Pairs, closer to 50 means a more fair model; for WEAT/SEAT & HolisticBias, lower means more fair. See Section 5.1 for more details.   \nTable 4: FairBERTa matches RoBERTa in Downstream Task Accuracy (GLUE Benchmark). Tuning refers to whether models are finetuned on original datasets or \"fairtuned\" on perturbed ones (denoted with 'fair'). RoBERTa and FairBERTa models report similar accuracy regardless of training size and tuning approach. We report Matthew's correlation for CoLA, Pearson's correlation for STS-B, and accuracy for all other tasks. Results are the median of 5 seeded runs. A dagger marks the Liu et al. model.   \n\n<table><tr><td>Model</td><td>Tuning</td><td>Size</td><td>CoLA</td><td>SST-2</td><td>STS-B</td><td>QQP</td><td>RTE</td><td>QNLI</td><td>Avg.</td></tr><tr><td>FairBERTa</td><td>orig.</td><td>16GB</td><td>62.81</td><td>92.66</td><td>88.37</td><td>91.22</td><td>72.75</td><td>92.13</td><td>83.32</td></tr><tr><td>RoBERTa</td><td>orig.</td><td>16GB</td><td>59.81</td><td>93.92</td><td>89.87</td><td>91.17</td><td>72.92</td><td>91.89</td><td>83.26</td></tr><tr><td>FairBERTa</td><td>orig.</td><td>160GB</td><td>61.57</td><td>94.61</td><td>90.40</td><td>91.42</td><td>76.90</td><td>92.99</td><td>84.65</td></tr><tr><td>RoBERTa†</td><td>orig.</td><td>160GB</td><td>61.36</td><td>93.50</td><td>90.90</td><td>91.77</td><td>75.50</td><td>92.70</td><td>84.29</td></tr><tr><td>FairBERTa</td><td>fair</td><td>16GB</td><td>61.37</td><td>92.20</td><td>87.64</td><td>90.93</td><td>70.03</td><td>92.13</td><td>82.38</td></tr><tr><td>RoBERTa</td><td>fair</td><td>16GB</td><td>58.09</td><td>93.58</td><td>88.66</td><td>91.04</td><td>71.12</td><td>91.73</td><td>82.37</td></tr><tr><td>FairBERTa</td><td>fair</td><td>160GB</td><td>60.60</td><td>94.95</td><td>89.63</td><td>91.49</td><td>75.09</td><td>92.77</td><td>84.09</td></tr><tr><td>RoBERTa†</td><td>fair</td><td>160GB</td><td>59.71</td><td>93.50</td><td>90.20</td><td>91.56</td><td>75.80</td><td>92.70</td><td>83.91</td></tr></table>\n\nperformance (Zliobaite, 2015; Menon and Williamson, 2018) or seeking a Pareto optimal solution (Berk et al., 2017; Zhao and Gordon, 2019). To determine whether there is a tradeoff between downstream task accuracy and fairness in our setting, we evaluate on 6 GLUE benchmark tasks (Wang et al., 2018): sentence acceptability (Warstadt et al., 2019, CoLA), sentiment analysis (Socher et al., 2013, SST-2), text similarity (Cer et al., 2017, STS-B), textual entailment (Dagan et al., 2005; Haim et al., 2006; Giampiccolo et al., 2007; Bentivogli et al., 2009, RTE), and question answering (Rajpurkar et al., 2016) recast to textual entailment (QNLI).<sup>8</sup>\n\nFairBERTa models match the performance of RoBERTa models trained under the same setting to within $0.40\\%$ accuracy on average (see top half of\n\nTable 4). For some tasks (CoLA, SST-2, RTE and QNLI), FairBERTa (160GB) also slightly outperforms RoBERTa (160GB) and averages $0.75\\%$ higher overall accuracy on these tasks.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.646::appendix::G",
+      "paper_id": "2022.emnlp-main.646",
+      "section_number": "G",
+      "section_title": "perturber training parameters",
+      "normalized_section_title": "perturber training parameters",
+      "window_text": "In this section, we describe hyperparameters for training the perturber. Table 11 describes the hyperparameters for finetuning BART-Large (Lewis et al., 2020) on PANDA, with 24 layers, 1024 hidden size, 16 attention heads and 406M parameters. Validation patience refers to the number of epochs where validation loss does not improve, used for early stopping. All perturber training and evaluation runs are conducted using the ParlAI library (Miller et al., 2017). We trained the perturber using $8 \\times 16$ GB Nvidia V100 GPUs for approximately 4 hours.\n\n<table><tr><td>Hyperparam</td><td>PANDA</td></tr><tr><td>Learning Rate</td><td>1e-5</td></tr><tr><td>Batch Size</td><td>64</td></tr><tr><td>Weight Decay</td><td>0.01</td></tr><tr><td>Validation Patience</td><td>10</td></tr><tr><td>Learning Rate Decay</td><td>0.01</td></tr><tr><td>Warmup Updates</td><td>1200</td></tr><tr><td>Adam ε</td><td>1e-8</td></tr><tr><td>Adam β1</td><td>0.9</td></tr><tr><td>Adam β2</td><td>0.999</td></tr><tr><td>Gradient Clipping</td><td>0.1</td></tr><tr><td>Decoding Strategy</td><td>greedy</td></tr></table>\n\nTable 11: Hyperparameters for training the perturber by finetuning BART on PANDA.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.646::appendix::H",
+      "paper_id": "2022.emnlp-main.646",
+      "section_number": "H",
+      "section_title": "fairberta training parameters",
+      "normalized_section_title": "fairberta training parameters",
+      "window_text": "Table 12 contains hyperparameters for pretraining FairBERTa. FairBERTa is trained with the RoBERTa<sub>BASE</sub> (Liu et al., 2019) architecture on 32GB Nvidia V100 GPUs with mixed precision using the Fairseq library (Ott et al., 2019). We pretrain FairBERTa on 160GB perturbed data using 256 V100 GPUs for approximately three days. For RoBERTa and FairBERTa models trained on the 16GB BookWiki corpus (and perturbed BookWiki corpus), we use the same training settings, but use 100K max steps.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2022.emnlp-main.646::appendix::I",
+      "paper_id": "2022.emnlp-main.646",
+      "section_number": "I",
+      "section_title": "downstream task training parameters",
+      "normalized_section_title": "downstream task training parameters",
+      "window_text": "Table 13 describes hyperparameters for finetuning and fairtuning RoBERTa and FairBERTa on GLUE tasks and the RACE (Lai et al., 2017) reading comprehension dataset. We conducted a basic hyperparameter exploration sweeping over learning rate and batch size, and select the best hyperparameter values based on the median validation accuracy of 3 runs for each task. Configurations for individual models, tuning approach and GLUE task will be released in our GitHub repository. Training runs on downstream tasks are done using HuggingFace. Models are trained on $8 \\times 32$ GB Nvidia V100 machines, with runtime ranging from 5 minutes for the smallest dataset (RTE) to 45 minutes for the largest dataset (QQP).\n\n<table><tr><td>Hyperparam</td><td>FairBERTa</td></tr><tr><td># Layers</td><td>12</td></tr><tr><td>Hidden Size</td><td>768</td></tr><tr><td>FFN inner Hidden Size</td><td>3072</td></tr><tr><td># Attention Heads</td><td>12</td></tr><tr><td>Attention Head Size</td><td>64</td></tr><tr><td>Hidden Dropout</td><td>0.1</td></tr><tr><td>Attention Dropout</td><td>0.1</td></tr><tr><td># Warmup Steps</td><td>24k</td></tr><tr><td>Peak Learning Rate</td><td>6e-4</td></tr><tr><td>Batch Size</td><td>8k</td></tr><tr><td>Weight Decay</td><td>0.01</td></tr><tr><td>Sequence Length</td><td>512</td></tr><tr><td>Max Steps</td><td>500k</td></tr><tr><td>Learning Rate Decay</td><td>Linear</td></tr><tr><td>Adam ε</td><td>1e-8</td></tr><tr><td>Adam β1</td><td>0.9</td></tr><tr><td>Adam β2</td><td>0.999</td></tr><tr><td>Gradient Clipping</td><td>0.0</td></tr></table>\n\nTable 12: Hyperparameters for pretraining FairBERTa.   \nTable 13: Hyperparameters for finetuning RoBERTa and FairBERTa on GLUE and RACE.   \n\n<table><tr><td>Hyperparam</td><td>GLUE</td><td>RACE</td></tr><tr><td>Learning Rate</td><td>{1e-5, 2e-5, 3e-5}</td><td>1e-5</td></tr><tr><td>Batch Size</td><td>{16, 32}</td><td>16</td></tr><tr><td>Weight Decay</td><td>0.1</td><td>0.1</td></tr><tr><td>Max # Epochs</td><td>10</td><td>3</td></tr><tr><td>Learning Rate Decay</td><td>Linear</td><td>Linear</td></tr><tr><td>Warmup Ratio</td><td>0.06</td><td>0.06</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.emnlp-main.646::sections::5.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100 32GB",
+      "count": 256,
+      "count_text": "256",
+      "evidence": "Setting: We train FairBERTa with the RoBERTa<sub>BASE</sub> architecture (Liu et al., 2019) using 256 32GB V100 GPUs for 500k steps. To generate training data for FairBERTa, we apply the perturber to the RoBERTa training corpus (Liu et al., 2019) to help balance the representation of underrepresented groups (see Figure 2) and thereby reduce the prevalence and severity of unwanted demographic associations. During perturbation augmentation, we sample contiguous sequences of 256 tokens\n\nand select a demographic word and target attribute with uniform probability, which are provided as inputs to the perturber. Although it would be in principle straightforward to upsample the training data size appreciably, keeping data size fixed allows us to make a direct comparison between FairBERTa and RoBERTa on a variety of fairness metrics and downstream tasks. We train FairBERTa and RoBERTa on the full RoBERTa training corpus (160GB) and the BookWiki subset (16GB), and show that our observations on fairness and accuracy are consistent.\n\nFairness Evaluations: We compare FairBERTa to RoBERTa trained with the same settings according to their performance on three fairness evaluation datasets. For CrowS-Pairs (Nangia et al., 2020), we report the percentage of examples for which a model assigns a higher (pseudo-)likelihood to the stereotyping sentence over the less stereotyping sentence. For the template-based Word Embedding Association Test (WEAT, Caliskan et al. 2017) and Sentence Encoder Association Test (SEAT, May et al. 2019), we report the percentage of statistically significant tests and their average effect size. Lastly, for HolisticBias (HB, Smith et al. 2022), we measure the percentage of pairs of descriptors by axis for which the distribution of pseudo-log-likelihoods (Nangia et al., 2020) in populated sentences significantly differs.\n\nFairBERTa is more fair: Overall, FairBERTa shows improvements in fairness scores over training-size-matched RoBERTa models across our evaluations, and across two training dataset sizes (see Table 3). FairBERTa models show reduced demographic associations overall across HB templates, and have notably fewer statistically significant associations on WEAT/SEAT. CrowS-Pairs is more equivocal: e.g., FairBERTa (16GB) is closer than RoBERTA (16GB) to the desired score of $50\\%$ (demographic parity) for gender, but not for age. Worse performance on the age category is possibly due to the varied ways in which age is conveyed in language, e.g., I was born 25 years ago vs. I am a child. While the perturber is capable of perturbing phrases with numbers such as eleven years old, general issues with numerical reasoning (Dua et al., 2019; Geva et al., 2020; Lin et al., 2020) may still be present.\n\nWe find that fairness metrics sometimes report conflicting results, corroborating other recent findings (Delobelle et al., 2021; Goldfarb-Tarrant et al., 2021). While WEAT/SEAT tests and HB evaluation find FairBERTa (160GB) to be more fair along the race axis, CrowS-Pairs reported a better score for RoBERTa (160GB). Inconsistencies may be partly explained by data noise in CrowS-Pairs (Blodgett et al., 2021), but we believe that the agreement (or lack thereof) of different NLP bias measurements warrants further exploration, and closer examinations of fairness evaluation datasets.\n\nFairBERTa has no Fairness-Accuracy Tradeoff: Previously, a fairer model often meant accepting lower task\n\n<table><tr><td></td><td></td><td>RoBERTa 16GB of training data</td><td>FairBERTa 16GB of training data</td><td>RoBERTa† 160GB of training data</td><td>FairBERTa</td></tr><tr><td rowspan=\"3\">HolisticBias</td><td>gender</td><td>36.1</td><td>19.9</td><td>40.6</td><td>35.7</td></tr><tr><td>race</td><td>27.3</td><td>23.8</td><td>28.4</td><td>27.6</td></tr><tr><td>age</td><td>42.9</td><td>38.9</td><td>36.4</td><td>41.7</td></tr><tr><td>WEAT/SEAT</td><td>% sig. tests</td><td>53.5</td><td>40.0</td><td>60.0</td><td>36.7</td></tr><tr><td rowspan=\"3\">CrowS-Pairs</td><td>gender</td><td>52.3</td><td>51.9</td><td>55.0</td><td>51.5</td></tr><tr><td>race</td><td>55.0</td><td>55.0</td><td>53.9</td><td>57.6</td></tr><tr><td>age</td><td>50.6</td><td>63.2</td><td>66.7</td><td>63.2</td></tr></table>\n\nTable 3: Results of FairBERTa and RoBERTa on 3 fairness metrics across varying training dataset sizes. Numbers are percentages of metric tests revealing bias. RoBERTa† refers to the model from Liu et al. (2019); all other models were trained from scratch. For CrowS-Pairs, closer to 50 means a more fair model; for WEAT/SEAT & HolisticBias, lower means more fair. See Section 5.1 for more details.   \nTable 4: FairBERTa matches RoBERTa in Downstream Task Accuracy (GLUE Benchmark). Tuning refers to whether models are finetuned on original datasets or \"fairtuned\" on perturbed ones (denoted with 'fair'). RoBERTa and FairBERTa models report similar accuracy regardless of training size and tuning approach. We report Matthew's correlation for CoLA, Pearson's correlation for STS-B, and accuracy for all other tasks. Results are the median of 5 seeded runs. A dagger marks the Liu et al. model.   \n\n<table><tr><td>Model</td><td>Tuning</td><td>Size</td><td>CoLA</td><td>SST-2</td><td>STS-B</td><td>QQP</td><td>RTE</td><td>QNLI</td><td>Avg.</td></tr><tr><td>FairBERTa</td><td>orig.</td><td>16GB</td><td>62.81</td><td>92.66</td><td>88.37</td><td>91.22</td><td>72.75</td><td>92.13</td><td>83.32</td></tr><tr><td>RoBERTa</td><td>orig.</td><td>16GB</td><td>59.81</td><td>93.92</td><td>89.87</td><td>91.17</td><td>72.92</td><td>91.89</td><td>83.26</td></tr><tr><td>FairBERTa</td><td>orig.</td><td>160GB</td><td>61.57</td><td>94.61</td><td>90.40</td><td>91.42</td><td>76.90</td><td>92.99</td><td>84.65</td></tr><tr><td>RoBERTa†</td><td>orig.</td><td>160GB</td><td>61.36</td><td>93.50</td><td>90.90</td><td>91.77</td><td>75.50</td><td>92.70</td><td>84.29</td></tr><tr><td>FairBERTa</td><td>fair</td><td>16GB</td><td>61.37</td><td>92.20</td><td>87.64</td><td>90.93</td><td>70.03</td><td>92.13</td><td>82.38</td></tr><tr><td>RoBERTa</td><td>fair</td><td>16GB</td><td>58.09</td><td>93.58</td><td>88.66</td><td>91.04</td><td>71.12</td><td>91.73</td><td>82.37</td></tr><tr><td>FairBERTa</td><td>fair</td><td>160GB</td><td>60.60</td><td>94.95</td><td>89.63</td><td>91.49</td><td>75.09</td><td>92.77</td><td>84.09</td></tr><tr><td>RoBERTa†</td><td>fair</td><td>160GB</td><td>59.71</td><td>93.50</td><td>90.20</td><td>91.56</td><td>75.80</td><td>92.70</td><td>83.91</td></tr></table>\n\nperformance (Zliobaite, 2015; Menon and Williamson, 2018) or seeking a Pareto optimal solution (Berk et al., 2017; Zhao and Gordon, 2019). To determine whether there is a tradeoff between downstream task accuracy and fairness in our setting, we evaluate on 6 GLUE benchmark tasks (Wang et al., 2018): sentence acceptability (Warstadt et al., 2019, CoLA), sentiment analysis (Socher et al., 2013, SST-2), text similarity (Cer et al., 2017, STS-B), textual entailment (Dagan et al., 2005; Haim et al., 2006; Giampiccolo et al., 2007; Bentivogli et al., 2009, RTE), and question answering (Rajpurkar et al., 2016) recast to textual entailment (QNLI).<sup>8</sup>\n\nFairBERTa models match the performance of RoBERTa models trained under the same setting to within $0.40\\%$ accuracy on average (see top half of\n\nTable 4). For some tasks (CoLA, SST-2, RTE and QNLI), FairBERTa (160GB) also slightly outperforms RoBERTa (160GB) and averages $0.75\\%$ higher overall accuracy on these tasks.",
+      "section_number": "5.1",
+      "section_title": "fairberta: perturbation augmented pretraining",
+      "normalized_section_title": "fairberta: perturbation augmented pretraining"
+    },
+    {
+      "window_id": "2022.emnlp-main.646::appendix::G",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia V100 16GB",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "In this section, we describe hyperparameters for training the perturber. Table 11 describes the hyperparameters for finetuning BART-Large (Lewis et al., 2020) on PANDA, with 24 layers, 1024 hidden size, 16 attention heads and 406M parameters. Validation patience refers to the number of epochs where validation loss does not improve, used for early stopping. All perturber training and evaluation runs are conducted using the ParlAI library (Miller et al., 2017). We trained the perturber using $8 \\times 16$ GB Nvidia V100 GPUs for approximately 4 hours.\n\n<table><tr><td>Hyperparam</td><td>PANDA</td></tr><tr><td>Learning Rate</td><td>1e-5</td></tr><tr><td>Batch Size</td><td>64</td></tr><tr><td>Weight Decay</td><td>0.01</td></tr><tr><td>Validation Patience</td><td>10</td></tr><tr><td>Learning Rate Decay</td><td>0.01</td></tr><tr><td>Warmup Updates</td><td>1200</td></tr><tr><td>Adam ε</td><td>1e-8</td></tr><tr><td>Adam β1</td><td>0.9</td></tr><tr><td>Adam β2</td><td>0.999</td></tr><tr><td>Gradient Clipping</td><td>0.1</td></tr><tr><td>Decoding Strategy</td><td>greedy</td></tr></table>\n\nTable 11: Hyperparameters for training the perturber by finetuning BART on PANDA.",
+      "section_number": "G",
+      "section_title": "perturber training parameters",
+      "normalized_section_title": "perturber training parameters"
+    },
+    {
+      "window_id": "2022.emnlp-main.646::appendix::H",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia V100 32GB",
+      "count": 256,
+      "count_text": "256",
+      "evidence": "Table 12 contains hyperparameters for pretraining FairBERTa. FairBERTa is trained with the RoBERTa<sub>BASE</sub> (Liu et al., 2019) architecture on 32GB Nvidia V100 GPUs with mixed precision using the Fairseq library (Ott et al., 2019). We pretrain FairBERTa on 160GB perturbed data using 256 V100 GPUs for approximately three days. For RoBERTa and FairBERTa models trained on the 16GB BookWiki corpus (and perturbed BookWiki corpus), we use the same training settings, but use 100K max steps.",
+      "section_number": "H",
+      "section_title": "fairberta training parameters",
+      "normalized_section_title": "fairberta training parameters"
+    },
+    {
+      "window_id": "2022.emnlp-main.646::appendix::I",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia V100 32GB",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Table 13 describes hyperparameters for finetuning and fairtuning RoBERTa and FairBERTa on GLUE tasks and the RACE (Lai et al., 2017) reading comprehension dataset. We conducted a basic hyperparameter exploration sweeping over learning rate and batch size, and select the best hyperparameter values based on the median validation accuracy of 3 runs for each task. Configurations for individual models, tuning approach and GLUE task will be released in our GitHub repository. Training runs on downstream tasks are done using HuggingFace. Models are trained on $8 \\times 32$ GB Nvidia V100 machines, with runtime ranging from 5 minutes for the smallest dataset (RTE) to 45 minutes for the largest dataset (QQP).\n\n<table><tr><td>Hyperparam</td><td>FairBERTa</td></tr><tr><td># Layers</td><td>12</td></tr><tr><td>Hidden Size</td><td>768</td></tr><tr><td>FFN inner Hidden Size</td><td>3072</td></tr><tr><td># Attention Heads</td><td>12</td></tr><tr><td>Attention Head Size</td><td>64</td></tr><tr><td>Hidden Dropout</td><td>0.1</td></tr><tr><td>Attention Dropout</td><td>0.1</td></tr><tr><td># Warmup Steps</td><td>24k</td></tr><tr><td>Peak Learning Rate</td><td>6e-4</td></tr><tr><td>Batch Size</td><td>8k</td></tr><tr><td>Weight Decay</td><td>0.01</td></tr><tr><td>Sequence Length</td><td>512</td></tr><tr><td>Max Steps</td><td>500k</td></tr><tr><td>Learning Rate Decay</td><td>Linear</td></tr><tr><td>Adam ε</td><td>1e-8</td></tr><tr><td>Adam β1</td><td>0.9</td></tr><tr><td>Adam β2</td><td>0.999</td></tr><tr><td>Gradient Clipping</td><td>0.0</td></tr></table>\n\nTable 12: Hyperparameters for pretraining FairBERTa.   \nTable 13: Hyperparameters for finetuning RoBERTa and FairBERTa on GLUE and RACE.   \n\n<table><tr><td>Hyperparam</td><td>GLUE</td><td>RACE</td></tr><tr><td>Learning Rate</td><td>{1e-5, 2e-5, 3e-5}</td><td>1e-5</td></tr><tr><td>Batch Size</td><td>{16, 32}</td><td>16</td></tr><tr><td>Weight Decay</td><td>0.1</td><td>0.1</td></tr><tr><td>Max # Epochs</td><td>10</td><td>3</td></tr><tr><td>Learning Rate Decay</td><td>Linear</td><td>Linear</td></tr><tr><td>Warmup Ratio</td><td>0.06</td><td>0.06</td></tr></table>",
+      "section_number": "I",
+      "section_title": "downstream task training parameters",
+      "normalized_section_title": "downstream task training parameters"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.emnlp-main.646::sections::5.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100 32GB",
+      "cleaned_hardware_name": "v100 32gb",
+      "normalized_hardware_name": "V100 32GB",
+      "benchmark_hardware_name": null,
+      "count": 256,
+      "count_text": "256",
+      "section_number": "5.1",
+      "section_title": "fairberta: perturbation augmented pretraining",
+      "normalized_section_title": "fairberta: perturbation augmented pretraining",
+      "evidence": "Setting: We train FairBERTa with the RoBERTa<sub>BASE</sub> architecture (Liu et al., 2019) using 256 32GB V100 GPUs for 500k steps. To generate training data for FairBERTa, we apply the perturber to the RoBERTa training corpus (Liu et al., 2019) to help balance the representation of underrepresented groups (see Figure 2) and thereby reduce the prevalence and severity of unwanted demographic associations. During perturbation augmentation, we sample contiguous sequences of 256 tokens\n\nand select a demographic word and target attribute with uniform probability, which are provided as inputs to the perturber. Although it would be in principle straightforward to upsample the training data size appreciably, keeping data size fixed allows us to make a direct comparison between FairBERTa and RoBERTa on a variety of fairness metrics and downstream tasks. We train FairBERTa and RoBERTa on the full RoBERTa training corpus (160GB) and the BookWiki subset (16GB), and show that our observations on fairness and accuracy are consistent.\n\nFairness Evaluations: We compare FairBERTa to RoBERTa trained with the same settings according to their performance on three fairness evaluation datasets. For CrowS-Pairs (Nangia et al., 2020), we report the percentage of examples for which a model assigns a higher (pseudo-)likelihood to the stereotyping sentence over the less stereotyping sentence. For the template-based Word Embedding Association Test (WEAT, Caliskan et al. 2017) and Sentence Encoder Association Test (SEAT, May et al. 2019), we report the percentage of statistically significant tests and their average effect size. Lastly, for HolisticBias (HB, Smith et al. 2022), we measure the percentage of pairs of descriptors by axis for which the distribution of pseudo-log-likelihoods (Nangia et al., 2020) in populated sentences significantly differs.\n\nFairBERTa is more fair: Overall, FairBERTa shows improvements in fairness scores over training-size-matched RoBERTa models across our evaluations, and across two training dataset sizes (see Table 3). FairBERTa models show reduced demographic associations overall across HB templates, and have notably fewer statistically significant associations on WEAT/SEAT. CrowS-Pairs is more equivocal: e.g., FairBERTa (16GB) is closer than RoBERTA (16GB) to the desired score of $50\\%$ (demographic parity) for gender, but not for age. Worse performance on the age category is possibly due to the varied ways in which age is conveyed in language, e.g., I was born 25 years ago vs. I am a child. While the perturber is capable of perturbing phrases with numbers such as eleven years old, general issues with numerical reasoning (Dua et al., 2019; Geva et al., 2020; Lin et al., 2020) may still be present.\n\nWe find that fairness metrics sometimes report conflicting results, corroborating other recent findings (Delobelle et al., 2021; Goldfarb-Tarrant et al., 2021). While WEAT/SEAT tests and HB evaluation find FairBERTa (160GB) to be more fair along the race axis, CrowS-Pairs reported a better score for RoBERTa (160GB). Inconsistencies may be partly explained by data noise in CrowS-Pairs (Blodgett et al., 2021), but we believe that the agreement (or lack thereof) of different NLP bias measurements warrants further exploration, and closer examinations of fairness evaluation datasets.\n\nFairBERTa has no Fairness-Accuracy Tradeoff: Previously, a fairer model often meant accepting lower task\n\n<table><tr><td></td><td></td><td>RoBERTa 16GB of training data</td><td>FairBERTa 16GB of training data</td><td>RoBERTa† 160GB of training data</td><td>FairBERTa</td></tr><tr><td rowspan=\"3\">HolisticBias</td><td>gender</td><td>36.1</td><td>19.9</td><td>40.6</td><td>35.7</td></tr><tr><td>race</td><td>27.3</td><td>23.8</td><td>28.4</td><td>27.6</td></tr><tr><td>age</td><td>42.9</td><td>38.9</td><td>36.4</td><td>41.7</td></tr><tr><td>WEAT/SEAT</td><td>% sig. tests</td><td>53.5</td><td>40.0</td><td>60.0</td><td>36.7</td></tr><tr><td rowspan=\"3\">CrowS-Pairs</td><td>gender</td><td>52.3</td><td>51.9</td><td>55.0</td><td>51.5</td></tr><tr><td>race</td><td>55.0</td><td>55.0</td><td>53.9</td><td>57.6</td></tr><tr><td>age</td><td>50.6</td><td>63.2</td><td>66.7</td><td>63.2</td></tr></table>\n\nTable 3: Results of FairBERTa and RoBERTa on 3 fairness metrics across varying training dataset sizes. Numbers are percentages of metric tests revealing bias. RoBERTa† refers to the model from Liu et al. (2019); all other models were trained from scratch. For CrowS-Pairs, closer to 50 means a more fair model; for WEAT/SEAT & HolisticBias, lower means more fair. See Section 5.1 for more details.   \nTable 4: FairBERTa matches RoBERTa in Downstream Task Accuracy (GLUE Benchmark). Tuning refers to whether models are finetuned on original datasets or \"fairtuned\" on perturbed ones (denoted with 'fair'). RoBERTa and FairBERTa models report similar accuracy regardless of training size and tuning approach. We report Matthew's correlation for CoLA, Pearson's correlation for STS-B, and accuracy for all other tasks. Results are the median of 5 seeded runs. A dagger marks the Liu et al. model.   \n\n<table><tr><td>Model</td><td>Tuning</td><td>Size</td><td>CoLA</td><td>SST-2</td><td>STS-B</td><td>QQP</td><td>RTE</td><td>QNLI</td><td>Avg.</td></tr><tr><td>FairBERTa</td><td>orig.</td><td>16GB</td><td>62.81</td><td>92.66</td><td>88.37</td><td>91.22</td><td>72.75</td><td>92.13</td><td>83.32</td></tr><tr><td>RoBERTa</td><td>orig.</td><td>16GB</td><td>59.81</td><td>93.92</td><td>89.87</td><td>91.17</td><td>72.92</td><td>91.89</td><td>83.26</td></tr><tr><td>FairBERTa</td><td>orig.</td><td>160GB</td><td>61.57</td><td>94.61</td><td>90.40</td><td>91.42</td><td>76.90</td><td>92.99</td><td>84.65</td></tr><tr><td>RoBERTa†</td><td>orig.</td><td>160GB</td><td>61.36</td><td>93.50</td><td>90.90</td><td>91.77</td><td>75.50</td><td>92.70</td><td>84.29</td></tr><tr><td>FairBERTa</td><td>fair</td><td>16GB</td><td>61.37</td><td>92.20</td><td>87.64</td><td>90.93</td><td>70.03</td><td>92.13</td><td>82.38</td></tr><tr><td>RoBERTa</td><td>fair</td><td>16GB</td><td>58.09</td><td>93.58</td><td>88.66</td><td>91.04</td><td>71.12</td><td>91.73</td><td>82.37</td></tr><tr><td>FairBERTa</td><td>fair</td><td>160GB</td><td>60.60</td><td>94.95</td><td>89.63</td><td>91.49</td><td>75.09</td><td>92.77</td><td>84.09</td></tr><tr><td>RoBERTa†</td><td>fair</td><td>160GB</td><td>59.71</td><td>93.50</td><td>90.20</td><td>91.56</td><td>75.80</td><td>92.70</td><td>83.91</td></tr></table>\n\nperformance (Zliobaite, 2015; Menon and Williamson, 2018) or seeking a Pareto optimal solution (Berk et al., 2017; Zhao and Gordon, 2019). To determine whether there is a tradeoff between downstream task accuracy and fairness in our setting, we evaluate on 6 GLUE benchmark tasks (Wang et al., 2018): sentence acceptability (Warstadt et al., 2019, CoLA), sentiment analysis (Socher et al., 2013, SST-2), text similarity (Cer et al., 2017, STS-B), textual entailment (Dagan et al., 2005; Haim et al., 2006; Giampiccolo et al., 2007; Bentivogli et al., 2009, RTE), and question answering (Rajpurkar et al., 2016) recast to textual entailment (QNLI).<sup>8</sup>\n\nFairBERTa models match the performance of RoBERTa models trained under the same setting to within $0.40\\%$ accuracy on average (see top half of\n\nTable 4). For some tasks (CoLA, SST-2, RTE and QNLI), FairBERTa (160GB) also slightly outperforms RoBERTa (160GB) and averages $0.75\\%$ higher overall accuracy on these tasks.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 5,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2022.emnlp-main.646::appendix::G",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia V100 16GB",
+      "cleaned_hardware_name": "nvidia v100 16gb",
+      "normalized_hardware_name": "Nvidia V100 16GB",
+      "benchmark_hardware_name": null,
+      "count": 8,
+      "count_text": "8",
+      "section_number": "G",
+      "section_title": "perturber training parameters",
+      "normalized_section_title": "perturber training parameters",
+      "evidence": "In this section, we describe hyperparameters for training the perturber. Table 11 describes the hyperparameters for finetuning BART-Large (Lewis et al., 2020) on PANDA, with 24 layers, 1024 hidden size, 16 attention heads and 406M parameters. Validation patience refers to the number of epochs where validation loss does not improve, used for early stopping. All perturber training and evaluation runs are conducted using the ParlAI library (Miller et al., 2017). We trained the perturber using $8 \\times 16$ GB Nvidia V100 GPUs for approximately 4 hours.\n\n<table><tr><td>Hyperparam</td><td>PANDA</td></tr><tr><td>Learning Rate</td><td>1e-5</td></tr><tr><td>Batch Size</td><td>64</td></tr><tr><td>Weight Decay</td><td>0.01</td></tr><tr><td>Validation Patience</td><td>10</td></tr><tr><td>Learning Rate Decay</td><td>0.01</td></tr><tr><td>Warmup Updates</td><td>1200</td></tr><tr><td>Adam ε</td><td>1e-8</td></tr><tr><td>Adam β1</td><td>0.9</td></tr><tr><td>Adam β2</td><td>0.999</td></tr><tr><td>Gradient Clipping</td><td>0.1</td></tr><tr><td>Decoding Strategy</td><td>greedy</td></tr></table>\n\nTable 11: Hyperparameters for training the perturber by finetuning BART on PANDA.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2022.emnlp-main.646::appendix::H",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia V100 32GB",
+      "cleaned_hardware_name": "nvidia v100 32gb",
+      "normalized_hardware_name": "Nvidia V100 32GB",
+      "benchmark_hardware_name": null,
+      "count": 256,
+      "count_text": "256",
+      "section_number": "H",
+      "section_title": "fairberta training parameters",
+      "normalized_section_title": "fairberta training parameters",
+      "evidence": "Table 12 contains hyperparameters for pretraining FairBERTa. FairBERTa is trained with the RoBERTa<sub>BASE</sub> (Liu et al., 2019) architecture on 32GB Nvidia V100 GPUs with mixed precision using the Fairseq library (Ott et al., 2019). We pretrain FairBERTa on 160GB perturbed data using 256 V100 GPUs for approximately three days. For RoBERTa and FairBERTa models trained on the 16GB BookWiki corpus (and perturbed BookWiki corpus), we use the same training settings, but use 100K max steps.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2022.emnlp-main.646::appendix::I",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia V100 32GB",
+      "cleaned_hardware_name": "nvidia v100 32gb",
+      "normalized_hardware_name": "Nvidia V100 32GB",
+      "benchmark_hardware_name": null,
+      "count": 8,
+      "count_text": "8",
+      "section_number": "I",
+      "section_title": "downstream task training parameters",
+      "normalized_section_title": "downstream task training parameters",
+      "evidence": "Table 13 describes hyperparameters for finetuning and fairtuning RoBERTa and FairBERTa on GLUE tasks and the RACE (Lai et al., 2017) reading comprehension dataset. We conducted a basic hyperparameter exploration sweeping over learning rate and batch size, and select the best hyperparameter values based on the median validation accuracy of 3 runs for each task. Configurations for individual models, tuning approach and GLUE task will be released in our GitHub repository. Training runs on downstream tasks are done using HuggingFace. Models are trained on $8 \\times 32$ GB Nvidia V100 machines, with runtime ranging from 5 minutes for the smallest dataset (RTE) to 45 minutes for the largest dataset (QQP).\n\n<table><tr><td>Hyperparam</td><td>FairBERTa</td></tr><tr><td># Layers</td><td>12</td></tr><tr><td>Hidden Size</td><td>768</td></tr><tr><td>FFN inner Hidden Size</td><td>3072</td></tr><tr><td># Attention Heads</td><td>12</td></tr><tr><td>Attention Head Size</td><td>64</td></tr><tr><td>Hidden Dropout</td><td>0.1</td></tr><tr><td>Attention Dropout</td><td>0.1</td></tr><tr><td># Warmup Steps</td><td>24k</td></tr><tr><td>Peak Learning Rate</td><td>6e-4</td></tr><tr><td>Batch Size</td><td>8k</td></tr><tr><td>Weight Decay</td><td>0.01</td></tr><tr><td>Sequence Length</td><td>512</td></tr><tr><td>Max Steps</td><td>500k</td></tr><tr><td>Learning Rate Decay</td><td>Linear</td></tr><tr><td>Adam ε</td><td>1e-8</td></tr><tr><td>Adam β1</td><td>0.9</td></tr><tr><td>Adam β2</td><td>0.999</td></tr><tr><td>Gradient Clipping</td><td>0.0</td></tr></table>\n\nTable 12: Hyperparameters for pretraining FairBERTa.   \nTable 13: Hyperparameters for finetuning RoBERTa and FairBERTa on GLUE and RACE.   \n\n<table><tr><td>Hyperparam</td><td>GLUE</td><td>RACE</td></tr><tr><td>Learning Rate</td><td>{1e-5, 2e-5, 3e-5}</td><td>1e-5</td></tr><tr><td>Batch Size</td><td>{16, 32}</td><td>16</td></tr><tr><td>Weight Decay</td><td>0.1</td><td>0.1</td></tr><tr><td>Max # Epochs</td><td>10</td><td>3</td></tr><tr><td>Learning Rate Decay</td><td>Linear</td><td>Linear</td></tr><tr><td>Warmup Ratio</td><td>0.06</td><td>0.06</td></tr></table>",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "5.1",
+      "G",
+      "H",
+      "I"
+    ],
+    "pred": [
+      {
+        "name": "V100 32GB",
+        "num": 256
+      },
+      {
+        "name": "Nvidia V100 16GB",
+        "num": 8
+      },
+      {
+        "name": "Nvidia V100 32GB",
+        "num": 256
+      },
+      {
+        "name": "Nvidia V100 32GB",
+        "num": 8
+      }
+    ]
+  }
+}

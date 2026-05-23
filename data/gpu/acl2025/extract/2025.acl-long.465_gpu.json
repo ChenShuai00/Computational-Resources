@@ -1,0 +1,213 @@
+{
+  "paper_id": "2025.acl-long.465",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.465::sections::2.2",
+      "paper_id": "2025.acl-long.465",
+      "section_number": "2.2",
+      "section_title": "overview of acre",
+      "normalized_section_title": "overview of acre",
+      "window_text": "Figure 2 provides an overview of ACRE. Specifically, for a information-seeking task with a long context $\\mathcal{C}$ , ACRE organizes the long context into a bi-layer KV activation cache during the pre-filling\n\nstage, as shown in Figure 2 (a).\n\nThe construction of the Bi-layer KV Cache begins by interleaving newly introduced L1 tokens into the input context. Through model forwarding, a nested KV cache $[\\tilde{\\pmb{K}},\\tilde{\\pmb{V}} ]$ is obtained. This nested KV cache is then decomposed into a Bi-layer KV cache: the layer-1 (L1) cache, which is compact and stores global information from the full long context, and the layer-2 (L2) cache, which holds detailed and localized information. Each tensor in the L1 cache serves as a semantic proxy for a corresponding sequence of tensors in the L2 cache.\n\nWe denote the L1 KV cache as $[K^{L1},V^{L1}] \\in \\mathbb{R}^{m\\times d}$ and the L2 KV cache as $[K^{L2},V^{L2}] \\in \\mathbb{R}^{n\\times d}$ . Here, the length of the L1 KV cache, $m$ , is significantly smaller than $n$ , the length of the L2 KV cache. To optimize memory usage, the L2 cache can be offloaded to CPU memory, while the L1 cache is retained in GPU memory as a constant cache after constructing the bi-layer KV cache. This design significantly improves memory efficiency in practical applications.\n\nThe Bi-layer KV Cache is constructed exclusively for input contexts, enabling it to be reused across different information-seeking tasks that share the same context. Given an input query $q$ , ACRE utilizes $q$ to attend to the L1 cache, computing attention scores. Based on these scores, ACRE selectively refills the L1 cache by retrieving the most informative entries from the L2 cache, which\n\nare proxied by the corresponding most attentive L1 cache tensors. This process recovers a partial nested cache to support answer decoding and is referred to as query-guided activation refilling, which is shown in Figure 2 (b).\n\nBy leveraging both the L1 KV cache and the query-specific L2 KV cache, the final KV cache captures global information from the full long context while preserving local details. This design significantly enhances the performance of long-context information-seeking tasks. In the following sections, we provide the technical details of ACRE.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.465::sections::2.4",
+      "paper_id": "2025.acl-long.465",
+      "section_number": "2.4",
+      "section_title": "query-guided activation refilling",
+      "normalized_section_title": "query-guided activation refilling",
+      "window_text": "After constructing the bi-layer KV cache for the context, we obtain the L1 KV cache $[K^{L1},V^{L1}]$ , which serves as a global yet compact representation of the full long context, and the L2 KV cache $[K^{L2},V^{L2}]$ , which provides detailed but memory-intensive representations. To optimize memory usage, the L1 KV cache is retained as a constant cache in GPU memory, while the L2 KV cache is offloaded to CPU memory.\n\nFor an input query $q$ , relying solely on the L1 KV cache is feasible but lacks query-specific detailed information. To address this limitation, ACRE proposes refilling the compact L1 KV cache with selected entries from the L2 KV cache that are\n\nmost relevant for answering the query. Specifically, the query state $Q_{q}$ for the input query $q$ is computed as $Q_{q} = q \\cdot W_{Q}$ . Using this query state, the attention distribution is calculated as: $A = \\text{softmax}\\left(\\frac{Q_{q} \\cdot K^{L1^{\\top}}}{\\sqrt{d}}\\right)$ , where $A \\in \\mathbb{R}^{h \\times m \\times t}$ , $h$ is the number of attention heads, $m$ is the length of L1 cache, and $t$ is the length of the query $q$ . The attention scores $S$ are then obtained by applying mean pooling:\n\n$$\n\\mathcal {S} = \\operatorname {P o o l} _ {\\dim = 0, 2} (\\boldsymbol {A}), \\quad \\mathcal {S} \\in \\mathbb {R} ^ {m}, \\tag {15}\n$$\n\nwhere $S$ serves as a guiding signal to select relevant entries from the L2 KV cache. The selection process is defined as:\n\n$$\n\\mathcal {I} = \\arg \\operatorname {t o p} _ {k} (\\mathcal {S}), \\tag {16}\n$$\n\n$$\nk = \\left\\lfloor \\frac {\\operatorname* {m i n} (\\mathcal {W} - m , \\eta)}{l} \\right\\rfloor , \\tag {17}\n$$\n\nwhere $k$ is dynamically determined based on the maximum length of the predefined working context window $\\mathcal{W}$ or the maximum refilling length $\\eta$ , and $\\mathcal{I}$ represents the set of selected indices.\n\nAfter selection, the L1 KV cache is refilled with the chosen entries from the L2 KV cache. For example, if $\\mathcal{I} = \\{2\\}$ , the refilled KV cache becomes:\n\n$$\n\\boldsymbol {K} = \\left[ \\boldsymbol {k} _ {1} ^ {L 1}, \\boldsymbol {k} _ {l + 1}, \\dots , \\boldsymbol {k} _ {2 l}, \\boldsymbol {k} _ {2} ^ {L 1}, \\dots , \\boldsymbol {k} _ {m} ^ {L 1} \\right], \\tag {18}\n$$\n\n$$\n\\boldsymbol {V} = \\left[ \\boldsymbol {v} _ {1} ^ {L 1}, \\underbrace {\\boldsymbol {v} _ {l + 1} , \\cdots , \\boldsymbol {v} _ {2 l}} _ {\\text {r e f i l l e d L 2 K V c a c h e}}, \\boldsymbol {v} _ {2} ^ {L 1}, \\dots , \\boldsymbol {v} _ {m} ^ {L 1} \\right]. \\tag {19}\n$$\n\nThis refilling process is performed independently for each layer. With the refilled KV cache, ACRE decodes the final answer $\\mathcal{V}$ in a standard auto-regressive manner.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.465::sections::3",
+      "paper_id": "2025.acl-long.465",
+      "section_number": "3",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.465::sections::3.5",
+      "paper_id": "2025.acl-long.465",
+      "section_number": "3.5",
+      "section_title": "efficiency analysis",
+      "normalized_section_title": "efficiency analysis",
+      "window_text": "To evaluate ACRE's efficiency compared to baselines in processing long contexts at different scales, we conduct comparative experiments using the vanilla LLM, the efficient attention method MInference, and ACRE.\n\nThe results, presented in Table 2, lead to the\n\nTable 2: Efficiency comparison of Vanilla LLM, MInference, and ACRE. Peak GPU memory (mem, GiB), time latency (lat, seconds/query), and answer readability (rdbl) are evaluated using 20 samples with contexts over 1024K, truncated to target lengths, and a max generation length of 100 tokens. Tests are conducted on a single NVIDIA A800 80G GPU. Average scores are reported, with the best in each block highlighted in bold.   \n\n<table><tr><td>Length</td><td colspan=\"3\">64K</td><td colspan=\"3\">128K</td><td colspan=\"3\">256K</td><td colspan=\"3\">512K</td><td colspan=\"3\">1024K</td></tr><tr><td></td><td>mem</td><td>lat</td><td>rdbl</td><td>mem</td><td>lat</td><td>rdbl</td><td>mem</td><td>lat</td><td>rdbl</td><td>mem</td><td>lat</td><td>rdbl</td><td>mem</td><td>lat</td><td>rdbl</td></tr><tr><td colspan=\"16\">QWEN2.5-3B-INSTRUCT-128K</td></tr><tr><td>Vanilla</td><td>18.5</td><td>12.1</td><td>✓</td><td>27.9</td><td>36.3</td><td>✓</td><td>49.1</td><td>103.2</td><td>✗</td><td>OOM</td><td>-</td><td>✗</td><td>OOM</td><td>-</td><td>✗</td></tr><tr><td>MInfer.</td><td>15.5</td><td>29.2</td><td>✓</td><td>22.0</td><td>33.6</td><td>✓</td><td>28.0</td><td>57.1</td><td>✗</td><td>39.1</td><td>58.9</td><td>✗</td><td>47.2</td><td>79.6</td><td>✗</td></tr><tr><td>ACRE</td><td>20.8</td><td>8.4</td><td>✓</td><td>23.0</td><td>14.3</td><td>✓</td><td>27.6</td><td>28.1</td><td>✓</td><td>44.3</td><td>48.2</td><td>✓</td><td>46.8</td><td>53.6</td><td>✓</td></tr><tr><td colspan=\"16\">QWEN2.5-7B-INSTRUCT-128K</td></tr><tr><td>Vanilla</td><td>31.9</td><td>21.2</td><td>✓</td><td>46.1</td><td>45.3</td><td>✓</td><td>78.3</td><td>129.6</td><td>✗</td><td>OOM</td><td>-</td><td>✗</td><td>OOM</td><td>-</td><td>✗</td></tr><tr><td>MInfer.</td><td>27.9</td><td>29.1</td><td>✓</td><td>34.3</td><td>35.6</td><td>✓</td><td>48.1</td><td>81.2</td><td>✗</td><td>74.2</td><td>132.7</td><td>✗</td><td>OOM</td><td>-</td><td>✗</td></tr><tr><td>ACRE</td><td>31.3</td><td>10.5</td><td>✓</td><td>35.1</td><td>18.0</td><td>✓</td><td>43.0</td><td>37.1</td><td>✓</td><td>72.1</td><td>85.6</td><td>✓</td><td>75.6</td><td>90.4</td><td>✓</td></tr></table>\n\nfollowing conclusions: (1) ACRE consistently processes long contexts at different scale with comparable or lower GPU resource usage. This efficiency is attributed to the bi-layer KV activation design, which avoids directly processing the full KV activations. (2) ACRE's efficiency advantage becomes more pronounced with extremely long contexts (e.g., over 512K), where the vanilla LLM runs out of memory, and MInference faces a high risk of out of memory while require longer latency than ACRE. (3) Thanks to its query-guided activation refilling mechanism, ACRE utilizes only the compact L1 KV activations and query-relevant L2 KV activations for answer decoding. This enables ACRE to process contexts longer than the native window of the LLM while maintaining answer quality. In contrast, baseline models generate nonsensical answers when exceeding LLM's native context length.\n\nIn summary, ACRE demonstrates significant advantages in handling long contexts efficiently and reliably compared to baseline methods.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.465::sections::limitation",
+      "paper_id": "2025.acl-long.465",
+      "section_number": "",
+      "section_title": "limitation",
+      "normalized_section_title": "limitation",
+      "window_text": "In this paper, we propose ACRE, a method designed to adapt to the dynamic information needs of long-context information-seeking tasks. ACRE constructs a bi-layer KV activation cache to balance global context perception and local detail preservation, leveraging query-guided activation refilling to enhance performance and efficiency. While ACRE demonstrates significant advancements, several limitations are worth noting:\n\n(1) Our method is primarily designed for information-seeking tasks, a major subset of long-context processing. This focus is largely driven by the availability of training data, as information-seeking tasks benefit from abundant QA datasets. While ACRE has the potential to adapt to general long-context tasks, further exploration with diverse task-specific data would be necessary to validate its broader applicability.   \n(2) ACRE introduces additional parameters for constructing the bi-layer KV cache, increasing the model size. For example, using Qwen2.5-3B-Instruct, ACRE adds approximately $17.2\\%$ more parameters, requiring additional GPU memory to load the model. However, in long-context tasks, the majority of GPU memory is consumed by KV activations rather than model parameters. Our efficiency analysis confirms that ACRE reduces overall GPU memory consumption when processing long\n\ncontexts, mitigating this limitation to some extent.\n\n(3) A portion of our training data is synthetically generated by commercial LLMs (e.g. GPT-4), which may introduce biases inherited from the original corpus or the LLMs used. While such biases could impact performance, many current commercial LLMs incorporate robust safeguards that help mitigate these issues. Nonetheless, addressing potential biases in synthetic data remains an area for future improvement.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.465::appendix::A",
+      "paper_id": "2025.acl-long.465",
+      "section_number": "A",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "For ACRE training, in stage 1, we sample long text spans from the RedPajama (Soboleva et al., 2023) dataset to create a training set of 2 billion tokens. The sampled text lengths are limited to a minimum of 4K and a maximum of 64K tokens. We randomly choose L1/L2 interval from $l \\in \\{8, 16, 32, 64, 128\\}$ . The model is trained for one epoch with a batch size of 8 and a learning rate of $5 \\times 10^{-5}$ . In stage 2, we collect 28,400 QA SFT data points from LongAlpaca (Chen et al., 2024) and synthetic data from (Zhang et al., 2024a; Qian et al., 2025b). We apply the same L1 token insertion strategy during training. The model is trained for three epochs with a batch size of 8 and a learning rate of $1 \\times 10^{-5}$ for two epochs. Stage-1 training takes around 7 hours while stage-2 training takes around 13 hours.\n\nDuring the two-stage training process, we optimize only the newly initialized parameters, keeping the original parameters frozen. The number of trainable parameters varies depending on the model. For instance: (1) When using Qwen2.5-3B-instruct, ACRE has around 503M trainable parameters, accounting for $17.2\\%$ of the original parameters. (2) When using Llama3.2-3B-instruct, ACRE has around 780M trainable parameters, accounting for $25.6\\%$ of the original parameters. This difference arises from variations in the implementation of multi-head attention.Prompt for Bi-Layer KV Cache Construction You are provided with a long article. Read the article carefully.\n\nAfter reading, you will be asked to perform specific tasks based on the content of the article.\n\nNow, the article begins:\n\n**Article Content:** [context]\n\nThe article ends here.\n\nNext, follow the instructions provided to complete the tasks.\n\nFor the main experiments, we configure ACRE with an L1/L2 interval $l$ of 16, a maximum refilling length $\\eta$ of 4,096, and the maximum working context window $\\mathcal{W}$ of 32K tokens. For the Bi-Layer KV Cache construction, we utilize the following prompt. During the Query-Guided Activation Refilling process, we adopt task-specific prompts from the official benchmark repositories, without inserting the context into the task prompt.\n\nFor RAG, RQ-RAG, and MemoRAG, we employ BGE-M3 (Chen et al., 2023a) as the retriever and set the hit number to 5. For methods that divide the long context into chunks, we use the semantic-text-splitter tool, chunking the context to a maximum length of 512 tokens.\n\nFor KIVI, we quantize the KV activations to 4-bit precision. For Beacon, we use the official training code to fine-tune Qwen2.5-3B-Instruct, setting the compression ratio to 8 during inference. For SelfExtend, we set the group size to 32 and the window size to 2048, which is approximate by the official recommended strategy. For StreamingLLM, we use the SinkCache implementation from Transformers, configuring the window size to 4096 and the number of sink tokens to 8. Lastly, for MemoRAG, we utilize the officially released memoragqwen2-7b-inst as the memory model.\n\nAll methods are evaluated using the task prompts provided in the official repositories of their corresponding benchmarks<sup>1</sup>. Additionally, we use the same generation hyper-parameters (task-dependent) for ACRE and all baseline models.\n\nAll training and evaluation experiments were conducted using 8 NVIDIA A800-80G GPUs.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.465::sections::3.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A800 80G",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "To evaluate ACRE's efficiency compared to baselines in processing long contexts at different scales, we conduct comparative experiments using the vanilla LLM, the efficient attention method MInference, and ACRE.\n\nThe results, presented in Table 2, lead to the\n\nTable 2: Efficiency comparison of Vanilla LLM, MInference, and ACRE. Peak GPU memory (mem, GiB), time latency (lat, seconds/query), and answer readability (rdbl) are evaluated using 20 samples with contexts over 1024K, truncated to target lengths, and a max generation length of 100 tokens. Tests are conducted on a single NVIDIA A800 80G GPU. Average scores are reported, with the best in each block highlighted in bold.   \n\n<table><tr><td>Length</td><td colspan=\"3\">64K</td><td colspan=\"3\">128K</td><td colspan=\"3\">256K</td><td colspan=\"3\">512K</td><td colspan=\"3\">1024K</td></tr><tr><td></td><td>mem</td><td>lat</td><td>rdbl</td><td>mem</td><td>lat</td><td>rdbl</td><td>mem</td><td>lat</td><td>rdbl</td><td>mem</td><td>lat</td><td>rdbl</td><td>mem</td><td>lat</td><td>rdbl</td></tr><tr><td colspan=\"16\">QWEN2.5-3B-INSTRUCT-128K</td></tr><tr><td>Vanilla</td><td>18.5</td><td>12.1</td><td>✓</td><td>27.9</td><td>36.3</td><td>✓</td><td>49.1</td><td>103.2</td><td>✗</td><td>OOM</td><td>-</td><td>✗</td><td>OOM</td><td>-</td><td>✗</td></tr><tr><td>MInfer.</td><td>15.5</td><td>29.2</td><td>✓</td><td>22.0</td><td>33.6</td><td>✓</td><td>28.0</td><td>57.1</td><td>✗</td><td>39.1</td><td>58.9</td><td>✗</td><td>47.2</td><td>79.6</td><td>✗</td></tr><tr><td>ACRE</td><td>20.8</td><td>8.4</td><td>✓</td><td>23.0</td><td>14.3</td><td>✓</td><td>27.6</td><td>28.1</td><td>✓</td><td>44.3</td><td>48.2</td><td>✓</td><td>46.8</td><td>53.6</td><td>✓</td></tr><tr><td colspan=\"16\">QWEN2.5-7B-INSTRUCT-128K</td></tr><tr><td>Vanilla</td><td>31.9</td><td>21.2</td><td>✓</td><td>46.1</td><td>45.3</td><td>✓</td><td>78.3</td><td>129.6</td><td>✗</td><td>OOM</td><td>-</td><td>✗</td><td>OOM</td><td>-</td><td>✗</td></tr><tr><td>MInfer.</td><td>27.9</td><td>29.1</td><td>✓</td><td>34.3</td><td>35.6</td><td>✓</td><td>48.1</td><td>81.2</td><td>✗</td><td>74.2</td><td>132.7</td><td>✗</td><td>OOM</td><td>-</td><td>✗</td></tr><tr><td>ACRE</td><td>31.3</td><td>10.5</td><td>✓</td><td>35.1</td><td>18.0</td><td>✓</td><td>43.0</td><td>37.1</td><td>✓</td><td>72.1</td><td>85.6</td><td>✓</td><td>75.6</td><td>90.4</td><td>✓</td></tr></table>\n\nfollowing conclusions: (1) ACRE consistently processes long contexts at different scale with comparable or lower GPU resource usage. This efficiency is attributed to the bi-layer KV activation design, which avoids directly processing the full KV activations. (2) ACRE's efficiency advantage becomes more pronounced with extremely long contexts (e.g., over 512K), where the vanilla LLM runs out of memory, and MInference faces a high risk of out of memory while require longer latency than ACRE. (3) Thanks to its query-guided activation refilling mechanism, ACRE utilizes only the compact L1 KV activations and query-relevant L2 KV activations for answer decoding. This enables ACRE to process contexts longer than the native window of the LLM while maintaining answer quality. In contrast, baseline models generate nonsensical answers when exceeding LLM's native context length.\n\nIn summary, ACRE demonstrates significant advantages in handling long contexts efficiently and reliably compared to baseline methods.",
+      "section_number": "3.5",
+      "section_title": "efficiency analysis",
+      "normalized_section_title": "efficiency analysis"
+    },
+    {
+      "window_id": "2025.acl-long.465::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A800 80G",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "For ACRE training, in stage 1, we sample long text spans from the RedPajama (Soboleva et al., 2023) dataset to create a training set of 2 billion tokens. The sampled text lengths are limited to a minimum of 4K and a maximum of 64K tokens. We randomly choose L1/L2 interval from $l \\in \\{8, 16, 32, 64, 128\\}$ . The model is trained for one epoch with a batch size of 8 and a learning rate of $5 \\times 10^{-5}$ . In stage 2, we collect 28,400 QA SFT data points from LongAlpaca (Chen et al., 2024) and synthetic data from (Zhang et al., 2024a; Qian et al., 2025b). We apply the same L1 token insertion strategy during training. The model is trained for three epochs with a batch size of 8 and a learning rate of $1 \\times 10^{-5}$ for two epochs. Stage-1 training takes around 7 hours while stage-2 training takes around 13 hours.\n\nDuring the two-stage training process, we optimize only the newly initialized parameters, keeping the original parameters frozen. The number of trainable parameters varies depending on the model. For instance: (1) When using Qwen2.5-3B-instruct, ACRE has around 503M trainable parameters, accounting for $17.2\\%$ of the original parameters. (2) When using Llama3.2-3B-instruct, ACRE has around 780M trainable parameters, accounting for $25.6\\%$ of the original parameters. This difference arises from variations in the implementation of multi-head attention.Prompt for Bi-Layer KV Cache Construction You are provided with a long article. Read the article carefully.\n\nAfter reading, you will be asked to perform specific tasks based on the content of the article.\n\nNow, the article begins:\n\n**Article Content:** [context]\n\nThe article ends here.\n\nNext, follow the instructions provided to complete the tasks.\n\nFor the main experiments, we configure ACRE with an L1/L2 interval $l$ of 16, a maximum refilling length $\\eta$ of 4,096, and the maximum working context window $\\mathcal{W}$ of 32K tokens. For the Bi-Layer KV Cache construction, we utilize the following prompt. During the Query-Guided Activation Refilling process, we adopt task-specific prompts from the official benchmark repositories, without inserting the context into the task prompt.\n\nFor RAG, RQ-RAG, and MemoRAG, we employ BGE-M3 (Chen et al., 2023a) as the retriever and set the hit number to 5. For methods that divide the long context into chunks, we use the semantic-text-splitter tool, chunking the context to a maximum length of 512 tokens.\n\nFor KIVI, we quantize the KV activations to 4-bit precision. For Beacon, we use the official training code to fine-tune Qwen2.5-3B-Instruct, setting the compression ratio to 8 during inference. For SelfExtend, we set the group size to 32 and the window size to 2048, which is approximate by the official recommended strategy. For StreamingLLM, we use the SinkCache implementation from Transformers, configuring the window size to 4096 and the number of sink tokens to 8. Lastly, for MemoRAG, we utilize the officially released memoragqwen2-7b-inst as the memory model.\n\nAll methods are evaluated using the task prompts provided in the official repositories of their corresponding benchmarks<sup>1</sup>. Additionally, we use the same generation hyper-parameters (task-dependent) for ACRE and all baseline models.\n\nAll training and evaluation experiments were conducted using 8 NVIDIA A800-80G GPUs.",
+      "section_number": "A",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.465::sections::3.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A800 80G",
+      "cleaned_hardware_name": "nvidia a800 80gb",
+      "normalized_hardware_name": "NVIDIA A800 PCIe 80 GB",
+      "benchmark_hardware_name": "NVIDIA A800 PCIe 80 GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "3.5",
+      "section_title": "efficiency analysis",
+      "normalized_section_title": "efficiency analysis",
+      "evidence": "To evaluate ACRE's efficiency compared to baselines in processing long contexts at different scales, we conduct comparative experiments using the vanilla LLM, the efficient attention method MInference, and ACRE.\n\nThe results, presented in Table 2, lead to the\n\nTable 2: Efficiency comparison of Vanilla LLM, MInference, and ACRE. Peak GPU memory (mem, GiB), time latency (lat, seconds/query), and answer readability (rdbl) are evaluated using 20 samples with contexts over 1024K, truncated to target lengths, and a max generation length of 100 tokens. Tests are conducted on a single NVIDIA A800 80G GPU. Average scores are reported, with the best in each block highlighted in bold.   \n\n<table><tr><td>Length</td><td colspan=\"3\">64K</td><td colspan=\"3\">128K</td><td colspan=\"3\">256K</td><td colspan=\"3\">512K</td><td colspan=\"3\">1024K</td></tr><tr><td></td><td>mem</td><td>lat</td><td>rdbl</td><td>mem</td><td>lat</td><td>rdbl</td><td>mem</td><td>lat</td><td>rdbl</td><td>mem</td><td>lat</td><td>rdbl</td><td>mem</td><td>lat</td><td>rdbl</td></tr><tr><td colspan=\"16\">QWEN2.5-3B-INSTRUCT-128K</td></tr><tr><td>Vanilla</td><td>18.5</td><td>12.1</td><td>✓</td><td>27.9</td><td>36.3</td><td>✓</td><td>49.1</td><td>103.2</td><td>✗</td><td>OOM</td><td>-</td><td>✗</td><td>OOM</td><td>-</td><td>✗</td></tr><tr><td>MInfer.</td><td>15.5</td><td>29.2</td><td>✓</td><td>22.0</td><td>33.6</td><td>✓</td><td>28.0</td><td>57.1</td><td>✗</td><td>39.1</td><td>58.9</td><td>✗</td><td>47.2</td><td>79.6</td><td>✗</td></tr><tr><td>ACRE</td><td>20.8</td><td>8.4</td><td>✓</td><td>23.0</td><td>14.3</td><td>✓</td><td>27.6</td><td>28.1</td><td>✓</td><td>44.3</td><td>48.2</td><td>✓</td><td>46.8</td><td>53.6</td><td>✓</td></tr><tr><td colspan=\"16\">QWEN2.5-7B-INSTRUCT-128K</td></tr><tr><td>Vanilla</td><td>31.9</td><td>21.2</td><td>✓</td><td>46.1</td><td>45.3</td><td>✓</td><td>78.3</td><td>129.6</td><td>✗</td><td>OOM</td><td>-</td><td>✗</td><td>OOM</td><td>-</td><td>✗</td></tr><tr><td>MInfer.</td><td>27.9</td><td>29.1</td><td>✓</td><td>34.3</td><td>35.6</td><td>✓</td><td>48.1</td><td>81.2</td><td>✗</td><td>74.2</td><td>132.7</td><td>✗</td><td>OOM</td><td>-</td><td>✗</td></tr><tr><td>ACRE</td><td>31.3</td><td>10.5</td><td>✓</td><td>35.1</td><td>18.0</td><td>✓</td><td>43.0</td><td>37.1</td><td>✓</td><td>72.1</td><td>85.6</td><td>✓</td><td>75.6</td><td>90.4</td><td>✓</td></tr></table>\n\nfollowing conclusions: (1) ACRE consistently processes long contexts at different scale with comparable or lower GPU resource usage. This efficiency is attributed to the bi-layer KV activation design, which avoids directly processing the full KV activations. (2) ACRE's efficiency advantage becomes more pronounced with extremely long contexts (e.g., over 512K), where the vanilla LLM runs out of memory, and MInference faces a high risk of out of memory while require longer latency than ACRE. (3) Thanks to its query-guided activation refilling mechanism, ACRE utilizes only the compact L1 KV activations and query-relevant L2 KV activations for answer decoding. This enables ACRE to process contexts longer than the native window of the LLM while maintaining answer quality. In contrast, baseline models generate nonsensical answers when exceeding LLM's native context length.\n\nIn summary, ACRE demonstrates significant advantages in handling long contexts efficiently and reliably compared to baseline methods.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.465::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A800 80G",
+      "cleaned_hardware_name": "nvidia a800 80gb",
+      "normalized_hardware_name": "NVIDIA A800 PCIe 80 GB",
+      "benchmark_hardware_name": "NVIDIA A800 PCIe 80 GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "A",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "For ACRE training, in stage 1, we sample long text spans from the RedPajama (Soboleva et al., 2023) dataset to create a training set of 2 billion tokens. The sampled text lengths are limited to a minimum of 4K and a maximum of 64K tokens. We randomly choose L1/L2 interval from $l \\in \\{8, 16, 32, 64, 128\\}$ . The model is trained for one epoch with a batch size of 8 and a learning rate of $5 \\times 10^{-5}$ . In stage 2, we collect 28,400 QA SFT data points from LongAlpaca (Chen et al., 2024) and synthetic data from (Zhang et al., 2024a; Qian et al., 2025b). We apply the same L1 token insertion strategy during training. The model is trained for three epochs with a batch size of 8 and a learning rate of $1 \\times 10^{-5}$ for two epochs. Stage-1 training takes around 7 hours while stage-2 training takes around 13 hours.\n\nDuring the two-stage training process, we optimize only the newly initialized parameters, keeping the original parameters frozen. The number of trainable parameters varies depending on the model. For instance: (1) When using Qwen2.5-3B-instruct, ACRE has around 503M trainable parameters, accounting for $17.2\\%$ of the original parameters. (2) When using Llama3.2-3B-instruct, ACRE has around 780M trainable parameters, accounting for $25.6\\%$ of the original parameters. This difference arises from variations in the implementation of multi-head attention.Prompt for Bi-Layer KV Cache Construction You are provided with a long article. Read the article carefully.\n\nAfter reading, you will be asked to perform specific tasks based on the content of the article.\n\nNow, the article begins:\n\n**Article Content:** [context]\n\nThe article ends here.\n\nNext, follow the instructions provided to complete the tasks.\n\nFor the main experiments, we configure ACRE with an L1/L2 interval $l$ of 16, a maximum refilling length $\\eta$ of 4,096, and the maximum working context window $\\mathcal{W}$ of 32K tokens. For the Bi-Layer KV Cache construction, we utilize the following prompt. During the Query-Guided Activation Refilling process, we adopt task-specific prompts from the official benchmark repositories, without inserting the context into the task prompt.\n\nFor RAG, RQ-RAG, and MemoRAG, we employ BGE-M3 (Chen et al., 2023a) as the retriever and set the hit number to 5. For methods that divide the long context into chunks, we use the semantic-text-splitter tool, chunking the context to a maximum length of 512 tokens.\n\nFor KIVI, we quantize the KV activations to 4-bit precision. For Beacon, we use the official training code to fine-tune Qwen2.5-3B-Instruct, setting the compression ratio to 8 during inference. For SelfExtend, we set the group size to 32 and the window size to 2048, which is approximate by the official recommended strategy. For StreamingLLM, we use the SinkCache implementation from Transformers, configuring the window size to 4096 and the number of sink tokens to 8. Lastly, for MemoRAG, we utilize the officially released memoragqwen2-7b-inst as the memory model.\n\nAll methods are evaluated using the task prompts provided in the official repositories of their corresponding benchmarks<sup>1</sup>. Additionally, we use the same generation hyper-parameters (task-dependent) for ACRE and all baseline models.\n\nAll training and evaluation experiments were conducted using 8 NVIDIA A800-80G GPUs.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.465::sections::2.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "2.2",
+      "section_title": "overview of acre",
+      "evidence": "Figure 2 provides an overview of ACRE. Specifically, for a information-seeking task with a long context $\\mathcal{C}$ , ACRE organizes the long context into a bi-layer KV activation cache during the pre-filling\n\nstage, as shown in Figure 2 (a).\n\nThe construction of the Bi-layer KV Cache begins by interleaving newly introduced L1 tokens into the input context. Through model forwarding, a nested KV cache $[\\tilde{\\pmb{K}},\\tilde{\\pmb{V}} ]$ is obtained. This nested KV cache is then decomposed into a Bi-layer KV cache: the layer-1 (L1) cache, which is compact and stores global information from the full long context, and the layer-2 (L2) cache, which holds detailed and localized information. Each tensor in the L1 cache serves as a semantic proxy for a corresponding sequence of tensors in the L2 cache.\n\nWe denote the L1 KV cache as $[K^{L1},V^{L1}] \\in \\mathbb{R}^{m\\times d}$ and the L2 KV cache as $[K^{L2},V^{L2}] \\in \\mathbb{R}^{n\\times d}$ . Here, the length of the L1 KV cache, $m$ , is significantly smaller than $n$ , the length of the L2 KV cache. To optimize memory usage, the L2 cache can be offloaded to CPU memory, while the L1 cache is retained in GPU memory as a constant cache after constructing the bi-layer KV cache. This design significantly improves memory efficiency in practical applications.\n\nThe Bi-layer KV Cache is constructed exclusively for input contexts, enabling it to be reused across different information-seeking tasks that share the same context. Given an input query $q$ , ACRE utilizes $q$ to attend to the L1 cache, computing attention scores. Based on these scores, ACRE selectively refills the L1 cache by retrieving the most informative entries from the L2 cache, which\n\nare proxied by the corresponding most attentive L1 cache tensors. This process recovers a partial nested cache to support answer decoding and is referred to as query-guided activation refilling, which is shown in Figure 2 (b).\n\nBy leveraging both the L1 KV cache and the query-specific L2 KV cache, the final KV cache captures global information from the full long context while preserving local details. This design significantly enhances the performance of long-context information-seeking tasks. In the following sections, we provide the technical details of ACRE."
+    },
+    {
+      "source_window_id": "2025.acl-long.465::sections::2.4",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "2.4",
+      "section_title": "query-guided activation refilling",
+      "evidence": "After constructing the bi-layer KV cache for the context, we obtain the L1 KV cache $[K^{L1},V^{L1}]$ , which serves as a global yet compact representation of the full long context, and the L2 KV cache $[K^{L2},V^{L2}]$ , which provides detailed but memory-intensive representations. To optimize memory usage, the L1 KV cache is retained as a constant cache in GPU memory, while the L2 KV cache is offloaded to CPU memory.\n\nFor an input query $q$ , relying solely on the L1 KV cache is feasible but lacks query-specific detailed information. To address this limitation, ACRE proposes refilling the compact L1 KV cache with selected entries from the L2 KV cache that are\n\nmost relevant for answering the query. Specifically, the query state $Q_{q}$ for the input query $q$ is computed as $Q_{q} = q \\cdot W_{Q}$ . Using this query state, the attention distribution is calculated as: $A = \\text{softmax}\\left(\\frac{Q_{q} \\cdot K^{L1^{\\top}}}{\\sqrt{d}}\\right)$ , where $A \\in \\mathbb{R}^{h \\times m \\times t}$ , $h$ is the number of attention heads, $m$ is the length of L1 cache, and $t$ is the length of the query $q$ . The attention scores $S$ are then obtained by applying mean pooling:\n\n$$\n\\mathcal {S} = \\operatorname {P o o l} _ {\\dim = 0, 2} (\\boldsymbol {A}), \\quad \\mathcal {S} \\in \\mathbb {R} ^ {m}, \\tag {15}\n$$\n\nwhere $S$ serves as a guiding signal to select relevant entries from the L2 KV cache. The selection process is defined as:\n\n$$\n\\mathcal {I} = \\arg \\operatorname {t o p} _ {k} (\\mathcal {S}), \\tag {16}\n$$\n\n$$\nk = \\left\\lfloor \\frac {\\operatorname* {m i n} (\\mathcal {W} - m , \\eta)}{l} \\right\\rfloor , \\tag {17}\n$$\n\nwhere $k$ is dynamically determined based on the maximum length of the predefined working context window $\\mathcal{W}$ or the maximum refilling length $\\eta$ , and $\\mathcal{I}$ represents the set of selected indices.\n\nAfter selection, the L1 KV cache is refilled with the chosen entries from the L2 KV cache. For example, if $\\mathcal{I} = \\{2\\}$ , the refilled KV cache becomes:\n\n$$\n\\boldsymbol {K} = \\left[ \\boldsymbol {k} _ {1} ^ {L 1}, \\boldsymbol {k} _ {l + 1}, \\dots , \\boldsymbol {k} _ {2 l}, \\boldsymbol {k} _ {2} ^ {L 1}, \\dots , \\boldsymbol {k} _ {m} ^ {L 1} \\right], \\tag {18}\n$$\n\n$$\n\\boldsymbol {V} = \\left[ \\boldsymbol {v} _ {1} ^ {L 1}, \\underbrace {\\boldsymbol {v} _ {l + 1} , \\cdots , \\boldsymbol {v} _ {2 l}} _ {\\text {r e f i l l e d L 2 K V c a c h e}}, \\boldsymbol {v} _ {2} ^ {L 1}, \\dots , \\boldsymbol {v} _ {m} ^ {L 1} \\right]. \\tag {19}\n$$\n\nThis refilling process is performed independently for each layer. With the refilled KV cache, ACRE decodes the final answer $\\mathcal{V}$ in a standard auto-regressive manner."
+    },
+    {
+      "source_window_id": "2025.acl-long.465::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.465::sections::limitation",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "",
+      "section_title": "limitation",
+      "evidence": "In this paper, we propose ACRE, a method designed to adapt to the dynamic information needs of long-context information-seeking tasks. ACRE constructs a bi-layer KV activation cache to balance global context perception and local detail preservation, leveraging query-guided activation refilling to enhance performance and efficiency. While ACRE demonstrates significant advancements, several limitations are worth noting:\n\n(1) Our method is primarily designed for information-seeking tasks, a major subset of long-context processing. This focus is largely driven by the availability of training data, as information-seeking tasks benefit from abundant QA datasets. While ACRE has the potential to adapt to general long-context tasks, further exploration with diverse task-specific data would be necessary to validate its broader applicability.   \n(2) ACRE introduces additional parameters for constructing the bi-layer KV cache, increasing the model size. For example, using Qwen2.5-3B-Instruct, ACRE adds approximately $17.2\\%$ more parameters, requiring additional GPU memory to load the model. However, in long-context tasks, the majority of GPU memory is consumed by KV activations rather than model parameters. Our efficiency analysis confirms that ACRE reduces overall GPU memory consumption when processing long\n\ncontexts, mitigating this limitation to some extent.\n\n(3) A portion of our training data is synthetically generated by commercial LLMs (e.g. GPT-4), which may introduce biases inherited from the original corpus or the LLMs used. While such biases could impact performance, many current commercial LLMs incorporate robust safeguards that help mitigate these issues. Nonetheless, addressing potential biases in synthetic data remains an area for future improvement."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "3.5",
+      "A"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A800 PCIe 80 GB",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA A800 PCIe 80 GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.465\\auto\\full.md",
+    "source_md_sha256": "5cb07a60e07e88f27061b4dfa3522ba933ef8f5790a8feb011cfb155d72da5b1",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

@@ -1,0 +1,208 @@
+{
+  "paper_id": "2022.acl-long.69",
+  "candidate_windows": [
+    {
+      "window_id": "2022.acl-long.69::sections::4",
+      "paper_id": "2022.acl-long.69",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.69::sections::4.1",
+      "paper_id": "2022.acl-long.69",
+      "section_number": "4.1",
+      "section_title": "datasets and general setup",
+      "normalized_section_title": "datasets and general setup",
+      "window_text": "We conduct experiments on two multi-hop question answering datasets: HotpotQA and IIRC.\n\nHotpotQA (Yang et al., 2018) is a large-scale human-annotated dataset including 113K multi-hop questions. It focuses on using documents from Wikipedia as the source of information for answering questions rather than knowledge bases as in other multi-hop QA datasets (Welbl et al., 2018; Talmor and Berant, 2018). The questions in HotpotQA are not constrained by the fixed knowledge-base schema, hence they can cover more diverse topics. The answer for each question in HotpotQA is extracted from 10 paragraphs in the distractor setting, while it is allowed to use the entire Wikipedia for the full wiki setting. There are two main question types bridge $(80\\%)$ and comparison $(20\\%)$ in the corpus, where each question is designed in a way that extracting the correct answer requires reasoning over multiple evidence distributed across two passages. While comparison questions do not require the these passages to be processed in a particular order, bridge questions often require identifying the bridge entity in the first passage to correctly hop to the second one that contains the answer. Each question is also provided with the annotation of 2 supporting passages and up to 5 corresponding relevant sentences as their supporting facts. Since our proposed approach is a reader model that reasons over a given set of evidence documents, we primarily focus our experiments on the distractor setting<sup>1</sup>.\n\nIIRC (Ferguson et al., 2020) is a dataset of more than 13K human-written questions over paragraphs\n\nfrom English Wikipedia, where crowdworkers had access only to initial paragraph and list of hyperlinks to other relevant Wikipedia articles, with the missing information occurring in one or more linked documents. This annotation design encouraged less lexical overlap between the questions and the contexts that actually contain the answer. This dataset presents unique challenges compared to HotpotQA because (1) it additionally requires discrete/numerical reasoning and identification of unanswerable questions, which adds up to 4 different possible answer types (span, binary, numerical, unanswerable), and (2) about $30\\%$ of questions require reasoning over more than 2 passages including the main passage.\n\nEvaluation Metrics. We use standard metrics exact-match (EM) and $\\mathrm{F_1}$ scores for measuring the quality of predicted answers. For HotpotQA experiments, we are also able to evaluate PATHFID on supporting fact predictions using the official metrics (Support-EM, Support- $\\mathrm{F_1}$ ), which measures the performance of the reader model in correctly identifying the supporting facts from the relevant passages. Note that this metric implicitly requires correctly identifying relevant passages among the distractors as well. For our experiments on IIRC dataset, similar to the baseline model constructed in the original work (Ferguson et al., 2020), we follow the evaluation methods used by DROP (Dua et al., 2019).\n\nImplementation Details. We use pre-trained T5-large encoder-decoder (Raffel et al., 2020) to initialize the models in our experiments. We train the model with batch size of 64 with constant learning rate of 1e-4 for 10 epochs. We use maximum length of 256 (resp. 512) tokens for input blocks of PATHFID (resp. PATHFID+), while the maximum target sequence length is set to be 64. However, the sequence truncation is performed on the reasoning path excluding answer part for sequences of length longer than 64 tokens. All the experiments are conducted on a machine with 4 or 8 many 40GB A100 GPUs. Our code is based on Huggingface Transformers (Wolf et al., 2019). Please see Appendix for further details on the hyperparameter settings.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.69::appendix::D",
+      "paper_id": "2022.acl-long.69",
+      "section_number": "D",
+      "section_title": "more on training and implementation details",
+      "normalized_section_title": "more on training and implementation details",
+      "window_text": "Hop ordering. HotpotQA benchmark provides annotation only for unordered gold passages, without explicitly specifying which passage corresponds to the $k$ -th hop (e.g., first-hop, second-hop, etc.) on the reasoning path. In our implementation, we combine the heuristic strategies applied by GRR (Asai et al., 2020) and MDR (Xiong et al., 2021). More precisely, if only one of the gold passages contains the answer, then we take the passage that includes the answer span as the final passage. If the answer span is included in both passages, we break the tie by falling back to the hyperlink-based ordering strategy proposed by GRR (Asai et al., 2020).\n\nPost-processing for passage title reconstruction. Note that PATHFID generates the titles of the passages on the reasoning path token by token including the separator tokens. However, the decoder might fall into some minor errors during the generation process, which may cause the resulting titles to end up slightly different from the original ones. To account for such minor errors, we leverage the\n\nset of titles coming from the input passages and find the most similar among them to our generated passage titles based on token-level F1-score. We call this process title reconstruction and apply it while reporting the performance for supporting fact predictions. Table 4 shows the benefit of title reconstruction for mitigating such minor generation errors. On the other hand, the small performance boost suggests that titles PATHFID already generates quite faithful title predictions.\n\nModel selection. For all the models reported in this work, we perform evaluation at every 500 steps during training by decoding the whole development set on a separate machine in a non-blocking fashion. We then select the best model based on the answer exact-match score performance. However, since PATHFID variants generate more than just the answer, it can be leveraged to optimize for a more holistic metric including the supporting fact prediction performance, offering further control on model selection. We leave further exploration of this phenomenon to future work.\n\nScaling to larger evidence pools for full-wiki setting. As briefly noted in Appendix B, we report results in full-wiki setting using only top-25 paths returned by MDR (Xiong et al., 2021) due to hardware constraints. More precisely, a single training example becomes impossible to fit into GPU memory (40GB) even for top-25 paths for PATHFID+ model with T5-large initialization. To make the training feasible, we resort to gradient checkpointing<sup>3</sup> which trades off GPU memory with speed. However, in this case, even with 25 retrieved paths, training PATHFID+ for 10K steps with batch size of 64 using gradient accumulation takes 19 hours on 8 A100 GPUs with 40GB memory each, which is one of the most prominent limitations hurdles the progress for this line of research. Further research on making generative approaches with large pretrained models more efficient without losing on the performance side holds a great potential impact to accelerate the progress of fully generative models for question answering.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2022.acl-long.69::appendix::E",
+      "paper_id": "2022.acl-long.69",
+      "section_number": "E",
+      "section_title": "hyperparameter settings",
+      "normalized_section_title": "hyperparameter settings",
+      "window_text": "In Tables 9, 8 and 10, we provide the full set of important hyperparameters used for the models reported both in the main paper (HotpotQA-distractor and IIRC) and in the Appendix B (HotpotQA-fullwiki), respectively.\n\nTable 8: Hyperparameters for experiments on HotpotQA Distractor setting.   \n\n<table><tr><td>parameter</td><td>FiD</td><td>PATHFiD</td><td>PATHFiD+</td></tr><tr><td>initialization</td><td>t5-large</td><td>t5-large</td><td>t5-large</td></tr><tr><td>learning rate</td><td>1e-4</td><td>1e-4</td><td>1e-4</td></tr><tr><td>learning rate schedule</td><td>constant</td><td>constant</td><td>constant</td></tr><tr><td>batch size</td><td>64</td><td>64</td><td>64</td></tr><tr><td>gradient checkpointing</td><td>no</td><td>no</td><td>no</td></tr><tr><td>maximum input length</td><td>256</td><td>256</td><td>512</td></tr><tr><td>maximum output length</td><td>32</td><td>64</td><td>64</td></tr><tr><td>warmup ratio</td><td>0</td><td>0</td><td>0</td></tr><tr><td>gradient clipping norm</td><td>1.0</td><td>1.0</td><td>1.0</td></tr><tr><td>training epoch</td><td>10</td><td>10</td><td>10</td></tr><tr><td>weight decay</td><td>0</td><td>0</td><td>0</td></tr></table>\n\n<table><tr><td>parameter</td><td>FiD</td><td>PATHFiD</td><td>PATHFiD+</td></tr><tr><td>initialization</td><td>t5-large</td><td>t5-large</td><td>t5-large</td></tr><tr><td>learning rate</td><td>1e-4</td><td>1e-4</td><td>1e-4</td></tr><tr><td>learning rate schedule</td><td>constant</td><td>constant</td><td>constant</td></tr><tr><td>batch size</td><td>64</td><td>64</td><td>64</td></tr><tr><td>gradient checkpointing</td><td>no</td><td>no</td><td>no</td></tr><tr><td>maximum input length</td><td>256</td><td>256</td><td>512</td></tr><tr><td>maximum output length</td><td>32</td><td>64</td><td>64</td></tr><tr><td>warmup ratio</td><td>0</td><td>0</td><td>0</td></tr><tr><td>gradient clipping norm</td><td>1.0</td><td>1.0</td><td>1.0</td></tr><tr><td>training epoch</td><td>10</td><td>10</td><td>10</td></tr><tr><td>weight decay</td><td>0</td><td>0</td><td>0</td></tr></table>\n\nTable 9: Hyperparameters for experiments on IIRC dataset.   \nTable 10: Hyperparameters for experiments on HotpotQA Full-wiki setting.   \n\n<table><tr><td>parameter</td><td>FiD</td><td>PATHFiD</td><td>PATHFiD+</td></tr><tr><td>initialization</td><td>t5-large</td><td>t5-large</td><td>t5-large</td></tr><tr><td>learning rate</td><td>1e-4</td><td>1e-4</td><td>1e-4</td></tr><tr><td>learning rate schedule</td><td>constant</td><td>constant</td><td>constant</td></tr><tr><td>batch size</td><td>64</td><td>64</td><td>64</td></tr><tr><td>gradient checkpointing</td><td>yes</td><td>yes</td><td>yes</td></tr><tr><td>maximum input length</td><td>256</td><td>256</td><td>512</td></tr><tr><td>maximum output length</td><td>32</td><td>64</td><td>64</td></tr><tr><td>warmup ratio</td><td>0</td><td>0</td><td>0</td></tr><tr><td>gradient clipping norm</td><td>1.0</td><td>1.0</td><td>1.0</td></tr><tr><td>training steps</td><td>10K</td><td>10K</td><td>10K</td></tr><tr><td>weight decay</td><td>0</td><td>0</td><td>0</td></tr><tr><td>top-K path retrieval</td><td>25</td><td>25</td><td>25</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.acl-long.69::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 40GB",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "We conduct experiments on two multi-hop question answering datasets: HotpotQA and IIRC.\n\nHotpotQA (Yang et al., 2018) is a large-scale human-annotated dataset including 113K multi-hop questions. It focuses on using documents from Wikipedia as the source of information for answering questions rather than knowledge bases as in other multi-hop QA datasets (Welbl et al., 2018; Talmor and Berant, 2018). The questions in HotpotQA are not constrained by the fixed knowledge-base schema, hence they can cover more diverse topics. The answer for each question in HotpotQA is extracted from 10 paragraphs in the distractor setting, while it is allowed to use the entire Wikipedia for the full wiki setting. There are two main question types bridge $(80\\%)$ and comparison $(20\\%)$ in the corpus, where each question is designed in a way that extracting the correct answer requires reasoning over multiple evidence distributed across two passages. While comparison questions do not require the these passages to be processed in a particular order, bridge questions often require identifying the bridge entity in the first passage to correctly hop to the second one that contains the answer. Each question is also provided with the annotation of 2 supporting passages and up to 5 corresponding relevant sentences as their supporting facts. Since our proposed approach is a reader model that reasons over a given set of evidence documents, we primarily focus our experiments on the distractor setting<sup>1</sup>.\n\nIIRC (Ferguson et al., 2020) is a dataset of more than 13K human-written questions over paragraphs\n\nfrom English Wikipedia, where crowdworkers had access only to initial paragraph and list of hyperlinks to other relevant Wikipedia articles, with the missing information occurring in one or more linked documents. This annotation design encouraged less lexical overlap between the questions and the contexts that actually contain the answer. This dataset presents unique challenges compared to HotpotQA because (1) it additionally requires discrete/numerical reasoning and identification of unanswerable questions, which adds up to 4 different possible answer types (span, binary, numerical, unanswerable), and (2) about $30\\%$ of questions require reasoning over more than 2 passages including the main passage.\n\nEvaluation Metrics. We use standard metrics exact-match (EM) and $\\mathrm{F_1}$ scores for measuring the quality of predicted answers. For HotpotQA experiments, we are also able to evaluate PATHFID on supporting fact predictions using the official metrics (Support-EM, Support- $\\mathrm{F_1}$ ), which measures the performance of the reader model in correctly identifying the supporting facts from the relevant passages. Note that this metric implicitly requires correctly identifying relevant passages among the distractors as well. For our experiments on IIRC dataset, similar to the baseline model constructed in the original work (Ferguson et al., 2020), we follow the evaluation methods used by DROP (Dua et al., 2019).\n\nImplementation Details. We use pre-trained T5-large encoder-decoder (Raffel et al., 2020) to initialize the models in our experiments. We train the model with batch size of 64 with constant learning rate of 1e-4 for 10 epochs. We use maximum length of 256 (resp. 512) tokens for input blocks of PATHFID (resp. PATHFID+), while the maximum target sequence length is set to be 64. However, the sequence truncation is performed on the reasoning path excluding answer part for sequences of length longer than 64 tokens. All the experiments are conducted on a machine with 4 or 8 many 40GB A100 GPUs. Our code is based on Huggingface Transformers (Wolf et al., 2019). Please see Appendix for further details on the hyperparameter settings.",
+      "section_number": "4.1",
+      "section_title": "datasets and general setup",
+      "normalized_section_title": "datasets and general setup"
+    },
+    {
+      "window_id": "2022.acl-long.69::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 40GB",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "We conduct experiments on two multi-hop question answering datasets: HotpotQA and IIRC.\n\nHotpotQA (Yang et al., 2018) is a large-scale human-annotated dataset including 113K multi-hop questions. It focuses on using documents from Wikipedia as the source of information for answering questions rather than knowledge bases as in other multi-hop QA datasets (Welbl et al., 2018; Talmor and Berant, 2018). The questions in HotpotQA are not constrained by the fixed knowledge-base schema, hence they can cover more diverse topics. The answer for each question in HotpotQA is extracted from 10 paragraphs in the distractor setting, while it is allowed to use the entire Wikipedia for the full wiki setting. There are two main question types bridge $(80\\%)$ and comparison $(20\\%)$ in the corpus, where each question is designed in a way that extracting the correct answer requires reasoning over multiple evidence distributed across two passages. While comparison questions do not require the these passages to be processed in a particular order, bridge questions often require identifying the bridge entity in the first passage to correctly hop to the second one that contains the answer. Each question is also provided with the annotation of 2 supporting passages and up to 5 corresponding relevant sentences as their supporting facts. Since our proposed approach is a reader model that reasons over a given set of evidence documents, we primarily focus our experiments on the distractor setting<sup>1</sup>.\n\nIIRC (Ferguson et al., 2020) is a dataset of more than 13K human-written questions over paragraphs\n\nfrom English Wikipedia, where crowdworkers had access only to initial paragraph and list of hyperlinks to other relevant Wikipedia articles, with the missing information occurring in one or more linked documents. This annotation design encouraged less lexical overlap between the questions and the contexts that actually contain the answer. This dataset presents unique challenges compared to HotpotQA because (1) it additionally requires discrete/numerical reasoning and identification of unanswerable questions, which adds up to 4 different possible answer types (span, binary, numerical, unanswerable), and (2) about $30\\%$ of questions require reasoning over more than 2 passages including the main passage.\n\nEvaluation Metrics. We use standard metrics exact-match (EM) and $\\mathrm{F_1}$ scores for measuring the quality of predicted answers. For HotpotQA experiments, we are also able to evaluate PATHFID on supporting fact predictions using the official metrics (Support-EM, Support- $\\mathrm{F_1}$ ), which measures the performance of the reader model in correctly identifying the supporting facts from the relevant passages. Note that this metric implicitly requires correctly identifying relevant passages among the distractors as well. For our experiments on IIRC dataset, similar to the baseline model constructed in the original work (Ferguson et al., 2020), we follow the evaluation methods used by DROP (Dua et al., 2019).\n\nImplementation Details. We use pre-trained T5-large encoder-decoder (Raffel et al., 2020) to initialize the models in our experiments. We train the model with batch size of 64 with constant learning rate of 1e-4 for 10 epochs. We use maximum length of 256 (resp. 512) tokens for input blocks of PATHFID (resp. PATHFID+), while the maximum target sequence length is set to be 64. However, the sequence truncation is performed on the reasoning path excluding answer part for sequences of length longer than 64 tokens. All the experiments are conducted on a machine with 4 or 8 many 40GB A100 GPUs. Our code is based on Huggingface Transformers (Wolf et al., 2019). Please see Appendix for further details on the hyperparameter settings.",
+      "section_number": "4.1",
+      "section_title": "datasets and general setup",
+      "normalized_section_title": "datasets and general setup"
+    },
+    {
+      "window_id": "2022.acl-long.69::appendix::D",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 40GB",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Hop ordering. HotpotQA benchmark provides annotation only for unordered gold passages, without explicitly specifying which passage corresponds to the $k$ -th hop (e.g., first-hop, second-hop, etc.) on the reasoning path. In our implementation, we combine the heuristic strategies applied by GRR (Asai et al., 2020) and MDR (Xiong et al., 2021). More precisely, if only one of the gold passages contains the answer, then we take the passage that includes the answer span as the final passage. If the answer span is included in both passages, we break the tie by falling back to the hyperlink-based ordering strategy proposed by GRR (Asai et al., 2020).\n\nPost-processing for passage title reconstruction. Note that PATHFID generates the titles of the passages on the reasoning path token by token including the separator tokens. However, the decoder might fall into some minor errors during the generation process, which may cause the resulting titles to end up slightly different from the original ones. To account for such minor errors, we leverage the\n\nset of titles coming from the input passages and find the most similar among them to our generated passage titles based on token-level F1-score. We call this process title reconstruction and apply it while reporting the performance for supporting fact predictions. Table 4 shows the benefit of title reconstruction for mitigating such minor generation errors. On the other hand, the small performance boost suggests that titles PATHFID already generates quite faithful title predictions.\n\nModel selection. For all the models reported in this work, we perform evaluation at every 500 steps during training by decoding the whole development set on a separate machine in a non-blocking fashion. We then select the best model based on the answer exact-match score performance. However, since PATHFID variants generate more than just the answer, it can be leveraged to optimize for a more holistic metric including the supporting fact prediction performance, offering further control on model selection. We leave further exploration of this phenomenon to future work.\n\nScaling to larger evidence pools for full-wiki setting. As briefly noted in Appendix B, we report results in full-wiki setting using only top-25 paths returned by MDR (Xiong et al., 2021) due to hardware constraints. More precisely, a single training example becomes impossible to fit into GPU memory (40GB) even for top-25 paths for PATHFID+ model with T5-large initialization. To make the training feasible, we resort to gradient checkpointing<sup>3</sup> which trades off GPU memory with speed. However, in this case, even with 25 retrieved paths, training PATHFID+ for 10K steps with batch size of 64 using gradient accumulation takes 19 hours on 8 A100 GPUs with 40GB memory each, which is one of the most prominent limitations hurdles the progress for this line of research. Further research on making generative approaches with large pretrained models more efficient without losing on the performance side holds a great potential impact to accelerate the progress of fully generative models for question answering.",
+      "section_number": "D",
+      "section_title": "more on training and implementation details",
+      "normalized_section_title": "more on training and implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.acl-long.69::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 40GB",
+      "cleaned_hardware_name": "a100 40gb",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "4.1",
+      "section_title": "datasets and general setup",
+      "normalized_section_title": "datasets and general setup",
+      "evidence": "We conduct experiments on two multi-hop question answering datasets: HotpotQA and IIRC.\n\nHotpotQA (Yang et al., 2018) is a large-scale human-annotated dataset including 113K multi-hop questions. It focuses on using documents from Wikipedia as the source of information for answering questions rather than knowledge bases as in other multi-hop QA datasets (Welbl et al., 2018; Talmor and Berant, 2018). The questions in HotpotQA are not constrained by the fixed knowledge-base schema, hence they can cover more diverse topics. The answer for each question in HotpotQA is extracted from 10 paragraphs in the distractor setting, while it is allowed to use the entire Wikipedia for the full wiki setting. There are two main question types bridge $(80\\%)$ and comparison $(20\\%)$ in the corpus, where each question is designed in a way that extracting the correct answer requires reasoning over multiple evidence distributed across two passages. While comparison questions do not require the these passages to be processed in a particular order, bridge questions often require identifying the bridge entity in the first passage to correctly hop to the second one that contains the answer. Each question is also provided with the annotation of 2 supporting passages and up to 5 corresponding relevant sentences as their supporting facts. Since our proposed approach is a reader model that reasons over a given set of evidence documents, we primarily focus our experiments on the distractor setting<sup>1</sup>.\n\nIIRC (Ferguson et al., 2020) is a dataset of more than 13K human-written questions over paragraphs\n\nfrom English Wikipedia, where crowdworkers had access only to initial paragraph and list of hyperlinks to other relevant Wikipedia articles, with the missing information occurring in one or more linked documents. This annotation design encouraged less lexical overlap between the questions and the contexts that actually contain the answer. This dataset presents unique challenges compared to HotpotQA because (1) it additionally requires discrete/numerical reasoning and identification of unanswerable questions, which adds up to 4 different possible answer types (span, binary, numerical, unanswerable), and (2) about $30\\%$ of questions require reasoning over more than 2 passages including the main passage.\n\nEvaluation Metrics. We use standard metrics exact-match (EM) and $\\mathrm{F_1}$ scores for measuring the quality of predicted answers. For HotpotQA experiments, we are also able to evaluate PATHFID on supporting fact predictions using the official metrics (Support-EM, Support- $\\mathrm{F_1}$ ), which measures the performance of the reader model in correctly identifying the supporting facts from the relevant passages. Note that this metric implicitly requires correctly identifying relevant passages among the distractors as well. For our experiments on IIRC dataset, similar to the baseline model constructed in the original work (Ferguson et al., 2020), we follow the evaluation methods used by DROP (Dua et al., 2019).\n\nImplementation Details. We use pre-trained T5-large encoder-decoder (Raffel et al., 2020) to initialize the models in our experiments. We train the model with batch size of 64 with constant learning rate of 1e-4 for 10 epochs. We use maximum length of 256 (resp. 512) tokens for input blocks of PATHFID (resp. PATHFID+), while the maximum target sequence length is set to be 64. However, the sequence truncation is performed on the reasoning path excluding answer part for sequences of length longer than 64 tokens. All the experiments are conducted on a machine with 4 or 8 many 40GB A100 GPUs. Our code is based on Huggingface Transformers (Wolf et al., 2019). Please see Appendix for further details on the hyperparameter settings.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2022.acl-long.69::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 40GB",
+      "cleaned_hardware_name": "a100 40gb",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "4.1",
+      "section_title": "datasets and general setup",
+      "normalized_section_title": "datasets and general setup",
+      "evidence": "We conduct experiments on two multi-hop question answering datasets: HotpotQA and IIRC.\n\nHotpotQA (Yang et al., 2018) is a large-scale human-annotated dataset including 113K multi-hop questions. It focuses on using documents from Wikipedia as the source of information for answering questions rather than knowledge bases as in other multi-hop QA datasets (Welbl et al., 2018; Talmor and Berant, 2018). The questions in HotpotQA are not constrained by the fixed knowledge-base schema, hence they can cover more diverse topics. The answer for each question in HotpotQA is extracted from 10 paragraphs in the distractor setting, while it is allowed to use the entire Wikipedia for the full wiki setting. There are two main question types bridge $(80\\%)$ and comparison $(20\\%)$ in the corpus, where each question is designed in a way that extracting the correct answer requires reasoning over multiple evidence distributed across two passages. While comparison questions do not require the these passages to be processed in a particular order, bridge questions often require identifying the bridge entity in the first passage to correctly hop to the second one that contains the answer. Each question is also provided with the annotation of 2 supporting passages and up to 5 corresponding relevant sentences as their supporting facts. Since our proposed approach is a reader model that reasons over a given set of evidence documents, we primarily focus our experiments on the distractor setting<sup>1</sup>.\n\nIIRC (Ferguson et al., 2020) is a dataset of more than 13K human-written questions over paragraphs\n\nfrom English Wikipedia, where crowdworkers had access only to initial paragraph and list of hyperlinks to other relevant Wikipedia articles, with the missing information occurring in one or more linked documents. This annotation design encouraged less lexical overlap between the questions and the contexts that actually contain the answer. This dataset presents unique challenges compared to HotpotQA because (1) it additionally requires discrete/numerical reasoning and identification of unanswerable questions, which adds up to 4 different possible answer types (span, binary, numerical, unanswerable), and (2) about $30\\%$ of questions require reasoning over more than 2 passages including the main passage.\n\nEvaluation Metrics. We use standard metrics exact-match (EM) and $\\mathrm{F_1}$ scores for measuring the quality of predicted answers. For HotpotQA experiments, we are also able to evaluate PATHFID on supporting fact predictions using the official metrics (Support-EM, Support- $\\mathrm{F_1}$ ), which measures the performance of the reader model in correctly identifying the supporting facts from the relevant passages. Note that this metric implicitly requires correctly identifying relevant passages among the distractors as well. For our experiments on IIRC dataset, similar to the baseline model constructed in the original work (Ferguson et al., 2020), we follow the evaluation methods used by DROP (Dua et al., 2019).\n\nImplementation Details. We use pre-trained T5-large encoder-decoder (Raffel et al., 2020) to initialize the models in our experiments. We train the model with batch size of 64 with constant learning rate of 1e-4 for 10 epochs. We use maximum length of 256 (resp. 512) tokens for input blocks of PATHFID (resp. PATHFID+), while the maximum target sequence length is set to be 64. However, the sequence truncation is performed on the reasoning path excluding answer part for sequences of length longer than 64 tokens. All the experiments are conducted on a machine with 4 or 8 many 40GB A100 GPUs. Our code is based on Huggingface Transformers (Wolf et al., 2019). Please see Appendix for further details on the hyperparameter settings.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2022.acl-long.69::appendix::D",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 40GB",
+      "cleaned_hardware_name": "a100 40gb",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "D",
+      "section_title": "more on training and implementation details",
+      "normalized_section_title": "more on training and implementation details",
+      "evidence": "Hop ordering. HotpotQA benchmark provides annotation only for unordered gold passages, without explicitly specifying which passage corresponds to the $k$ -th hop (e.g., first-hop, second-hop, etc.) on the reasoning path. In our implementation, we combine the heuristic strategies applied by GRR (Asai et al., 2020) and MDR (Xiong et al., 2021). More precisely, if only one of the gold passages contains the answer, then we take the passage that includes the answer span as the final passage. If the answer span is included in both passages, we break the tie by falling back to the hyperlink-based ordering strategy proposed by GRR (Asai et al., 2020).\n\nPost-processing for passage title reconstruction. Note that PATHFID generates the titles of the passages on the reasoning path token by token including the separator tokens. However, the decoder might fall into some minor errors during the generation process, which may cause the resulting titles to end up slightly different from the original ones. To account for such minor errors, we leverage the\n\nset of titles coming from the input passages and find the most similar among them to our generated passage titles based on token-level F1-score. We call this process title reconstruction and apply it while reporting the performance for supporting fact predictions. Table 4 shows the benefit of title reconstruction for mitigating such minor generation errors. On the other hand, the small performance boost suggests that titles PATHFID already generates quite faithful title predictions.\n\nModel selection. For all the models reported in this work, we perform evaluation at every 500 steps during training by decoding the whole development set on a separate machine in a non-blocking fashion. We then select the best model based on the answer exact-match score performance. However, since PATHFID variants generate more than just the answer, it can be leveraged to optimize for a more holistic metric including the supporting fact prediction performance, offering further control on model selection. We leave further exploration of this phenomenon to future work.\n\nScaling to larger evidence pools for full-wiki setting. As briefly noted in Appendix B, we report results in full-wiki setting using only top-25 paths returned by MDR (Xiong et al., 2021) due to hardware constraints. More precisely, a single training example becomes impossible to fit into GPU memory (40GB) even for top-25 paths for PATHFID+ model with T5-large initialization. To make the training feasible, we resort to gradient checkpointing<sup>3</sup> which trades off GPU memory with speed. However, in this case, even with 25 retrieved paths, training PATHFID+ for 10K steps with batch size of 64 using gradient accumulation takes 19 hours on 8 A100 GPUs with 40GB memory each, which is one of the most prominent limitations hurdles the progress for this line of research. Further research on making generative approaches with large pretrained models more efficient without losing on the performance side holds a great potential impact to accelerate the progress of fully generative models for question answering.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2022.acl-long.69::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2022.acl-long.69::appendix::E",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "E",
+      "section_title": "hyperparameter settings",
+      "evidence": "In Tables 9, 8 and 10, we provide the full set of important hyperparameters used for the models reported both in the main paper (HotpotQA-distractor and IIRC) and in the Appendix B (HotpotQA-fullwiki), respectively.\n\nTable 8: Hyperparameters for experiments on HotpotQA Distractor setting.   \n\n<table><tr><td>parameter</td><td>FiD</td><td>PATHFiD</td><td>PATHFiD+</td></tr><tr><td>initialization</td><td>t5-large</td><td>t5-large</td><td>t5-large</td></tr><tr><td>learning rate</td><td>1e-4</td><td>1e-4</td><td>1e-4</td></tr><tr><td>learning rate schedule</td><td>constant</td><td>constant</td><td>constant</td></tr><tr><td>batch size</td><td>64</td><td>64</td><td>64</td></tr><tr><td>gradient checkpointing</td><td>no</td><td>no</td><td>no</td></tr><tr><td>maximum input length</td><td>256</td><td>256</td><td>512</td></tr><tr><td>maximum output length</td><td>32</td><td>64</td><td>64</td></tr><tr><td>warmup ratio</td><td>0</td><td>0</td><td>0</td></tr><tr><td>gradient clipping norm</td><td>1.0</td><td>1.0</td><td>1.0</td></tr><tr><td>training epoch</td><td>10</td><td>10</td><td>10</td></tr><tr><td>weight decay</td><td>0</td><td>0</td><td>0</td></tr></table>\n\n<table><tr><td>parameter</td><td>FiD</td><td>PATHFiD</td><td>PATHFiD+</td></tr><tr><td>initialization</td><td>t5-large</td><td>t5-large</td><td>t5-large</td></tr><tr><td>learning rate</td><td>1e-4</td><td>1e-4</td><td>1e-4</td></tr><tr><td>learning rate schedule</td><td>constant</td><td>constant</td><td>constant</td></tr><tr><td>batch size</td><td>64</td><td>64</td><td>64</td></tr><tr><td>gradient checkpointing</td><td>no</td><td>no</td><td>no</td></tr><tr><td>maximum input length</td><td>256</td><td>256</td><td>512</td></tr><tr><td>maximum output length</td><td>32</td><td>64</td><td>64</td></tr><tr><td>warmup ratio</td><td>0</td><td>0</td><td>0</td></tr><tr><td>gradient clipping norm</td><td>1.0</td><td>1.0</td><td>1.0</td></tr><tr><td>training epoch</td><td>10</td><td>10</td><td>10</td></tr><tr><td>weight decay</td><td>0</td><td>0</td><td>0</td></tr></table>\n\nTable 9: Hyperparameters for experiments on IIRC dataset.   \nTable 10: Hyperparameters for experiments on HotpotQA Full-wiki setting.   \n\n<table><tr><td>parameter</td><td>FiD</td><td>PATHFiD</td><td>PATHFiD+</td></tr><tr><td>initialization</td><td>t5-large</td><td>t5-large</td><td>t5-large</td></tr><tr><td>learning rate</td><td>1e-4</td><td>1e-4</td><td>1e-4</td></tr><tr><td>learning rate schedule</td><td>constant</td><td>constant</td><td>constant</td></tr><tr><td>batch size</td><td>64</td><td>64</td><td>64</td></tr><tr><td>gradient checkpointing</td><td>yes</td><td>yes</td><td>yes</td></tr><tr><td>maximum input length</td><td>256</td><td>256</td><td>512</td></tr><tr><td>maximum output length</td><td>32</td><td>64</td><td>64</td></tr><tr><td>warmup ratio</td><td>0</td><td>0</td><td>0</td></tr><tr><td>gradient clipping norm</td><td>1.0</td><td>1.0</td><td>1.0</td></tr><tr><td>training steps</td><td>10K</td><td>10K</td><td>10K</td></tr><tr><td>weight decay</td><td>0</td><td>0</td><td>0</td></tr><tr><td>top-K path retrieval</td><td>25</td><td>25</td><td>25</td></tr></table>"
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.1",
+      "D"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 4
+      },
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 8
+      },
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2022\\2022.acl-long.69\\auto\\full.md",
+    "source_md_sha256": "d9c5ea1cef1cd42b778e158d18900a4f17dd310a0e3189c4c8a37974baa96387",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

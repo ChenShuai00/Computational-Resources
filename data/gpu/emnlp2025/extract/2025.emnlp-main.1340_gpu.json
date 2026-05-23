@@ -1,0 +1,242 @@
+{
+  "paper_id": "2025.emnlp-main.1340",
+  "candidate_windows": [
+    {
+      "window_id": "2025.emnlp-main.1340::sections::5",
+      "paper_id": "2025.emnlp-main.1340",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1340::sections::5.1",
+      "paper_id": "2025.emnlp-main.1340",
+      "section_number": "5.1",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1340::sections::6",
+      "paper_id": "2025.emnlp-main.1340",
+      "section_number": "6",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "Impact of Action Space on RL Policy Learning. In general, the larger the action space of an RL policy model, the more challenging the decisionmaking process becomes,and the more diffcult the optimization tends to be. For example, we observed that with a smaller action space size (42 for DXY), the RL policy was able to sample more informative symptoms, whereas with a larger action space size (359 for CMD), the policy was more prone to sampling irrelevant ones. This motivates our use of masked sampling and LLM-voting during inference: by pruning the action space and leveraging RL-LLM collaboration, we aim to reduce the decision burden placed on the RL policy.\n\nImproving Diagnostic Gains in Challenging Diseases. For certain diseases, diagnostic accuracy exhibits only modest gains—or even slight declines—after symptom inquiry (e.g., Thyroiditis in GMD).As discussed in Section 4, this likely stems from insufficient information in the initial symptom presentation of some MCR cases, which constrains the Agents’ability to identify and query informative symptoms.Possible remedies include: (1) enhancing the initial Top-K accuracy of the Diagnosis Agent for these challenging diseases, since a stronger initial ranking increases the chance of retrieving relevant symptoms and thereby improves inquiry effectiveness; and (2) refining the inquiry strategy by leveraging the LLM's reasoning capacity to filter out irrelevant diseases, thus avoiding excessive focus on unrelated conditions.\n\nJoint Optimization of the Diagnosis Adapter and RL Policy. In this work, we assign different optimization objectives to the diagnosis module and the symptom inquiry module,and adopt a cascaded optimization scheme. This dual-decision optimization effectively enhances the overall performance of LLM-based medical consultation. Nevertheless, LLM-RL cascading training can be inherently unstable.We believe that further improvements could be achieved by jointly optimizing the diagnosis adapter and the RL policy model. Such joint training may not only enable the diagnosis adapter to acquire more robust multi-disease diagnostic capabilities better aligned with interactive doctor-patient scenarios,but also facilitate more stable reward learning for the RL policy.\n\nMitigating Inference Overhead from MultiAgent Collaboration. Our DDO framework employs four collaborating agents to accomplish the MC task, substantially enhancing the diagnostic performance of LLM-based methods. However, this multi-agent design also introduces significant inference overhead—for instance,a single multiturn consultation per MCR typically takes 3-5 minutes. To mitigate this cost, a promising direction inspired by(Chopra and Shah,2025) is to store completed consultation trajectories in a memory tree. When processing a new MCR, the system can first retrieve similar cases from the tree; if a close match is identified, the consultation can follow the retrieved trajectory, thereby reducing the number of LLM inference calls.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1340::appendix::A",
+      "paper_id": "2025.emnlp-main.1340",
+      "section_number": "A",
+      "section_title": "other implementation details",
+      "normalized_section_title": "other implementation details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1340::appendix::A.2",
+      "paper_id": "2025.emnlp-main.1340",
+      "section_number": "A.2",
+      "section_title": "training details",
+      "normalized_section_title": "training details",
+      "window_text": "Hyperparameters and model checkpoints were selected based on the validation dataset, considering both Top-K accuracy and diagnostic effectiveness across diseases. The key configurations are summarized in Table 6, Table 7and Table 8.\n\nDuring confidence calibration, for Qwen2.5-7BInstruct, several promising checkpoints were retained as candidate adapters for the subsequent RL training,while for other LLMs only the bestperforming checkpoint was used for inference.\n\nLLM-RL cascading training can be inherently unstable. To mitigate this, each candidate adapter was employed to train a policy model. The resulting models were then evaluated, and the one achieving the highest Top-K accuracy was selected as the final Policy Agent. This agent was subsequently deployed across different LLM backbones, demonstrating both robustness and transferability.\n\nTable 6: Hyperparameters for confidence calibration.   \n\n<table><tr><td>Hyperparameters</td><td>DXY</td><td>GMD</td><td>CMD</td></tr><tr><td>max training epochs</td><td>5</td><td>1</td><td>1</td></tr><tr><td>global batch size</td><td>8</td><td>8</td><td>8</td></tr><tr><td>learning rate</td><td>5e-5</td><td>5e-5</td><td>5e-5</td></tr><tr><td>lora rank</td><td>16</td><td>16</td><td>16</td></tr><tr><td>in-bacth group length</td><td>5</td><td>5</td><td>5</td></tr></table>\n\nTable 7: Hyperparameters for RL policy model's training and inference.   \n\n<table><tr><td rowspan=1 colspan=1>Hyperparameters</td><td rowspan=1 colspan=1>DXY</td><td rowspan=1 colspan=1>GMD</td><td rowspan=1 colspan=1>CMD</td></tr><tr><td rowspan=11 colspan=1>actor hidden layerscritic hidden layerslearning ratebatch sizesteps per updateepochstotal stepshitting rewardranking rewarddiagnosis rewardfrequency penaty</td><td rowspan=1 colspan=1>[256,128,128]</td><td rowspan=1 colspan=1>[256,128,128]</td><td rowspan=1 colspan=1>[512,256,256]</td></tr><tr><td rowspan=1 colspan=1>[64]</td><td rowspan=1 colspan=1>[64]</td><td rowspan=1 colspan=1>[128]</td></tr><tr><td rowspan=1 colspan=1>5e-5</td><td rowspan=1 colspan=1>5e-5</td><td rowspan=1 colspan=1>5e-5</td></tr><tr><td rowspan=1 colspan=1>64</td><td rowspan=1 colspan=1>128</td><td rowspan=1 colspan=1>128</td></tr><tr><td rowspan=1 colspan=1>1024</td><td rowspan=1 colspan=1>2048</td><td rowspan=1 colspan=1>2048</td></tr><tr><td rowspan=1 colspan=1>5</td><td rowspan=1 colspan=1>5</td><td rowspan=1 colspan=1>5</td></tr><tr><td rowspan=1 colspan=1>51200</td><td rowspan=1 colspan=1>102400</td><td rowspan=1 colspan=1>102400</td></tr><tr><td rowspan=1 colspan=1>0.5</td><td rowspan=1 colspan=1>0.5</td><td rowspan=1 colspan=1>0.5</td></tr><tr><td rowspan=1 colspan=1>0.5</td><td rowspan=1 colspan=1>0.5</td><td rowspan=1 colspan=1>0.5</td></tr><tr><td rowspan=1 colspan=1>1.0</td><td rowspan=1 colspan=1>1.0</td><td rowspan=1 colspan=1>1.0</td></tr><tr><td rowspan=1 colspan=1>0.2</td><td rowspan=1 colspan=1>0.2</td><td rowspan=1 colspan=1>0.2</td></tr><tr><td rowspan=2 colspan=1>window sizefloor turns</td><td rowspan=1 colspan=1>3</td><td rowspan=1 colspan=1>5</td><td rowspan=1 colspan=1>5</td></tr><tr><td rowspan=1 colspan=1>3</td><td rowspan=1 colspan=1>6</td><td rowspan=1 colspan=1>5</td></tr></table>\n\nTable 8:Hyperparameters for LLM-RL collaboration in symptom inquiry.   \n\n<table><tr><td>Hyperparameters</td><td>DXY</td><td>GMD</td><td>CMD</td></tr><tr><td>sampling times</td><td>6</td><td>6</td><td>7</td></tr><tr><td>window size</td><td>3</td><td>4</td><td>5</td></tr><tr><td>floor turns</td><td>3</td><td>5</td><td>5</td></tr><tr><td>retry times</td><td>1</td><td>2</td><td>2</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1340::appendix::A.3",
+      "paper_id": "2025.emnlp-main.1340",
+      "section_number": "A.3",
+      "section_title": "model deployment",
+      "normalized_section_title": "model deployment",
+      "window_text": "We locally deployed the LLMs used in our DDO framework on GPU devices. Specifically, Qwen2.5- 7B-Instruct was run on an NVIDIA RTX 3090 GPU, while Qwen2.5-14B-Instruct was run on an NVIDIA Tesla V100 GPU. For reproducing the Chain-of-Diagnosis baseline (Chen et al., 2024), we deployed DiagnosisGPT-6B and DiagnosisGPT34B using 1 and 3 NVIDIA Tesla V100 GPUs, respectively. For reproducing EBAD(Yan et al., 2023) and HAIformer (Zhao et al., 2024), we used a single NVIDIA RTX 3090 GPU.For implementing the Direct Prompting baseline and reproducing the Uncertainty of Thoughts baseline (Hu et al., 2024), we utilized the Qwen2.5-Instruct API provided by the Siliconflow platform4 and the ChatGPT API provided by the ChatAnywhere platform5 .\n\nBased on Stable-Baselines36,the reinforcement learning policy model in DDO is trained and deployed on a single NVIDIA RTX 309O GPU.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.emnlp-main.1340::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 3090",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We locally deployed the LLMs used in our DDO framework on GPU devices. Specifically, Qwen2.5- 7B-Instruct was run on an NVIDIA RTX 3090 GPU, while Qwen2.5-14B-Instruct was run on an NVIDIA Tesla V100 GPU. For reproducing the Chain-of-Diagnosis baseline (Chen et al., 2024), we deployed DiagnosisGPT-6B and DiagnosisGPT34B using 1 and 3 NVIDIA Tesla V100 GPUs, respectively. For reproducing EBAD(Yan et al., 2023) and HAIformer (Zhao et al., 2024), we used a single NVIDIA RTX 3090 GPU.For implementing the Direct Prompting baseline and reproducing the Uncertainty of Thoughts baseline (Hu et al., 2024), we utilized the Qwen2.5-Instruct API provided by the Siliconflow platform4 and the ChatGPT API provided by the ChatAnywhere platform5 .\n\nBased on Stable-Baselines36,the reinforcement learning policy model in DDO is trained and deployed on a single NVIDIA RTX 309O GPU.",
+      "section_number": "A.3",
+      "section_title": "model deployment",
+      "normalized_section_title": "model deployment"
+    },
+    {
+      "window_id": "2025.emnlp-main.1340::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We locally deployed the LLMs used in our DDO framework on GPU devices. Specifically, Qwen2.5- 7B-Instruct was run on an NVIDIA RTX 3090 GPU, while Qwen2.5-14B-Instruct was run on an NVIDIA Tesla V100 GPU. For reproducing the Chain-of-Diagnosis baseline (Chen et al., 2024), we deployed DiagnosisGPT-6B and DiagnosisGPT34B using 1 and 3 NVIDIA Tesla V100 GPUs, respectively. For reproducing EBAD(Yan et al., 2023) and HAIformer (Zhao et al., 2024), we used a single NVIDIA RTX 3090 GPU.For implementing the Direct Prompting baseline and reproducing the Uncertainty of Thoughts baseline (Hu et al., 2024), we utilized the Qwen2.5-Instruct API provided by the Siliconflow platform4 and the ChatGPT API provided by the ChatAnywhere platform5 .\n\nBased on Stable-Baselines36,the reinforcement learning policy model in DDO is trained and deployed on a single NVIDIA RTX 309O GPU.",
+      "section_number": "A.3",
+      "section_title": "model deployment",
+      "normalized_section_title": "model deployment"
+    },
+    {
+      "window_id": "2025.emnlp-main.1340::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We locally deployed the LLMs used in our DDO framework on GPU devices. Specifically, Qwen2.5- 7B-Instruct was run on an NVIDIA RTX 3090 GPU, while Qwen2.5-14B-Instruct was run on an NVIDIA Tesla V100 GPU. For reproducing the Chain-of-Diagnosis baseline (Chen et al., 2024), we deployed DiagnosisGPT-6B and DiagnosisGPT34B using 1 and 3 NVIDIA Tesla V100 GPUs, respectively. For reproducing EBAD(Yan et al., 2023) and HAIformer (Zhao et al., 2024), we used a single NVIDIA RTX 3090 GPU.For implementing the Direct Prompting baseline and reproducing the Uncertainty of Thoughts baseline (Hu et al., 2024), we utilized the Qwen2.5-Instruct API provided by the Siliconflow platform4 and the ChatGPT API provided by the ChatAnywhere platform5 .\n\nBased on Stable-Baselines36,the reinforcement learning policy model in DDO is trained and deployed on a single NVIDIA RTX 309O GPU.",
+      "section_number": "A.3",
+      "section_title": "model deployment",
+      "normalized_section_title": "model deployment"
+    },
+    {
+      "window_id": "2025.emnlp-main.1340::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100",
+      "count": 3,
+      "count_text": "3",
+      "evidence": "We locally deployed the LLMs used in our DDO framework on GPU devices. Specifically, Qwen2.5- 7B-Instruct was run on an NVIDIA RTX 3090 GPU, while Qwen2.5-14B-Instruct was run on an NVIDIA Tesla V100 GPU. For reproducing the Chain-of-Diagnosis baseline (Chen et al., 2024), we deployed DiagnosisGPT-6B and DiagnosisGPT34B using 1 and 3 NVIDIA Tesla V100 GPUs, respectively. For reproducing EBAD(Yan et al., 2023) and HAIformer (Zhao et al., 2024), we used a single NVIDIA RTX 3090 GPU.For implementing the Direct Prompting baseline and reproducing the Uncertainty of Thoughts baseline (Hu et al., 2024), we utilized the Qwen2.5-Instruct API provided by the Siliconflow platform4 and the ChatGPT API provided by the ChatAnywhere platform5 .\n\nBased on Stable-Baselines36,the reinforcement learning policy model in DDO is trained and deployed on a single NVIDIA RTX 309O GPU.",
+      "section_number": "A.3",
+      "section_title": "model deployment",
+      "normalized_section_title": "model deployment"
+    },
+    {
+      "window_id": "2025.emnlp-main.1340::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 3090",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We locally deployed the LLMs used in our DDO framework on GPU devices. Specifically, Qwen2.5- 7B-Instruct was run on an NVIDIA RTX 3090 GPU, while Qwen2.5-14B-Instruct was run on an NVIDIA Tesla V100 GPU. For reproducing the Chain-of-Diagnosis baseline (Chen et al., 2024), we deployed DiagnosisGPT-6B and DiagnosisGPT34B using 1 and 3 NVIDIA Tesla V100 GPUs, respectively. For reproducing EBAD(Yan et al., 2023) and HAIformer (Zhao et al., 2024), we used a single NVIDIA RTX 3090 GPU.For implementing the Direct Prompting baseline and reproducing the Uncertainty of Thoughts baseline (Hu et al., 2024), we utilized the Qwen2.5-Instruct API provided by the Siliconflow platform4 and the ChatGPT API provided by the ChatAnywhere platform5 .\n\nBased on Stable-Baselines36,the reinforcement learning policy model in DDO is trained and deployed on a single NVIDIA RTX 309O GPU.",
+      "section_number": "A.3",
+      "section_title": "model deployment",
+      "normalized_section_title": "model deployment"
+    },
+    {
+      "window_id": "2025.emnlp-main.1340::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 3090",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We locally deployed the LLMs used in our DDO framework on GPU devices. Specifically, Qwen2.5- 7B-Instruct was run on an NVIDIA RTX 3090 GPU, while Qwen2.5-14B-Instruct was run on an NVIDIA Tesla V100 GPU. For reproducing the Chain-of-Diagnosis baseline (Chen et al., 2024), we deployed DiagnosisGPT-6B and DiagnosisGPT34B using 1 and 3 NVIDIA Tesla V100 GPUs, respectively. For reproducing EBAD(Yan et al., 2023) and HAIformer (Zhao et al., 2024), we used a single NVIDIA RTX 3090 GPU.For implementing the Direct Prompting baseline and reproducing the Uncertainty of Thoughts baseline (Hu et al., 2024), we utilized the Qwen2.5-Instruct API provided by the Siliconflow platform4 and the ChatGPT API provided by the ChatAnywhere platform5 .\n\nBased on Stable-Baselines36,the reinforcement learning policy model in DDO is trained and deployed on a single NVIDIA RTX 309O GPU.",
+      "section_number": "A.3",
+      "section_title": "model deployment",
+      "normalized_section_title": "model deployment"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.emnlp-main.1340::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 3090",
+      "cleaned_hardware_name": "nvidia rtx 3090",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 3090",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 3090",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.3",
+      "section_title": "model deployment",
+      "normalized_section_title": "model deployment",
+      "evidence": "We locally deployed the LLMs used in our DDO framework on GPU devices. Specifically, Qwen2.5- 7B-Instruct was run on an NVIDIA RTX 3090 GPU, while Qwen2.5-14B-Instruct was run on an NVIDIA Tesla V100 GPU. For reproducing the Chain-of-Diagnosis baseline (Chen et al., 2024), we deployed DiagnosisGPT-6B and DiagnosisGPT34B using 1 and 3 NVIDIA Tesla V100 GPUs, respectively. For reproducing EBAD(Yan et al., 2023) and HAIformer (Zhao et al., 2024), we used a single NVIDIA RTX 3090 GPU.For implementing the Direct Prompting baseline and reproducing the Uncertainty of Thoughts baseline (Hu et al., 2024), we utilized the Qwen2.5-Instruct API provided by the Siliconflow platform4 and the ChatGPT API provided by the ChatAnywhere platform5 .\n\nBased on Stable-Baselines36,the reinforcement learning policy model in DDO is trained and deployed on a single NVIDIA RTX 309O GPU.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.emnlp-main.1340::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100",
+      "cleaned_hardware_name": "nvidia tesla v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.3",
+      "section_title": "model deployment",
+      "normalized_section_title": "model deployment",
+      "evidence": "We locally deployed the LLMs used in our DDO framework on GPU devices. Specifically, Qwen2.5- 7B-Instruct was run on an NVIDIA RTX 3090 GPU, while Qwen2.5-14B-Instruct was run on an NVIDIA Tesla V100 GPU. For reproducing the Chain-of-Diagnosis baseline (Chen et al., 2024), we deployed DiagnosisGPT-6B and DiagnosisGPT34B using 1 and 3 NVIDIA Tesla V100 GPUs, respectively. For reproducing EBAD(Yan et al., 2023) and HAIformer (Zhao et al., 2024), we used a single NVIDIA RTX 3090 GPU.For implementing the Direct Prompting baseline and reproducing the Uncertainty of Thoughts baseline (Hu et al., 2024), we utilized the Qwen2.5-Instruct API provided by the Siliconflow platform4 and the ChatGPT API provided by the ChatAnywhere platform5 .\n\nBased on Stable-Baselines36,the reinforcement learning policy model in DDO is trained and deployed on a single NVIDIA RTX 309O GPU.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.emnlp-main.1340::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100",
+      "cleaned_hardware_name": "nvidia tesla v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 3,
+      "count_text": "3",
+      "section_number": "A.3",
+      "section_title": "model deployment",
+      "normalized_section_title": "model deployment",
+      "evidence": "We locally deployed the LLMs used in our DDO framework on GPU devices. Specifically, Qwen2.5- 7B-Instruct was run on an NVIDIA RTX 3090 GPU, while Qwen2.5-14B-Instruct was run on an NVIDIA Tesla V100 GPU. For reproducing the Chain-of-Diagnosis baseline (Chen et al., 2024), we deployed DiagnosisGPT-6B and DiagnosisGPT34B using 1 and 3 NVIDIA Tesla V100 GPUs, respectively. For reproducing EBAD(Yan et al., 2023) and HAIformer (Zhao et al., 2024), we used a single NVIDIA RTX 3090 GPU.For implementing the Direct Prompting baseline and reproducing the Uncertainty of Thoughts baseline (Hu et al., 2024), we utilized the Qwen2.5-Instruct API provided by the Siliconflow platform4 and the ChatGPT API provided by the ChatAnywhere platform5 .\n\nBased on Stable-Baselines36,the reinforcement learning policy model in DDO is trained and deployed on a single NVIDIA RTX 309O GPU.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.3"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce RTX 3090",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 3
+      }
+    ]
+  }
+}

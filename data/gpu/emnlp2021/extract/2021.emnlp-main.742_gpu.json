@@ -1,0 +1,120 @@
+{
+  "paper_id": "2021.emnlp-main.742",
+  "candidate_windows": [
+    {
+      "window_id": "2021.emnlp-main.742::sections::4",
+      "paper_id": "2021.emnlp-main.742",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Datasets and Splits We work with the $\\mathcal{D}_{de\\rightarrow en}$ , $\\mathcal{D}_{fr\\rightarrow en}$ , and $\\mathcal{D}_{cs\\rightarrow en}$ directions of our XWikis corpus (i.e., first column in Table 1) and evaluate model performance on the XWikis-parallel set. We split XWikis-comparable into training $(95\\%)$ and validation $(5\\%)$ sets.\n\nTo train an English monolingual summariser, we created a monolingual dataset $\\mathcal{D}_{en\\rightarrow en}$ following the procedure described in Section 2 (lead paragraph and body of Wikipedia articles). We selected a set of Wikipedia titles disjoint from those\n\nTable 5: ROUGE-L recall for source document against reference monolingual summary computed against all input tokens (All), the first 800 tokens and the 600 tokens extracted with paragraph-based LEXRANK.   \n\n<table><tr><td></td><td>All</td><td colspan=\"2\">800 ParaLexRank.600</td></tr><tr><td>Den→en</td><td>55.16</td><td>51.83</td><td>51.88</td></tr><tr><td>Dde→en</td><td>52.05</td><td>48.64</td><td>48.60</td></tr><tr><td>Dfr→en</td><td>56.05</td><td>51.78</td><td>51.86</td></tr><tr><td>Dcs→en</td><td>53.37</td><td>50.20</td><td>50.47</td></tr></table>\n\nin our XWikis corpus. This dataset has 300,000 instances with 90/5/5 percent of instances in training/validation/test subsets. It follows similar characteristics to the data in our XWikis corpus with an average document and summary length of 884 and 70 tokens, respectively.\n\nParagraph Extraction To deal with very long documents, we carry out an initial extractive step (Liu et al., 2018; Liu and Lapata, 2019a). Specifically, we rank document paragraphs (represented as vectors of their tfidf values) using LEXRANK (Erkan and Radev, 2004) and then select the top ranked paragraphs up to a budget of 600 tokens. Table 5 reports ROUGE-L recall of the input against the reference summary (note that to measure this we take the monolingual summary associated with the document rather than the cross-lingual one). As can be seen, the extractive step reduces the document to a manageable size without sacrificing too much content. Note that after ranking, selected paragraphs are kept in their original position to avoid creating a bias towards important information coming at the beginning of the input sequence.\n\nOut of Domain Data To evaluate the robustness of cross-lingual models on non-Wikipedia text, we created an out of domain dataset from the European news site Voxeurop. This site contains news articles composed of a summary section (with multisentence summaries) and a body written and translated into several languages by professional journalists and translators. We extracted from this site 2,666 summary-article pairs in German, French, Czech, and English. The average document length in tokens is 842 and the summary length 42. We used 2,000 instances for evaluation and reserved the rest for model adaptation.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.emnlp-main.742::appendix::B",
+      "paper_id": "2021.emnlp-main.742",
+      "section_number": "B",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "All our models were built on top of the fairseq library (Ott et al., 2019) code base.\n\nText Processing For sentence splitting and tokenisation in German, French and English, we used the Stanza Python NLP Package (Qi et al., 2020). For Czech, we used the MorphoDiTa package (Straka and Straková, 2016).\n\nTraining Details For mBART50 (Tang et al., 2020), we used the checkpoint provided as mMBART 50 finetuned many-to-many and for mBART the mBART.cc25 checkpoint, both available in the fairseq library (Ott et al., 2019). We reused mBART's 250K sentencepiece (Kudo and Richardson, 2018) model which was trained using monolingual data for 100 languages. However, to reduce the size of the model to fit our GPU availability we carried out the following modifications. We trimmed the vocabulary to 135K. We first applied the sentencepiece encoder to the language sets in our XWikis corpus (Table 1) and the English data (used to train the monolingual summariser $\\mathcal{D}_{en\\rightarrow en}$ ) to generate a reduced dictionary. Then, we trimmed the dictionary and the models' embeddings (taking care to map indices from the original dictionary to the reduced one). We further slimmed-down the position embeddings layer from 1,024 to 600.\n\nSupervised fine-tuning of mBART and mBART50 was carried out for 20K updates with a batch size of 80 instances, following previous work (Lewis et al., 2020; Liu et al., 2020). We used the Adam optimizer ( $\\epsilon = 1\\mathrm{e} - 6$ and $\\beta_{2} = 0.98$ ) with linear learning rate decay scheduling. We set dropout\n\nrate to 0.3 and attention-dropout to 0.1. We used half precision (fp16) and additionally set the weight decay to 0.01 and clipped gradients norm to 0.1. We fine-tuned with label smoothing and $\\alpha = 0.2$ . When fine-tuning on English mono-lingual summarisation, we freeze the embedding layer for mBART50 as it showed better zero-shot results (but not for mBART as zero shot results were not improved). We used 4 GPUs with 12GB of memory, fine-tuning took 2 days of training.\n\nFor the few-shot adaptation, we kept similar hyperparameters, except that we used a much smaller batch size, i.e., 8 instances, and ran 1K updates (300 few-shot) and 5k (1k few-shot). We monitored validation perplexity and obtained checkpoints with best perplexity. All few-shot variants used 1 GPU with 12GB of memory (and needed less than 10 hours of training). For the $Few$ approaches, we sampled a subset of English $S_{en\\rightarrow en}$ instances of size similar to the support set $S_{X\\rightarrow en}$ of the adaptation task $\\mathcal{T}_X\\to en$ and doubled its size when in addition applying CVT. The sample of unlabelled CVT instances had also size similar to the task support set. Adding more unlabelled data for CVT hurts performance. We combined data from the three tasks, English monolingual, Few cross-lingual instances (task support set) and unlabelled cross-lingual instances. We computed a weighted loss with weights 0.5, 1 and 0.1 respectively (note that variants with no CVT have 0 in the third weight).\n\nWe followed the same instance formatting as used in Liu et al. (2020). We use special language ID tokens $\\langle \\mathsf{LID} \\rangle$ , postpend sentences with the $\\langle / \\mathsf{S} \\rangle$ , and prepend $\\langle \\mathsf{S} \\rangle$ at the beginning of each sequence.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2021.emnlp-main.742::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GPU 12GB",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "All our models were built on top of the fairseq library (Ott et al., 2019) code base.\n\nText Processing For sentence splitting and tokenisation in German, French and English, we used the Stanza Python NLP Package (Qi et al., 2020). For Czech, we used the MorphoDiTa package (Straka and Straková, 2016).\n\nTraining Details For mBART50 (Tang et al., 2020), we used the checkpoint provided as mMBART 50 finetuned many-to-many and for mBART the mBART.cc25 checkpoint, both available in the fairseq library (Ott et al., 2019). We reused mBART's 250K sentencepiece (Kudo and Richardson, 2018) model which was trained using monolingual data for 100 languages. However, to reduce the size of the model to fit our GPU availability we carried out the following modifications. We trimmed the vocabulary to 135K. We first applied the sentencepiece encoder to the language sets in our XWikis corpus (Table 1) and the English data (used to train the monolingual summariser $\\mathcal{D}_{en\\rightarrow en}$ ) to generate a reduced dictionary. Then, we trimmed the dictionary and the models' embeddings (taking care to map indices from the original dictionary to the reduced one). We further slimmed-down the position embeddings layer from 1,024 to 600.\n\nSupervised fine-tuning of mBART and mBART50 was carried out for 20K updates with a batch size of 80 instances, following previous work (Lewis et al., 2020; Liu et al., 2020). We used the Adam optimizer ( $\\epsilon = 1\\mathrm{e} - 6$ and $\\beta_{2} = 0.98$ ) with linear learning rate decay scheduling. We set dropout\n\nrate to 0.3 and attention-dropout to 0.1. We used half precision (fp16) and additionally set the weight decay to 0.01 and clipped gradients norm to 0.1. We fine-tuned with label smoothing and $\\alpha = 0.2$ . When fine-tuning on English mono-lingual summarisation, we freeze the embedding layer for mBART50 as it showed better zero-shot results (but not for mBART as zero shot results were not improved). We used 4 GPUs with 12GB of memory, fine-tuning took 2 days of training.\n\nFor the few-shot adaptation, we kept similar hyperparameters, except that we used a much smaller batch size, i.e., 8 instances, and ran 1K updates (300 few-shot) and 5k (1k few-shot). We monitored validation perplexity and obtained checkpoints with best perplexity. All few-shot variants used 1 GPU with 12GB of memory (and needed less than 10 hours of training). For the $Few$ approaches, we sampled a subset of English $S_{en\\rightarrow en}$ instances of size similar to the support set $S_{X\\rightarrow en}$ of the adaptation task $\\mathcal{T}_X\\to en$ and doubled its size when in addition applying CVT. The sample of unlabelled CVT instances had also size similar to the task support set. Adding more unlabelled data for CVT hurts performance. We combined data from the three tasks, English monolingual, Few cross-lingual instances (task support set) and unlabelled cross-lingual instances. We computed a weighted loss with weights 0.5, 1 and 0.1 respectively (note that variants with no CVT have 0 in the third weight).\n\nWe followed the same instance formatting as used in Liu et al. (2020). We use special language ID tokens $\\langle \\mathsf{LID} \\rangle$ , postpend sentences with the $\\langle / \\mathsf{S} \\rangle$ , and prepend $\\langle \\mathsf{S} \\rangle$ at the beginning of each sequence.",
+      "section_number": "B",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments"
+    },
+    {
+      "window_id": "2021.emnlp-main.742::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GPU 12GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "All our models were built on top of the fairseq library (Ott et al., 2019) code base.\n\nText Processing For sentence splitting and tokenisation in German, French and English, we used the Stanza Python NLP Package (Qi et al., 2020). For Czech, we used the MorphoDiTa package (Straka and Straková, 2016).\n\nTraining Details For mBART50 (Tang et al., 2020), we used the checkpoint provided as mMBART 50 finetuned many-to-many and for mBART the mBART.cc25 checkpoint, both available in the fairseq library (Ott et al., 2019). We reused mBART's 250K sentencepiece (Kudo and Richardson, 2018) model which was trained using monolingual data for 100 languages. However, to reduce the size of the model to fit our GPU availability we carried out the following modifications. We trimmed the vocabulary to 135K. We first applied the sentencepiece encoder to the language sets in our XWikis corpus (Table 1) and the English data (used to train the monolingual summariser $\\mathcal{D}_{en\\rightarrow en}$ ) to generate a reduced dictionary. Then, we trimmed the dictionary and the models' embeddings (taking care to map indices from the original dictionary to the reduced one). We further slimmed-down the position embeddings layer from 1,024 to 600.\n\nSupervised fine-tuning of mBART and mBART50 was carried out for 20K updates with a batch size of 80 instances, following previous work (Lewis et al., 2020; Liu et al., 2020). We used the Adam optimizer ( $\\epsilon = 1\\mathrm{e} - 6$ and $\\beta_{2} = 0.98$ ) with linear learning rate decay scheduling. We set dropout\n\nrate to 0.3 and attention-dropout to 0.1. We used half precision (fp16) and additionally set the weight decay to 0.01 and clipped gradients norm to 0.1. We fine-tuned with label smoothing and $\\alpha = 0.2$ . When fine-tuning on English mono-lingual summarisation, we freeze the embedding layer for mBART50 as it showed better zero-shot results (but not for mBART as zero shot results were not improved). We used 4 GPUs with 12GB of memory, fine-tuning took 2 days of training.\n\nFor the few-shot adaptation, we kept similar hyperparameters, except that we used a much smaller batch size, i.e., 8 instances, and ran 1K updates (300 few-shot) and 5k (1k few-shot). We monitored validation perplexity and obtained checkpoints with best perplexity. All few-shot variants used 1 GPU with 12GB of memory (and needed less than 10 hours of training). For the $Few$ approaches, we sampled a subset of English $S_{en\\rightarrow en}$ instances of size similar to the support set $S_{X\\rightarrow en}$ of the adaptation task $\\mathcal{T}_X\\to en$ and doubled its size when in addition applying CVT. The sample of unlabelled CVT instances had also size similar to the task support set. Adding more unlabelled data for CVT hurts performance. We combined data from the three tasks, English monolingual, Few cross-lingual instances (task support set) and unlabelled cross-lingual instances. We computed a weighted loss with weights 0.5, 1 and 0.1 respectively (note that variants with no CVT have 0 in the third weight).\n\nWe followed the same instance formatting as used in Liu et al. (2020). We use special language ID tokens $\\langle \\mathsf{LID} \\rangle$ , postpend sentences with the $\\langle / \\mathsf{S} \\rangle$ , and prepend $\\langle \\mathsf{S} \\rangle$ at the beginning of each sequence.",
+      "section_number": "B",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2021.emnlp-main.742::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GPU 12GB",
+      "cleaned_hardware_name": "gpu 12gb",
+      "normalized_hardware_name": "GPU 12GB",
+      "benchmark_hardware_name": null,
+      "count": 4,
+      "count_text": "4",
+      "section_number": "B",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "evidence": "All our models were built on top of the fairseq library (Ott et al., 2019) code base.\n\nText Processing For sentence splitting and tokenisation in German, French and English, we used the Stanza Python NLP Package (Qi et al., 2020). For Czech, we used the MorphoDiTa package (Straka and Straková, 2016).\n\nTraining Details For mBART50 (Tang et al., 2020), we used the checkpoint provided as mMBART 50 finetuned many-to-many and for mBART the mBART.cc25 checkpoint, both available in the fairseq library (Ott et al., 2019). We reused mBART's 250K sentencepiece (Kudo and Richardson, 2018) model which was trained using monolingual data for 100 languages. However, to reduce the size of the model to fit our GPU availability we carried out the following modifications. We trimmed the vocabulary to 135K. We first applied the sentencepiece encoder to the language sets in our XWikis corpus (Table 1) and the English data (used to train the monolingual summariser $\\mathcal{D}_{en\\rightarrow en}$ ) to generate a reduced dictionary. Then, we trimmed the dictionary and the models' embeddings (taking care to map indices from the original dictionary to the reduced one). We further slimmed-down the position embeddings layer from 1,024 to 600.\n\nSupervised fine-tuning of mBART and mBART50 was carried out for 20K updates with a batch size of 80 instances, following previous work (Lewis et al., 2020; Liu et al., 2020). We used the Adam optimizer ( $\\epsilon = 1\\mathrm{e} - 6$ and $\\beta_{2} = 0.98$ ) with linear learning rate decay scheduling. We set dropout\n\nrate to 0.3 and attention-dropout to 0.1. We used half precision (fp16) and additionally set the weight decay to 0.01 and clipped gradients norm to 0.1. We fine-tuned with label smoothing and $\\alpha = 0.2$ . When fine-tuning on English mono-lingual summarisation, we freeze the embedding layer for mBART50 as it showed better zero-shot results (but not for mBART as zero shot results were not improved). We used 4 GPUs with 12GB of memory, fine-tuning took 2 days of training.\n\nFor the few-shot adaptation, we kept similar hyperparameters, except that we used a much smaller batch size, i.e., 8 instances, and ran 1K updates (300 few-shot) and 5k (1k few-shot). We monitored validation perplexity and obtained checkpoints with best perplexity. All few-shot variants used 1 GPU with 12GB of memory (and needed less than 10 hours of training). For the $Few$ approaches, we sampled a subset of English $S_{en\\rightarrow en}$ instances of size similar to the support set $S_{X\\rightarrow en}$ of the adaptation task $\\mathcal{T}_X\\to en$ and doubled its size when in addition applying CVT. The sample of unlabelled CVT instances had also size similar to the task support set. Adding more unlabelled data for CVT hurts performance. We combined data from the three tasks, English monolingual, Few cross-lingual instances (task support set) and unlabelled cross-lingual instances. We computed a weighted loss with weights 0.5, 1 and 0.1 respectively (note that variants with no CVT have 0 in the third weight).\n\nWe followed the same instance formatting as used in Liu et al. (2020). We use special language ID tokens $\\langle \\mathsf{LID} \\rangle$ , postpend sentences with the $\\langle / \\mathsf{S} \\rangle$ , and prepend $\\langle \\mathsf{S} \\rangle$ at the beginning of each sequence.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "input describes capacity without a specific GPU model",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2021.emnlp-main.742::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GPU 12GB",
+      "cleaned_hardware_name": "gpu 12gb",
+      "normalized_hardware_name": "GPU 12GB",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "B",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "evidence": "All our models were built on top of the fairseq library (Ott et al., 2019) code base.\n\nText Processing For sentence splitting and tokenisation in German, French and English, we used the Stanza Python NLP Package (Qi et al., 2020). For Czech, we used the MorphoDiTa package (Straka and Straková, 2016).\n\nTraining Details For mBART50 (Tang et al., 2020), we used the checkpoint provided as mMBART 50 finetuned many-to-many and for mBART the mBART.cc25 checkpoint, both available in the fairseq library (Ott et al., 2019). We reused mBART's 250K sentencepiece (Kudo and Richardson, 2018) model which was trained using monolingual data for 100 languages. However, to reduce the size of the model to fit our GPU availability we carried out the following modifications. We trimmed the vocabulary to 135K. We first applied the sentencepiece encoder to the language sets in our XWikis corpus (Table 1) and the English data (used to train the monolingual summariser $\\mathcal{D}_{en\\rightarrow en}$ ) to generate a reduced dictionary. Then, we trimmed the dictionary and the models' embeddings (taking care to map indices from the original dictionary to the reduced one). We further slimmed-down the position embeddings layer from 1,024 to 600.\n\nSupervised fine-tuning of mBART and mBART50 was carried out for 20K updates with a batch size of 80 instances, following previous work (Lewis et al., 2020; Liu et al., 2020). We used the Adam optimizer ( $\\epsilon = 1\\mathrm{e} - 6$ and $\\beta_{2} = 0.98$ ) with linear learning rate decay scheduling. We set dropout\n\nrate to 0.3 and attention-dropout to 0.1. We used half precision (fp16) and additionally set the weight decay to 0.01 and clipped gradients norm to 0.1. We fine-tuned with label smoothing and $\\alpha = 0.2$ . When fine-tuning on English mono-lingual summarisation, we freeze the embedding layer for mBART50 as it showed better zero-shot results (but not for mBART as zero shot results were not improved). We used 4 GPUs with 12GB of memory, fine-tuning took 2 days of training.\n\nFor the few-shot adaptation, we kept similar hyperparameters, except that we used a much smaller batch size, i.e., 8 instances, and ran 1K updates (300 few-shot) and 5k (1k few-shot). We monitored validation perplexity and obtained checkpoints with best perplexity. All few-shot variants used 1 GPU with 12GB of memory (and needed less than 10 hours of training). For the $Few$ approaches, we sampled a subset of English $S_{en\\rightarrow en}$ instances of size similar to the support set $S_{X\\rightarrow en}$ of the adaptation task $\\mathcal{T}_X\\to en$ and doubled its size when in addition applying CVT. The sample of unlabelled CVT instances had also size similar to the task support set. Adding more unlabelled data for CVT hurts performance. We combined data from the three tasks, English monolingual, Few cross-lingual instances (task support set) and unlabelled cross-lingual instances. We computed a weighted loss with weights 0.5, 1 and 0.1 respectively (note that variants with no CVT have 0 in the third weight).\n\nWe followed the same instance formatting as used in Liu et al. (2020). We use special language ID tokens $\\langle \\mathsf{LID} \\rangle$ , postpend sentences with the $\\langle / \\mathsf{S} \\rangle$ , and prepend $\\langle \\mathsf{S} \\rangle$ at the beginning of each sequence.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "input describes capacity without a specific GPU model",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "GPU 12GB",
+        "num": 4
+      },
+      {
+        "name": "GPU 12GB",
+        "num": 1
+      }
+    ]
+  }
+}

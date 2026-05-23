@@ -1,0 +1,109 @@
+{
+  "paper_id": "2023.acl-long.536",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.536::sections::4.4",
+      "paper_id": "2023.acl-long.536",
+      "section_number": "4.4",
+      "section_title": "inference",
+      "normalized_section_title": "inference",
+      "window_text": "As discussed above, the mapping from $\\mathbf{Q}$ to $\\mathbf{Z}$ and the mapping from $\\mathbf{Z}$ to $\\mathbf{R}$ could both be represented as logical expressions. Thus, we could also use a logical expression of $\\mathbf{Q}$ to directly represent the relations between events, which is denoted as $F^{\\mathbf{Q} \\rightarrow \\mathbf{R}}$ . Table 3 shows the logical expressions of all relations in TB-Dense<sup>3</sup>.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.536::sections::5",
+      "paper_id": "2023.acl-long.536",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "Datasets We conduct experiments over two temporal relation extraction benchmarks, TB-Dense (Cassidy et al., 2014) and MATRES (Ning et al., 2018), both of which could be used for research purposes. TB-Dense includes 6 types of temporal relations: Before, After, Includes, Is_Included, Simultaneous and Vague. Temporal relations in MATRES are annotated only based on start time points, reducing them to 4 types: Before, After, Equal and Vague. we use the same train/dev/test splits as previous studies (Han et al., 2019; Wen and Ji, 2021).\n\nEvaluation Metrics For fair comparisons with previous research, we adopt the same evaluation metrics as Zhang et al. (2022). On both TB-Dense and MATRES, we exclude the Vague label and compute the micro-F1 score of all the others.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.536::appendix::D",
+      "paper_id": "2023.acl-long.536",
+      "section_number": "D",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "For fair comparisons with previous baseline methods, we use the pre-trained BERT-Base and RoBERTa-Large models for fine-tuning and optimize our model with AdamW. We optimize the parameters with grid search: training epoch $\\in 1,3$ 5, 10, learning rate $\\in 2\\mathrm{e} - 5$ 1e-5, training batch size 16, temperature in time point sorter $\\in 1$ , 10. The\n\nTable 7: Mapping of the answers of prompts to the relation of time points. When Pi and Pj refer to Prompt1 and Prompt2 in Figure 9, we can deduce the relation of the start time point. And when Pi and Pj refer to Prompt3 and Prompt4 in Figure 9, we can deduce the relation of the end time point. $e_1$ and $e_2$ indicate the possible answer of LLMs: event_1 and event_2. $\\phi$ means the output of LLMs is not in the label set {event_1, event_2}   \n\n<table><tr><td>Pi</td><td>Pj</td><td>Time Point Relation</td></tr><tr><td>e1</td><td>e2</td><td>before</td></tr><tr><td>e1</td><td>φ</td><td>before</td></tr><tr><td>φ</td><td>e2</td><td>before</td></tr><tr><td>e2</td><td>e1</td><td>after</td></tr><tr><td>φ</td><td>e1</td><td>after</td></tr><tr><td>e2</td><td>φ</td><td>after</td></tr><tr><td colspan=\"2\">otherwise</td><td>vague</td></tr></table>\n\nTable 8: Mapping from the relation of the start time point and the end time point to the final temporal relation between two events for ChatGPT.   \n\n<table><tr><td>Start Time</td><td>End Time</td><td>Temporal Relation</td></tr><tr><td>before</td><td>before</td><td>Before</td></tr><tr><td>after</td><td>after</td><td>After</td></tr><tr><td>before</td><td>after</td><td>Includes</td></tr><tr><td>after</td><td>before</td><td>Included In</td></tr><tr><td colspan=\"2\">otherwise</td><td>Vague</td></tr></table>\n\nbest hyperparameters for BERT-Base are (1, 2e-5, 10) and the best hyperparameters for RoBERTa-Large are (3, 1e-5, 10). We using one A40 GPU for training.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.536::appendix::E",
+      "paper_id": "2023.acl-long.536",
+      "section_number": "E",
+      "section_title": "experiment details for llms",
+      "normalized_section_title": "experiment details for llms",
+      "window_text": "Figure 9 and 8 shows all the prompts we used in Section 7. For the variants of classification-based prompts, we ask the model to directly output the temporal relation between two events. In Unified Framework, we design four prompts to first determine the relationship between start and end time points and then deduce the final temporal relation. Specifically, we ask LLMs which event starts first with Prompt1 and Prompt2 in Figure 9. If the results of the two prompts keep consistent, which means the answers are (event_1, event_2) or (event_2, event_1) for the two prompts respectively, we can determine the temporal relation of\n\nFigure 8: The details of the designed prompt. In Classification, the order of the temporal relationships is generated randomly. In Classification + Before First Order and Classification + Before Last Order, the order of the temporal relationships is fixed, based on the frequency of relationships in the test dataset. Classification + Before First Order put the most common relation Before at the beginning of the list, while Classification + Before Last Order put Before in the end.   \n\n<table><tr><td>Classification</td><td>Prompt:\ntext: TEXT\nevent_1: EVENT_1, indicated by *** \nevent_2: EVENT_2, indicated by **** \nGive a list of five temporal relationships: [include, before, is included, after, simultaneous]. Based on the given text, what is the temporal relation of event_1 with respect to event_2? Answer &quot;uncertain&quot; if unsure. Output the answer with JSON format:\n{&quot;answer&quot;: &quot;certain type of temporal relation from the list, or uncertain)}.</td></tr><tr><td>Classification + Before First Order</td><td>Prompt:\ntext: TEXT\nevent_1: EVENT_1, indicated by *** \nevent_2: EVENT_2, indicated by **** \nGive a list of five temporal relationships: [before, after, include, is included, simultaneous]. Based on the given text, what is the temporal relation between event_1 and event_2? Answer &quot;uncertain&quot; if unsure. Output the answer with JSON format:\n{&quot;answer&quot;: &quot;certain type of temporal relation from the list, or uncertain)}.</td></tr><tr><td>Classification + Before Last Order</td><td>Prompt:\ntext: TEXT\nevent_1: EVENT_1, indicated by *** \nevent_2: EVENT_2, indicated by **** \nGive a list of five temporal relationships: [simultaneous, is included, include, after, before]. Based on the given text, what is the temporal relation of event_1 with respect to event_2? Answer &quot;uncertain&quot; if unsure. Please first describe the reasoning procedure and then output the answer with JSON format:\n{&quot;answer&quot;: &quot;certain type of temporal relation from the list, or uncertain)}.</td></tr></table>\n\nthe start points between the two events. Otherwise, the temporal relation of the start points is set to Vague. Sometimes, LLMs may generate answers not in the label set {event_1, event_2}. If both the answers for Prompt1 and Prompt2 are not in the label set, we regard the relation as Vague. If only one answer for the two prompts is not in the label set, we determine the relation of start time points solely based on the other. We use the same rules to obtain the relation of the end time points based on the answers of Prompt3 and Prompt4. Table 7 shows the mapping of the answers of prompts to the relation of start and end time points, and Table 8 shows how to get the final temporal relation between the two events.\n\nFigure 9: The details of the designed prompt. TEXT represents the context containing event_1 trigger EVENT_1 and event_2 trigger EVENT_2. The location of EVENT_1 and EVENT_2 in the TEXT are emphasized by adding makers ### and *** in front of them respectively.   \n\n<table><tr><td>Classification</td><td>Prompt:\ntext: TEXT\nevent_1: EVENT_1, indicated by *** \nevent_2: EVENT_2, indicated by ###\nGive a list of five temporal relationships: [include, before, is included, after, simultaneous]. Based on the given text, what is the temporal relation of event_1 with respect to event_2? Answer &quot;uncertain&quot; if unsure. Output the answer with JSON format:\n{&quot;answer&quot;: &quot;certain type of temporal relation from the list, or uncertain)}.</td></tr><tr><td>Classification\n- Relation\nDirection</td><td>Prompt:\ntext: TEXT\nevent_1: EVENT_1, indicated by *** \nevent_2: EVENT_2, indicated by ###\nGive a list of five temporal relationships: [include, before, is included, after, simultaneous]. Based on the given text, what is the temporal relation between event_1 and event_2? Answer &quot;uncertain&quot; if unsure. Output the answer with JSON format:\n{&quot;answer&quot;: &quot;certain type of temporal relation from the list, or uncertain)}.</td></tr><tr><td>Classification\n+ Chain of\nThought</td><td>Prompt:\ntext: TEXT\nevent_1: EVENT_1, indicated by *** \nevent_2: EVENT_2, indicated by ###\nGive a list of five temporal relationships: [include, before, is included, after, simultaneous]. Based on the given text, what is the temporal relation of event_1 with respect to event_2? Answer &quot;uncertain&quot; if unsure. Please first describe the reasoning procedure and then output the answer with JSON format: {&quot;answer&quot;: &quot;certain type of temporal relation from the list, or uncertain)}.</td></tr><tr><td rowspan=\"4\">Unified\nFramework</td><td>Prompt1:\ntext: TEXT\nevent_1: EVENT_1, indicated by ###\nevent_2: EVENT_2, indicated by **#\nBased on the given text, which event starts first? Please first describe the reasoning procedure and then output the answer with JSON format: {&quot;answer&quot;: &quot;event id which starts first&quot;}</td></tr><tr><td>Prompt2:\ntext: TEXT\nevent_1: EVENT_2, indicated by *** \nevent_2: EVENT_1, indicated by ###\nBased on the given text, which event starts first? Please first describe the reasoning procedure and then output the answer with JSON format: {&quot;answer&quot;: &quot;event id which starts first&quot;}</td></tr><tr><td>Prompt3:\ntext: TEXT\nevent_1: EVENT_1, indicated by ###\nevent_2: EVENT_2, indicated by **#\nBased on the given text, which event ends first? Please first describe the reasoning procedure and then output the answer with JSON format: {&quot;answer&quot;: &quot;event id which ends first&quot;}</td></tr><tr><td>Prompt4:\ntext: TEXT\nevent_1: EVENT_2, indicated by *** \nevent_2: EVENT_1, indicated by ###\nBased on the given text, which event ends first? Please first describe the reasoning procedure and then output the answer with JSON format: {&quot;answer&quot;: &quot;event id which ends first&quot;}</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.536::appendix::D",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A40",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "For fair comparisons with previous baseline methods, we use the pre-trained BERT-Base and RoBERTa-Large models for fine-tuning and optimize our model with AdamW. We optimize the parameters with grid search: training epoch $\\in 1,3$ 5, 10, learning rate $\\in 2\\mathrm{e} - 5$ 1e-5, training batch size 16, temperature in time point sorter $\\in 1$ , 10. The\n\nTable 7: Mapping of the answers of prompts to the relation of time points. When Pi and Pj refer to Prompt1 and Prompt2 in Figure 9, we can deduce the relation of the start time point. And when Pi and Pj refer to Prompt3 and Prompt4 in Figure 9, we can deduce the relation of the end time point. $e_1$ and $e_2$ indicate the possible answer of LLMs: event_1 and event_2. $\\phi$ means the output of LLMs is not in the label set {event_1, event_2}   \n\n<table><tr><td>Pi</td><td>Pj</td><td>Time Point Relation</td></tr><tr><td>e1</td><td>e2</td><td>before</td></tr><tr><td>e1</td><td>φ</td><td>before</td></tr><tr><td>φ</td><td>e2</td><td>before</td></tr><tr><td>e2</td><td>e1</td><td>after</td></tr><tr><td>φ</td><td>e1</td><td>after</td></tr><tr><td>e2</td><td>φ</td><td>after</td></tr><tr><td colspan=\"2\">otherwise</td><td>vague</td></tr></table>\n\nTable 8: Mapping from the relation of the start time point and the end time point to the final temporal relation between two events for ChatGPT.   \n\n<table><tr><td>Start Time</td><td>End Time</td><td>Temporal Relation</td></tr><tr><td>before</td><td>before</td><td>Before</td></tr><tr><td>after</td><td>after</td><td>After</td></tr><tr><td>before</td><td>after</td><td>Includes</td></tr><tr><td>after</td><td>before</td><td>Included In</td></tr><tr><td colspan=\"2\">otherwise</td><td>Vague</td></tr></table>\n\nbest hyperparameters for BERT-Base are (1, 2e-5, 10) and the best hyperparameters for RoBERTa-Large are (3, 1e-5, 10). We using one A40 GPU for training.",
+      "section_number": "D",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.536::appendix::D",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A40",
+      "cleaned_hardware_name": "a40",
+      "normalized_hardware_name": "NVIDIA A40 PCIe",
+      "benchmark_hardware_name": "NVIDIA A40 PCIe",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "D",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "For fair comparisons with previous baseline methods, we use the pre-trained BERT-Base and RoBERTa-Large models for fine-tuning and optimize our model with AdamW. We optimize the parameters with grid search: training epoch $\\in 1,3$ 5, 10, learning rate $\\in 2\\mathrm{e} - 5$ 1e-5, training batch size 16, temperature in time point sorter $\\in 1$ , 10. The\n\nTable 7: Mapping of the answers of prompts to the relation of time points. When Pi and Pj refer to Prompt1 and Prompt2 in Figure 9, we can deduce the relation of the start time point. And when Pi and Pj refer to Prompt3 and Prompt4 in Figure 9, we can deduce the relation of the end time point. $e_1$ and $e_2$ indicate the possible answer of LLMs: event_1 and event_2. $\\phi$ means the output of LLMs is not in the label set {event_1, event_2}   \n\n<table><tr><td>Pi</td><td>Pj</td><td>Time Point Relation</td></tr><tr><td>e1</td><td>e2</td><td>before</td></tr><tr><td>e1</td><td>φ</td><td>before</td></tr><tr><td>φ</td><td>e2</td><td>before</td></tr><tr><td>e2</td><td>e1</td><td>after</td></tr><tr><td>φ</td><td>e1</td><td>after</td></tr><tr><td>e2</td><td>φ</td><td>after</td></tr><tr><td colspan=\"2\">otherwise</td><td>vague</td></tr></table>\n\nTable 8: Mapping from the relation of the start time point and the end time point to the final temporal relation between two events for ChatGPT.   \n\n<table><tr><td>Start Time</td><td>End Time</td><td>Temporal Relation</td></tr><tr><td>before</td><td>before</td><td>Before</td></tr><tr><td>after</td><td>after</td><td>After</td></tr><tr><td>before</td><td>after</td><td>Includes</td></tr><tr><td>after</td><td>before</td><td>Included In</td></tr><tr><td colspan=\"2\">otherwise</td><td>Vague</td></tr></table>\n\nbest hyperparameters for BERT-Base are (1, 2e-5, 10) and the best hyperparameters for RoBERTa-Large are (3, 1e-5, 10). We using one A40 GPU for training.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "D"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A40 PCIe",
+        "num": 1
+      }
+    ]
+  }
+}

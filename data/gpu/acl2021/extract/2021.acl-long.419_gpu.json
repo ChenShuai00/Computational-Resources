@@ -1,0 +1,141 @@
+{
+  "paper_id": "2021.acl-long.419",
+  "candidate_windows": [
+    {
+      "window_id": "2021.acl-long.419::sections::2",
+      "paper_id": "2021.acl-long.419",
+      "section_number": "2",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "Suppose a model parameterized by $\\hat{\\theta}$ is trained on classification dataset $D = \\{D^{train}, D^{test}\\}$ by empirical risk minimization over $D^{train}$ . Let $z = (\\mathbf{x}, y) \\in D^{train}$ and $z' = (\\mathbf{x}', y') \\in D^{test}$ denote a training and a test instance respectively, where $\\mathbf{x}$ is a token sequence, and $y$ is a scalar. The goal of training instance-based explanation is to provide for a given test $z'$ an ordered list of training instances as explanation. Two notable methods to calculate the influence score are IF and TracIn:\n\nIF (Koh and Liang, 2017) assumes the influence of $z$ can be measured by perturbing the loss function $L$ with a fraction of the loss on $z$ , and obtain\n\n$$\n\\begin{array}{l} \\mathcal {I} _ {\\text {p e r t , l o s s}} \\left(z, z ^ {\\prime}; \\hat {\\theta}\\right) \\tag {1} \\\\ = - \\nabla_ {\\theta} L (z ^ {\\prime}, \\hat {\\theta}) H _ {\\hat {\\theta}} ^ {- 1} \\nabla_ {\\theta} L (z, \\hat {\\theta}), \\\\ \\end{array}\n$$\n\nwhere $H$ is the Hessian matrix calculated on the entire training dataset, a potential computation bottleneck for large dataset $D$ and complex model with high dimensional $\\hat{\\theta}$ .\n\nTracIn (Pruthi et al., 2020b) instead assumes the influence of a training instance $z$ is the sum of its contribution to the overall loss all through the\n\nentire training history, and conveniently it leads to\n\n$$\n\\begin{array}{l} \\operatorname {T r a c I n} (z, z ^ {\\prime}) = \\\\ \\sum_ {i} \\eta_ {i} \\nabla_ {\\hat {\\theta} _ {i}} L (\\hat {\\theta} _ {i}, z) \\nabla_ {\\hat {\\theta} _ {i}} L (\\hat {\\theta} _ {i}, z ^ {\\prime}), \\tag {2} \\\\ \\end{array}\n$$\n\nwhere $i$ iterates through the checkpoints saved at different training steps and $\\eta_{i}$ is a weight for each checkpoint. TracIn does not involve Hessian matrix and more efficient to compute. We can summarize the key differences between them according to the following desiderata of an explanation method:\n\nEfficiency for each $z'$ , TracIn requires $\\mathcal{O}(CG)$ where $C$ is the number of models and $G$ is the time spent for gradient calculation; whereas IF needs $\\mathcal{O}(N^2 G)$ where $N$ is the number of training instances, and $N >> C$ in general.\n\nFaithfulness IF is faithful to $\\hat{\\theta}$ since all its calculation is based on a single final model, yet TracIn may be less faithful to $\\hat{\\theta}$ since it obtains gradients from a set of checkpoints.\n\nInterpretability Both methods use the entire training instance as an explanation. Explanations with a finer-grained unit, e.g., phrases, may be easier to interpret in many applications where the texts are lengthy.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.419::sections::6",
+      "paper_id": "2021.acl-long.419",
+      "section_number": "6",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.419::sections::6.1",
+      "paper_id": "2021.acl-long.419",
+      "section_number": "6.1",
+      "section_title": "model training details",
+      "normalized_section_title": "model training details",
+      "window_text": "We train two separate models for MAMS and sentihood. The model's input is the concatenation of the aspect term and the entire text, and the output is a sentiment label. The two models share similar settings: 1. they both use ROBERTA-LARGE (Liu et al., 2019) from Huggingface (Wolf et al., 2019) which is fed into the BertForSequenceClassification function for initialization. We fine-tune the parameters of the last two layers and the output head using a batch size of 200 for ATSA and 100 for sentihood and max epochs of 100. We use AdamW optimizer (Loshchilov and Hutter, 2019) with weight decay 0.01 and learning rate 1E-4. Both models are written in Pytorch and are trained on a single Tesla V100 GPU and took less than 2 hours for each model to train. The models are selected on dev set performance, and both trained models are state-of-the-art: $88.3\\%$ on MAMS and $97.6\\%$ for sentihood at the time of writing.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.419::sections::6.2",
+      "paper_id": "2021.acl-long.419",
+      "section_number": "6.2",
+      "section_title": "comparing explanation methods",
+      "normalized_section_title": "comparing explanation methods",
+      "window_text": "We compare the six explanation methods on two datasets and three evaluation metrics in Table 3 from which we can draw the following conclusions:\n\n1) TracIn family outperforms IF family according to Sag and Lag metrics. We see that both metrics are robust against the choice of $K$ . It is worth noting that TracIn family methods are not only efficient, but also effective for extracting explanations compared to IF family as per Sag and Lag.   \n2) Span-based methods (with $+$ ) outperform Vanilla methods (w/o $+$ ). It is good news because an explanation can be much easier to comprehend if we can highlight essential spans in text, and $\\mathrm{IF}^{++}$ and $\\mathrm{TracIn}^{++}$ shows us that such highlighting can be justified by their superiority on the evaluation of Sag and Lag.   \n3) Sag and Lag shows a consistent trend of $\\mathrm{TracIn}^{++}$ and $\\mathrm{IF}^{++}$ being superior to the rest of the methods, while Ral results are inconclusive, which resonates with the findings in (Hooker et al., 2019) where they also observed randomness after removing examples under different explanation methods. This suggests that the re-training method may not be a reliable metric due to the randomness and intricate details involved in the re-training process.   \n4) The Sag measures $\\mathrm{TracIn}^+$ differently than Lag shows that Lag may be an over-simplistic measure by assuming that label $y$ can represent the entire semantics of $\\mathbf{x}$ , which may be problematic. But Sag looks into the $\\mathbf{x}$ for semantics and can properly reflect and align with humans judgments.\n\nThe Impact of K on Metrics One critical parameter for evaluation metrics is the choice of K for Sag and Lag (We do not discuss K for Ral due to its randomness). Here we use 200 MAMS test instances as subjects to study the influence of K, as shown in Figure 1.\n\nTable 3: Performance of difference explanation methods on 200 test cases on each dataset. For Sag and Lag we set $K \\in \\{10,100\\}$ ; for Ral we set $K \\in \\{20\\%,50\\% \\}$ , and Ral we consider removing the top $20\\%$ or $50\\%$ from the ordered training instance list. Computation time for IF family is about 20 minutes per test instance with recursion depth 1000 (the minimal value to guarantee convergence) on a Tesla V100 GPU. The time for TracIn family only depends on gradient calculation, which is trivial compared to IF family.   \n\n<table><tr><td colspan=\"2\"></td><td>IF</td><td>IF+</td><td>IF++</td><td>TracInF</td><td>TracIn+</td><td>TracIn++</td></tr><tr><td colspan=\"2\">Faithful to θ?</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr><tr><td colspan=\"2\">Hessian-free?</td><td>✗</td><td>✗</td><td>✗</td><td>✓</td><td>✓</td><td>✓</td></tr><tr><td colspan=\"2\">Interpretable explanations?</td><td>✗</td><td>✓</td><td>✓✓</td><td>✗</td><td>✓</td><td>✓✓</td></tr><tr><td rowspan=\"6\">MAMS</td><td>Sag(K=10)</td><td>14.22</td><td>17.17</td><td>21.74</td><td>15.89</td><td>22.65</td><td>23.92</td></tr><tr><td>Sag(K=100)</td><td>14.65</td><td>15.10</td><td>19.83</td><td>15.97</td><td>19.54</td><td>21.32</td></tr><tr><td>Lag(K=10)</td><td>21.63</td><td>25.66</td><td>65.41</td><td>38.20</td><td>08.60</td><td>78.03</td></tr><tr><td>Lag(K=100)</td><td>26.07</td><td>25.66</td><td>62.52</td><td>43.19</td><td>06.27</td><td>75.02</td></tr><tr><td>Ral(- top 20%)</td><td>09.80</td><td>05.64</td><td>03.55</td><td>09.80</td><td>11.89</td><td>16.05</td></tr><tr><td>Ral(- top 50%)</td><td>28.55</td><td>01.47</td><td>18.14</td><td>22.30</td><td>05.64</td><td>18.14</td></tr><tr><td rowspan=\"6\">sentihood</td><td>Sag(K=10)</td><td>04.69</td><td>04.75</td><td>22.54</td><td>03.07</td><td>00.98</td><td>26.21</td></tr><tr><td>Sag(K=50)</td><td>03.56</td><td>07.82</td><td>22.21</td><td>01.78</td><td>01.61</td><td>23.43</td></tr><tr><td>Lag(K=10)</td><td>53.00</td><td>41.91</td><td>61.96</td><td>55.91</td><td>18.22</td><td>66.65</td></tr><tr><td>Lag(K=50)</td><td>56.38</td><td>44.05</td><td>63.16</td><td>59.66</td><td>17.49</td><td>66.72</td></tr><tr><td>Ral(- top 20%)</td><td>10.56</td><td>16.21</td><td>06.91</td><td>09.23</td><td>06.91</td><td>09.23</td></tr><tr><td>Ral(- top 50%)</td><td>16.21</td><td>18.53</td><td>11.05</td><td>27.83</td><td>9.23</td><td>4.58</td></tr></table>\n\nWe found that as K increases, all methods, except for IF and TracInF, decrease on Sag and Lag. The decrease is favorable because the explanation method is putting useful training instances before less useful ones. In contrast, the increase suggests the explanation method fails to rank useful ones on top. This again confirms that span-based explanation can take into account the useful information in x and reduce the impact of noisy information involved in IF and TracInF.\n\n![](images/78cca5d053ab415acf55a6b25ae534a3e2e4305e9b6f318c46eedaa35a09c208.jpg)\n\n![](images/4add1d9cb5c51b41e57731ab4dd4d65c3d455b91d73a97fe308fad21bfb485b1.jpg)  \nFigure 1: Sag and Lag v.s. K values on 200 MAMS test instances.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2021.acl-long.419::sections::6.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We train two separate models for MAMS and sentihood. The model's input is the concatenation of the aspect term and the entire text, and the output is a sentiment label. The two models share similar settings: 1. they both use ROBERTA-LARGE (Liu et al., 2019) from Huggingface (Wolf et al., 2019) which is fed into the BertForSequenceClassification function for initialization. We fine-tune the parameters of the last two layers and the output head using a batch size of 200 for ATSA and 100 for sentihood and max epochs of 100. We use AdamW optimizer (Loshchilov and Hutter, 2019) with weight decay 0.01 and learning rate 1E-4. Both models are written in Pytorch and are trained on a single Tesla V100 GPU and took less than 2 hours for each model to train. The models are selected on dev set performance, and both trained models are state-of-the-art: $88.3\\%$ on MAMS and $97.6\\%$ for sentihood at the time of writing.",
+      "section_number": "6.1",
+      "section_title": "model training details",
+      "normalized_section_title": "model training details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2021.acl-long.419::sections::6.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100",
+      "cleaned_hardware_name": "tesla v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "6.1",
+      "section_title": "model training details",
+      "normalized_section_title": "model training details",
+      "evidence": "We train two separate models for MAMS and sentihood. The model's input is the concatenation of the aspect term and the entire text, and the output is a sentiment label. The two models share similar settings: 1. they both use ROBERTA-LARGE (Liu et al., 2019) from Huggingface (Wolf et al., 2019) which is fed into the BertForSequenceClassification function for initialization. We fine-tune the parameters of the last two layers and the output head using a batch size of 200 for ATSA and 100 for sentihood and max epochs of 100. We use AdamW optimizer (Loshchilov and Hutter, 2019) with weight decay 0.01 and learning rate 1E-4. Both models are written in Pytorch and are trained on a single Tesla V100 GPU and took less than 2 hours for each model to train. The models are selected on dev set performance, and both trained models are state-of-the-art: $88.3\\%$ on MAMS and $97.6\\%$ for sentihood at the time of writing.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2021.acl-long.419::sections::2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "2",
+      "section_title": "preliminaries",
+      "evidence": "Suppose a model parameterized by $\\hat{\\theta}$ is trained on classification dataset $D = \\{D^{train}, D^{test}\\}$ by empirical risk minimization over $D^{train}$ . Let $z = (\\mathbf{x}, y) \\in D^{train}$ and $z' = (\\mathbf{x}', y') \\in D^{test}$ denote a training and a test instance respectively, where $\\mathbf{x}$ is a token sequence, and $y$ is a scalar. The goal of training instance-based explanation is to provide for a given test $z'$ an ordered list of training instances as explanation. Two notable methods to calculate the influence score are IF and TracIn:\n\nIF (Koh and Liang, 2017) assumes the influence of $z$ can be measured by perturbing the loss function $L$ with a fraction of the loss on $z$ , and obtain\n\n$$\n\\begin{array}{l} \\mathcal {I} _ {\\text {p e r t , l o s s}} \\left(z, z ^ {\\prime}; \\hat {\\theta}\\right) \\tag {1} \\\\ = - \\nabla_ {\\theta} L (z ^ {\\prime}, \\hat {\\theta}) H _ {\\hat {\\theta}} ^ {- 1} \\nabla_ {\\theta} L (z, \\hat {\\theta}), \\\\ \\end{array}\n$$\n\nwhere $H$ is the Hessian matrix calculated on the entire training dataset, a potential computation bottleneck for large dataset $D$ and complex model with high dimensional $\\hat{\\theta}$ .\n\nTracIn (Pruthi et al., 2020b) instead assumes the influence of a training instance $z$ is the sum of its contribution to the overall loss all through the\n\nentire training history, and conveniently it leads to\n\n$$\n\\begin{array}{l} \\operatorname {T r a c I n} (z, z ^ {\\prime}) = \\\\ \\sum_ {i} \\eta_ {i} \\nabla_ {\\hat {\\theta} _ {i}} L (\\hat {\\theta} _ {i}, z) \\nabla_ {\\hat {\\theta} _ {i}} L (\\hat {\\theta} _ {i}, z ^ {\\prime}), \\tag {2} \\\\ \\end{array}\n$$\n\nwhere $i$ iterates through the checkpoints saved at different training steps and $\\eta_{i}$ is a weight for each checkpoint. TracIn does not involve Hessian matrix and more efficient to compute. We can summarize the key differences between them according to the following desiderata of an explanation method:\n\nEfficiency for each $z'$ , TracIn requires $\\mathcal{O}(CG)$ where $C$ is the number of models and $G$ is the time spent for gradient calculation; whereas IF needs $\\mathcal{O}(N^2 G)$ where $N$ is the number of training instances, and $N >> C$ in general.\n\nFaithfulness IF is faithful to $\\hat{\\theta}$ since all its calculation is based on a single final model, yet TracIn may be less faithful to $\\hat{\\theta}$ since it obtains gradients from a set of checkpoints.\n\nInterpretability Both methods use the entire training instance as an explanation. Explanations with a finer-grained unit, e.g., phrases, may be easier to interpret in many applications where the texts are lengthy."
+    },
+    {
+      "source_window_id": "2021.acl-long.419::sections::6",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2021.acl-long.419::sections::6.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6.2",
+      "section_title": "comparing explanation methods",
+      "evidence": "We compare the six explanation methods on two datasets and three evaluation metrics in Table 3 from which we can draw the following conclusions:\n\n1) TracIn family outperforms IF family according to Sag and Lag metrics. We see that both metrics are robust against the choice of $K$ . It is worth noting that TracIn family methods are not only efficient, but also effective for extracting explanations compared to IF family as per Sag and Lag.   \n2) Span-based methods (with $+$ ) outperform Vanilla methods (w/o $+$ ). It is good news because an explanation can be much easier to comprehend if we can highlight essential spans in text, and $\\mathrm{IF}^{++}$ and $\\mathrm{TracIn}^{++}$ shows us that such highlighting can be justified by their superiority on the evaluation of Sag and Lag.   \n3) Sag and Lag shows a consistent trend of $\\mathrm{TracIn}^{++}$ and $\\mathrm{IF}^{++}$ being superior to the rest of the methods, while Ral results are inconclusive, which resonates with the findings in (Hooker et al., 2019) where they also observed randomness after removing examples under different explanation methods. This suggests that the re-training method may not be a reliable metric due to the randomness and intricate details involved in the re-training process.   \n4) The Sag measures $\\mathrm{TracIn}^+$ differently than Lag shows that Lag may be an over-simplistic measure by assuming that label $y$ can represent the entire semantics of $\\mathbf{x}$ , which may be problematic. But Sag looks into the $\\mathbf{x}$ for semantics and can properly reflect and align with humans judgments.\n\nThe Impact of K on Metrics One critical parameter for evaluation metrics is the choice of K for Sag and Lag (We do not discuss K for Ral due to its randomness). Here we use 200 MAMS test instances as subjects to study the influence of K, as shown in Figure 1.\n\nTable 3: Performance of difference explanation methods on 200 test cases on each dataset. For Sag and Lag we set $K \\in \\{10,100\\}$ ; for Ral we set $K \\in \\{20\\%,50\\% \\}$ , and Ral we consider removing the top $20\\%$ or $50\\%$ from the ordered training instance list. Computation time for IF family is about 20 minutes per test instance with recursion depth 1000 (the minimal value to guarantee convergence) on a Tesla V100 GPU. The time for TracIn family only depends on gradient calculation, which is trivial compared to IF family.   \n\n<table><tr><td colspan=\"2\"></td><td>IF</td><td>IF+</td><td>IF++</td><td>TracInF</td><td>TracIn+</td><td>TracIn++</td></tr><tr><td colspan=\"2\">Faithful to θ?</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td></tr><tr><td colspan=\"2\">Hessian-free?</td><td>✗</td><td>✗</td><td>✗</td><td>✓</td><td>✓</td><td>✓</td></tr><tr><td colspan=\"2\">Interpretable explanations?</td><td>✗</td><td>✓</td><td>✓✓</td><td>✗</td><td>✓</td><td>✓✓</td></tr><tr><td rowspan=\"6\">MAMS</td><td>Sag(K=10)</td><td>14.22</td><td>17.17</td><td>21.74</td><td>15.89</td><td>22.65</td><td>23.92</td></tr><tr><td>Sag(K=100)</td><td>14.65</td><td>15.10</td><td>19.83</td><td>15.97</td><td>19.54</td><td>21.32</td></tr><tr><td>Lag(K=10)</td><td>21.63</td><td>25.66</td><td>65.41</td><td>38.20</td><td>08.60</td><td>78.03</td></tr><tr><td>Lag(K=100)</td><td>26.07</td><td>25.66</td><td>62.52</td><td>43.19</td><td>06.27</td><td>75.02</td></tr><tr><td>Ral(- top 20%)</td><td>09.80</td><td>05.64</td><td>03.55</td><td>09.80</td><td>11.89</td><td>16.05</td></tr><tr><td>Ral(- top 50%)</td><td>28.55</td><td>01.47</td><td>18.14</td><td>22.30</td><td>05.64</td><td>18.14</td></tr><tr><td rowspan=\"6\">sentihood</td><td>Sag(K=10)</td><td>04.69</td><td>04.75</td><td>22.54</td><td>03.07</td><td>00.98</td><td>26.21</td></tr><tr><td>Sag(K=50)</td><td>03.56</td><td>07.82</td><td>22.21</td><td>01.78</td><td>01.61</td><td>23.43</td></tr><tr><td>Lag(K=10)</td><td>53.00</td><td>41.91</td><td>61.96</td><td>55.91</td><td>18.22</td><td>66.65</td></tr><tr><td>Lag(K=50)</td><td>56.38</td><td>44.05</td><td>63.16</td><td>59.66</td><td>17.49</td><td>66.72</td></tr><tr><td>Ral(- top 20%)</td><td>10.56</td><td>16.21</td><td>06.91</td><td>09.23</td><td>06.91</td><td>09.23</td></tr><tr><td>Ral(- top 50%)</td><td>16.21</td><td>18.53</td><td>11.05</td><td>27.83</td><td>9.23</td><td>4.58</td></tr></table>\n\nWe found that as K increases, all methods, except for IF and TracInF, decrease on Sag and Lag. The decrease is favorable because the explanation method is putting useful training instances before less useful ones. In contrast, the increase suggests the explanation method fails to rank useful ones on top. This again confirms that span-based explanation can take into account the useful information in x and reduce the impact of noisy information involved in IF and TracInF.\n\n![](images/78cca5d053ab415acf55a6b25ae534a3e2e4305e9b6f318c46eedaa35a09c208.jpg)\n\n![](images/4add1d9cb5c51b41e57731ab4dd4d65c3d455b91d73a97fe308fad21bfb485b1.jpg)  \nFigure 1: Sag and Lag v.s. K values on 200 MAMS test instances."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "6.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2021\\2021.acl-long.419\\auto\\full.md",
+    "source_md_sha256": "829116775c02f28d3468a5afdb448552468f135e74d13bbc4111fccf6e342ad0",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "a2f4e0f2222ac944a84b28fba08cc5ab0184a6c6ccb3a5a4deb8a7eefc1e4438"
+  }
+}

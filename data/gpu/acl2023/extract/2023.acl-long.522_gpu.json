@@ -1,0 +1,337 @@
+{
+  "paper_id": "2023.acl-long.522",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.522::sections::4",
+      "paper_id": "2023.acl-long.522",
+      "section_number": "4",
+      "section_title": "experiment setting",
+      "normalized_section_title": "experiment setting",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.522::sections::4.1",
+      "paper_id": "2023.acl-long.522",
+      "section_number": "4.1",
+      "section_title": "pre-training details",
+      "normalized_section_title": "pre-training details",
+      "window_text": "Model Configuration In the experiments, we adopt a sequence-to-sequence base-setting Transformer architecture with 768 hidden size, 3072 FFN (feed-forward network) dimension, 12 attention heads, and 12 encoder/decoder layers. The maximum sequence length of learned positions embeddings in the encoder/decoder is set as 1024. All token embedding matrices and output projection matrix parameters are shared for model efficiency.\n\nDataset Following the previous work (Liu et al., 2019), our English pre-trained model GANLM is trained on 160GB English monolingual data from BookCorpus, CC-News, OpenWebText, and CC-Stories. In addition, we pre-train GANLM-m with 6TB multilingual data as the pioneering work (Ma et al., 2021), which is a combination of CC100, CC-Net, and Wikipedia, covering 100 languages. All texts are tokenized by SentencePiece (Kudo and Richardson, 2018) and encoded by the dictionary from XLM-R (Conneau et al., 2020).\n\nOptimization For S2S-MLM, we randomly mask $15\\%$ of the words in each instance with an average span length of 3 (Raffel et al., 2020). For the replaced token detection, we set the discriminator weight $\\lambda = 10.0$ . We adopt Adam (Kingma and Ba, 2015) with a learning rate of 3e-4 and 10K warm-up steps for pre-training. The model is trained on 128 NVIDIA A100 GPUs (40GB) from scratch and each batch contains 8K samples. The\n\nEnglish pre-trained model GANLM and multilingual model GANLM-m are trained for 500K steps. Specifically, all methods in Table 1 are pre-trained with 500K steps for a fair comparison.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2023.acl-long.522::sections::4.3",
+      "paper_id": "2023.acl-long.522",
+      "section_number": "4.3",
+      "section_title": "fine-tuning details",
+      "normalized_section_title": "fine-tuning details",
+      "window_text": "Abstractive Summarization During fine-tuning, we use the Adam (Kingma and Ba, 2015) optimizer with an initial learning rate of 1e-4 and the batch size is set as 2048 tokens on 8 V100 GPUs. The models are trained with the label smoothing cross-entropy with a smoothing ratio of 0.1.\n\nNeural Machine Translation For the large-scale multilingual dataset WMT-10, our pre-trained model is fine-tuned on 32 V100 GPUs with a learning rate of 3e-4. For all bilingual translation tasks and the IWSLT-2017 benchmark, we adopt Adam with a learning rate of 1e-4 and set the batch size as 2048 tokens on 8 V100 GPUs.\n\nData-to-text Generation We use Adam with a learning rate of $\\{8\\mathrm{e} - 5,1\\mathrm{e} - 4\\}$ and set the batch size as 16 sentences on the WebNLG dataset.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2023.acl-long.522::sections::8",
+      "paper_id": "2023.acl-long.522",
+      "section_number": "8",
+      "section_title": "analysis",
+      "normalized_section_title": "analysis",
+      "window_text": "Ablation Study To analyze the effect of the proposed pre-training and fine-tuning strategies, we conduct an ablation study of each component of our method in Table 9. Experiment $④$ and $⑥$ verify the merits of the replaced token detection and replaced token denoising. Furthermore, experiment $⑦$ shows that our model with the replaced token denoising task obtains the best performance by jointly fine-tuning generator $(\\mathcal{G})$ and discriminator $(\\mathcal{D})$ .\n\nLow-resource Setting To further analyze the performance of GANLM-m given different sizes of downstream parallel data, we randomly extract $K$ percentage of the whole sentence pairs as the finetuned parallel data from the full WMT-16 En $\\rightarrow$ Ro training data. We set $K = \\{10\\%, 20\\%, \\dots, 100\\% \\}$ and compare our method with the Transformer baseline model. Figure 3 shows the BLEU points of our pre-trained multilingual model and the baseline. When the parallel data size is small, the baseline without pre-trained model produces unsatisfactory results. Similarly, in Figure 3(a), GANLM fine\n\n<table><tr><td colspan=\"2\">En→X test sets</td><td>#Params</td><td>Fr</td><td>Cs</td><td>De</td><td>Fi</td><td>Lv</td><td>Et</td><td>Ro</td><td>Hi</td><td>Tr</td><td>Gu</td><td>Avg10</td></tr><tr><td>1→1</td><td>BiNMT (Vaswani et al., 2017)</td><td>242M/10M</td><td>36.3</td><td>22.3</td><td>40.2</td><td>15.2</td><td>16.5</td><td>15.0</td><td>23.0</td><td>12.2</td><td>13.3</td><td>7.9</td><td>20.2</td></tr><tr><td rowspan=\"4\">1→N</td><td>MNMT (Vaswani et al., 2017)</td><td>242M</td><td>34.2</td><td>20.9</td><td>40.0</td><td>15.0</td><td>18.1</td><td>20.9</td><td>26.0</td><td>14.5</td><td>17.3</td><td>13.2</td><td>22.0</td></tr><tr><td>mBART (Liu et al., 2020)</td><td>611M</td><td>33.7</td><td>20.8</td><td>38.9</td><td>14.5</td><td>18.2</td><td>20.5</td><td>26.0</td><td>15.3</td><td>16.8</td><td>12.9</td><td>21.8</td></tr><tr><td>XLM-R (Conneau et al., 2020)</td><td>362M</td><td>34.7</td><td>21.5</td><td>40.1</td><td>15.2</td><td>18.6</td><td>20.8</td><td>26.4</td><td>15.6</td><td>17.4</td><td>14.9</td><td>22.5</td></tr><tr><td>GANLM (ours)</td><td>430M</td><td>36.0</td><td>22.4</td><td>42.1</td><td>16.5</td><td>19.7</td><td>21.5</td><td>27.0</td><td>17.4</td><td>18.6</td><td>16.3</td><td>23.8</td></tr><tr><td rowspan=\"4\">N→N</td><td>MNMT (Vaswani et al., 2017)</td><td>242M</td><td>34.2</td><td>21.0</td><td>39.4</td><td>15.2</td><td>18.6</td><td>20.4</td><td>26.1</td><td>15.1</td><td>17.2</td><td>13.1</td><td>22.0</td></tr><tr><td>mBART (Liu et al., 2020)</td><td>611M</td><td>32.4</td><td>19.0</td><td>37.0</td><td>13.2</td><td>17.0</td><td>19.5</td><td>25.1</td><td>15.7</td><td>16.7</td><td>14.2</td><td>21.0</td></tr><tr><td>XLM-R (Conneau et al., 2020)</td><td>362M</td><td>34.2</td><td>21.4</td><td>39.7</td><td>15.3</td><td>18.9</td><td>20.6</td><td>26.5</td><td>15.6</td><td>17.5</td><td>14.5</td><td>22.4</td></tr><tr><td>GANLM-m (ours)</td><td>430M</td><td>35.0</td><td>21.8</td><td>40.2</td><td>16.1</td><td>19.2</td><td>21.9</td><td>26.7</td><td>16.2</td><td>17.9</td><td>14.4</td><td>22.9</td></tr></table>\n\nTable 6: $\\mathrm{{En}} \\rightarrow  \\mathrm{X}$ evaluation results for bilingual $\\left( {1 \\rightarrow  1}\\right)$ ,one-to-many $\\left( {1 \\rightarrow  \\mathrm{N}}\\right)$ ,and many-to-many $\\left( {\\mathrm{N} \\rightarrow  \\mathrm{N}}\\right)$ models on WMT-10. The languages are ordered from high-resource languages (left) to low-resource languages (right).   \nTable 7: X→En evaluation results for bilingual (1→1), one-to-many (1→N), and many-to-many (N→N) models on WMT-10. The languages are ordered from high-resource languages (left) to low-resource languages (right).   \n\n<table><tr><td colspan=\"2\">X→En test sets</td><td>#Params</td><td>Fr</td><td>Cs</td><td>De</td><td>Fi</td><td>Lv</td><td>Et</td><td>Ro</td><td>Hi</td><td>Tr</td><td>Gu</td><td>Avg10</td></tr><tr><td>1→1</td><td>BiNMT (Vaswani et al., 2017)</td><td>242M/10M</td><td>36.2</td><td>28.5</td><td>40.2</td><td>19.2</td><td>17.5</td><td>19.7</td><td>29.8</td><td>14.1</td><td>15.1</td><td>9.3</td><td>23.0</td></tr><tr><td rowspan=\"4\">N→1</td><td>MNMT (Vaswani et al., 2017)</td><td>242M</td><td>34.8</td><td>29.0</td><td>40.1</td><td>21.2</td><td>20.4</td><td>26.2</td><td>34.8</td><td>22.8</td><td>23.8</td><td>19.2</td><td>27.2</td></tr><tr><td>mBART (Liu et al., 2020)</td><td>611M</td><td>36.2</td><td>29.9</td><td>40.0</td><td>22.2</td><td>20.6</td><td>27.2</td><td>37.2</td><td>23.3</td><td>25.7</td><td>21.7</td><td>28.4</td></tr><tr><td>XLM-R (Conneau et al., 2020)</td><td>362M</td><td>35.6</td><td>30.2</td><td>40.9</td><td>22.7</td><td>21.7</td><td>28.4</td><td>37.3</td><td>25.4</td><td>26.2</td><td>22.6</td><td>29.1</td></tr><tr><td>GANLM (ours)</td><td>430M</td><td>36.9</td><td>31.8</td><td>42.4</td><td>23.2</td><td>22.5</td><td>29.4</td><td>37.9</td><td>27.2</td><td>27.9</td><td>22.9</td><td>30.2</td></tr><tr><td rowspan=\"4\">N→N</td><td>MNMT (Vaswani et al., 2017)</td><td>242M</td><td>35.9</td><td>29.2</td><td>40.0</td><td>21.1</td><td>20.4</td><td>26.3</td><td>35.5</td><td>23.6</td><td>24.3</td><td>20.6</td><td>27.7</td></tr><tr><td>mBART (Liu et al., 2020)</td><td>611M</td><td>34.8</td><td>28.9</td><td>39.4</td><td>20.7</td><td>20.2</td><td>25.8</td><td>35.9</td><td>22.5</td><td>25.0</td><td>21.9</td><td>27.5</td></tr><tr><td>XLM-R (Conneau et al., 2020)</td><td>362M</td><td>35.7</td><td>30.3</td><td>41.0</td><td>22.2</td><td>21.3</td><td>28.1</td><td>37.0</td><td>25.4</td><td>26.1</td><td>21.9</td><td>28.9</td></tr><tr><td>GANLM-m (ours)</td><td>430M</td><td>37.0</td><td>31.1</td><td>42.4</td><td>22.7</td><td>22.5</td><td>28.1</td><td>37.1</td><td>25.3</td><td>26.9</td><td>22.7</td><td>29.6</td></tr></table>\n\nTable 8: Results on data-to-text generation (WebNLG).   \n\n<table><tr><td>Model</td><td>En\nRG-1/RG-2/RG-L</td><td>Ro\nRG-1/RG-2/RG-L</td></tr><tr><td>mBART (Liu et al., 2020)</td><td>83.4/63.1/70.3</td><td>34.8/13.4/33.0</td></tr><tr><td>mT5small (Gehrmann et al., 2021)</td><td>78.8/59.2/67.2</td><td>29.7/10.5/28.4</td></tr><tr><td>mT5base (Gehrmann et al., 2021)</td><td>82.3/62.1/69.7</td><td>33.0/12.7/31.3</td></tr><tr><td>GANLM-m (ours)</td><td>83.8/63.9/71.2</td><td>35.2/15.0/33.4</td></tr></table>\n\n<table><tr><td>ID</td><td>Method</td><td>D</td><td>G</td><td>XsumRG-1/RG-2/RG-L</td></tr><tr><td>①</td><td>Transformer w/o Pre-training</td><td></td><td>✓</td><td>32.36/11.46/25.47</td></tr><tr><td>②</td><td>① + S2S-MLM</td><td></td><td>✓</td><td>44.44/21.25/36.22</td></tr><tr><td>③</td><td>② + Replaced Token Detection</td><td>✓</td><td></td><td>42.11/18.58/33.21</td></tr><tr><td>④</td><td>② + Replaced Token Detection</td><td></td><td>✓</td><td>44.28/21.14/36.24</td></tr><tr><td>⑤</td><td>④ + Replaced Token Denoising</td><td>✓</td><td></td><td>42.41/18.98/34.31</td></tr><tr><td>⑥</td><td>④ + Replaced Token Denoising</td><td></td><td>✓</td><td>44.74/21.47/36.40</td></tr><tr><td>⑦</td><td>④ + Replaced Token Denoising</td><td>✓</td><td>✓</td><td>45.36/21.98/36.84</td></tr></table>\n\nTable 9: Ablation study of our method on the test set of the abstractive summarization benchmark XSum, where GANLM is fine-tuned on the downstream task with different pre-training and fine-tuning strategies.\n\ntuned on nearly half data (purple line, $50\\%$ ) defeats the baseline trained on all pairs (green line, $100\\%$ ), exemplifying the effectiveness of our method in low-resource scenarios.\n\nDiscussion on Discriminator The weight value $\\lambda$ and layer number of the discriminator are key factors to our pre-training task. As shown in Figure 4,\n\n![](images/22bd086c97c5212c48844164cc8931a8fdb80627b1d9eaad3c5d1e4c8f458671.jpg)  \n(a) $\\mathrm{En}\\rightarrow \\mathrm{Ro}$\n\n![](images/d22d2f04684ef6f4f0a9d511e02758a66f52c84d8ac3464d9fdaa576b5ee1c0a.jpg)  \n(b) $\\mathrm{Ro}\\rightarrow \\mathrm{En}$   \nFigure 3: Comparison between Transformer and our method on WMT-16 (a) $\\mathrm{En}\\rightarrow \\mathrm{Ro}$ and (b) $\\mathrm{Ro}\\rightarrow \\mathrm{En}$ .\n\nwe vary discriminator weight in Figure 4(a) to find a balance between the generator and discriminator objective. To this end, we study the performance of GANLM with different $\\lambda$ , where $\\lambda$ ranges from 5.0 to 100.0. When the weight of the discriminator is 10.0, multiple pre-training tasks are balanced. Moreover, we find it more efficient to have a tiny discriminator ( $3 \\sim 6$ layers) in Figure 4(b).\n\nMultilingual Representations We randomly select 1000 parallel sentences of each language in WMT-10 and visualize their representations (Maaten and Hinton, 2008) of the last two encoder layers in Figure 5 using our multilingual model fine-tuned on WMT-10 and the multilingual base\n\n![](images/45d3c6c39f76bf3d45be0754b87f4571f94196282169afbc0c746a0ddae10185.jpg)  \n(a) Discriminator Weight\n\n![](images/4b688019b9852839447a0e218d13e82e228b2495e3b4952c753de3c49f22cc0f.jpg)  \n(b) Discriminator Layer\n\n![](images/a7680e5f4df15b8055488d1c020f3e4d27ce7d073678dc915d9acd5096121546.jpg)  \nFigure 4: Effect of (a) discriminator weight and (b) Discriminator layer on the WMT14 En→De task.   \n(a) 11-th\n\n![](images/87fd07e23eca5f35336ad8a37b72ce8cd495716583fb0a6d6bb835b4ab244d81.jpg)  \n(b) 12-th\n\n![](images/74e292f4c5bafead72fbdfdbd05c7e0fbe4a06ec10d3605635e638d5b76edcb8.jpg)  \n(c) 11-th\n\n![](images/0d114019e9ea8d5b199698edce1bd62d40b066a7cec81f7e2f22e9c1b70a48fd.jpg)  \n(d) 12-th   \nFigure 5: (a) and (b) are representations of the baseline from the 11-th and 12-th encoder layers while (c) and (d) are counterparts of the fine-tuned model. Each color denotes one language (11 languages in WMT-10).\n\nline. The first hidden state of the encoder is adopted as the sentence representation. Compared to Figure 5(a) and 5(b) of the baseline, different languages become closer and likely to overlap with each other in Figure 5(c) and 5(d) of our method, demonstrating that our method effectively aligns representations of different languages to the shared space.\n\nMassively Multilingual Translation We compare GANLM-m with the state-of-the-art multilingual NMT model M2M-124 (Goyal et al., 2021). M2M-124large and DeltaLM $^+$ Zcode both have a large hidden size of 1024. Our pre-trained model is fine-tuned on the same training data as DeltaLM $^+$ Zcode (Yang et al., 2021). Compared to M2M $124_{\\mathrm{large}}$ , GANLM-m with fewer training data and only 430M parameters depends more on the transferability of the cross-lingual pre-training model. In Table 10, our method outperforms the DeltaLM $^+$ Zcode in zero-shot translation direction $(\\mathrm{Avg}_X\\rightarrow Y)$ by $+1.5$ BLEU points, benefiting from our pretrained model in cross-lingual zero-shot transfer.\n\nComparison of Pre-training Cost Our English pre-trained model GANLM is trained for nearly 2 weeks on 128 A100 GPUs (40GB), with 500K training steps and a batch size of 8K sequences. Compared to the re-implemented T5 (Raffel et al., 2020), our method is only 0.5 times slower than T5 with the same training steps but gets a significant improvement on the machine translation, text\n\nTable 10: Massively multilingual translation average results ( ${102} \\times  {101}$ translation directions) on the devtest sets of the flores benchmark.   \n\n<table><tr><td>Model</td><td>#Params</td><td>AvgX→En</td><td>AvgEn→Y</td><td>AvgX→Y</td></tr><tr><td>M2M-124base (Goyal et al., 2021)</td><td>175M</td><td>15.43</td><td>12.02</td><td>5.85</td></tr><tr><td>M2M-124large (Goyal et al., 2021)</td><td>615M</td><td>20.03</td><td>16.21</td><td>7.66</td></tr><tr><td>DeltaLM + Zcode (Yang et al., 2021)</td><td>711M</td><td>30.39</td><td>23.52</td><td>11.21</td></tr><tr><td>GANLM-m (ours)</td><td>430M</td><td>30.70</td><td>24.83</td><td>13.65</td></tr></table>\n\nTable 11: Results of base-setting models on the valid set of GLUE. We report accuracy for classification tasks.   \n\n<table><tr><td>Model</td><td>MNLI</td><td>SST-2</td><td>MRPC</td><td>RTE</td><td>QNLI</td><td>QQP</td><td>Avg6</td></tr><tr><td>BERT (Devlin et al., 2019)</td><td>84.5</td><td>93.2</td><td>87.3</td><td>68.6</td><td>91.7</td><td>91.3</td><td>86.1</td></tr><tr><td>XLNet (Yang et al., 2019)</td><td>86.8</td><td>94.7</td><td>88.2</td><td>74.0</td><td>91.7</td><td>91.4</td><td>87.8</td></tr><tr><td>RoBERTa (Liu et al., 2019)</td><td>87.6</td><td>94.8</td><td>90.2</td><td>78.7</td><td>92.8</td><td>91.9</td><td>89.3</td></tr><tr><td>GANLM-m (D)</td><td>89.0</td><td>94.7</td><td>90.6</td><td>83.2</td><td>93.9</td><td>91.7</td><td>90.5</td></tr><tr><td>GANLM-m (G)</td><td>89.3</td><td>95.0</td><td>90.5</td><td>85.0</td><td>94.2</td><td>92.0</td><td>91.0</td></tr></table>\n\nsummimization, and data-to-text generation tasks.\n\nTraining of replaced token denoising To fully understand the training procedure of the replaced token denoising, we plot the training loss of sequence-to-sequence masked language modeling $L_{\\mathcal{G}}$ , replaced token detection, and replaced token denoising in Figure 6. Furthermore, we investigate how many tokens in the target sentence are replaced with the misclassified tokens by discriminator in Figure 7. We define $p_r$ as the replaced rate in the target gold sentence. Nearly $7.5\\%$ tokens of the target previous tokens are replaced with the misclassified tokens to construct the noisy input samples for the generator decoder.\n\nLanguage Understanding Our method can be easily extended to various downstream language understanding tasks. We use the GLUE benchmark (Wang et al., 2019) to estimate English pre-trained model GANLM and the XNLI dataset (Conneau et al., 2018) to evaluate the capability of the multilingual language understanding. Our method is tested on each language separately by fine-tuning generator $(\\mathcal{G})$ or discriminator $(\\mathcal{D})$ on the XNLI dataset. In Table 11, Our English pre-trained model performs better than RoBERTa. Additionally, our pre-trained model outperforms the previous crosslingual pre-trained encoder XLM and pre-trained encoder-decoder model mT5 in Table 12.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2023.acl-long.522::appendix::B",
+      "paper_id": "2023.acl-long.522",
+      "section_number": "B",
+      "section_title": "pre-training and fine-tuning details",
+      "normalized_section_title": "pre-training and fine-tuning details",
+      "window_text": "Pre-training Hyper-parameters Table 14 summarizes the hyper-parameters for pre-training GANLM and GANLM-m The task-specific hyperparameters for the downstream language generation and understanding tasks are in Table 15.\n\nAbstractive Summarization During fine-tuning, we use the Adam (Kingma and Ba, 2015) optimizer with an initial learning rate of 1e-4 and the batch size is set as 2048 tokens on 8 V100 GPUs. The models are trained with the label smoothing cross-entropy with a smoothing ratio of 0.1. The last 5 checkpoints are averaged for evaluation.\n\nNeural Machine Translation We adopt Adam with a learning rate of 1e-4 and set the batch size as 2048 tokens on 8 V100 GPUs for all bilingual translation tasks and the IWSLT-2017 benchmark. For the large-scale multilingual dataset WMT-10, our pre-trained model is fine-tuned on 32 V100 GPUs with a learning rate of 3e-4. For a fair comparison, we adopt the same architecture and model size as our pre-trained model.\n\nData-to-text Generation We use Adam with a learning rate of $\\{8\\mathrm{e} - 5,1\\mathrm{e} - 4\\}$ and set the batch size as 16 sentences on the WebNLG dataset.\n\nMulti-lingual Fine-tuning Following the previous work (Wang et al., 2020; Ma et al., 2021), we adopt a dynamic temperate-based sampling strategy to mitigate the unbalance of the multilingual corpora, where we gradually sample more pairs in low-resource languages with the number of epochs increasing. The temperature of the $i$ -th epoch is calculated by:\n\n$$\n\\tau_ {i} = \\min  \\left(\\tau_ {1}, \\tau_ {0} + \\frac {i}{N} (\\tau - \\tau_ {0})\\right) \\tag {11}\n$$\n\nTable 14: Hyper-parameters for pre-training GANLM and GANLM-m.   \n\n<table><tr><td>Hyper-parameter</td><td>GANLM</td><td>GANLM-m</td></tr><tr><td>Number of Encoder Layers</td><td>12</td><td>12</td></tr><tr><td>Number of Generator Layers</td><td>12</td><td>12</td></tr><tr><td>Number of Discriminator Layers</td><td>4</td><td>4</td></tr><tr><td>Hidden size</td><td>768</td><td>768</td></tr><tr><td>FFN hidden size</td><td>3072</td><td>3072</td></tr><tr><td>Attention heads</td><td>12</td><td>12</td></tr><tr><td>Attention head size</td><td>64</td><td>64</td></tr><tr><td>Dropout</td><td>0.1</td><td>0.1</td></tr><tr><td>Attention Dropout</td><td>0.1</td><td>0.1</td></tr><tr><td>Warmup Steps</td><td>10k</td><td>10k</td></tr><tr><td>Peak Learning Rate</td><td>4e-4</td><td>5e-4</td></tr><tr><td>Batch Size</td><td>8K</td><td>8K</td></tr><tr><td>Weight Decay</td><td>0.01</td><td>0.01</td></tr><tr><td>Max Steps</td><td>500k</td><td>500k</td></tr><tr><td>Learning Rate Decay</td><td>Linear</td><td>Linear</td></tr><tr><td>Adam β1</td><td>0.9</td><td>0.9</td></tr><tr><td>Adam β2</td><td>0.98</td><td>0.98</td></tr><tr><td>Gradient Clipping</td><td>0.0</td><td>0.0</td></tr></table>\n\nwhere $\\tau_0$ is the initial temperature, $\\tau_{1}$ is the peak temperature, and $N$ is the number of warm-up epochs. We set $\\tau_0 = 1.0$ , $\\tau_{1} = 5.0$ , and $N = 5$ for all multilingual experiments for a fair comparison.\n\nGiven the temperature $\\tau_{i}$ $i$ -th epoch, we can calculate the real sampling ratio of the language $L_{k}$ , where $L_{k} \\in L_{all} = \\{L_{1}, \\ldots, L_{K}\\}$ :\n\n$$\nq _ {L _ {k}} (i) = \\frac {p _ {L _ {k}} ^ {\\frac {1}{\\tau_ {i}}}}{\\sum_ {j = 1} ^ {K} p _ {L _ {j}} ^ {\\frac {1}{\\tau_ {i}}}} \\tag {12}\n$$\n\nwhere $q_{L_k}(i)$ is the sampling ratio of the language $L_{k}$ in the $i$ -th epoch. $p_{L_k}$ is the real data ratio of the language $L_{k}$ in all languages. $\\tau_{i}$ is the temperature of the $i$ -th epoch, as described in Equation 11.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.522::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 40GB",
+      "count": 128,
+      "count_text": "128",
+      "evidence": "Model Configuration In the experiments, we adopt a sequence-to-sequence base-setting Transformer architecture with 768 hidden size, 3072 FFN (feed-forward network) dimension, 12 attention heads, and 12 encoder/decoder layers. The maximum sequence length of learned positions embeddings in the encoder/decoder is set as 1024. All token embedding matrices and output projection matrix parameters are shared for model efficiency.\n\nDataset Following the previous work (Liu et al., 2019), our English pre-trained model GANLM is trained on 160GB English monolingual data from BookCorpus, CC-News, OpenWebText, and CC-Stories. In addition, we pre-train GANLM-m with 6TB multilingual data as the pioneering work (Ma et al., 2021), which is a combination of CC100, CC-Net, and Wikipedia, covering 100 languages. All texts are tokenized by SentencePiece (Kudo and Richardson, 2018) and encoded by the dictionary from XLM-R (Conneau et al., 2020).\n\nOptimization For S2S-MLM, we randomly mask $15\\%$ of the words in each instance with an average span length of 3 (Raffel et al., 2020). For the replaced token detection, we set the discriminator weight $\\lambda = 10.0$ . We adopt Adam (Kingma and Ba, 2015) with a learning rate of 3e-4 and 10K warm-up steps for pre-training. The model is trained on 128 NVIDIA A100 GPUs (40GB) from scratch and each batch contains 8K samples. The\n\nEnglish pre-trained model GANLM and multilingual model GANLM-m are trained for 500K steps. Specifically, all methods in Table 1 are pre-trained with 500K steps for a fair comparison.",
+      "section_number": "4.1",
+      "section_title": "pre-training details",
+      "normalized_section_title": "pre-training details"
+    },
+    {
+      "window_id": "2023.acl-long.522::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Abstractive Summarization During fine-tuning, we use the Adam (Kingma and Ba, 2015) optimizer with an initial learning rate of 1e-4 and the batch size is set as 2048 tokens on 8 V100 GPUs. The models are trained with the label smoothing cross-entropy with a smoothing ratio of 0.1.\n\nNeural Machine Translation For the large-scale multilingual dataset WMT-10, our pre-trained model is fine-tuned on 32 V100 GPUs with a learning rate of 3e-4. For all bilingual translation tasks and the IWSLT-2017 benchmark, we adopt Adam with a learning rate of 1e-4 and set the batch size as 2048 tokens on 8 V100 GPUs.\n\nData-to-text Generation We use Adam with a learning rate of $\\{8\\mathrm{e} - 5,1\\mathrm{e} - 4\\}$ and set the batch size as 16 sentences on the WebNLG dataset.",
+      "section_number": "4.3",
+      "section_title": "fine-tuning details",
+      "normalized_section_title": "fine-tuning details"
+    },
+    {
+      "window_id": "2023.acl-long.522::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "count": 32,
+      "count_text": "32",
+      "evidence": "Abstractive Summarization During fine-tuning, we use the Adam (Kingma and Ba, 2015) optimizer with an initial learning rate of 1e-4 and the batch size is set as 2048 tokens on 8 V100 GPUs. The models are trained with the label smoothing cross-entropy with a smoothing ratio of 0.1.\n\nNeural Machine Translation For the large-scale multilingual dataset WMT-10, our pre-trained model is fine-tuned on 32 V100 GPUs with a learning rate of 3e-4. For all bilingual translation tasks and the IWSLT-2017 benchmark, we adopt Adam with a learning rate of 1e-4 and set the batch size as 2048 tokens on 8 V100 GPUs.\n\nData-to-text Generation We use Adam with a learning rate of $\\{8\\mathrm{e} - 5,1\\mathrm{e} - 4\\}$ and set the batch size as 16 sentences on the WebNLG dataset.",
+      "section_number": "4.3",
+      "section_title": "fine-tuning details",
+      "normalized_section_title": "fine-tuning details"
+    },
+    {
+      "window_id": "2023.acl-long.522::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Abstractive Summarization During fine-tuning, we use the Adam (Kingma and Ba, 2015) optimizer with an initial learning rate of 1e-4 and the batch size is set as 2048 tokens on 8 V100 GPUs. The models are trained with the label smoothing cross-entropy with a smoothing ratio of 0.1.\n\nNeural Machine Translation For the large-scale multilingual dataset WMT-10, our pre-trained model is fine-tuned on 32 V100 GPUs with a learning rate of 3e-4. For all bilingual translation tasks and the IWSLT-2017 benchmark, we adopt Adam with a learning rate of 1e-4 and set the batch size as 2048 tokens on 8 V100 GPUs.\n\nData-to-text Generation We use Adam with a learning rate of $\\{8\\mathrm{e} - 5,1\\mathrm{e} - 4\\}$ and set the batch size as 16 sentences on the WebNLG dataset.",
+      "section_number": "4.3",
+      "section_title": "fine-tuning details",
+      "normalized_section_title": "fine-tuning details"
+    },
+    {
+      "window_id": "2023.acl-long.522::sections::8",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 40GB",
+      "count": 128,
+      "count_text": "128",
+      "evidence": "Comparison of Pre-training Cost Our English pre-trained model GANLM is trained for nearly 2 weeks on 128 A100 GPUs (40GB), with 500K training steps and a batch size of 8K sequences.",
+      "section_number": "8",
+      "section_title": "analysis",
+      "normalized_section_title": "analysis"
+    },
+    {
+      "window_id": "2023.acl-long.522::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Pre-training Hyper-parameters Table 14 summarizes the hyper-parameters for pre-training GANLM and GANLM-m The task-specific hyperparameters for the downstream language generation and understanding tasks are in Table 15.\n\nAbstractive Summarization During fine-tuning, we use the Adam (Kingma and Ba, 2015) optimizer with an initial learning rate of 1e-4 and the batch size is set as 2048 tokens on 8 V100 GPUs. The models are trained with the label smoothing cross-entropy with a smoothing ratio of 0.1. The last 5 checkpoints are averaged for evaluation.\n\nNeural Machine Translation We adopt Adam with a learning rate of 1e-4 and set the batch size as 2048 tokens on 8 V100 GPUs for all bilingual translation tasks and the IWSLT-2017 benchmark. For the large-scale multilingual dataset WMT-10, our pre-trained model is fine-tuned on 32 V100 GPUs with a learning rate of 3e-4. For a fair comparison, we adopt the same architecture and model size as our pre-trained model.\n\nData-to-text Generation We use Adam with a learning rate of $\\{8\\mathrm{e} - 5,1\\mathrm{e} - 4\\}$ and set the batch size as 16 sentences on the WebNLG dataset.\n\nMulti-lingual Fine-tuning Following the previous work (Wang et al., 2020; Ma et al., 2021), we adopt a dynamic temperate-based sampling strategy to mitigate the unbalance of the multilingual corpora, where we gradually sample more pairs in low-resource languages with the number of epochs increasing. The temperature of the $i$ -th epoch is calculated by:\n\n$$\n\\tau_ {i} = \\min  \\left(\\tau_ {1}, \\tau_ {0} + \\frac {i}{N} (\\tau - \\tau_ {0})\\right) \\tag {11}\n$$\n\nTable 14: Hyper-parameters for pre-training GANLM and GANLM-m.   \n\n<table><tr><td>Hyper-parameter</td><td>GANLM</td><td>GANLM-m</td></tr><tr><td>Number of Encoder Layers</td><td>12</td><td>12</td></tr><tr><td>Number of Generator Layers</td><td>12</td><td>12</td></tr><tr><td>Number of Discriminator Layers</td><td>4</td><td>4</td></tr><tr><td>Hidden size</td><td>768</td><td>768</td></tr><tr><td>FFN hidden size</td><td>3072</td><td>3072</td></tr><tr><td>Attention heads</td><td>12</td><td>12</td></tr><tr><td>Attention head size</td><td>64</td><td>64</td></tr><tr><td>Dropout</td><td>0.1</td><td>0.1</td></tr><tr><td>Attention Dropout</td><td>0.1</td><td>0.1</td></tr><tr><td>Warmup Steps</td><td>10k</td><td>10k</td></tr><tr><td>Peak Learning Rate</td><td>4e-4</td><td>5e-4</td></tr><tr><td>Batch Size</td><td>8K</td><td>8K</td></tr><tr><td>Weight Decay</td><td>0.01</td><td>0.01</td></tr><tr><td>Max Steps</td><td>500k</td><td>500k</td></tr><tr><td>Learning Rate Decay</td><td>Linear</td><td>Linear</td></tr><tr><td>Adam β1</td><td>0.9</td><td>0.9</td></tr><tr><td>Adam β2</td><td>0.98</td><td>0.98</td></tr><tr><td>Gradient Clipping</td><td>0.0</td><td>0.0</td></tr></table>\n\nwhere $\\tau_0$ is the initial temperature, $\\tau_{1}$ is the peak temperature, and $N$ is the number of warm-up epochs. We set $\\tau_0 = 1.0$ , $\\tau_{1} = 5.0$ , and $N = 5$ for all multilingual experiments for a fair comparison.\n\nGiven the temperature $\\tau_{i}$ $i$ -th epoch, we can calculate the real sampling ratio of the language $L_{k}$ , where $L_{k} \\in L_{all} = \\{L_{1}, \\ldots, L_{K}\\}$ :\n\n$$\nq _ {L _ {k}} (i) = \\frac {p _ {L _ {k}} ^ {\\frac {1}{\\tau_ {i}}}}{\\sum_ {j = 1} ^ {K} p _ {L _ {j}} ^ {\\frac {1}{\\tau_ {i}}}} \\tag {12}\n$$\n\nwhere $q_{L_k}(i)$ is the sampling ratio of the language $L_{k}$ in the $i$ -th epoch. $p_{L_k}$ is the real data ratio of the language $L_{k}$ in all languages. $\\tau_{i}$ is the temperature of the $i$ -th epoch, as described in Equation 11.",
+      "section_number": "B",
+      "section_title": "pre-training and fine-tuning details",
+      "normalized_section_title": "pre-training and fine-tuning details"
+    },
+    {
+      "window_id": "2023.acl-long.522::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "count": 32,
+      "count_text": "32",
+      "evidence": "Pre-training Hyper-parameters Table 14 summarizes the hyper-parameters for pre-training GANLM and GANLM-m The task-specific hyperparameters for the downstream language generation and understanding tasks are in Table 15.\n\nAbstractive Summarization During fine-tuning, we use the Adam (Kingma and Ba, 2015) optimizer with an initial learning rate of 1e-4 and the batch size is set as 2048 tokens on 8 V100 GPUs. The models are trained with the label smoothing cross-entropy with a smoothing ratio of 0.1. The last 5 checkpoints are averaged for evaluation.\n\nNeural Machine Translation We adopt Adam with a learning rate of 1e-4 and set the batch size as 2048 tokens on 8 V100 GPUs for all bilingual translation tasks and the IWSLT-2017 benchmark. For the large-scale multilingual dataset WMT-10, our pre-trained model is fine-tuned on 32 V100 GPUs with a learning rate of 3e-4. For a fair comparison, we adopt the same architecture and model size as our pre-trained model.\n\nData-to-text Generation We use Adam with a learning rate of $\\{8\\mathrm{e} - 5,1\\mathrm{e} - 4\\}$ and set the batch size as 16 sentences on the WebNLG dataset.\n\nMulti-lingual Fine-tuning Following the previous work (Wang et al., 2020; Ma et al., 2021), we adopt a dynamic temperate-based sampling strategy to mitigate the unbalance of the multilingual corpora, where we gradually sample more pairs in low-resource languages with the number of epochs increasing. The temperature of the $i$ -th epoch is calculated by:\n\n$$\n\\tau_ {i} = \\min  \\left(\\tau_ {1}, \\tau_ {0} + \\frac {i}{N} (\\tau - \\tau_ {0})\\right) \\tag {11}\n$$\n\nTable 14: Hyper-parameters for pre-training GANLM and GANLM-m.   \n\n<table><tr><td>Hyper-parameter</td><td>GANLM</td><td>GANLM-m</td></tr><tr><td>Number of Encoder Layers</td><td>12</td><td>12</td></tr><tr><td>Number of Generator Layers</td><td>12</td><td>12</td></tr><tr><td>Number of Discriminator Layers</td><td>4</td><td>4</td></tr><tr><td>Hidden size</td><td>768</td><td>768</td></tr><tr><td>FFN hidden size</td><td>3072</td><td>3072</td></tr><tr><td>Attention heads</td><td>12</td><td>12</td></tr><tr><td>Attention head size</td><td>64</td><td>64</td></tr><tr><td>Dropout</td><td>0.1</td><td>0.1</td></tr><tr><td>Attention Dropout</td><td>0.1</td><td>0.1</td></tr><tr><td>Warmup Steps</td><td>10k</td><td>10k</td></tr><tr><td>Peak Learning Rate</td><td>4e-4</td><td>5e-4</td></tr><tr><td>Batch Size</td><td>8K</td><td>8K</td></tr><tr><td>Weight Decay</td><td>0.01</td><td>0.01</td></tr><tr><td>Max Steps</td><td>500k</td><td>500k</td></tr><tr><td>Learning Rate Decay</td><td>Linear</td><td>Linear</td></tr><tr><td>Adam β1</td><td>0.9</td><td>0.9</td></tr><tr><td>Adam β2</td><td>0.98</td><td>0.98</td></tr><tr><td>Gradient Clipping</td><td>0.0</td><td>0.0</td></tr></table>\n\nwhere $\\tau_0$ is the initial temperature, $\\tau_{1}$ is the peak temperature, and $N$ is the number of warm-up epochs. We set $\\tau_0 = 1.0$ , $\\tau_{1} = 5.0$ , and $N = 5$ for all multilingual experiments for a fair comparison.\n\nGiven the temperature $\\tau_{i}$ $i$ -th epoch, we can calculate the real sampling ratio of the language $L_{k}$ , where $L_{k} \\in L_{all} = \\{L_{1}, \\ldots, L_{K}\\}$ :\n\n$$\nq _ {L _ {k}} (i) = \\frac {p _ {L _ {k}} ^ {\\frac {1}{\\tau_ {i}}}}{\\sum_ {j = 1} ^ {K} p _ {L _ {j}} ^ {\\frac {1}{\\tau_ {i}}}} \\tag {12}\n$$\n\nwhere $q_{L_k}(i)$ is the sampling ratio of the language $L_{k}$ in the $i$ -th epoch. $p_{L_k}$ is the real data ratio of the language $L_{k}$ in all languages. $\\tau_{i}$ is the temperature of the $i$ -th epoch, as described in Equation 11.",
+      "section_number": "B",
+      "section_title": "pre-training and fine-tuning details",
+      "normalized_section_title": "pre-training and fine-tuning details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.522::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 40GB",
+      "cleaned_hardware_name": "nvidia a100 40gb",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 128,
+      "count_text": "128",
+      "section_number": "4.1",
+      "section_title": "pre-training details",
+      "normalized_section_title": "pre-training details",
+      "evidence": "Model Configuration In the experiments, we adopt a sequence-to-sequence base-setting Transformer architecture with 768 hidden size, 3072 FFN (feed-forward network) dimension, 12 attention heads, and 12 encoder/decoder layers. The maximum sequence length of learned positions embeddings in the encoder/decoder is set as 1024. All token embedding matrices and output projection matrix parameters are shared for model efficiency.\n\nDataset Following the previous work (Liu et al., 2019), our English pre-trained model GANLM is trained on 160GB English monolingual data from BookCorpus, CC-News, OpenWebText, and CC-Stories. In addition, we pre-train GANLM-m with 6TB multilingual data as the pioneering work (Ma et al., 2021), which is a combination of CC100, CC-Net, and Wikipedia, covering 100 languages. All texts are tokenized by SentencePiece (Kudo and Richardson, 2018) and encoded by the dictionary from XLM-R (Conneau et al., 2020).\n\nOptimization For S2S-MLM, we randomly mask $15\\%$ of the words in each instance with an average span length of 3 (Raffel et al., 2020). For the replaced token detection, we set the discriminator weight $\\lambda = 10.0$ . We adopt Adam (Kingma and Ba, 2015) with a learning rate of 3e-4 and 10K warm-up steps for pre-training. The model is trained on 128 NVIDIA A100 GPUs (40GB) from scratch and each batch contains 8K samples. The\n\nEnglish pre-trained model GANLM and multilingual model GANLM-m are trained for 500K steps. Specifically, all methods in Table 1 are pre-trained with 500K steps for a fair comparison.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.acl-long.522::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "cleaned_hardware_name": "v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "4.3",
+      "section_title": "fine-tuning details",
+      "normalized_section_title": "fine-tuning details",
+      "evidence": "Abstractive Summarization During fine-tuning, we use the Adam (Kingma and Ba, 2015) optimizer with an initial learning rate of 1e-4 and the batch size is set as 2048 tokens on 8 V100 GPUs. The models are trained with the label smoothing cross-entropy with a smoothing ratio of 0.1.\n\nNeural Machine Translation For the large-scale multilingual dataset WMT-10, our pre-trained model is fine-tuned on 32 V100 GPUs with a learning rate of 3e-4. For all bilingual translation tasks and the IWSLT-2017 benchmark, we adopt Adam with a learning rate of 1e-4 and set the batch size as 2048 tokens on 8 V100 GPUs.\n\nData-to-text Generation We use Adam with a learning rate of $\\{8\\mathrm{e} - 5,1\\mathrm{e} - 4\\}$ and set the batch size as 16 sentences on the WebNLG dataset.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.acl-long.522::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "cleaned_hardware_name": "v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 32,
+      "count_text": "32",
+      "section_number": "4.3",
+      "section_title": "fine-tuning details",
+      "normalized_section_title": "fine-tuning details",
+      "evidence": "Abstractive Summarization During fine-tuning, we use the Adam (Kingma and Ba, 2015) optimizer with an initial learning rate of 1e-4 and the batch size is set as 2048 tokens on 8 V100 GPUs. The models are trained with the label smoothing cross-entropy with a smoothing ratio of 0.1.\n\nNeural Machine Translation For the large-scale multilingual dataset WMT-10, our pre-trained model is fine-tuned on 32 V100 GPUs with a learning rate of 3e-4. For all bilingual translation tasks and the IWSLT-2017 benchmark, we adopt Adam with a learning rate of 1e-4 and set the batch size as 2048 tokens on 8 V100 GPUs.\n\nData-to-text Generation We use Adam with a learning rate of $\\{8\\mathrm{e} - 5,1\\mathrm{e} - 4\\}$ and set the batch size as 16 sentences on the WebNLG dataset.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.acl-long.522::sections::8",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 40GB",
+      "cleaned_hardware_name": "a100 40gb",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 128,
+      "count_text": "128",
+      "section_number": "8",
+      "section_title": "analysis",
+      "normalized_section_title": "analysis",
+      "evidence": "Comparison of Pre-training Cost Our English pre-trained model GANLM is trained for nearly 2 weeks on 128 A100 GPUs (40GB), with 500K training steps and a batch size of 8K sequences.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.acl-long.522::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "cleaned_hardware_name": "v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "B",
+      "section_title": "pre-training and fine-tuning details",
+      "normalized_section_title": "pre-training and fine-tuning details",
+      "evidence": "Pre-training Hyper-parameters Table 14 summarizes the hyper-parameters for pre-training GANLM and GANLM-m The task-specific hyperparameters for the downstream language generation and understanding tasks are in Table 15.\n\nAbstractive Summarization During fine-tuning, we use the Adam (Kingma and Ba, 2015) optimizer with an initial learning rate of 1e-4 and the batch size is set as 2048 tokens on 8 V100 GPUs. The models are trained with the label smoothing cross-entropy with a smoothing ratio of 0.1. The last 5 checkpoints are averaged for evaluation.\n\nNeural Machine Translation We adopt Adam with a learning rate of 1e-4 and set the batch size as 2048 tokens on 8 V100 GPUs for all bilingual translation tasks and the IWSLT-2017 benchmark. For the large-scale multilingual dataset WMT-10, our pre-trained model is fine-tuned on 32 V100 GPUs with a learning rate of 3e-4. For a fair comparison, we adopt the same architecture and model size as our pre-trained model.\n\nData-to-text Generation We use Adam with a learning rate of $\\{8\\mathrm{e} - 5,1\\mathrm{e} - 4\\}$ and set the batch size as 16 sentences on the WebNLG dataset.\n\nMulti-lingual Fine-tuning Following the previous work (Wang et al., 2020; Ma et al., 2021), we adopt a dynamic temperate-based sampling strategy to mitigate the unbalance of the multilingual corpora, where we gradually sample more pairs in low-resource languages with the number of epochs increasing. The temperature of the $i$ -th epoch is calculated by:\n\n$$\n\\tau_ {i} = \\min  \\left(\\tau_ {1}, \\tau_ {0} + \\frac {i}{N} (\\tau - \\tau_ {0})\\right) \\tag {11}\n$$\n\nTable 14: Hyper-parameters for pre-training GANLM and GANLM-m.   \n\n<table><tr><td>Hyper-parameter</td><td>GANLM</td><td>GANLM-m</td></tr><tr><td>Number of Encoder Layers</td><td>12</td><td>12</td></tr><tr><td>Number of Generator Layers</td><td>12</td><td>12</td></tr><tr><td>Number of Discriminator Layers</td><td>4</td><td>4</td></tr><tr><td>Hidden size</td><td>768</td><td>768</td></tr><tr><td>FFN hidden size</td><td>3072</td><td>3072</td></tr><tr><td>Attention heads</td><td>12</td><td>12</td></tr><tr><td>Attention head size</td><td>64</td><td>64</td></tr><tr><td>Dropout</td><td>0.1</td><td>0.1</td></tr><tr><td>Attention Dropout</td><td>0.1</td><td>0.1</td></tr><tr><td>Warmup Steps</td><td>10k</td><td>10k</td></tr><tr><td>Peak Learning Rate</td><td>4e-4</td><td>5e-4</td></tr><tr><td>Batch Size</td><td>8K</td><td>8K</td></tr><tr><td>Weight Decay</td><td>0.01</td><td>0.01</td></tr><tr><td>Max Steps</td><td>500k</td><td>500k</td></tr><tr><td>Learning Rate Decay</td><td>Linear</td><td>Linear</td></tr><tr><td>Adam β1</td><td>0.9</td><td>0.9</td></tr><tr><td>Adam β2</td><td>0.98</td><td>0.98</td></tr><tr><td>Gradient Clipping</td><td>0.0</td><td>0.0</td></tr></table>\n\nwhere $\\tau_0$ is the initial temperature, $\\tau_{1}$ is the peak temperature, and $N$ is the number of warm-up epochs. We set $\\tau_0 = 1.0$ , $\\tau_{1} = 5.0$ , and $N = 5$ for all multilingual experiments for a fair comparison.\n\nGiven the temperature $\\tau_{i}$ $i$ -th epoch, we can calculate the real sampling ratio of the language $L_{k}$ , where $L_{k} \\in L_{all} = \\{L_{1}, \\ldots, L_{K}\\}$ :\n\n$$\nq _ {L _ {k}} (i) = \\frac {p _ {L _ {k}} ^ {\\frac {1}{\\tau_ {i}}}}{\\sum_ {j = 1} ^ {K} p _ {L _ {j}} ^ {\\frac {1}{\\tau_ {i}}}} \\tag {12}\n$$\n\nwhere $q_{L_k}(i)$ is the sampling ratio of the language $L_{k}$ in the $i$ -th epoch. $p_{L_k}$ is the real data ratio of the language $L_{k}$ in all languages. $\\tau_{i}$ is the temperature of the $i$ -th epoch, as described in Equation 11.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.acl-long.522::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "cleaned_hardware_name": "v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 32,
+      "count_text": "32",
+      "section_number": "B",
+      "section_title": "pre-training and fine-tuning details",
+      "normalized_section_title": "pre-training and fine-tuning details",
+      "evidence": "Pre-training Hyper-parameters Table 14 summarizes the hyper-parameters for pre-training GANLM and GANLM-m The task-specific hyperparameters for the downstream language generation and understanding tasks are in Table 15.\n\nAbstractive Summarization During fine-tuning, we use the Adam (Kingma and Ba, 2015) optimizer with an initial learning rate of 1e-4 and the batch size is set as 2048 tokens on 8 V100 GPUs. The models are trained with the label smoothing cross-entropy with a smoothing ratio of 0.1. The last 5 checkpoints are averaged for evaluation.\n\nNeural Machine Translation We adopt Adam with a learning rate of 1e-4 and set the batch size as 2048 tokens on 8 V100 GPUs for all bilingual translation tasks and the IWSLT-2017 benchmark. For the large-scale multilingual dataset WMT-10, our pre-trained model is fine-tuned on 32 V100 GPUs with a learning rate of 3e-4. For a fair comparison, we adopt the same architecture and model size as our pre-trained model.\n\nData-to-text Generation We use Adam with a learning rate of $\\{8\\mathrm{e} - 5,1\\mathrm{e} - 4\\}$ and set the batch size as 16 sentences on the WebNLG dataset.\n\nMulti-lingual Fine-tuning Following the previous work (Wang et al., 2020; Ma et al., 2021), we adopt a dynamic temperate-based sampling strategy to mitigate the unbalance of the multilingual corpora, where we gradually sample more pairs in low-resource languages with the number of epochs increasing. The temperature of the $i$ -th epoch is calculated by:\n\n$$\n\\tau_ {i} = \\min  \\left(\\tau_ {1}, \\tau_ {0} + \\frac {i}{N} (\\tau - \\tau_ {0})\\right) \\tag {11}\n$$\n\nTable 14: Hyper-parameters for pre-training GANLM and GANLM-m.   \n\n<table><tr><td>Hyper-parameter</td><td>GANLM</td><td>GANLM-m</td></tr><tr><td>Number of Encoder Layers</td><td>12</td><td>12</td></tr><tr><td>Number of Generator Layers</td><td>12</td><td>12</td></tr><tr><td>Number of Discriminator Layers</td><td>4</td><td>4</td></tr><tr><td>Hidden size</td><td>768</td><td>768</td></tr><tr><td>FFN hidden size</td><td>3072</td><td>3072</td></tr><tr><td>Attention heads</td><td>12</td><td>12</td></tr><tr><td>Attention head size</td><td>64</td><td>64</td></tr><tr><td>Dropout</td><td>0.1</td><td>0.1</td></tr><tr><td>Attention Dropout</td><td>0.1</td><td>0.1</td></tr><tr><td>Warmup Steps</td><td>10k</td><td>10k</td></tr><tr><td>Peak Learning Rate</td><td>4e-4</td><td>5e-4</td></tr><tr><td>Batch Size</td><td>8K</td><td>8K</td></tr><tr><td>Weight Decay</td><td>0.01</td><td>0.01</td></tr><tr><td>Max Steps</td><td>500k</td><td>500k</td></tr><tr><td>Learning Rate Decay</td><td>Linear</td><td>Linear</td></tr><tr><td>Adam β1</td><td>0.9</td><td>0.9</td></tr><tr><td>Adam β2</td><td>0.98</td><td>0.98</td></tr><tr><td>Gradient Clipping</td><td>0.0</td><td>0.0</td></tr></table>\n\nwhere $\\tau_0$ is the initial temperature, $\\tau_{1}$ is the peak temperature, and $N$ is the number of warm-up epochs. We set $\\tau_0 = 1.0$ , $\\tau_{1} = 5.0$ , and $N = 5$ for all multilingual experiments for a fair comparison.\n\nGiven the temperature $\\tau_{i}$ $i$ -th epoch, we can calculate the real sampling ratio of the language $L_{k}$ , where $L_{k} \\in L_{all} = \\{L_{1}, \\ldots, L_{K}\\}$ :\n\n$$\nq _ {L _ {k}} (i) = \\frac {p _ {L _ {k}} ^ {\\frac {1}{\\tau_ {i}}}}{\\sum_ {j = 1} ^ {K} p _ {L _ {j}} ^ {\\frac {1}{\\tau_ {i}}}} \\tag {12}\n$$\n\nwhere $q_{L_k}(i)$ is the sampling ratio of the language $L_{k}$ in the $i$ -th epoch. $p_{L_k}$ is the real data ratio of the language $L_{k}$ in all languages. $\\tau_{i}$ is the temperature of the $i$ -th epoch, as described in Equation 11.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.acl-long.522::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiment setting",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.1",
+      "4.3",
+      "8",
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 128
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 8
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 32
+      },
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 128
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 8
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 32
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2023\\2023.acl-long.522\\auto\\full.md",
+    "source_md_sha256": "2d7de6f3b1c31d51a7c3654cd2a4bf227544356067a95d9e94870f5747904932",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

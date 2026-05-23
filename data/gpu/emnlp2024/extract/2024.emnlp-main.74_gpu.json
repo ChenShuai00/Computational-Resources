@@ -1,0 +1,79 @@
+{
+  "paper_id": "2024.emnlp-main.74",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.74::sections::3.1",
+      "paper_id": "2024.emnlp-main.74",
+      "section_number": "3.1",
+      "section_title": "experimental settings",
+      "normalized_section_title": "experimental settings",
+      "window_text": "Datasets We conduct experiments on 9 NLU and 2 Generation tasks involving different task formulations, including Sentiment Classification: SST-5 (Socher et al., 2013); Natural Language Inference: RTE (Bentivogli et al., 2009), MNLI (Williams et al., 2017), MRPC (Dolan et al., 2004), QNLI (Wang et al., 2018); Topic Classification: TREC (Hovy et al., 2001), DBpedia (Lehmann et al., 2015); Multiple-choice Question Answering: Hellaswag (Zellers et al., 2019), COPA (Roemmle et al., 2011); Abstractive Summarization: XSUM (Narayan et al., 2018) and Open Domain QA: NQ (Kwiatkowski et al., 2019). In the main experiment, the budget of annotation is set as $\\{\\{16,100\\}\\}$ . For datasets with publicly available test data, we use the test data for evaluation. For others, we follow previous work (Lan et al., 2019; Su et al., 2022) and use the dev set for evaluation.\n\nBaselines We compare LM-DPP with four strong selective annotation methods. And in our study, we primarily utilize GPT-J-6B (Wang and Komat\n\nTable 2: Results with LlaMA-2-7B on Generation Task.   \n\n<table><tr><td colspan=\"2\">Methods</td><td>Random</td><td>Kmeans</td><td>Vote-k</td><td>Fast Vote-k</td><td>LM-DPP</td></tr><tr><td colspan=\"7\">L = 16</td></tr><tr><td>NQ</td><td>ACC.</td><td>21.7434.39</td><td>22.78363</td><td>22.793.37</td><td>22.013.75</td><td>23.833.10</td></tr><tr><td rowspan=\"2\">XSUM</td><td>R-L</td><td>24.570.03</td><td>23.650.29</td><td>24.881.03</td><td>24.741.20</td><td>26.341.07</td></tr><tr><td>FactCC</td><td>35.074.26</td><td>36.722.41</td><td>32.491.44</td><td>34.682.86</td><td>33.533.70</td></tr><tr><td colspan=\"7\">L = 100</td></tr><tr><td>NQ</td><td>ACC.</td><td>23.573.54</td><td>22.923.13</td><td>24.484.01</td><td>23.703.51</td><td>24.613.74</td></tr><tr><td rowspan=\"2\">XSUM</td><td>R-L</td><td>25.110.41</td><td>24.470.46</td><td>24.660.84</td><td>24.631.37</td><td>27.290.55</td></tr><tr><td>FactCC</td><td>35.645.86</td><td>34.862.97</td><td>36.122.40</td><td>36.533.84</td><td>35.162.01</td></tr></table>\n\nsuzaki, 2021) and LlaMA-2-7B (Touvron et al., 2023) as scoring and inference language models, More details about baselines and implementation can be found in Appendix A.3, A.2 respectively.\n\nMetrics We compare the predicted answers with the true outcomes and report the accuracy (Acc.) for all NLU tasks and exact matching scores (Rajpurkar et al., 2016) for NQ. For summarization tasks, we assess factual consistency using FactCC (Kryscinski et al., 2020)<sup>1</sup>, a BERT-based (Devlin et al., 2019) metric for evaluating output faithfulness. Simultaneously, for quality assessment, we report the ROUGE-L F1 score (Lin, 2004) to evaluate the summary against the reference.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.74::appendix::A.2",
+      "paper_id": "2024.emnlp-main.74",
+      "section_number": "A.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "The inference method we employed is direct (a regular inference used in (Brown et al., 2020)), which involves presenting demonstrations and candidate answers to the LLMs to select the candidate with the highest likelihood. For each test dataset, a specific prompt template (Table 12) is used for scoring and inference. For each test instance, we include as many retrieved samples as possible in the preceding prompt, up until the maximum token length was reached (e.g., 2048 for GPTJ, 4096 for LlaMA-2-7B). Sentence-BERT (Reimers and Gurevych, 2019) is used as the demonstration retriever. Following (Rubin et al., 2022), we adopt the paraphrase-mpnet-base-v2 to encode the test input $x_{\\mathrm{test}}$ and the inputs of the train set. All experiments are conducted on a single Tesla V100 GPU with 32GB of memory. Empirically, obtaining embeddings for unlabeled examples using Sentence BERT as described in Section 2.1 varies between 0.2 to 2 hours, contingent upon the dataset size. In Section 2.2, our approach requires approximately 6 seconds to generate the annotation set on a single CPU. Notably, ICL obviates the need for model training.\n\nTable 7: Dataset Statistics in the Experiments.   \n\n<table><tr><td>Dataset</td><td>Task Type</td><td>Split</td></tr><tr><td>SST-5</td><td>Sentiment Classification</td><td>8544/1101/2210</td></tr><tr><td>RTE</td><td>Natural Language Inference</td><td>2491/277/3000</td></tr><tr><td>MNLI</td><td>Natural Language Inference</td><td>392702/19647/19643</td></tr><tr><td>MRPC</td><td>Natural Language Inference</td><td>3668/408/1725</td></tr><tr><td>QNLI</td><td>Natural Language Inference</td><td>104743/5463/5463</td></tr><tr><td>TREC</td><td>Topic Classification</td><td>5452/0/500</td></tr><tr><td>DBpedia</td><td>Topic Classification</td><td>560000/0/70000</td></tr><tr><td>Hellaswag</td><td>Multiple-choice Question Answering</td><td>39905/10042/10003</td></tr><tr><td>COPA</td><td>Multiple-choice Question Answering</td><td>1000/0/500</td></tr><tr><td>CosmosQA</td><td>Multiple-choice Question Answering</td><td>9471/1221/1140</td></tr><tr><td>XSUM</td><td>Abstractive Summarization</td><td>204045/11332/11334</td></tr><tr><td>NQ</td><td>Open Domain QA</td><td>307373/7830/0</td></tr></table>\n\nWe also acknowledge that acquiring unlabelled samples in practice is a process marked by significant variance(Su et al., 2022). To simulate this realistic scenario, we randomly sample 3K instances from the training set multiple times to serve as the pool of samples awaiting annotation. In all the experimental setups described in this paper, we utilize four distinct seeds (0, 1, 42, 123), and the values presented in the tables (figures) reflect the average across four runs. Additionally, we provide the corresponding standard deviations for these values.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.74::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100 32GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "The inference method we employed is direct (a regular inference used in (Brown et al., 2020)), which involves presenting demonstrations and candidate answers to the LLMs to select the candidate with the highest likelihood. For each test dataset, a specific prompt template (Table 12) is used for scoring and inference. For each test instance, we include as many retrieved samples as possible in the preceding prompt, up until the maximum token length was reached (e.g., 2048 for GPTJ, 4096 for LlaMA-2-7B). Sentence-BERT (Reimers and Gurevych, 2019) is used as the demonstration retriever. Following (Rubin et al., 2022), we adopt the paraphrase-mpnet-base-v2 to encode the test input $x_{\\mathrm{test}}$ and the inputs of the train set. All experiments are conducted on a single Tesla V100 GPU with 32GB of memory. Empirically, obtaining embeddings for unlabeled examples using Sentence BERT as described in Section 2.1 varies between 0.2 to 2 hours, contingent upon the dataset size. In Section 2.2, our approach requires approximately 6 seconds to generate the annotation set on a single CPU. Notably, ICL obviates the need for model training.\n\nTable 7: Dataset Statistics in the Experiments.   \n\n<table><tr><td>Dataset</td><td>Task Type</td><td>Split</td></tr><tr><td>SST-5</td><td>Sentiment Classification</td><td>8544/1101/2210</td></tr><tr><td>RTE</td><td>Natural Language Inference</td><td>2491/277/3000</td></tr><tr><td>MNLI</td><td>Natural Language Inference</td><td>392702/19647/19643</td></tr><tr><td>MRPC</td><td>Natural Language Inference</td><td>3668/408/1725</td></tr><tr><td>QNLI</td><td>Natural Language Inference</td><td>104743/5463/5463</td></tr><tr><td>TREC</td><td>Topic Classification</td><td>5452/0/500</td></tr><tr><td>DBpedia</td><td>Topic Classification</td><td>560000/0/70000</td></tr><tr><td>Hellaswag</td><td>Multiple-choice Question Answering</td><td>39905/10042/10003</td></tr><tr><td>COPA</td><td>Multiple-choice Question Answering</td><td>1000/0/500</td></tr><tr><td>CosmosQA</td><td>Multiple-choice Question Answering</td><td>9471/1221/1140</td></tr><tr><td>XSUM</td><td>Abstractive Summarization</td><td>204045/11332/11334</td></tr><tr><td>NQ</td><td>Open Domain QA</td><td>307373/7830/0</td></tr></table>\n\nWe also acknowledge that acquiring unlabelled samples in practice is a process marked by significant variance(Su et al., 2022). To simulate this realistic scenario, we randomly sample 3K instances from the training set multiple times to serve as the pool of samples awaiting annotation. In all the experimental setups described in this paper, we utilize four distinct seeds (0, 1, 42, 123), and the values presented in the tables (figures) reflect the average across four runs. Additionally, we provide the corresponding standard deviations for these values.",
+      "section_number": "A.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.74::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100 32GB",
+      "cleaned_hardware_name": "tesla v100 32gb",
+      "normalized_hardware_name": "Tesla V100 32GB",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "The inference method we employed is direct (a regular inference used in (Brown et al., 2020)), which involves presenting demonstrations and candidate answers to the LLMs to select the candidate with the highest likelihood. For each test dataset, a specific prompt template (Table 12) is used for scoring and inference. For each test instance, we include as many retrieved samples as possible in the preceding prompt, up until the maximum token length was reached (e.g., 2048 for GPTJ, 4096 for LlaMA-2-7B). Sentence-BERT (Reimers and Gurevych, 2019) is used as the demonstration retriever. Following (Rubin et al., 2022), we adopt the paraphrase-mpnet-base-v2 to encode the test input $x_{\\mathrm{test}}$ and the inputs of the train set. All experiments are conducted on a single Tesla V100 GPU with 32GB of memory. Empirically, obtaining embeddings for unlabeled examples using Sentence BERT as described in Section 2.1 varies between 0.2 to 2 hours, contingent upon the dataset size. In Section 2.2, our approach requires approximately 6 seconds to generate the annotation set on a single CPU. Notably, ICL obviates the need for model training.\n\nTable 7: Dataset Statistics in the Experiments.   \n\n<table><tr><td>Dataset</td><td>Task Type</td><td>Split</td></tr><tr><td>SST-5</td><td>Sentiment Classification</td><td>8544/1101/2210</td></tr><tr><td>RTE</td><td>Natural Language Inference</td><td>2491/277/3000</td></tr><tr><td>MNLI</td><td>Natural Language Inference</td><td>392702/19647/19643</td></tr><tr><td>MRPC</td><td>Natural Language Inference</td><td>3668/408/1725</td></tr><tr><td>QNLI</td><td>Natural Language Inference</td><td>104743/5463/5463</td></tr><tr><td>TREC</td><td>Topic Classification</td><td>5452/0/500</td></tr><tr><td>DBpedia</td><td>Topic Classification</td><td>560000/0/70000</td></tr><tr><td>Hellaswag</td><td>Multiple-choice Question Answering</td><td>39905/10042/10003</td></tr><tr><td>COPA</td><td>Multiple-choice Question Answering</td><td>1000/0/500</td></tr><tr><td>CosmosQA</td><td>Multiple-choice Question Answering</td><td>9471/1221/1140</td></tr><tr><td>XSUM</td><td>Abstractive Summarization</td><td>204045/11332/11334</td></tr><tr><td>NQ</td><td>Open Domain QA</td><td>307373/7830/0</td></tr></table>\n\nWe also acknowledge that acquiring unlabelled samples in practice is a process marked by significant variance(Su et al., 2022). To simulate this realistic scenario, we randomly sample 3K instances from the training set multiple times to serve as the pool of samples awaiting annotation. In all the experimental setups described in this paper, we utilize four distinct seeds (0, 1, 42, 123), and the values presented in the tables (figures) reflect the average across four runs. Additionally, we provide the corresponding standard deviations for these values.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched"
+    }
+  ],
+  "review_flags": [],
+  "pred_result": {
+    "sec": [
+      "A.2"
+    ],
+    "pred": [
+      {
+        "name": "Tesla V100 32GB",
+        "num": 1
+      }
+    ]
+  }
+}

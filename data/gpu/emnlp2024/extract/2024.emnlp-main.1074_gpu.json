@@ -1,0 +1,162 @@
+{
+  "paper_id": "2024.emnlp-main.1074",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.1074::sections::4.3",
+      "paper_id": "2024.emnlp-main.1074",
+      "section_number": "4.3",
+      "section_title": "computational cost",
+      "normalized_section_title": "computational cost",
+      "window_text": "To better understand the advantages of DEM over the data mixing approach we derive a formula to measure the cost for each method. Let us assume we have $n$ different data sources and $m$ number of weights per data source. The hyperparameter search space for both the approaches will have a total of $m ^ { n }$ weight combinations. Intuitively, searching for data mixing weights is comparatively more expensive than DEM since full data re-training is required for validating each weight combination. On the other hand, DEM requires finding the optimal weights after individual training using only validation for each weight combination.\n\nTo formalize this, assume $T$ and $V$ as the average number training and validation steps respectively. The computational complexity for the weighted data mixing will be $O ( m ^ { n } ( T + V ) )$ and for the proposed DEM approach will be $O ( n ( T + V ) +$ $( m ^ { n } V ) )$ ). We can clearly see that $O ( m ^ { n } ( T + V ) ) \\geq$ $O ( n ( T + V ) + ( m ^ { n } V ) )$ , and with DEM we reduce the number of training run by a factor of $m ^ { n } / n$ .\n\nAdditionally, we can compare the exact training and validation cost of our proposed DEM approach with the baseline. Assuming $k$ steps of training or\n\nvalidation and each step takes $t$ seconds, we can define the cost $( c )$ in gpu-hours as follows:\n\n$$\nc = (k * t * g) / 3 6 0 0 \\tag {4}\n$$\n\nwhere $g$ is the total number of GPUs used. The exact cost for training $( c _ { t r a i n } )$ and validation $( c _ { v a l } )$ depends on the corresponding values of $k$ , t and $g$ and generally $c _ { t r a i n } \\gg c _ { v a l }$ .",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1074::sections::5",
+      "paper_id": "2024.emnlp-main.1074",
+      "section_number": "5",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1074::sections::6.4",
+      "paper_id": "2024.emnlp-main.1074",
+      "section_number": "6.4",
+      "section_title": "properties of distribution vectors",
+      "normalized_section_title": "properties of distribution vectors",
+      "window_text": "To better understand the behavior of DEM, we examine the characteristics of the fine-tuned models and their corresponding distribution vectors, as defined in (Eq 1). We evaluate the similarity between models by calculating the Euclidean distance and the cosine similarity after converting their weights into a single flattened vector representation.\n\nIndividual model distance from base. In Table 6, we show the Euclidean distance from the base model to each fine-tuned model. Datasets with more examples (P3, Instruct Dial, and SNI) lead to models that are further away from the base. The largest change is caused by Instruct Dial (x3 compared to the second largest), since it introduces a very specific domain (i.e., conversations), and requires higher adaptation of the model. In contrast, smaller datasets (CoT, and Math QA) only contribute small changes (3-4 points). As expected, the distribution edited model (DEM) is closer to the base model than the models trained on the largest datasets. This is because DEM is derived from a weighted average of the individual vectors. Finally, we observe that the Data Mixing model has significantly higher euclidean distance (x3) from the base\n\nTable 7: Cosine similarity between distribution vectors.   \n\n<table><tr><td>↓ Dist. Vector →</td><td>P3</td><td>InstDial</td><td>SNI</td><td>CoT</td><td>MathQA</td></tr><tr><td>InstDial</td><td>0.07</td><td>-</td><td></td><td></td><td></td></tr><tr><td>SNI</td><td>0.09</td><td>0.08</td><td>-</td><td></td><td></td></tr><tr><td>CoT</td><td>0.02</td><td>0.01</td><td>0.02</td><td>-</td><td></td></tr><tr><td>MathQA</td><td>0.01</td><td>0.01</td><td>0.01</td><td>1.0</td><td>-</td></tr><tr><td>Data Mixing</td><td>0.27</td><td>0.29</td><td>0.19</td><td>0.10</td><td>0.10</td></tr><tr><td>DEM</td><td>0.44</td><td>0.87</td><td>0.43</td><td>0.06</td><td>0.06</td></tr></table>\n\n![](images/1619d32b25388210371cf656858170164245cb465373c38f2246ce827c1d568a.jpg)  \nFigure 2: tSNE representation of the fine-tuning datasets. The centroids of the datasets are marked as larger points with captions.\n\nmodel compared to DEM, indicating that the Data Mixing approach introduces a larger change.\n\nPairwise similarity between distribution vectors. Next, in Table 7 we compare the pairwise cosine similarity between the DVs from the fine-tuned models. We show that most of the individual DVs are almost orthogonal, except CoT and Math QA. This suggests that fine-tuning on these datasets does not lead to interference and introduces different abilities into the model.\n\nTo understand this, we sample 2,000 points from each dataset and plot their embedding representations into a common space using tSNE (van der Maaten and Hinton (2008), see Figure 2).2 We observe a large number of CoT prompts that are close to the centroid of the MathQA dataset, which may explain the high similarity between their DVs. Note that CoT also has a small overlap with P3 but further away from their centroids, making the two DVs almost orthogonal. All other datasets have a minimal overlap between each other, and form\n\n![](images/6eda0738b5dc82ae0cd01ee8d1aed3826b39db751b31841138965f44b83bb10a.jpg)  \nFigure 3: Layer-wise Euclidean distance, comparison between the base OpenLLaMA model, and the tuned models. Darker colors mean higher absolute difference. The euclidean distance values are normalized per-model by the highest layer-distance for that model. The plots are invariant to the scale of the weight change.\n\nindependent clusters. We also study the relation between the combined DV and individual DVs (last row in Table 7). We observe that DEM is oriented towards the DVs from the models with the highest euclidean distance from the pretrained model.\n\nFinally, we compare how the data mixing model is oriented relative to the individual DVs. The cosine similarity with all DVs is less than 0.3, however, the model is oriented towards the DVs of bigger and more diverse datasets (InstDail, P3, SNI). The similarity with the CoT and MathQA is a bit higher, but it still remains within 0.1.\n\nLayer-wise distance of individual models from base. Finally, to fully understand the changes in the models and why DEM is an effective strategy for data distribution mixing, we zoom in even further into the layer-wise euclidean distance (Figure 3) between the individual task vectors and the base model (OpenLLaMA 7B). From Figure 3, it is evident that the changes in the tuned models occur mostly in the first three layers. The embedding layers remain relatively stable across different domains and dataset sizes, indicating that the fundamental properties are preserved. New knowledge is primarily acquired by the 2-3 layers, which con-\n\nTable 8: Training cost (in gpu-hours) of 7B model on different instruction following datasets computed using Eq 4. Note that the number of steps is not equal to the number of examples.   \n\n<table><tr><td>Train/Val Runs</td><td>time / step</td><td># steps</td><td># gpus</td><td>Cost</td></tr><tr><td>DEM</td><td></td><td></td><td></td><td></td></tr><tr><td>- CoT</td><td>6.5</td><td>550</td><td>8</td><td>8</td></tr><tr><td>- Math QA</td><td>6.5</td><td>600</td><td>8</td><td>8.7</td></tr><tr><td>- P3</td><td>4.8</td><td>6000</td><td>32</td><td>256</td></tr><tr><td>- InstDial</td><td>5.2</td><td>23000</td><td>16</td><td>530</td></tr><tr><td>- SNI</td><td>5.24</td><td>6000</td><td>16</td><td>140</td></tr><tr><td>- Validation (10x)</td><td>2.1</td><td>500</td><td>8</td><td>23</td></tr><tr><td>Total</td><td></td><td></td><td></td><td>966</td></tr><tr><td>Data-Mixing (50x)</td><td>5.24</td><td>15000</td><td>16</td><td>11650</td></tr></table>\n\ntributes to the success of the proposed approach. Furthermore, this study suggests that when combining weights, it is not necessary to take into account all the weights involved. Instead, it is possible to safely remove or prune certain weights in the combination without significantly impacting the outcome, as also shown by Yadav et al. (2023).",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1074::sections::6.5",
+      "paper_id": "2024.emnlp-main.1074",
+      "section_number": "6.5",
+      "section_title": "compute cost comparison",
+      "normalized_section_title": "compute cost comparison",
+      "window_text": "We use Eq. 4 to compare the real compute cost of the proposed DEM approach with the baseline data mixing method for 7B model on Nvidia A100 machines (with 8 gpus per node). Note that, this cost is specific to our setup and it can change depending on the model size, training parallelization scheme and other factors. In Table 8, we present the gpu-hours used by different training runs, as well as the validation runs needed for finding optimal model mixing weight $\\omega _ { i }$ in Eq 2. In each case, we did early stopping to obtain the best validation loss, which results in varying number of training steps (‘# steps’ in Table 8). As discussed in Appendix B, we use a combination of 10 weights to get the best model for DEM, which costs 23 gpuhours. The total cost (training+validation) for DEM is 966 gpu-hours.\n\nFor the baseline data mixing, we trained 50 models with different weight combination (the exact weight selection process is described in Appendix B). Each run costs an average of 233 gpuhours, resulting in a total cost of 11650 gpu-hours. This is more than 11 times the total cost of DEM.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2024.emnlp-main.1074::appendix::A",
+      "paper_id": "2024.emnlp-main.1074",
+      "section_number": "A",
+      "section_title": "training hyperparameters",
+      "normalized_section_title": "training hyperparameters",
+      "window_text": "In this section, we describe the detailed hyperparameters that we used for fine tuning the OpenL-LaMA model using different datasets separately for DEM and combined for Data Mixing and Concatenated Datasets. In all these cases, we use a constant learning rate of 2e-5 with a 2000 step warmup. We tested other learning rate schedules with cosine and linear decay in preliminary experiments, however, they lead to worse performance. We use AdamW optimizer with $\\beta _ { 1 } = 0 . 9$ , $\\beta _ { 2 } = 0 . 9 5$ , weight decay of 0.05 and gradient clipping of 1. We also adjust batch size for different datasets based on the validation loss. We use example packing to fit multiple training examples into a single sample of a batch for efficient training. This is a greedy packing approach where we pack training examples until we reach the max sequence length that we can fit into the model. We do not overflow an example into the next sample of a batch (as generally done during pretraining (Brown et al., 2020)), rather use padding to fill the sample. The full setting is presented in Table 9. We show the batch size using total number of token after sample packing. The number of training steps indicates the step with best validation loss, and its variable for different datasets. Note that for InstDial, this value is particularly high because of the different kind of samples (i.e. dialog) that consists of this dataset.\n\nTable 9: Training hyperparameters for different models.   \n\n<table><tr><td>Dataset / \nMethod</td><td>Batch \nSize</td><td>Learning \nRate</td><td># Training \nSteps</td></tr><tr><td>CoT</td><td>65k</td><td>2e-5</td><td>550</td></tr><tr><td>MathQA</td><td>65k</td><td>2e-5</td><td>600</td></tr><tr><td>P3</td><td>262k</td><td>2e-5</td><td>6k</td></tr><tr><td>InstDial</td><td>131k</td><td>2e-5</td><td>23k</td></tr><tr><td>SNI</td><td>131k</td><td>2e-5</td><td>6k</td></tr><tr><td>Data Mixing</td><td>131k</td><td>2e-5</td><td>15k</td></tr><tr><td>Concatenated Datasets</td><td>131K</td><td>2e-5</td><td>17K</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.1074::sections::6.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "We use Eq. 4 to compare the real compute cost of the proposed DEM approach with the baseline data mixing method for 7B model on Nvidia A100 machines (with 8 gpus per node). Note that, this cost is specific to our setup and it can change depending on the model size, training parallelization scheme and other factors. In Table 8, we present the gpu-hours used by different training runs, as well as the validation runs needed for finding optimal model mixing weight $\\omega _ { i }$ in Eq 2. In each case, we did early stopping to obtain the best validation loss, which results in varying number of training steps (‘# steps’ in Table 8). As discussed in Appendix B, we use a combination of 10 weights to get the best model for DEM, which costs 23 gpuhours. The total cost (training+validation) for DEM is 966 gpu-hours.\n\nFor the baseline data mixing, we trained 50 models with different weight combination (the exact weight selection process is described in Appendix B). Each run costs an average of 233 gpuhours, resulting in a total cost of 11650 gpu-hours. This is more than 11 times the total cost of DEM.",
+      "section_number": "6.5",
+      "section_title": "compute cost comparison",
+      "normalized_section_title": "compute cost comparison"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.1074::sections::6.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100",
+      "benchmark_hardware_name": "NVIDIA A100",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "6.5",
+      "section_title": "compute cost comparison",
+      "normalized_section_title": "compute cost comparison",
+      "evidence": "We use Eq. 4 to compare the real compute cost of the proposed DEM approach with the baseline data mixing method for 7B model on Nvidia A100 machines (with 8 gpus per node). Note that, this cost is specific to our setup and it can change depending on the model size, training parallelization scheme and other factors. In Table 8, we present the gpu-hours used by different training runs, as well as the validation runs needed for finding optimal model mixing weight $\\omega _ { i }$ in Eq 2. In each case, we did early stopping to obtain the best validation loss, which results in varying number of training steps (‘# steps’ in Table 8). As discussed in Appendix B, we use a combination of 10 weights to get the best model for DEM, which costs 23 gpuhours. The total cost (training+validation) for DEM is 966 gpu-hours.\n\nFor the baseline data mixing, we trained 50 models with different weight combination (the exact weight selection process is described in Appendix B). Each run costs an average of 233 gpuhours, resulting in a total cost of 11650 gpu-hours. This is more than 11 times the total cost of DEM.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.emnlp-main.1074::sections::4.3",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.3",
+      "section_title": "computational cost",
+      "evidence": "To better understand the advantages of DEM over the data mixing approach we derive a formula to measure the cost for each method. Let us assume we have $n$ different data sources and $m$ number of weights per data source. The hyperparameter search space for both the approaches will have a total of $m ^ { n }$ weight combinations. Intuitively, searching for data mixing weights is comparatively more expensive than DEM since full data re-training is required for validating each weight combination. On the other hand, DEM requires finding the optimal weights after individual training using only validation for each weight combination.\n\nTo formalize this, assume $T$ and $V$ as the average number training and validation steps respectively. The computational complexity for the weighted data mixing will be $O ( m ^ { n } ( T + V ) )$ and for the proposed DEM approach will be $O ( n ( T + V ) +$ $( m ^ { n } V ) )$ ). We can clearly see that $O ( m ^ { n } ( T + V ) ) \\geq$ $O ( n ( T + V ) + ( m ^ { n } V ) )$ , and with DEM we reduce the number of training run by a factor of $m ^ { n } / n$ .\n\nAdditionally, we can compare the exact training and validation cost of our proposed DEM approach with the baseline. Assuming $k$ steps of training or\n\nvalidation and each step takes $t$ seconds, we can define the cost $( c )$ in gpu-hours as follows:\n\n$$\nc = (k * t * g) / 3 6 0 0 \\tag {4}\n$$\n\nwhere $g$ is the total number of GPUs used. The exact cost for training $( c _ { t r a i n } )$ and validation $( c _ { v a l } )$ depends on the corresponding values of $k$ , t and $g$ and generally $c _ { t r a i n } \\gg c _ { v a l }$ ."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.1074::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experimental setup",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.1074::sections::6.4",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6.4",
+      "section_title": "properties of distribution vectors",
+      "evidence": "To better understand the behavior of DEM, we examine the characteristics of the fine-tuned models and their corresponding distribution vectors, as defined in (Eq 1). We evaluate the similarity between models by calculating the Euclidean distance and the cosine similarity after converting their weights into a single flattened vector representation.\n\nIndividual model distance from base. In Table 6, we show the Euclidean distance from the base model to each fine-tuned model. Datasets with more examples (P3, Instruct Dial, and SNI) lead to models that are further away from the base. The largest change is caused by Instruct Dial (x3 compared to the second largest), since it introduces a very specific domain (i.e., conversations), and requires higher adaptation of the model. In contrast, smaller datasets (CoT, and Math QA) only contribute small changes (3-4 points). As expected, the distribution edited model (DEM) is closer to the base model than the models trained on the largest datasets. This is because DEM is derived from a weighted average of the individual vectors. Finally, we observe that the Data Mixing model has significantly higher euclidean distance (x3) from the base\n\nTable 7: Cosine similarity between distribution vectors.   \n\n<table><tr><td>↓ Dist. Vector →</td><td>P3</td><td>InstDial</td><td>SNI</td><td>CoT</td><td>MathQA</td></tr><tr><td>InstDial</td><td>0.07</td><td>-</td><td></td><td></td><td></td></tr><tr><td>SNI</td><td>0.09</td><td>0.08</td><td>-</td><td></td><td></td></tr><tr><td>CoT</td><td>0.02</td><td>0.01</td><td>0.02</td><td>-</td><td></td></tr><tr><td>MathQA</td><td>0.01</td><td>0.01</td><td>0.01</td><td>1.0</td><td>-</td></tr><tr><td>Data Mixing</td><td>0.27</td><td>0.29</td><td>0.19</td><td>0.10</td><td>0.10</td></tr><tr><td>DEM</td><td>0.44</td><td>0.87</td><td>0.43</td><td>0.06</td><td>0.06</td></tr></table>\n\n![](images/1619d32b25388210371cf656858170164245cb465373c38f2246ce827c1d568a.jpg)  \nFigure 2: tSNE representation of the fine-tuning datasets. The centroids of the datasets are marked as larger points with captions.\n\nmodel compared to DEM, indicating that the Data Mixing approach introduces a larger change.\n\nPairwise similarity between distribution vectors. Next, in Table 7 we compare the pairwise cosine similarity between the DVs from the fine-tuned models. We show that most of the individual DVs are almost orthogonal, except CoT and Math QA. This suggests that fine-tuning on these datasets does not lead to interference and introduces different abilities into the model.\n\nTo understand this, we sample 2,000 points from each dataset and plot their embedding representations into a common space using tSNE (van der Maaten and Hinton (2008), see Figure 2).2 We observe a large number of CoT prompts that are close to the centroid of the MathQA dataset, which may explain the high similarity between their DVs. Note that CoT also has a small overlap with P3 but further away from their centroids, making the two DVs almost orthogonal. All other datasets have a minimal overlap between each other, and form\n\n![](images/6eda0738b5dc82ae0cd01ee8d1aed3826b39db751b31841138965f44b83bb10a.jpg)  \nFigure 3: Layer-wise Euclidean distance, comparison between the base OpenLLaMA model, and the tuned models. Darker colors mean higher absolute difference. The euclidean distance values are normalized per-model by the highest layer-distance for that model. The plots are invariant to the scale of the weight change.\n\nindependent clusters. We also study the relation between the combined DV and individual DVs (last row in Table 7). We observe that DEM is oriented towards the DVs from the models with the highest euclidean distance from the pretrained model.\n\nFinally, we compare how the data mixing model is oriented relative to the individual DVs. The cosine similarity with all DVs is less than 0.3, however, the model is oriented towards the DVs of bigger and more diverse datasets (InstDail, P3, SNI). The similarity with the CoT and MathQA is a bit higher, but it still remains within 0.1.\n\nLayer-wise distance of individual models from base. Finally, to fully understand the changes in the models and why DEM is an effective strategy for data distribution mixing, we zoom in even further into the layer-wise euclidean distance (Figure 3) between the individual task vectors and the base model (OpenLLaMA 7B). From Figure 3, it is evident that the changes in the tuned models occur mostly in the first three layers. The embedding layers remain relatively stable across different domains and dataset sizes, indicating that the fundamental properties are preserved. New knowledge is primarily acquired by the 2-3 layers, which con-\n\nTable 8: Training cost (in gpu-hours) of 7B model on different instruction following datasets computed using Eq 4. Note that the number of steps is not equal to the number of examples.   \n\n<table><tr><td>Train/Val Runs</td><td>time / step</td><td># steps</td><td># gpus</td><td>Cost</td></tr><tr><td>DEM</td><td></td><td></td><td></td><td></td></tr><tr><td>- CoT</td><td>6.5</td><td>550</td><td>8</td><td>8</td></tr><tr><td>- Math QA</td><td>6.5</td><td>600</td><td>8</td><td>8.7</td></tr><tr><td>- P3</td><td>4.8</td><td>6000</td><td>32</td><td>256</td></tr><tr><td>- InstDial</td><td>5.2</td><td>23000</td><td>16</td><td>530</td></tr><tr><td>- SNI</td><td>5.24</td><td>6000</td><td>16</td><td>140</td></tr><tr><td>- Validation (10x)</td><td>2.1</td><td>500</td><td>8</td><td>23</td></tr><tr><td>Total</td><td></td><td></td><td></td><td>966</td></tr><tr><td>Data-Mixing (50x)</td><td>5.24</td><td>15000</td><td>16</td><td>11650</td></tr></table>\n\ntributes to the success of the proposed approach. Furthermore, this study suggests that when combining weights, it is not necessary to take into account all the weights involved. Instead, it is possible to safely remove or prune certain weights in the combination without significantly impacting the outcome, as also shown by Yadav et al. (2023)."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.1074::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "training hyperparameters",
+      "evidence": "In this section, we describe the detailed hyperparameters that we used for fine tuning the OpenL-LaMA model using different datasets separately for DEM and combined for Data Mixing and Concatenated Datasets. In all these cases, we use a constant learning rate of 2e-5 with a 2000 step warmup. We tested other learning rate schedules with cosine and linear decay in preliminary experiments, however, they lead to worse performance. We use AdamW optimizer with $\\beta _ { 1 } = 0 . 9$ , $\\beta _ { 2 } = 0 . 9 5$ , weight decay of 0.05 and gradient clipping of 1. We also adjust batch size for different datasets based on the validation loss. We use example packing to fit multiple training examples into a single sample of a batch for efficient training. This is a greedy packing approach where we pack training examples until we reach the max sequence length that we can fit into the model. We do not overflow an example into the next sample of a batch (as generally done during pretraining (Brown et al., 2020)), rather use padding to fill the sample. The full setting is presented in Table 9. We show the batch size using total number of token after sample packing. The number of training steps indicates the step with best validation loss, and its variable for different datasets. Note that for InstDial, this value is particularly high because of the different kind of samples (i.e. dialog) that consists of this dataset.\n\nTable 9: Training hyperparameters for different models.   \n\n<table><tr><td>Dataset / \nMethod</td><td>Batch \nSize</td><td>Learning \nRate</td><td># Training \nSteps</td></tr><tr><td>CoT</td><td>65k</td><td>2e-5</td><td>550</td></tr><tr><td>MathQA</td><td>65k</td><td>2e-5</td><td>600</td></tr><tr><td>P3</td><td>262k</td><td>2e-5</td><td>6k</td></tr><tr><td>InstDial</td><td>131k</td><td>2e-5</td><td>23k</td></tr><tr><td>SNI</td><td>131k</td><td>2e-5</td><td>6k</td></tr><tr><td>Data Mixing</td><td>131k</td><td>2e-5</td><td>15k</td></tr><tr><td>Concatenated Datasets</td><td>131K</td><td>2e-5</td><td>17K</td></tr></table>"
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "6.5"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2024\\2024.emnlp-main.1074\\auto\\full.md",
+    "source_md_sha256": "135fd3deac7c4358c684e6243ea9e07e33b201c8739dcda26ed182eb77f236af",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "c528636f3bbfba595f8edb98c2892f86618e38f5077330ffb55606b0029e9d1d"
+  }
+}

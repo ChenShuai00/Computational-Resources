@@ -1,0 +1,96 @@
+{
+  "paper_id": "2022.emnlp-main.117",
+  "candidate_windows": [
+    {
+      "window_id": "2022.emnlp-main.117::sections::4.1",
+      "paper_id": "2022.emnlp-main.117",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "We use the following four models to estimate zero-shot transfer performance. Paraphrase: RoBERTa (Liu et al., 2019) pre-trained for paraphrase detection on an adversarial paraphrasing task (Nighojkar and Licato, 2021). We convert the output probability of a pair being a paraphrase to the range [1,5] for comparison with our labels. Natural Language Inference (NLI): RoBERTa pre-trained on a wide range of NLI datasets (Nie et al., 2020). The final score is the model's measured probability of entailment mapped to the range [1,5]. MiniLM: SBERT with MiniLM as the base network (Wang et al., 2020a); we obtain sentence embeddings for pairs of findings and measure the cosine similarity between these two embeddings, clip the lowest score to 0, and convert this score to the range [1,5]. Note that this model was trained on over 1B sentence pairs, including from scientific text, using a contrastive learning approach where the embeddings of sentences known to be similar are trained to be closer than the embeddings of negatively sampled sentences. SBERT models rep\n\n![](images/815f23e16d106ccf5530f28e3f1d0499e39541ea170ca21ec7a1e6ab8d6b1b3a.jpg)  \n(a) Mean Squared Error\n\n![](images/258e6317986613890e0790456e81f3f47b8cb399b257b00772cf41c2d238c181.jpg)  \n(b) Pearson correlation $(r)$   \nFigure 2: (a) Mean Squared Error (MSE, $\\downarrow$ better) and (b) Pearson correlation $(r,\\uparrow$ better) on the test set of SPICED. Grey $=$ zero-shot transfer models, red $=$ MLM models fine-tuned on SPICED, blue $=$ SBERT models fine-tuned on SPICED. Results are averaged across 5 random seeds. Best results are given in bold.\n\nresent a very strong baseline on this task, and have been used in the context of other matching tasks for fact checking including detecting previously fact-checked claims (Shaar et al., 2020). MPNet: The same setting and training data as MiniLM but with MPNet as the base network (Song et al., 2020).\n\nWe fine-tune the following six models on SPICED to estimate IMS as a comparison with zero-shot transfer.\n\n- MiniLM-FT: The same MiniLM model from the zero-shot transfer setup but further finetuned on SPICED. The training objective is to minimize the distance between the IMS and the cosine similarity of the output embeddings of the pair of findings.   \n- MPNet-FT: The same setup as MiniLM-FT but using MPNet as the base network.   \n- RoBERTa: The RoBERTa (Liu et al., 2019) base model; We perform a regression task where the model is trained to minimize the mean-squared error between the prediction and IMS.   \nSciBERT: A transformer model trained using masked language modeling on a large corpus of scientific text (Beltagy et al., 2019). The fine-tuning setup is the same as for the RoBERTa model.\n\n- CiteBERT: A SciBERT model further fine-tuned on the task of citation detection, and was shown to have improved performance on downstream tasks using scientific text (Wright and Augenstein, 2021a). The training setup is the same as for the RoBERTa model.\n\nPlease see Appendix G for further details on the models and pretraining methods. For the finetuned models, we train on the entire training set of SPICED, including both news findings and tweets. For the test set we only use manually annotated pairs. Performance is measured in terms of mean-squared error (MSE) and Pearson correlation $(r)$ (definitions of all metrics in Appendix F). All results are reported as the average and standard deviation for each model across 5 random seeds.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.117::appendix::C",
+      "paper_id": "2022.emnlp-main.117",
+      "section_number": "C",
+      "section_title": "experimental annotation",
+      "normalized_section_title": "experimental annotation",
+      "window_text": "We experimented with two annotation schemas: a binary schema where the annotators are asked to label \"whether the two sentences are discussing the same scientific finding\" with Yes or No, and a Likert schema where the annotators are asked to label if \"The information in the findings is...\"\n\n1: Completely different   \n2: Mostly different   \n3: Somewhat similar   \n4: Mostly the same   \n- 5: Completely the same\n\nWe ran several pilots using the two annotation schemas and the Likert a schema led to higher inter-annotator agreement (0.45 Krippendorff's alpha) compared with the binary schema (0.21 Krippendorff's alpha). Therefore we adopt the 5-point Likert schema for the annotation.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.117::appendix::G",
+      "paper_id": "2022.emnlp-main.117",
+      "section_number": "G",
+      "section_title": "full model details",
+      "normalized_section_title": "full model details",
+      "window_text": "All baseline experiments were run on a shared cluster. Requested jobs consisted of 16GB of RAM and 4 Intel Xeon Silver 4110 CPUs. We used a single NVIDIA Titan RTX GPU for experiments. Training takes approximately 3 minutes for all MLM-based models and 2 minutes for SBERT models.\n\nRoBERTa RoBERTa is a large pretrained transformer language model, trained using the masked language modeling (MLM) objective on a large corpus of English text. We use the base model of RoBERTa for our experiments. Huggingface model name: roberta-base - 124,647,170 parameters\n\nMiniLM We use a popular pretrained SBERT model based on MiniLM (Wang et al., 2020b), which is trained by distilling multiple language models into one compressed model. SBERT uses siamese BERT encoders to obtain sentence embeddings for pairs of sentences and is trained to decrease the distance between these two embeddings. The pretraining for the sentence similarity task consists of a wide range of datasets covering multiple domains and $>1$ billion sentence pairs, including science (Cohan et al., 2020; Lo et al., 2020). As much of the data is collected automatically, it uses a contrastive learning objective where known relevant pairs are treated as positive values\n\n![](images/49a533154de4cfbcfce8dd211b760dca1b3cfe08911fa9cdd8fed9a449a55363.jpg)\n\n![](images/cfefc03555ecc9cc80d5d5e6cbd2406f7d05b1bb7f214406cdd3f97f9e82653a.jpg)\n\n![](images/2ce2c41509c7c9bfc814c53520ada98fcfec11ec5ee0e0589a4d5f063aa6aa9f.jpg)  \nFigure 11: Distribution of the final matching score for each split set in SPICED\n\nand other samples in a batch are treated as negative values. The model is then trained to minimize the cross-entropy between the dot-product of embeddings and the label acquired from positive/negative samples. Huggingface model name (sentence transformers): all-MiniLM-L6-v2 - 22,713,216 parameters\n\nMPNet This is the same setup as in MiniLM but with using MPNet as the base network (Song et al., 2020). MPNet is trained using a permuted language modeling (PLM) objective with position information as input to achieve the best of both worlds between MLM and PLM. The base network is used in the SBERT setup where it is further finetuned on the same dataset and same task as with MiniLM\n\nHuggingface model name (sentence transformers): all-mpnet-base-v2 - 109,486,464 parameters\n\nParaphrase Detection This is a paraphrase detection model based on RoBERTa used in (Nighojkar and Licato, 2021). The model is trained on the adversarial paraphrase dataset introduced in that paper.\n\nHuggingface model name (sentence transformers): coderpotter/adversarial-paraphrasing-detector - 124,647,170 parameters\n\nNLI This is a RoBERTa model trained on a wide array of NLI datasets, including SNLI (Bowman et al., 2015), MNLI (Williams et al., 2018), FEVER (a fact-checking dataset) (Thorne et al., 2018) and ANLI (Nie et al., 2020).\n\nHuggingface model name (sentence transformers): ynie/roberta-large-snli_mnli_fever_anli_R1_R2_R3-nli 124,647,170 parameters\n\nSciBERT SciBERT is the original BERT model trained using MLM on a large set of scientific papers from Semantic Scholar (Lo et al., 2020).\n\nHuggingface model name (sentence transformers): allenai/scibert_scivocab_uncased - 109,920,514 parameters\n\nCiteBERT CiteBERT is SciBERT further finetuned on the CiteWorth dataset for the task of citation detection, which predicts if a given sentence requires a citation or not (Wright and Augenstein, 2021a).\n\nHuggingface model name (sentence transformers): copenlu/citebert - 109,920,514 parameters\n\nWe use sane defaults when fine-tuning each of our models. In this, for the MLM based models we use [lr: 2e-5, n_epochs: 3, warmup_steps: 200, weight Decay: 0.01, batch_size: 8]. For SBERT models we use the same setting except we train for 5 epochs.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.emnlp-main.117::appendix::G",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Titan RTX",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "All baseline experiments were run on a shared cluster. Requested jobs consisted of 16GB of RAM and 4 Intel Xeon Silver 4110 CPUs. We used a single NVIDIA Titan RTX GPU for experiments. Training takes approximately 3 minutes for all MLM-based models and 2 minutes for SBERT models.\n\nRoBERTa RoBERTa is a large pretrained transformer language model, trained using the masked language modeling (MLM) objective on a large corpus of English text. We use the base model of RoBERTa for our experiments. Huggingface model name: roberta-base - 124,647,170 parameters\n\nMiniLM We use a popular pretrained SBERT model based on MiniLM (Wang et al., 2020b), which is trained by distilling multiple language models into one compressed model. SBERT uses siamese BERT encoders to obtain sentence embeddings for pairs of sentences and is trained to decrease the distance between these two embeddings. The pretraining for the sentence similarity task consists of a wide range of datasets covering multiple domains and $>1$ billion sentence pairs, including science (Cohan et al., 2020; Lo et al., 2020). As much of the data is collected automatically, it uses a contrastive learning objective where known relevant pairs are treated as positive values\n\n![](images/49a533154de4cfbcfce8dd211b760dca1b3cfe08911fa9cdd8fed9a449a55363.jpg)\n\n![](images/cfefc03555ecc9cc80d5d5e6cbd2406f7d05b1bb7f214406cdd3f97f9e82653a.jpg)\n\n![](images/2ce2c41509c7c9bfc814c53520ada98fcfec11ec5ee0e0589a4d5f063aa6aa9f.jpg)  \nFigure 11: Distribution of the final matching score for each split set in SPICED\n\nand other samples in a batch are treated as negative values. The model is then trained to minimize the cross-entropy between the dot-product of embeddings and the label acquired from positive/negative samples. Huggingface model name (sentence transformers): all-MiniLM-L6-v2 - 22,713,216 parameters\n\nMPNet This is the same setup as in MiniLM but with using MPNet as the base network (Song et al., 2020). MPNet is trained using a permuted language modeling (PLM) objective with position information as input to achieve the best of both worlds between MLM and PLM. The base network is used in the SBERT setup where it is further finetuned on the same dataset and same task as with MiniLM\n\nHuggingface model name (sentence transformers): all-mpnet-base-v2 - 109,486,464 parameters\n\nParaphrase Detection This is a paraphrase detection model based on RoBERTa used in (Nighojkar and Licato, 2021). The model is trained on the adversarial paraphrase dataset introduced in that paper.\n\nHuggingface model name (sentence transformers): coderpotter/adversarial-paraphrasing-detector - 124,647,170 parameters\n\nNLI This is a RoBERTa model trained on a wide array of NLI datasets, including SNLI (Bowman et al., 2015), MNLI (Williams et al., 2018), FEVER (a fact-checking dataset) (Thorne et al., 2018) and ANLI (Nie et al., 2020).\n\nHuggingface model name (sentence transformers): ynie/roberta-large-snli_mnli_fever_anli_R1_R2_R3-nli 124,647,170 parameters\n\nSciBERT SciBERT is the original BERT model trained using MLM on a large set of scientific papers from Semantic Scholar (Lo et al., 2020).\n\nHuggingface model name (sentence transformers): allenai/scibert_scivocab_uncased - 109,920,514 parameters\n\nCiteBERT CiteBERT is SciBERT further finetuned on the CiteWorth dataset for the task of citation detection, which predicts if a given sentence requires a citation or not (Wright and Augenstein, 2021a).\n\nHuggingface model name (sentence transformers): copenlu/citebert - 109,920,514 parameters\n\nWe use sane defaults when fine-tuning each of our models. In this, for the MLM based models we use [lr: 2e-5, n_epochs: 3, warmup_steps: 200, weight Decay: 0.01, batch_size: 8]. For SBERT models we use the same setting except we train for 5 epochs.",
+      "section_number": "G",
+      "section_title": "full model details",
+      "normalized_section_title": "full model details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.emnlp-main.117::appendix::G",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Titan RTX",
+      "cleaned_hardware_name": "nvidia titan rtx",
+      "normalized_hardware_name": "NVIDIA TITAN RTX",
+      "benchmark_hardware_name": "NVIDIA TITAN RTX",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "G",
+      "section_title": "full model details",
+      "normalized_section_title": "full model details",
+      "evidence": "All baseline experiments were run on a shared cluster. Requested jobs consisted of 16GB of RAM and 4 Intel Xeon Silver 4110 CPUs. We used a single NVIDIA Titan RTX GPU for experiments. Training takes approximately 3 minutes for all MLM-based models and 2 minutes for SBERT models.\n\nRoBERTa RoBERTa is a large pretrained transformer language model, trained using the masked language modeling (MLM) objective on a large corpus of English text. We use the base model of RoBERTa for our experiments. Huggingface model name: roberta-base - 124,647,170 parameters\n\nMiniLM We use a popular pretrained SBERT model based on MiniLM (Wang et al., 2020b), which is trained by distilling multiple language models into one compressed model. SBERT uses siamese BERT encoders to obtain sentence embeddings for pairs of sentences and is trained to decrease the distance between these two embeddings. The pretraining for the sentence similarity task consists of a wide range of datasets covering multiple domains and $>1$ billion sentence pairs, including science (Cohan et al., 2020; Lo et al., 2020). As much of the data is collected automatically, it uses a contrastive learning objective where known relevant pairs are treated as positive values\n\n![](images/49a533154de4cfbcfce8dd211b760dca1b3cfe08911fa9cdd8fed9a449a55363.jpg)\n\n![](images/cfefc03555ecc9cc80d5d5e6cbd2406f7d05b1bb7f214406cdd3f97f9e82653a.jpg)\n\n![](images/2ce2c41509c7c9bfc814c53520ada98fcfec11ec5ee0e0589a4d5f063aa6aa9f.jpg)  \nFigure 11: Distribution of the final matching score for each split set in SPICED\n\nand other samples in a batch are treated as negative values. The model is then trained to minimize the cross-entropy between the dot-product of embeddings and the label acquired from positive/negative samples. Huggingface model name (sentence transformers): all-MiniLM-L6-v2 - 22,713,216 parameters\n\nMPNet This is the same setup as in MiniLM but with using MPNet as the base network (Song et al., 2020). MPNet is trained using a permuted language modeling (PLM) objective with position information as input to achieve the best of both worlds between MLM and PLM. The base network is used in the SBERT setup where it is further finetuned on the same dataset and same task as with MiniLM\n\nHuggingface model name (sentence transformers): all-mpnet-base-v2 - 109,486,464 parameters\n\nParaphrase Detection This is a paraphrase detection model based on RoBERTa used in (Nighojkar and Licato, 2021). The model is trained on the adversarial paraphrase dataset introduced in that paper.\n\nHuggingface model name (sentence transformers): coderpotter/adversarial-paraphrasing-detector - 124,647,170 parameters\n\nNLI This is a RoBERTa model trained on a wide array of NLI datasets, including SNLI (Bowman et al., 2015), MNLI (Williams et al., 2018), FEVER (a fact-checking dataset) (Thorne et al., 2018) and ANLI (Nie et al., 2020).\n\nHuggingface model name (sentence transformers): ynie/roberta-large-snli_mnli_fever_anli_R1_R2_R3-nli 124,647,170 parameters\n\nSciBERT SciBERT is the original BERT model trained using MLM on a large set of scientific papers from Semantic Scholar (Lo et al., 2020).\n\nHuggingface model name (sentence transformers): allenai/scibert_scivocab_uncased - 109,920,514 parameters\n\nCiteBERT CiteBERT is SciBERT further finetuned on the CiteWorth dataset for the task of citation detection, which predicts if a given sentence requires a citation or not (Wright and Augenstein, 2021a).\n\nHuggingface model name (sentence transformers): copenlu/citebert - 109,920,514 parameters\n\nWe use sane defaults when fine-tuning each of our models. In this, for the MLM based models we use [lr: 2e-5, n_epochs: 3, warmup_steps: 200, weight Decay: 0.01, batch_size: 8]. For SBERT models we use the same setting except we train for 5 epochs.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "G"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA TITAN RTX",
+        "num": 1
+      }
+    ]
+  }
+}

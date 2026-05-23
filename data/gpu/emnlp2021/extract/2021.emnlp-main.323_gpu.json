@@ -1,0 +1,121 @@
+{
+  "paper_id": "2021.emnlp-main.323",
+  "candidate_windows": [
+    {
+      "window_id": "2021.emnlp-main.323::sections::4.1",
+      "paper_id": "2021.emnlp-main.323",
+      "section_number": "4.1",
+      "section_title": "pre-training details",
+      "normalized_section_title": "pre-training details",
+      "window_text": "We pre-train our CTAL on the public dataset LibriSpeech (Panayotov et al., 2015), which is a dataset of reading English speech, including both audio recordings and corresponding authorized transcripts. It has 7 subsets in total (train-clean-100, train-clean-360, train-other-500, dev-clean, dev-other, test-clean, test-other). The subsets with \"clean\" in their names contain audios with higher recording quality, while the other subsets have low-quality recordings. We use all three training subsets for pre-training, including approximately 960 hours of speech and 280K utterances.\n\nFollowing Radford et al. (2019), we consider training a BBPE tokenizer on the LibriSpeech corpus with additional special tokens $(<s>, </s>, <mask>, <pad>)$ as our language stream tokenizers. We tokenize the input text into token sequence as described in Section 3.1.1. For audio stream, we use Librosa (McFee et al., 2015),\n\nwhich is a well-established audio analysis Python package, to extract the 160-dimension input acoustic feature for each frame as described in Section 3.1.1. We denote the number of layers (i.e., language stream encoding layer and text-referred audio stream encoding layer) as $N$ , the number of self-attention heads as $A$ , and the number of hidden size as $H$ . We primarily report results on two model sizes: $\\mathbf{CTAL}_{\\mathrm{BASE}}$ ( $N = 3$ , $A = 12$ , $H = 768$ ) and $\\mathbf{CTAL}_{\\mathrm{LARGE}}$ ( $N = 6$ , $A = 12$ , $H = 768$ ). The total number of parameters for $\\mathbf{CTAL}_{\\mathrm{BASE}}$ is 60M and 110M for $\\mathbf{CTAL}_{\\mathrm{LARGE}}$ . We take the Adam (Kingma and Ba, 2015) as the optimizer with initial learning rate of 5e-5 and a linear-decayed learning rate schedule with warm up (Devlin et al., 2019). We pre-train our model using 4 16G-V100 GPUs with a batch size of 16 for 1,000,000 steps, and the whole pre-training process takes roughly 48 hours.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.emnlp-main.323::sections::4.2.1",
+      "paper_id": "2021.emnlp-main.323",
+      "section_number": "4.2.1",
+      "section_title": "emotion classification",
+      "normalized_section_title": "emotion classification",
+      "window_text": "In emotion classification task, given a speech clip, the model is asked to predict which emotion category the speech belongs to. Here, we conduct experiments on the widely-used dataset IEMOCAP (Busso et al., 2008). The dataset was recorded from ten actors, divided into five sessions, and each session has dialogues between two speakers with different genders. The dataset contains audio, transcriptions, and video recordings, and we only use audio and transcriptions in our study. The recorded dialogues have been sliced into utterances and labeled in 10 categories by three annotators and utterances without any text content are filtered out in our experiment. For consistent comparison with previous works, we follow the settings with Xu et al. (2019), which use four emotions (angry, happy, neutral and sad) for classification and perform 5-fold cross-validation over sessions, where each session is used as the test set in turn and remaining as training dataset. We adopt two widely used metrics for evaluation: weighted accuracy (WA) that is the overall classification accuracy and unweighted accuracy (UA) that is the average recall over all four classes. We report the averaged WA and UA over the 5-fold cross-validation experiments, and higher WA and UA results represent\n\nTable 1: Comparison to the SOTA methods on the IEMOCAP dataset.   \n\n<table><tr><td>Methods</td><td>WA ↑</td><td>UA ↑</td></tr><tr><td>LSTM Alignment (Xu et al., 2019)</td><td>0.6900</td><td>0.7014</td></tr><tr><td>MRDE (Yoon et al., 2018)</td><td>0.6702</td><td>0.6764</td></tr><tr><td>MHA (Yoon et al., 2019)</td><td>0.6780</td><td>0.6880</td></tr><tr><td>CTALBASE</td><td>0.7286</td><td>0.7370</td></tr><tr><td>CTALARGE</td><td>0.7395</td><td>0.7463</td></tr></table>\n\nbetter model performances.\n\nTo fine-tune on IEMOCAP, we represent the input sequence (for a pair of audio and text) as described in Section 4.1, and use the final hidden vector $\\mathbf{h}^{fuse}$ as the audio-and-language representation. The only new parameters introduced during fine-tuning are classification layer weights $\\mathbf{W} \\in \\mathbb{R}^{4 \\times d}$ and CTAL fine-tuning is driven by the cross-entropy loss between the predicted class and the gold label. We use a batch size of 4 and fine-tune for 20 epochs over each fold with one 16G-V100 GPU. We take AdamW (Loshchilov and Hutter, 2018) as the optimizer in fine-tuning stage, the learning rate is initialized as 1e-5 and we apply a cosine annealing learning rate schedule (Loshchilov and Hutter, 2017) to reach the optimum.\n\nWe select multiple models that claim to achieve the SOTA results on IEMOCAP dataset as our baselines. Please notice that previous methods are specifically designed for the task with no pretraining stage. Xu et al. (2019) aims to produce more strong multimodal representations by learning the alignment between speech frames and text words using an attention mechanism, i.e., \"LSTM Alignment\". Yoon et al. (2018) uses a dual-RNNs to encode the information from audio and text separately, then combines them by simple representations concatenation to predict emotion classes, i.e., \"MDRE\". Yoon et al. (2019) proposes a multi-hop attention mechanism to infer the correlation between audio and language modalities based on the output hidden representations of two bi-directional long short-term memory encoders, and output the final classification result from the concatenation of audio and language representations, i.e., \"MHA\".\n\nTable 1 presents our experimental results on IEMOCAP dataset. Since some prior works experiment with different train/test split, we re-implement baseline models with their published\n\nTable 2: Comparison to the SOTA methods on the CMU-MOSEI dataset.   \n\n<table><tr><td>Methods</td><td>Acc2↑</td><td>F1↑</td><td>MAE↓</td><td>Corr↑</td></tr><tr><td>MulT</td><td>0.7966</td><td>0.8008</td><td>0.6367</td><td>0.6292</td></tr><tr><td>CTALBASE</td><td>0.8036</td><td>0.8055</td><td>0.6061</td><td>0.6828</td></tr><tr><td>CTALARGE</td><td>0.8077</td><td>0.8101</td><td>0.6027</td><td>0.6809</td></tr></table>\n\ncodes $^{12}$ . Both $\\mathrm{CTAL}_{\\mathrm{BASE}}$ and $\\mathrm{CTAL}_{\\mathrm{LARGE}}$ outperform all three baselines by a substantial margin, obtaining $3.86\\%$ and $4.95\\%$ respective absolute WA improvement, and $3.56\\%$ and $4.49\\%$ respective absolute UA improvement over the prior state of the art.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2021.emnlp-main.323::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "16G-V100",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "We pre-train our CTAL on the public dataset LibriSpeech (Panayotov et al., 2015), which is a dataset of reading English speech, including both audio recordings and corresponding authorized transcripts. It has 7 subsets in total (train-clean-100, train-clean-360, train-other-500, dev-clean, dev-other, test-clean, test-other). The subsets with \"clean\" in their names contain audios with higher recording quality, while the other subsets have low-quality recordings. We use all three training subsets for pre-training, including approximately 960 hours of speech and 280K utterances.\n\nFollowing Radford et al. (2019), we consider training a BBPE tokenizer on the LibriSpeech corpus with additional special tokens $(<s>, </s>, <mask>, <pad>)$ as our language stream tokenizers. We tokenize the input text into token sequence as described in Section 3.1.1. For audio stream, we use Librosa (McFee et al., 2015),\n\nwhich is a well-established audio analysis Python package, to extract the 160-dimension input acoustic feature for each frame as described in Section 3.1.1. We denote the number of layers (i.e., language stream encoding layer and text-referred audio stream encoding layer) as $N$ , the number of self-attention heads as $A$ , and the number of hidden size as $H$ . We primarily report results on two model sizes: $\\mathbf{CTAL}_{\\mathrm{BASE}}$ ( $N = 3$ , $A = 12$ , $H = 768$ ) and $\\mathbf{CTAL}_{\\mathrm{LARGE}}$ ( $N = 6$ , $A = 12$ , $H = 768$ ). The total number of parameters for $\\mathbf{CTAL}_{\\mathrm{BASE}}$ is 60M and 110M for $\\mathbf{CTAL}_{\\mathrm{LARGE}}$ . We take the Adam (Kingma and Ba, 2015) as the optimizer with initial learning rate of 5e-5 and a linear-decayed learning rate schedule with warm up (Devlin et al., 2019). We pre-train our model using 4 16G-V100 GPUs with a batch size of 16 for 1,000,000 steps, and the whole pre-training process takes roughly 48 hours.",
+      "section_number": "4.1",
+      "section_title": "pre-training details",
+      "normalized_section_title": "pre-training details"
+    },
+    {
+      "window_id": "2021.emnlp-main.323::sections::4.2.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "16G-V100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "In emotion classification task, given a speech clip, the model is asked to predict which emotion category the speech belongs to. Here, we conduct experiments on the widely-used dataset IEMOCAP (Busso et al., 2008). The dataset was recorded from ten actors, divided into five sessions, and each session has dialogues between two speakers with different genders. The dataset contains audio, transcriptions, and video recordings, and we only use audio and transcriptions in our study. The recorded dialogues have been sliced into utterances and labeled in 10 categories by three annotators and utterances without any text content are filtered out in our experiment. For consistent comparison with previous works, we follow the settings with Xu et al. (2019), which use four emotions (angry, happy, neutral and sad) for classification and perform 5-fold cross-validation over sessions, where each session is used as the test set in turn and remaining as training dataset. We adopt two widely used metrics for evaluation: weighted accuracy (WA) that is the overall classification accuracy and unweighted accuracy (UA) that is the average recall over all four classes. We report the averaged WA and UA over the 5-fold cross-validation experiments, and higher WA and UA results represent\n\nTable 1: Comparison to the SOTA methods on the IEMOCAP dataset.   \n\n<table><tr><td>Methods</td><td>WA ↑</td><td>UA ↑</td></tr><tr><td>LSTM Alignment (Xu et al., 2019)</td><td>0.6900</td><td>0.7014</td></tr><tr><td>MRDE (Yoon et al., 2018)</td><td>0.6702</td><td>0.6764</td></tr><tr><td>MHA (Yoon et al., 2019)</td><td>0.6780</td><td>0.6880</td></tr><tr><td>CTALBASE</td><td>0.7286</td><td>0.7370</td></tr><tr><td>CTALARGE</td><td>0.7395</td><td>0.7463</td></tr></table>\n\nbetter model performances.\n\nTo fine-tune on IEMOCAP, we represent the input sequence (for a pair of audio and text) as described in Section 4.1, and use the final hidden vector $\\mathbf{h}^{fuse}$ as the audio-and-language representation. The only new parameters introduced during fine-tuning are classification layer weights $\\mathbf{W} \\in \\mathbb{R}^{4 \\times d}$ and CTAL fine-tuning is driven by the cross-entropy loss between the predicted class and the gold label. We use a batch size of 4 and fine-tune for 20 epochs over each fold with one 16G-V100 GPU. We take AdamW (Loshchilov and Hutter, 2018) as the optimizer in fine-tuning stage, the learning rate is initialized as 1e-5 and we apply a cosine annealing learning rate schedule (Loshchilov and Hutter, 2017) to reach the optimum.\n\nWe select multiple models that claim to achieve the SOTA results on IEMOCAP dataset as our baselines. Please notice that previous methods are specifically designed for the task with no pretraining stage. Xu et al. (2019) aims to produce more strong multimodal representations by learning the alignment between speech frames and text words using an attention mechanism, i.e., \"LSTM Alignment\". Yoon et al. (2018) uses a dual-RNNs to encode the information from audio and text separately, then combines them by simple representations concatenation to predict emotion classes, i.e., \"MDRE\". Yoon et al. (2019) proposes a multi-hop attention mechanism to infer the correlation between audio and language modalities based on the output hidden representations of two bi-directional long short-term memory encoders, and output the final classification result from the concatenation of audio and language representations, i.e., \"MHA\".\n\nTable 1 presents our experimental results on IEMOCAP dataset. Since some prior works experiment with different train/test split, we re-implement baseline models with their published\n\nTable 2: Comparison to the SOTA methods on the CMU-MOSEI dataset.   \n\n<table><tr><td>Methods</td><td>Acc2↑</td><td>F1↑</td><td>MAE↓</td><td>Corr↑</td></tr><tr><td>MulT</td><td>0.7966</td><td>0.8008</td><td>0.6367</td><td>0.6292</td></tr><tr><td>CTALBASE</td><td>0.8036</td><td>0.8055</td><td>0.6061</td><td>0.6828</td></tr><tr><td>CTALARGE</td><td>0.8077</td><td>0.8101</td><td>0.6027</td><td>0.6809</td></tr></table>\n\ncodes $^{12}$ . Both $\\mathrm{CTAL}_{\\mathrm{BASE}}$ and $\\mathrm{CTAL}_{\\mathrm{LARGE}}$ outperform all three baselines by a substantial margin, obtaining $3.86\\%$ and $4.95\\%$ respective absolute WA improvement, and $3.56\\%$ and $4.49\\%$ respective absolute UA improvement over the prior state of the art.",
+      "section_number": "4.2.1",
+      "section_title": "emotion classification",
+      "normalized_section_title": "emotion classification"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2021.emnlp-main.323::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "16G-V100",
+      "cleaned_hardware_name": "16gb v100",
+      "normalized_hardware_name": "16G-V100",
+      "benchmark_hardware_name": null,
+      "count": 4,
+      "count_text": "4",
+      "section_number": "4.1",
+      "section_title": "pre-training details",
+      "normalized_section_title": "pre-training details",
+      "evidence": "We pre-train our CTAL on the public dataset LibriSpeech (Panayotov et al., 2015), which is a dataset of reading English speech, including both audio recordings and corresponding authorized transcripts. It has 7 subsets in total (train-clean-100, train-clean-360, train-other-500, dev-clean, dev-other, test-clean, test-other). The subsets with \"clean\" in their names contain audios with higher recording quality, while the other subsets have low-quality recordings. We use all three training subsets for pre-training, including approximately 960 hours of speech and 280K utterances.\n\nFollowing Radford et al. (2019), we consider training a BBPE tokenizer on the LibriSpeech corpus with additional special tokens $(<s>, </s>, <mask>, <pad>)$ as our language stream tokenizers. We tokenize the input text into token sequence as described in Section 3.1.1. For audio stream, we use Librosa (McFee et al., 2015),\n\nwhich is a well-established audio analysis Python package, to extract the 160-dimension input acoustic feature for each frame as described in Section 3.1.1. We denote the number of layers (i.e., language stream encoding layer and text-referred audio stream encoding layer) as $N$ , the number of self-attention heads as $A$ , and the number of hidden size as $H$ . We primarily report results on two model sizes: $\\mathbf{CTAL}_{\\mathrm{BASE}}$ ( $N = 3$ , $A = 12$ , $H = 768$ ) and $\\mathbf{CTAL}_{\\mathrm{LARGE}}$ ( $N = 6$ , $A = 12$ , $H = 768$ ). The total number of parameters for $\\mathbf{CTAL}_{\\mathrm{BASE}}$ is 60M and 110M for $\\mathbf{CTAL}_{\\mathrm{LARGE}}$ . We take the Adam (Kingma and Ba, 2015) as the optimizer with initial learning rate of 5e-5 and a linear-decayed learning rate schedule with warm up (Devlin et al., 2019). We pre-train our model using 4 16G-V100 GPUs with a batch size of 16 for 1,000,000 steps, and the whole pre-training process takes roughly 48 hours.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2021.emnlp-main.323::sections::4.2.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "16G-V100",
+      "cleaned_hardware_name": "16gb v100",
+      "normalized_hardware_name": "16G-V100",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "4.2.1",
+      "section_title": "emotion classification",
+      "normalized_section_title": "emotion classification",
+      "evidence": "In emotion classification task, given a speech clip, the model is asked to predict which emotion category the speech belongs to. Here, we conduct experiments on the widely-used dataset IEMOCAP (Busso et al., 2008). The dataset was recorded from ten actors, divided into five sessions, and each session has dialogues between two speakers with different genders. The dataset contains audio, transcriptions, and video recordings, and we only use audio and transcriptions in our study. The recorded dialogues have been sliced into utterances and labeled in 10 categories by three annotators and utterances without any text content are filtered out in our experiment. For consistent comparison with previous works, we follow the settings with Xu et al. (2019), which use four emotions (angry, happy, neutral and sad) for classification and perform 5-fold cross-validation over sessions, where each session is used as the test set in turn and remaining as training dataset. We adopt two widely used metrics for evaluation: weighted accuracy (WA) that is the overall classification accuracy and unweighted accuracy (UA) that is the average recall over all four classes. We report the averaged WA and UA over the 5-fold cross-validation experiments, and higher WA and UA results represent\n\nTable 1: Comparison to the SOTA methods on the IEMOCAP dataset.   \n\n<table><tr><td>Methods</td><td>WA ↑</td><td>UA ↑</td></tr><tr><td>LSTM Alignment (Xu et al., 2019)</td><td>0.6900</td><td>0.7014</td></tr><tr><td>MRDE (Yoon et al., 2018)</td><td>0.6702</td><td>0.6764</td></tr><tr><td>MHA (Yoon et al., 2019)</td><td>0.6780</td><td>0.6880</td></tr><tr><td>CTALBASE</td><td>0.7286</td><td>0.7370</td></tr><tr><td>CTALARGE</td><td>0.7395</td><td>0.7463</td></tr></table>\n\nbetter model performances.\n\nTo fine-tune on IEMOCAP, we represent the input sequence (for a pair of audio and text) as described in Section 4.1, and use the final hidden vector $\\mathbf{h}^{fuse}$ as the audio-and-language representation. The only new parameters introduced during fine-tuning are classification layer weights $\\mathbf{W} \\in \\mathbb{R}^{4 \\times d}$ and CTAL fine-tuning is driven by the cross-entropy loss between the predicted class and the gold label. We use a batch size of 4 and fine-tune for 20 epochs over each fold with one 16G-V100 GPU. We take AdamW (Loshchilov and Hutter, 2018) as the optimizer in fine-tuning stage, the learning rate is initialized as 1e-5 and we apply a cosine annealing learning rate schedule (Loshchilov and Hutter, 2017) to reach the optimum.\n\nWe select multiple models that claim to achieve the SOTA results on IEMOCAP dataset as our baselines. Please notice that previous methods are specifically designed for the task with no pretraining stage. Xu et al. (2019) aims to produce more strong multimodal representations by learning the alignment between speech frames and text words using an attention mechanism, i.e., \"LSTM Alignment\". Yoon et al. (2018) uses a dual-RNNs to encode the information from audio and text separately, then combines them by simple representations concatenation to predict emotion classes, i.e., \"MDRE\". Yoon et al. (2019) proposes a multi-hop attention mechanism to infer the correlation between audio and language modalities based on the output hidden representations of two bi-directional long short-term memory encoders, and output the final classification result from the concatenation of audio and language representations, i.e., \"MHA\".\n\nTable 1 presents our experimental results on IEMOCAP dataset. Since some prior works experiment with different train/test split, we re-implement baseline models with their published\n\nTable 2: Comparison to the SOTA methods on the CMU-MOSEI dataset.   \n\n<table><tr><td>Methods</td><td>Acc2↑</td><td>F1↑</td><td>MAE↓</td><td>Corr↑</td></tr><tr><td>MulT</td><td>0.7966</td><td>0.8008</td><td>0.6367</td><td>0.6292</td></tr><tr><td>CTALBASE</td><td>0.8036</td><td>0.8055</td><td>0.6061</td><td>0.6828</td></tr><tr><td>CTALARGE</td><td>0.8077</td><td>0.8101</td><td>0.6027</td><td>0.6809</td></tr></table>\n\ncodes $^{12}$ . Both $\\mathrm{CTAL}_{\\mathrm{BASE}}$ and $\\mathrm{CTAL}_{\\mathrm{LARGE}}$ outperform all three baselines by a substantial margin, obtaining $3.86\\%$ and $4.95\\%$ respective absolute WA improvement, and $3.56\\%$ and $4.49\\%$ respective absolute UA improvement over the prior state of the art.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.1",
+      "4.2.1"
+    ],
+    "pred": [
+      {
+        "name": "16G-V100",
+        "num": 4
+      },
+      {
+        "name": "16G-V100",
+        "num": 1
+      }
+    ]
+  }
+}

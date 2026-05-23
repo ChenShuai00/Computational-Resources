@@ -1,0 +1,199 @@
+{
+  "paper_id": "2022.acl-long.17",
+  "candidate_windows": [
+    {
+      "window_id": "2022.acl-long.17::sections::3.1",
+      "paper_id": "2022.acl-long.17",
+      "section_number": "3.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Datasets We use the widely studied IWSLT14 $\\mathrm{De} \\leftrightarrow \\mathrm{En}$ and IWSLT17 $\\mathrm{Fr} \\leftrightarrow \\mathrm{En}$ language pairs as our small-sized datasets. For high-resource experiments, we evaluate on the standard WMT14 $\\mathrm{En} \\rightarrow \\mathrm{De}$ set of 4.5M sentence pairs. We also extend our experiments to the extremely low-resource pair $\\mathrm{Sk} \\leftrightarrow \\mathrm{En}$ from the multilingual TED dataset (Qi et al., 2018) with 61k training samples, and dev and test splits of size 2271 and 2245 respectively.\n\nCiphertext Generation and Vocabularies. We use a variant of ROT- $k$ which preserves whitespace, numerals, special characters, and punctuation. As a result, these characters appear the same in both plain- and ciphertexts.\n\nFor our naive approach, we encipher the German side of the IWSLT14 dataset with up to 20 keys $\\{1,2,3,4,5,\\ldots,20\\}$ . For our main experiments, we encipher the source side of every translation direction with key $\\{1\\}$ for WMT experiments and keys $\\{1,2\\}$ for the rest.\n\nWe use sentencepiece (Kudo and Richardson, 2018) to tokenize text into byte-pair encodings\n\n(BPE; Sennrich et al. 2016c) by jointly learning subwords on the source, enciphered-source, and target sides. We tune the number of BPE merges as recommended by Ding et al. (2019); the resulting subword vocabulary sizes for each dataset are tabulated in Table 1.\n\nTable 1: Approximate subword vocabularies for the IWSLT14 (top), IWSLT17, TED, and WMT (bottom) datasets. 1(src) and 2(src) denote ROT-1 and ROT-2 encipherments, respectively.   \n\n<table><tr><td>→</td><td>src</td><td>tgt</td><td>sUt</td><td>1(src)</td><td>2(src)</td><td>total</td></tr><tr><td>De→En</td><td>9k</td><td>6.7k</td><td>11.8k</td><td>6.7k</td><td>6.5k</td><td>20k</td></tr><tr><td>En→De</td><td>7.3k</td><td>9.7k</td><td>12.7k</td><td>6.6k</td><td>6.4k</td><td>20k</td></tr><tr><td>Fr→En</td><td>7k</td><td>6k</td><td>10.4k</td><td>5.2k</td><td>5.2k</td><td>16k</td></tr><tr><td>En→Fr</td><td>7.5k</td><td>6.5k</td><td>11k</td><td>5k</td><td>5k</td><td>16k</td></tr><tr><td>En→Sk</td><td>5.2k</td><td>7.1k</td><td>10k</td><td>4.6k</td><td>4.5k</td><td>16k</td></tr><tr><td>En→De</td><td>25k</td><td>24k</td><td>36k</td><td>16k</td><td>16k</td><td>60k</td></tr></table>\n\nIn all experiments, we set the loss weight hyperparameters $\\alpha_{1}$ , $\\alpha_{2}$ to 1, and $\\beta$ to 5. Section 4.1 shows an ablation over $\\beta$ to justify this setting. We find that softmax temperature $\\tau = 1$ works well for all experiments; $\\tau = 2$ results in more stable training for larger datasets.\n\nEvaluation We evaluate on BLEU scores $^{7}$ (Papineni et al., 2002). Following previous work (Vaswani et al., 2017; Nguyen et al., 2019; Xu et al., 2021), we compute tokenized BLEU with multi_bleu.perl $^{8}$ for IWSLT14 and TED datasets, additionally apply compound-splitting for WMT14 En-De $^{9}$ and SacreBLEU $^{10}$ (Post, 2018) for IWSLT17 datasets. For all experiments, we perform significance tests based on bootstrap resampling (Clark et al., 2011) using the compare-mt toolkit (Neubig et al., 2019).\n\nBaselines Our main baselines are strong and widely used data-augmentation techniques that do not use external data. We compare CipherDAug to back-translation-based data-diversification (Nguyen et al., 2019), word replacement techniques like SwitchOut (Wang et al., 2018), WordDrop (Sennrich et al., 2016a), and RAML (Norouzi et al., 2016), and the subword-regularization technique BPE-Dropout (Provilkov et al., 2020).\n\nSee supplemental sections A.1 and A.2 for further baseline and implementation details.\n\n7Decoder beam size 4 and length penalty 0.6 for WMT, and 5 and 1.0 for all other experiments.   \n8mosesdecoder/scripts/generic/multi-bleu.perl   \n$^9$ tensorflow/tensor2tensor/util/get_ende_bleu.sh   \n10SacreBLEU signature: nrefs:1|case:mixed|   \neff: no|tok:13a|smooth:exp|version:2.0.0\n\nTable 2: Results on the IWSLT14 De-En validation set comparing the naive approach and CipherDAug.   \n\n<table><tr><td>Model</td><td colspan=\"2\">De → En</td></tr><tr><td>Transformer</td><td colspan=\"2\">34.91</td></tr><tr><td>+ Word Dropout</td><td colspan=\"2\">34.83</td></tr><tr><td>+ SwitchOut</td><td colspan=\"2\">34.82</td></tr><tr><td>+ RAML</td><td colspan=\"2\">35.11</td></tr><tr><td>+ RAML + Swithout</td><td colspan=\"2\">35.17</td></tr><tr><td>+ RAML + WordDrop</td><td colspan=\"2\">35.47</td></tr><tr><td>Naive Multi-Source</td><td>Equation (1)</td><td>Equation (2)</td></tr><tr><td>2 keys</td><td>35.45</td><td>35.85</td></tr><tr><td>5 keys</td><td>35.65</td><td>35.98</td></tr><tr><td>10 keys</td><td>33.70</td><td>35.42</td></tr><tr><td>20 keys</td><td>32.95</td><td>34.75</td></tr><tr><td>5 keys + RAML + Swithout</td><td>-</td><td>36.17</td></tr><tr><td>5 keys + RAML + WordDrop</td><td>-</td><td>36.63</td></tr><tr><td>CipherDAug - 1 key</td><td></td><td>36.21</td></tr><tr><td>CipherDAug - 2 keys</td><td></td><td>37.60</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.17::appendix::A",
+      "paper_id": "2022.acl-long.17",
+      "section_number": "A",
+      "section_title": "appendix",
+      "normalized_section_title": "appendix",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.17::appendix::A.1",
+      "paper_id": "2022.acl-long.17",
+      "section_number": "A.1",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "To compare model performance on the small and mid-sized datasets, we re-implemented most baselines:\n\n- we used the pseudocode in appendix A6 along with proofs in appendices A1 and A2 of the SwitchOut paper (Wang et al., 2018) to implement SwitchOut, WordDrop (Sennrich et al., 2016a), RAML (Norouzi et al., 2016), RAML+SwitchOut and RAML+WordDrop as special cases of SwitchOut. The hyperparameter $\\tau$ was tuned on the dev set for each language pair. The respective $\\tau$ values are 0.9 and 0.95 for De-En and 0.85 and 0.95 for Fr-En.   \n- we followed the instructions on the official open-sourced repository to reproduce BPE-Dropout (Provilkov et al., 2020) $^{16}$ with the recommended value of $p = 0.1$ using the sentencepiece tokenizer. We trained models on our Fairseq codebase for IWSLT14 $\\mathrm{De} \\leftrightarrow \\mathrm{En}$ and WMT14 $\\mathrm{En} \\rightarrow \\mathrm{De}$ . We reported the SacreBLEU numbers for IWSLT17 $\\mathrm{Fr} \\leftrightarrow \\mathrm{En}$ from literature.   \n- experiments on data-diversification (Nguyen et al., 2019) were reproduced using the official open-sourced implementation on top of the Fairseq toolkit. For WMT14 En-De, we use a Transformer Base (68M parameters) for a fair comparison across methods, whereas the original implementation employs a Transformer Big model (210M parameters). [17] Note that this method requires training 7 individual models and has a total effective data size 7 times the original size to produce best results.\n\nWe reported the performance of Mixed-Representation (Wu et al., 2020) baseline for IWSLT14 De→En from the literature as we could reproduce the experimentst. However, to the best of our knowledge, we employ settings identical to Mixed-Repr. baseline for IWSLT14 De→En in our model - the same tokenizer (SentencePiece), vocabulary size (12k),\n\nmodel size (transformer_iwslt_de_en), decoding hyper-parameters (beam 5, len-pen 1.0) and evaluation script (multi-bleu.perl).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.17::appendix::A.2",
+      "paper_id": "2022.acl-long.17",
+      "section_number": "A.2",
+      "section_title": "cipherdaug: models and hyperparameters",
+      "normalized_section_title": "cipherdaug: models and hyperparameters",
+      "window_text": "The smaller datasets (IWSLT14 De $\\leftrightarrow$ En 18, IWSLT17 Fr $\\leftrightarrow$ En and TED $\\mathrm{Sk}\\leftrightarrow \\mathrm{En}^{20})$ are trained with the transformer_iwslt_de_en config with 6 layers of encoder and decoder with 4 attention heads, embedding size of 512, feed-forward size of 1024, network dropout 0.3 and attention dropout 0.1. The peak learning rate is $6e - 4$ with 8000 warmup steps.\n\nFor training the on WMT14 En $\\rightarrow$ De dataset $^{21}$ , we use Transformer Base config, dubbed transformer_wmt_en_de in fairseq toolkit, with 6 layers of encoder and decoder with 8 attention heads, embedding size of 512, feed-forward size of 2048, dropout 0.1. The peak learning rate is $7e - 4$ with 4000 warmup steps.\n\nFollowing conventional training of Transformers, we use Adam optimizer with betas (0.9, 0.98) and $\\epsilon = 10^{-9}$ and inverse_sqrt learning rate scheduler. Label smoothing is set to 0.1.\n\nWe also set an agreement_loss_warmup to 2000 steps. This signifies that until the specified number of steps, the model will train with regular cross-entropy loss without computing KL divergence. This is done to let the model gain some confidence before we start applying co-regularization. This does not improve or worsen model performance, but we find that this helps the model converge slightly faster.\n\nThe transformer_iwslt_de_en models (for IWSLT14, IWSLT17 and TED datasets) were run on 2 Titan RTX GPUs while the transformer_wmt_en_de model for WMT14 En-De was run on 8 A6000 GPUs. All models were run until convergence with an early stopping patience of 15 validation steps. While smaller models converged within 100k updates,\n\nTable 9: Results on IWSLT14 De→En with baseline Transformer and CipherDAug using ALONE embeddings (Takase and Kobayashi, 2020). The column TrainΘ denotes the approx. total number of trainable parameters. The filter vectors for ALONE embeddings are constructed using real valued vectors. Using the ALONE embeddings disentangles the effect of increased vocabulary in CipherDAug by building embeddings largely independent of the vocabulary sizes and ensures that it has the same number of net trainable parameters as the baseline Transformer. See Table 10 for details.   \n\n<table><tr><td></td><td>Dinter</td><td>EmbΘ</td><td>BLEU</td><td>Δ</td><td>TrainΘ</td></tr><tr><td>Transformer</td><td>-</td><td>6.1M</td><td>34.64</td><td>-</td><td>44M</td></tr><tr><td>CipherDAug</td><td>-</td><td>10.1M</td><td>37.53</td><td>+2.89</td><td>52M</td></tr><tr><td colspan=\"6\">Non-trainable O</td></tr><tr><td>Transformer + ALONE</td><td>4096</td><td>4.1M</td><td>34.17</td><td>-</td><td>31M</td></tr><tr><td>CipherDAug + ALONE</td><td>4096</td><td>4.1M</td><td>36.98</td><td>+2.81</td><td>31M</td></tr><tr><td colspan=\"6\">Trainable O</td></tr><tr><td>Transformer + ALONE</td><td>4096</td><td>4.1M</td><td>34.35</td><td>-</td><td>31M</td></tr><tr><td>CipherDAug + ALONE</td><td>4096</td><td>4.1M</td><td>37.10</td><td>+2.75</td><td>31M</td></tr></table>\n\nthe model on WMT14 dataset was force stopped at 400k updates while the model was still improving (at a very slow rate).\n\nFor producing translations, the decoder beam size is set to 4 and length penalty 0.6 for WMT, and 5 and 1.0 for all other experiments. We evaluate on BLEU scores (Papineni et al., 2002). Following previous work (Vaswani et al., 2017; Nguyen et al., 2019; Xu et al., 2021), we compute tokenized BLEU with multi_bleu.perl $^{22}$ for IWSLT14 and TED datasets, additionally apply compound-splitting for WMT14 En-De $^{23}$ and SacreBLEU (Post, 2018) (Signature: nrefs:1|case:mixed| eff:no|tok:13a|smooth:exp|version :2.0.0 for IWSLT17 datasets.\n\nFinally, all results are reported on translations obtained after averaging the last 5 checkpoints.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2022.acl-long.17::appendix::A.3",
+      "paper_id": "2022.acl-long.17",
+      "section_number": "A.3",
+      "section_title": "additional experiments",
+      "normalized_section_title": "additional experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.acl-long.17::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Titan RTX",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "The smaller datasets (IWSLT14 De $\\leftrightarrow$ En 18, IWSLT17 Fr $\\leftrightarrow$ En and TED $\\mathrm{Sk}\\leftrightarrow \\mathrm{En}^{20})$ are trained with the transformer_iwslt_de_en config with 6 layers of encoder and decoder with 4 attention heads, embedding size of 512, feed-forward size of 1024, network dropout 0.3 and attention dropout 0.1. The peak learning rate is $6e - 4$ with 8000 warmup steps.\n\nFor training the on WMT14 En $\\rightarrow$ De dataset $^{21}$ , we use Transformer Base config, dubbed transformer_wmt_en_de in fairseq toolkit, with 6 layers of encoder and decoder with 8 attention heads, embedding size of 512, feed-forward size of 2048, dropout 0.1. The peak learning rate is $7e - 4$ with 4000 warmup steps.\n\nFollowing conventional training of Transformers, we use Adam optimizer with betas (0.9, 0.98) and $\\epsilon = 10^{-9}$ and inverse_sqrt learning rate scheduler. Label smoothing is set to 0.1.\n\nWe also set an agreement_loss_warmup to 2000 steps. This signifies that until the specified number of steps, the model will train with regular cross-entropy loss without computing KL divergence. This is done to let the model gain some confidence before we start applying co-regularization. This does not improve or worsen model performance, but we find that this helps the model converge slightly faster.\n\nThe transformer_iwslt_de_en models (for IWSLT14, IWSLT17 and TED datasets) were run on 2 Titan RTX GPUs while the transformer_wmt_en_de model for WMT14 En-De was run on 8 A6000 GPUs. All models were run until convergence with an early stopping patience of 15 validation steps. While smaller models converged within 100k updates,\n\nTable 9: Results on IWSLT14 De→En with baseline Transformer and CipherDAug using ALONE embeddings (Takase and Kobayashi, 2020). The column TrainΘ denotes the approx. total number of trainable parameters. The filter vectors for ALONE embeddings are constructed using real valued vectors. Using the ALONE embeddings disentangles the effect of increased vocabulary in CipherDAug by building embeddings largely independent of the vocabulary sizes and ensures that it has the same number of net trainable parameters as the baseline Transformer. See Table 10 for details.   \n\n<table><tr><td></td><td>Dinter</td><td>EmbΘ</td><td>BLEU</td><td>Δ</td><td>TrainΘ</td></tr><tr><td>Transformer</td><td>-</td><td>6.1M</td><td>34.64</td><td>-</td><td>44M</td></tr><tr><td>CipherDAug</td><td>-</td><td>10.1M</td><td>37.53</td><td>+2.89</td><td>52M</td></tr><tr><td colspan=\"6\">Non-trainable O</td></tr><tr><td>Transformer + ALONE</td><td>4096</td><td>4.1M</td><td>34.17</td><td>-</td><td>31M</td></tr><tr><td>CipherDAug + ALONE</td><td>4096</td><td>4.1M</td><td>36.98</td><td>+2.81</td><td>31M</td></tr><tr><td colspan=\"6\">Trainable O</td></tr><tr><td>Transformer + ALONE</td><td>4096</td><td>4.1M</td><td>34.35</td><td>-</td><td>31M</td></tr><tr><td>CipherDAug + ALONE</td><td>4096</td><td>4.1M</td><td>37.10</td><td>+2.75</td><td>31M</td></tr></table>\n\nthe model on WMT14 dataset was force stopped at 400k updates while the model was still improving (at a very slow rate).\n\nFor producing translations, the decoder beam size is set to 4 and length penalty 0.6 for WMT, and 5 and 1.0 for all other experiments. We evaluate on BLEU scores (Papineni et al., 2002). Following previous work (Vaswani et al., 2017; Nguyen et al., 2019; Xu et al., 2021), we compute tokenized BLEU with multi_bleu.perl $^{22}$ for IWSLT14 and TED datasets, additionally apply compound-splitting for WMT14 En-De $^{23}$ and SacreBLEU (Post, 2018) (Signature: nrefs:1|case:mixed| eff:no|tok:13a|smooth:exp|version :2.0.0 for IWSLT17 datasets.\n\nFinally, all results are reported on translations obtained after averaging the last 5 checkpoints.",
+      "section_number": "A.2",
+      "section_title": "cipherdaug: models and hyperparameters",
+      "normalized_section_title": "cipherdaug: models and hyperparameters"
+    },
+    {
+      "window_id": "2022.acl-long.17::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A6000",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "The smaller datasets (IWSLT14 De $\\leftrightarrow$ En 18, IWSLT17 Fr $\\leftrightarrow$ En and TED $\\mathrm{Sk}\\leftrightarrow \\mathrm{En}^{20})$ are trained with the transformer_iwslt_de_en config with 6 layers of encoder and decoder with 4 attention heads, embedding size of 512, feed-forward size of 1024, network dropout 0.3 and attention dropout 0.1. The peak learning rate is $6e - 4$ with 8000 warmup steps.\n\nFor training the on WMT14 En $\\rightarrow$ De dataset $^{21}$ , we use Transformer Base config, dubbed transformer_wmt_en_de in fairseq toolkit, with 6 layers of encoder and decoder with 8 attention heads, embedding size of 512, feed-forward size of 2048, dropout 0.1. The peak learning rate is $7e - 4$ with 4000 warmup steps.\n\nFollowing conventional training of Transformers, we use Adam optimizer with betas (0.9, 0.98) and $\\epsilon = 10^{-9}$ and inverse_sqrt learning rate scheduler. Label smoothing is set to 0.1.\n\nWe also set an agreement_loss_warmup to 2000 steps. This signifies that until the specified number of steps, the model will train with regular cross-entropy loss without computing KL divergence. This is done to let the model gain some confidence before we start applying co-regularization. This does not improve or worsen model performance, but we find that this helps the model converge slightly faster.\n\nThe transformer_iwslt_de_en models (for IWSLT14, IWSLT17 and TED datasets) were run on 2 Titan RTX GPUs while the transformer_wmt_en_de model for WMT14 En-De was run on 8 A6000 GPUs. All models were run until convergence with an early stopping patience of 15 validation steps. While smaller models converged within 100k updates,\n\nTable 9: Results on IWSLT14 De→En with baseline Transformer and CipherDAug using ALONE embeddings (Takase and Kobayashi, 2020). The column TrainΘ denotes the approx. total number of trainable parameters. The filter vectors for ALONE embeddings are constructed using real valued vectors. Using the ALONE embeddings disentangles the effect of increased vocabulary in CipherDAug by building embeddings largely independent of the vocabulary sizes and ensures that it has the same number of net trainable parameters as the baseline Transformer. See Table 10 for details.   \n\n<table><tr><td></td><td>Dinter</td><td>EmbΘ</td><td>BLEU</td><td>Δ</td><td>TrainΘ</td></tr><tr><td>Transformer</td><td>-</td><td>6.1M</td><td>34.64</td><td>-</td><td>44M</td></tr><tr><td>CipherDAug</td><td>-</td><td>10.1M</td><td>37.53</td><td>+2.89</td><td>52M</td></tr><tr><td colspan=\"6\">Non-trainable O</td></tr><tr><td>Transformer + ALONE</td><td>4096</td><td>4.1M</td><td>34.17</td><td>-</td><td>31M</td></tr><tr><td>CipherDAug + ALONE</td><td>4096</td><td>4.1M</td><td>36.98</td><td>+2.81</td><td>31M</td></tr><tr><td colspan=\"6\">Trainable O</td></tr><tr><td>Transformer + ALONE</td><td>4096</td><td>4.1M</td><td>34.35</td><td>-</td><td>31M</td></tr><tr><td>CipherDAug + ALONE</td><td>4096</td><td>4.1M</td><td>37.10</td><td>+2.75</td><td>31M</td></tr></table>\n\nthe model on WMT14 dataset was force stopped at 400k updates while the model was still improving (at a very slow rate).\n\nFor producing translations, the decoder beam size is set to 4 and length penalty 0.6 for WMT, and 5 and 1.0 for all other experiments. We evaluate on BLEU scores (Papineni et al., 2002). Following previous work (Vaswani et al., 2017; Nguyen et al., 2019; Xu et al., 2021), we compute tokenized BLEU with multi_bleu.perl $^{22}$ for IWSLT14 and TED datasets, additionally apply compound-splitting for WMT14 En-De $^{23}$ and SacreBLEU (Post, 2018) (Signature: nrefs:1|case:mixed| eff:no|tok:13a|smooth:exp|version :2.0.0 for IWSLT17 datasets.\n\nFinally, all results are reported on translations obtained after averaging the last 5 checkpoints.",
+      "section_number": "A.2",
+      "section_title": "cipherdaug: models and hyperparameters",
+      "normalized_section_title": "cipherdaug: models and hyperparameters"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.acl-long.17::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Titan RTX",
+      "cleaned_hardware_name": "titan rtx",
+      "normalized_hardware_name": "NVIDIA TITAN RTX",
+      "benchmark_hardware_name": "NVIDIA TITAN RTX",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "A.2",
+      "section_title": "cipherdaug: models and hyperparameters",
+      "normalized_section_title": "cipherdaug: models and hyperparameters",
+      "evidence": "The smaller datasets (IWSLT14 De $\\leftrightarrow$ En 18, IWSLT17 Fr $\\leftrightarrow$ En and TED $\\mathrm{Sk}\\leftrightarrow \\mathrm{En}^{20})$ are trained with the transformer_iwslt_de_en config with 6 layers of encoder and decoder with 4 attention heads, embedding size of 512, feed-forward size of 1024, network dropout 0.3 and attention dropout 0.1. The peak learning rate is $6e - 4$ with 8000 warmup steps.\n\nFor training the on WMT14 En $\\rightarrow$ De dataset $^{21}$ , we use Transformer Base config, dubbed transformer_wmt_en_de in fairseq toolkit, with 6 layers of encoder and decoder with 8 attention heads, embedding size of 512, feed-forward size of 2048, dropout 0.1. The peak learning rate is $7e - 4$ with 4000 warmup steps.\n\nFollowing conventional training of Transformers, we use Adam optimizer with betas (0.9, 0.98) and $\\epsilon = 10^{-9}$ and inverse_sqrt learning rate scheduler. Label smoothing is set to 0.1.\n\nWe also set an agreement_loss_warmup to 2000 steps. This signifies that until the specified number of steps, the model will train with regular cross-entropy loss without computing KL divergence. This is done to let the model gain some confidence before we start applying co-regularization. This does not improve or worsen model performance, but we find that this helps the model converge slightly faster.\n\nThe transformer_iwslt_de_en models (for IWSLT14, IWSLT17 and TED datasets) were run on 2 Titan RTX GPUs while the transformer_wmt_en_de model for WMT14 En-De was run on 8 A6000 GPUs. All models were run until convergence with an early stopping patience of 15 validation steps. While smaller models converged within 100k updates,\n\nTable 9: Results on IWSLT14 De→En with baseline Transformer and CipherDAug using ALONE embeddings (Takase and Kobayashi, 2020). The column TrainΘ denotes the approx. total number of trainable parameters. The filter vectors for ALONE embeddings are constructed using real valued vectors. Using the ALONE embeddings disentangles the effect of increased vocabulary in CipherDAug by building embeddings largely independent of the vocabulary sizes and ensures that it has the same number of net trainable parameters as the baseline Transformer. See Table 10 for details.   \n\n<table><tr><td></td><td>Dinter</td><td>EmbΘ</td><td>BLEU</td><td>Δ</td><td>TrainΘ</td></tr><tr><td>Transformer</td><td>-</td><td>6.1M</td><td>34.64</td><td>-</td><td>44M</td></tr><tr><td>CipherDAug</td><td>-</td><td>10.1M</td><td>37.53</td><td>+2.89</td><td>52M</td></tr><tr><td colspan=\"6\">Non-trainable O</td></tr><tr><td>Transformer + ALONE</td><td>4096</td><td>4.1M</td><td>34.17</td><td>-</td><td>31M</td></tr><tr><td>CipherDAug + ALONE</td><td>4096</td><td>4.1M</td><td>36.98</td><td>+2.81</td><td>31M</td></tr><tr><td colspan=\"6\">Trainable O</td></tr><tr><td>Transformer + ALONE</td><td>4096</td><td>4.1M</td><td>34.35</td><td>-</td><td>31M</td></tr><tr><td>CipherDAug + ALONE</td><td>4096</td><td>4.1M</td><td>37.10</td><td>+2.75</td><td>31M</td></tr></table>\n\nthe model on WMT14 dataset was force stopped at 400k updates while the model was still improving (at a very slow rate).\n\nFor producing translations, the decoder beam size is set to 4 and length penalty 0.6 for WMT, and 5 and 1.0 for all other experiments. We evaluate on BLEU scores (Papineni et al., 2002). Following previous work (Vaswani et al., 2017; Nguyen et al., 2019; Xu et al., 2021), we compute tokenized BLEU with multi_bleu.perl $^{22}$ for IWSLT14 and TED datasets, additionally apply compound-splitting for WMT14 En-De $^{23}$ and SacreBLEU (Post, 2018) (Signature: nrefs:1|case:mixed| eff:no|tok:13a|smooth:exp|version :2.0.0 for IWSLT17 datasets.\n\nFinally, all results are reported on translations obtained after averaging the last 5 checkpoints.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2022.acl-long.17::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A6000",
+      "cleaned_hardware_name": "a6000",
+      "normalized_hardware_name": "NVIDIA RTX A6000",
+      "benchmark_hardware_name": "NVIDIA RTX A6000",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "A.2",
+      "section_title": "cipherdaug: models and hyperparameters",
+      "normalized_section_title": "cipherdaug: models and hyperparameters",
+      "evidence": "The smaller datasets (IWSLT14 De $\\leftrightarrow$ En 18, IWSLT17 Fr $\\leftrightarrow$ En and TED $\\mathrm{Sk}\\leftrightarrow \\mathrm{En}^{20})$ are trained with the transformer_iwslt_de_en config with 6 layers of encoder and decoder with 4 attention heads, embedding size of 512, feed-forward size of 1024, network dropout 0.3 and attention dropout 0.1. The peak learning rate is $6e - 4$ with 8000 warmup steps.\n\nFor training the on WMT14 En $\\rightarrow$ De dataset $^{21}$ , we use Transformer Base config, dubbed transformer_wmt_en_de in fairseq toolkit, with 6 layers of encoder and decoder with 8 attention heads, embedding size of 512, feed-forward size of 2048, dropout 0.1. The peak learning rate is $7e - 4$ with 4000 warmup steps.\n\nFollowing conventional training of Transformers, we use Adam optimizer with betas (0.9, 0.98) and $\\epsilon = 10^{-9}$ and inverse_sqrt learning rate scheduler. Label smoothing is set to 0.1.\n\nWe also set an agreement_loss_warmup to 2000 steps. This signifies that until the specified number of steps, the model will train with regular cross-entropy loss without computing KL divergence. This is done to let the model gain some confidence before we start applying co-regularization. This does not improve or worsen model performance, but we find that this helps the model converge slightly faster.\n\nThe transformer_iwslt_de_en models (for IWSLT14, IWSLT17 and TED datasets) were run on 2 Titan RTX GPUs while the transformer_wmt_en_de model for WMT14 En-De was run on 8 A6000 GPUs. All models were run until convergence with an early stopping patience of 15 validation steps. While smaller models converged within 100k updates,\n\nTable 9: Results on IWSLT14 De→En with baseline Transformer and CipherDAug using ALONE embeddings (Takase and Kobayashi, 2020). The column TrainΘ denotes the approx. total number of trainable parameters. The filter vectors for ALONE embeddings are constructed using real valued vectors. Using the ALONE embeddings disentangles the effect of increased vocabulary in CipherDAug by building embeddings largely independent of the vocabulary sizes and ensures that it has the same number of net trainable parameters as the baseline Transformer. See Table 10 for details.   \n\n<table><tr><td></td><td>Dinter</td><td>EmbΘ</td><td>BLEU</td><td>Δ</td><td>TrainΘ</td></tr><tr><td>Transformer</td><td>-</td><td>6.1M</td><td>34.64</td><td>-</td><td>44M</td></tr><tr><td>CipherDAug</td><td>-</td><td>10.1M</td><td>37.53</td><td>+2.89</td><td>52M</td></tr><tr><td colspan=\"6\">Non-trainable O</td></tr><tr><td>Transformer + ALONE</td><td>4096</td><td>4.1M</td><td>34.17</td><td>-</td><td>31M</td></tr><tr><td>CipherDAug + ALONE</td><td>4096</td><td>4.1M</td><td>36.98</td><td>+2.81</td><td>31M</td></tr><tr><td colspan=\"6\">Trainable O</td></tr><tr><td>Transformer + ALONE</td><td>4096</td><td>4.1M</td><td>34.35</td><td>-</td><td>31M</td></tr><tr><td>CipherDAug + ALONE</td><td>4096</td><td>4.1M</td><td>37.10</td><td>+2.75</td><td>31M</td></tr></table>\n\nthe model on WMT14 dataset was force stopped at 400k updates while the model was still improving (at a very slow rate).\n\nFor producing translations, the decoder beam size is set to 4 and length penalty 0.6 for WMT, and 5 and 1.0 for all other experiments. We evaluate on BLEU scores (Papineni et al., 2002). Following previous work (Vaswani et al., 2017; Nguyen et al., 2019; Xu et al., 2021), we compute tokenized BLEU with multi_bleu.perl $^{22}$ for IWSLT14 and TED datasets, additionally apply compound-splitting for WMT14 En-De $^{23}$ and SacreBLEU (Post, 2018) (Signature: nrefs:1|case:mixed| eff:no|tok:13a|smooth:exp|version :2.0.0 for IWSLT17 datasets.\n\nFinally, all results are reported on translations obtained after averaging the last 5 checkpoints.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2022.acl-long.17::sections::3.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3.1",
+      "section_title": "experimental setup",
+      "evidence": "Datasets We use the widely studied IWSLT14 $\\mathrm{De} \\leftrightarrow \\mathrm{En}$ and IWSLT17 $\\mathrm{Fr} \\leftrightarrow \\mathrm{En}$ language pairs as our small-sized datasets. For high-resource experiments, we evaluate on the standard WMT14 $\\mathrm{En} \\rightarrow \\mathrm{De}$ set of 4.5M sentence pairs. We also extend our experiments to the extremely low-resource pair $\\mathrm{Sk} \\leftrightarrow \\mathrm{En}$ from the multilingual TED dataset (Qi et al., 2018) with 61k training samples, and dev and test splits of size 2271 and 2245 respectively.\n\nCiphertext Generation and Vocabularies. We use a variant of ROT- $k$ which preserves whitespace, numerals, special characters, and punctuation. As a result, these characters appear the same in both plain- and ciphertexts.\n\nFor our naive approach, we encipher the German side of the IWSLT14 dataset with up to 20 keys $\\{1,2,3,4,5,\\ldots,20\\}$ . For our main experiments, we encipher the source side of every translation direction with key $\\{1\\}$ for WMT experiments and keys $\\{1,2\\}$ for the rest.\n\nWe use sentencepiece (Kudo and Richardson, 2018) to tokenize text into byte-pair encodings\n\n(BPE; Sennrich et al. 2016c) by jointly learning subwords on the source, enciphered-source, and target sides. We tune the number of BPE merges as recommended by Ding et al. (2019); the resulting subword vocabulary sizes for each dataset are tabulated in Table 1.\n\nTable 1: Approximate subword vocabularies for the IWSLT14 (top), IWSLT17, TED, and WMT (bottom) datasets. 1(src) and 2(src) denote ROT-1 and ROT-2 encipherments, respectively.   \n\n<table><tr><td>→</td><td>src</td><td>tgt</td><td>sUt</td><td>1(src)</td><td>2(src)</td><td>total</td></tr><tr><td>De→En</td><td>9k</td><td>6.7k</td><td>11.8k</td><td>6.7k</td><td>6.5k</td><td>20k</td></tr><tr><td>En→De</td><td>7.3k</td><td>9.7k</td><td>12.7k</td><td>6.6k</td><td>6.4k</td><td>20k</td></tr><tr><td>Fr→En</td><td>7k</td><td>6k</td><td>10.4k</td><td>5.2k</td><td>5.2k</td><td>16k</td></tr><tr><td>En→Fr</td><td>7.5k</td><td>6.5k</td><td>11k</td><td>5k</td><td>5k</td><td>16k</td></tr><tr><td>En→Sk</td><td>5.2k</td><td>7.1k</td><td>10k</td><td>4.6k</td><td>4.5k</td><td>16k</td></tr><tr><td>En→De</td><td>25k</td><td>24k</td><td>36k</td><td>16k</td><td>16k</td><td>60k</td></tr></table>\n\nIn all experiments, we set the loss weight hyperparameters $\\alpha_{1}$ , $\\alpha_{2}$ to 1, and $\\beta$ to 5. Section 4.1 shows an ablation over $\\beta$ to justify this setting. We find that softmax temperature $\\tau = 1$ works well for all experiments; $\\tau = 2$ results in more stable training for larger datasets.\n\nEvaluation We evaluate on BLEU scores $^{7}$ (Papineni et al., 2002). Following previous work (Vaswani et al., 2017; Nguyen et al., 2019; Xu et al., 2021), we compute tokenized BLEU with multi_bleu.perl $^{8}$ for IWSLT14 and TED datasets, additionally apply compound-splitting for WMT14 En-De $^{9}$ and SacreBLEU $^{10}$ (Post, 2018) for IWSLT17 datasets. For all experiments, we perform significance tests based on bootstrap resampling (Clark et al., 2011) using the compare-mt toolkit (Neubig et al., 2019).\n\nBaselines Our main baselines are strong and widely used data-augmentation techniques that do not use external data. We compare CipherDAug to back-translation-based data-diversification (Nguyen et al., 2019), word replacement techniques like SwitchOut (Wang et al., 2018), WordDrop (Sennrich et al., 2016a), and RAML (Norouzi et al., 2016), and the subword-regularization technique BPE-Dropout (Provilkov et al., 2020).\n\nSee supplemental sections A.1 and A.2 for further baseline and implementation details.\n\n7Decoder beam size 4 and length penalty 0.6 for WMT, and 5 and 1.0 for all other experiments.   \n8mosesdecoder/scripts/generic/multi-bleu.perl   \n$^9$ tensorflow/tensor2tensor/util/get_ende_bleu.sh   \n10SacreBLEU signature: nrefs:1|case:mixed|   \neff: no|tok:13a|smooth:exp|version:2.0.0\n\nTable 2: Results on the IWSLT14 De-En validation set comparing the naive approach and CipherDAug.   \n\n<table><tr><td>Model</td><td colspan=\"2\">De → En</td></tr><tr><td>Transformer</td><td colspan=\"2\">34.91</td></tr><tr><td>+ Word Dropout</td><td colspan=\"2\">34.83</td></tr><tr><td>+ SwitchOut</td><td colspan=\"2\">34.82</td></tr><tr><td>+ RAML</td><td colspan=\"2\">35.11</td></tr><tr><td>+ RAML + Swithout</td><td colspan=\"2\">35.17</td></tr><tr><td>+ RAML + WordDrop</td><td colspan=\"2\">35.47</td></tr><tr><td>Naive Multi-Source</td><td>Equation (1)</td><td>Equation (2)</td></tr><tr><td>2 keys</td><td>35.45</td><td>35.85</td></tr><tr><td>5 keys</td><td>35.65</td><td>35.98</td></tr><tr><td>10 keys</td><td>33.70</td><td>35.42</td></tr><tr><td>20 keys</td><td>32.95</td><td>34.75</td></tr><tr><td>5 keys + RAML + Swithout</td><td>-</td><td>36.17</td></tr><tr><td>5 keys + RAML + WordDrop</td><td>-</td><td>36.63</td></tr><tr><td>CipherDAug - 1 key</td><td></td><td>36.21</td></tr><tr><td>CipherDAug - 2 keys</td><td></td><td>37.60</td></tr></table>"
+    },
+    {
+      "source_window_id": "2022.acl-long.17::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "appendix",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2022.acl-long.17::appendix::A.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.1",
+      "section_title": "baselines",
+      "evidence": "To compare model performance on the small and mid-sized datasets, we re-implemented most baselines:\n\n- we used the pseudocode in appendix A6 along with proofs in appendices A1 and A2 of the SwitchOut paper (Wang et al., 2018) to implement SwitchOut, WordDrop (Sennrich et al., 2016a), RAML (Norouzi et al., 2016), RAML+SwitchOut and RAML+WordDrop as special cases of SwitchOut. The hyperparameter $\\tau$ was tuned on the dev set for each language pair. The respective $\\tau$ values are 0.9 and 0.95 for De-En and 0.85 and 0.95 for Fr-En.   \n- we followed the instructions on the official open-sourced repository to reproduce BPE-Dropout (Provilkov et al., 2020) $^{16}$ with the recommended value of $p = 0.1$ using the sentencepiece tokenizer. We trained models on our Fairseq codebase for IWSLT14 $\\mathrm{De} \\leftrightarrow \\mathrm{En}$ and WMT14 $\\mathrm{En} \\rightarrow \\mathrm{De}$ . We reported the SacreBLEU numbers for IWSLT17 $\\mathrm{Fr} \\leftrightarrow \\mathrm{En}$ from literature.   \n- experiments on data-diversification (Nguyen et al., 2019) were reproduced using the official open-sourced implementation on top of the Fairseq toolkit. For WMT14 En-De, we use a Transformer Base (68M parameters) for a fair comparison across methods, whereas the original implementation employs a Transformer Big model (210M parameters). [17] Note that this method requires training 7 individual models and has a total effective data size 7 times the original size to produce best results.\n\nWe reported the performance of Mixed-Representation (Wu et al., 2020) baseline for IWSLT14 De→En from the literature as we could reproduce the experimentst. However, to the best of our knowledge, we employ settings identical to Mixed-Repr. baseline for IWSLT14 De→En in our model - the same tokenizer (SentencePiece), vocabulary size (12k),\n\nmodel size (transformer_iwslt_de_en), decoding hyper-parameters (beam 5, len-pen 1.0) and evaluation script (multi-bleu.perl)."
+    },
+    {
+      "source_window_id": "2022.acl-long.17::appendix::A.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.3",
+      "section_title": "additional experiments",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA TITAN RTX",
+        "num": 2
+      },
+      {
+        "name": "NVIDIA RTX A6000",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2022\\2022.acl-long.17\\auto\\full.md",
+    "source_md_sha256": "744ebfb7287b28d47b8e54bb432d19a4f7f9720f0c2ece63a07120f983bd5456",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

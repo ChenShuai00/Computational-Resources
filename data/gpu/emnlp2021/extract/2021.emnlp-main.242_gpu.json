@@ -1,0 +1,204 @@
+{
+  "paper_id": "2021.emnlp-main.242",
+  "candidate_windows": [
+    {
+      "window_id": "2021.emnlp-main.242::sections::2",
+      "paper_id": "2021.emnlp-main.242",
+      "section_number": "2",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "In this section, we introduce the necessary background for BERT early exiting. Throughout this work, we consider the case of multi-class classification with samples $\\{(x,y), x \\in \\mathcal{X}, y \\in \\mathcal{Y}, i = 1,2,\\dots,N\\}$ , e.g., sentences, and the number of classes is $K$ .",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.emnlp-main.242::sections::2.2.2",
+      "paper_id": "2021.emnlp-main.242",
+      "section_number": "2.2.2",
+      "section_title": "inference",
+      "normalized_section_title": "inference",
+      "window_text": "At inference, the multi-exit BERT can operate in two different modes, depending on whether the computational budget to classify an example is known or not.\n\nBudgeted Exiting. If the computational budget is known, we can directly appoint a suitable exit of BERT, $f_{M'}(x; \\theta_{M'})$ , to predict all queries.\n\nDynamic Exiting. Under this mode, after receiving a query input $x$ , the model starts to predict on the classifiers $f_{1}(x;\\theta_{1})$ , $f_{2}(x;\\theta_{2})$ , ..., in turn in a forward pass, reusing computation where possible. It will continue to do so until it receives a signal to stop early at an exit $M'' < M$ , or arrives at the last exit $M$ . At this point, it will output the final predictions based on the current and previous predictions. Note that under this early exit setting, different samples might exit at different layers.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.emnlp-main.242::sections::6",
+      "paper_id": "2021.emnlp-main.242",
+      "section_number": "6",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.emnlp-main.242::sections::6.4",
+      "paper_id": "2021.emnlp-main.242",
+      "section_number": "6.4",
+      "section_title": "experimental settings",
+      "normalized_section_title": "experimental settings",
+      "window_text": "We implement our GAML-BERT and other baseline methods based on HuggingFace's Transformers (Wolf et al., 2020). We conduct our experiments on a single Nvidia V100 16GB GPU.\n\nTraining. We add a linear output layer after each intermediate layer of the pre-trained BERT/ALBERT model as the internal classifier. The hyperparameter tuning is done in a cross-validation fashion on the training set so that the dev set of GLUE tasks remains blind for model generalization. We perform grid search over batch sizes $\\{16, 32, 128\\}$ , and learning rates $\\{1e-5, 2e-5, 3e-5, 5e-5\\}$ for model parameters $\\Theta$ , and warm-up steps of $\\{0.8, 1.0, 1.2\\}$ times the number of steps in an epoch, and values of weight $\\alpha$ (from Eq. 2) $\\{0.1, 0.2, 0.3, 0.5, 0.8\\}$ . We will adopt the Adam optimizer. We apply an early stopping mechanism with patience 5 and evaluate the model on the valid set (from cross-validation) after each epoch. Moreover, we define the dev performance of our early exiting architecture as the average performance of all the exits. We will select the model checkpoint with the best average performance in cross-validation.\n\nDynamic exiting mode inference. Following prior work (Zhou et al., 2020), dynamic exiting mode inference is on a per-instance basis, i.e., the batch size for inference is set to 1. We believe this setting mimics the common latency-sensitive production scenario when processing individual requests of different difficulties from different users. We adjust the hyper-parameters for each dynamic exiting method such that the speed-up ratio is between $1.80\\mathrm{x}$ to $2.1\\mathrm{x}$ .\n\nTable 2: Experimental results of models with BERT backbone on the GLUE's development set and test set. This table reports the results under the dynamic exiting mode inference. The mean performance scores of 5 runs are reported. The speed-up ratio is averaged across seven tasks. Best performances are bolded, \"*\" indicates the performance gains by our full model GAML-BERT against the baseline models by the literature are statistically significant.   \n\n<table><tr><td>Method</td><td>#Param</td><td>Speed-up</td><td>CoLA</td><td>MNLI</td><td>MRPC</td><td>QNLI</td><td>QQP</td><td>RTE</td><td>SST-2</td></tr><tr><td colspan=\"10\">Dev set</td></tr><tr><td>BERT-base</td><td>109M</td><td>1.00x</td><td>54.7</td><td>83.5</td><td>88.2</td><td>86.8</td><td>88.7</td><td>67.1</td><td>91.5</td></tr><tr><td>BERT-6L</td><td>66M</td><td>1.96x</td><td>36.4</td><td>77.1</td><td>83.9</td><td>80.2</td><td>84.8</td><td>60.3</td><td>88.6</td></tr><tr><td>DistillBERT</td><td>66M</td><td>1.96x</td><td>46.5</td><td>79.8</td><td>85.3</td><td>82.2</td><td>86.4</td><td>63.1</td><td>89.3</td></tr><tr><td>BERT-PKD</td><td>66M</td><td>1.96x</td><td>47.4</td><td>80.6</td><td>85.5</td><td>82.5</td><td>86.8</td><td>63.4</td><td>89.7</td></tr><tr><td>LayerDrop</td><td>66M</td><td>1.96x</td><td>43.2</td><td>80.1</td><td>85.2</td><td>81.7</td><td>86.2</td><td>62.8</td><td>89.1</td></tr><tr><td>BERT-of-Theseus</td><td>66M</td><td>1.96x</td><td>44.5</td><td>80.7</td><td>85.4</td><td>82.4</td><td>86.5</td><td>63.6</td><td>89.6</td></tr><tr><td>DeeBERT</td><td>109M</td><td>1.88x</td><td>43.4</td><td>81.2</td><td>85.8</td><td>82.5</td><td>87.3</td><td>63.9</td><td>90.0</td></tr><tr><td>Shallow-Deep</td><td>109M</td><td>1.95x</td><td>44.5</td><td>81.1</td><td>85.7</td><td>82.6</td><td>87.2</td><td>64.1</td><td>90.1</td></tr><tr><td>PABEE</td><td>109M</td><td>1.91x</td><td>45.2</td><td>81.5</td><td>86.2</td><td>83.1</td><td>87.5</td><td>64.5</td><td>90.5</td></tr><tr><td>FastBERT</td><td>109M</td><td>1.93x</td><td>48.6</td><td>82.1</td><td>86.7</td><td>83.6</td><td>88.1</td><td>64.9</td><td>90.8</td></tr><tr><td>FastBERT-GA (ours)</td><td>109M</td><td>1.95x</td><td>50.4</td><td>82.6</td><td>87.5</td><td>84.7</td><td>88.5</td><td>66.2</td><td>91.4</td></tr><tr><td>ML-BERT (ours)</td><td>109M</td><td>1.96x</td><td>49.2</td><td>82.7</td><td>87.3</td><td>84.2</td><td>88.6</td><td>65.7</td><td>91.3</td></tr><tr><td>GAML-BERT (ours) (GA-hard)</td><td>109M</td><td>1.95x</td><td>50.5</td><td>83.1</td><td>87.6</td><td>84.9</td><td>88.9</td><td>66.3</td><td>91.5</td></tr><tr><td>GAML-BERT (ours) (GA-soft)</td><td>109M</td><td>1.95x</td><td>51.1*</td><td>83.2*</td><td>88.1*</td><td>85.1*</td><td>89.1*</td><td>66.8*</td><td>91.9*</td></tr><tr><td colspan=\"10\">Test set</td></tr><tr><td>BERT-base</td><td>109M</td><td>1.00x</td><td>50.6</td><td>83.4</td><td>87.2</td><td>85.7</td><td>70.4</td><td>64.7</td><td>92.7</td></tr><tr><td>PABEE</td><td>109M</td><td>1.89x</td><td>44.8</td><td>81.6</td><td>85.2</td><td>82.2</td><td>69.2</td><td>62.1</td><td>91.3</td></tr><tr><td>FastBERT</td><td>109M</td><td>1.95x</td><td>45.7</td><td>82.0</td><td>85.7</td><td>82.6</td><td>69.8</td><td>62.6</td><td>91.7</td></tr><tr><td>GAML-BERT (ours) (GA-soft)</td><td>109M</td><td>1.96x</td><td>47.2*</td><td>83.3*</td><td>87.2*</td><td>84.2*</td><td>70.9*</td><td>64.3*</td><td>92.8*</td></tr></table>\n\nBudgeted exiting mode inference. In this setting, a multi-exit model is forced to output its prediction with a given exit. The results under this mode will be mainly reported in figures depicting the relation between the depth of the exit and the performance scores.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.emnlp-main.242::appendix::C",
+      "paper_id": "2021.emnlp-main.242",
+      "section_number": "C",
+      "section_title": "hyperparameter settings",
+      "normalized_section_title": "hyperparameter settings",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.emnlp-main.242::appendix::C.1",
+      "paper_id": "2021.emnlp-main.242",
+      "section_number": "C.1",
+      "section_title": "hyperparameters for each task in the pilot experiments",
+      "normalized_section_title": "hyperparameters for each task in the pilot experiments",
+      "window_text": "Table 6 reports the important hyper-parameters of BERT for each task in the pilot experiments.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.emnlp-main.242::appendix::C.2",
+      "paper_id": "2021.emnlp-main.242",
+      "section_number": "C.2",
+      "section_title": "hyper-parameters for each task in the main experiments",
+      "normalized_section_title": "hyper-parameters for each task in the main experiments",
+      "window_text": "Table 7 reports the important hyper-parameters of GAML-BERT for each task. Note that our hyperparameter search was done on the training set with cross-validation so that the GLUE benchmarks' dev set information was not revealed during training.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2021.emnlp-main.242::sections::6.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia V100 16GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We implement our GAML-BERT and other baseline methods based on HuggingFace's Transformers (Wolf et al., 2020). We conduct our experiments on a single Nvidia V100 16GB GPU.\n\nTraining. We add a linear output layer after each intermediate layer of the pre-trained BERT/ALBERT model as the internal classifier. The hyperparameter tuning is done in a cross-validation fashion on the training set so that the dev set of GLUE tasks remains blind for model generalization. We perform grid search over batch sizes $\\{16, 32, 128\\}$ , and learning rates $\\{1e-5, 2e-5, 3e-5, 5e-5\\}$ for model parameters $\\Theta$ , and warm-up steps of $\\{0.8, 1.0, 1.2\\}$ times the number of steps in an epoch, and values of weight $\\alpha$ (from Eq. 2) $\\{0.1, 0.2, 0.3, 0.5, 0.8\\}$ . We will adopt the Adam optimizer. We apply an early stopping mechanism with patience 5 and evaluate the model on the valid set (from cross-validation) after each epoch. Moreover, we define the dev performance of our early exiting architecture as the average performance of all the exits. We will select the model checkpoint with the best average performance in cross-validation.\n\nDynamic exiting mode inference. Following prior work (Zhou et al., 2020), dynamic exiting mode inference is on a per-instance basis, i.e., the batch size for inference is set to 1. We believe this setting mimics the common latency-sensitive production scenario when processing individual requests of different difficulties from different users. We adjust the hyper-parameters for each dynamic exiting method such that the speed-up ratio is between $1.80\\mathrm{x}$ to $2.1\\mathrm{x}$ .\n\nTable 2: Experimental results of models with BERT backbone on the GLUE's development set and test set. This table reports the results under the dynamic exiting mode inference. The mean performance scores of 5 runs are reported. The speed-up ratio is averaged across seven tasks. Best performances are bolded, \"*\" indicates the performance gains by our full model GAML-BERT against the baseline models by the literature are statistically significant.   \n\n<table><tr><td>Method</td><td>#Param</td><td>Speed-up</td><td>CoLA</td><td>MNLI</td><td>MRPC</td><td>QNLI</td><td>QQP</td><td>RTE</td><td>SST-2</td></tr><tr><td colspan=\"10\">Dev set</td></tr><tr><td>BERT-base</td><td>109M</td><td>1.00x</td><td>54.7</td><td>83.5</td><td>88.2</td><td>86.8</td><td>88.7</td><td>67.1</td><td>91.5</td></tr><tr><td>BERT-6L</td><td>66M</td><td>1.96x</td><td>36.4</td><td>77.1</td><td>83.9</td><td>80.2</td><td>84.8</td><td>60.3</td><td>88.6</td></tr><tr><td>DistillBERT</td><td>66M</td><td>1.96x</td><td>46.5</td><td>79.8</td><td>85.3</td><td>82.2</td><td>86.4</td><td>63.1</td><td>89.3</td></tr><tr><td>BERT-PKD</td><td>66M</td><td>1.96x</td><td>47.4</td><td>80.6</td><td>85.5</td><td>82.5</td><td>86.8</td><td>63.4</td><td>89.7</td></tr><tr><td>LayerDrop</td><td>66M</td><td>1.96x</td><td>43.2</td><td>80.1</td><td>85.2</td><td>81.7</td><td>86.2</td><td>62.8</td><td>89.1</td></tr><tr><td>BERT-of-Theseus</td><td>66M</td><td>1.96x</td><td>44.5</td><td>80.7</td><td>85.4</td><td>82.4</td><td>86.5</td><td>63.6</td><td>89.6</td></tr><tr><td>DeeBERT</td><td>109M</td><td>1.88x</td><td>43.4</td><td>81.2</td><td>85.8</td><td>82.5</td><td>87.3</td><td>63.9</td><td>90.0</td></tr><tr><td>Shallow-Deep</td><td>109M</td><td>1.95x</td><td>44.5</td><td>81.1</td><td>85.7</td><td>82.6</td><td>87.2</td><td>64.1</td><td>90.1</td></tr><tr><td>PABEE</td><td>109M</td><td>1.91x</td><td>45.2</td><td>81.5</td><td>86.2</td><td>83.1</td><td>87.5</td><td>64.5</td><td>90.5</td></tr><tr><td>FastBERT</td><td>109M</td><td>1.93x</td><td>48.6</td><td>82.1</td><td>86.7</td><td>83.6</td><td>88.1</td><td>64.9</td><td>90.8</td></tr><tr><td>FastBERT-GA (ours)</td><td>109M</td><td>1.95x</td><td>50.4</td><td>82.6</td><td>87.5</td><td>84.7</td><td>88.5</td><td>66.2</td><td>91.4</td></tr><tr><td>ML-BERT (ours)</td><td>109M</td><td>1.96x</td><td>49.2</td><td>82.7</td><td>87.3</td><td>84.2</td><td>88.6</td><td>65.7</td><td>91.3</td></tr><tr><td>GAML-BERT (ours) (GA-hard)</td><td>109M</td><td>1.95x</td><td>50.5</td><td>83.1</td><td>87.6</td><td>84.9</td><td>88.9</td><td>66.3</td><td>91.5</td></tr><tr><td>GAML-BERT (ours) (GA-soft)</td><td>109M</td><td>1.95x</td><td>51.1*</td><td>83.2*</td><td>88.1*</td><td>85.1*</td><td>89.1*</td><td>66.8*</td><td>91.9*</td></tr><tr><td colspan=\"10\">Test set</td></tr><tr><td>BERT-base</td><td>109M</td><td>1.00x</td><td>50.6</td><td>83.4</td><td>87.2</td><td>85.7</td><td>70.4</td><td>64.7</td><td>92.7</td></tr><tr><td>PABEE</td><td>109M</td><td>1.89x</td><td>44.8</td><td>81.6</td><td>85.2</td><td>82.2</td><td>69.2</td><td>62.1</td><td>91.3</td></tr><tr><td>FastBERT</td><td>109M</td><td>1.95x</td><td>45.7</td><td>82.0</td><td>85.7</td><td>82.6</td><td>69.8</td><td>62.6</td><td>91.7</td></tr><tr><td>GAML-BERT (ours) (GA-soft)</td><td>109M</td><td>1.96x</td><td>47.2*</td><td>83.3*</td><td>87.2*</td><td>84.2*</td><td>70.9*</td><td>64.3*</td><td>92.8*</td></tr></table>\n\nBudgeted exiting mode inference. In this setting, a multi-exit model is forced to output its prediction with a given exit. The results under this mode will be mainly reported in figures depicting the relation between the depth of the exit and the performance scores.",
+      "section_number": "6.4",
+      "section_title": "experimental settings",
+      "normalized_section_title": "experimental settings"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2021.emnlp-main.242::sections::6.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia V100 16GB",
+      "cleaned_hardware_name": "nvidia v100 16gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "6.4",
+      "section_title": "experimental settings",
+      "normalized_section_title": "experimental settings",
+      "evidence": "We implement our GAML-BERT and other baseline methods based on HuggingFace's Transformers (Wolf et al., 2020). We conduct our experiments on a single Nvidia V100 16GB GPU.\n\nTraining. We add a linear output layer after each intermediate layer of the pre-trained BERT/ALBERT model as the internal classifier. The hyperparameter tuning is done in a cross-validation fashion on the training set so that the dev set of GLUE tasks remains blind for model generalization. We perform grid search over batch sizes $\\{16, 32, 128\\}$ , and learning rates $\\{1e-5, 2e-5, 3e-5, 5e-5\\}$ for model parameters $\\Theta$ , and warm-up steps of $\\{0.8, 1.0, 1.2\\}$ times the number of steps in an epoch, and values of weight $\\alpha$ (from Eq. 2) $\\{0.1, 0.2, 0.3, 0.5, 0.8\\}$ . We will adopt the Adam optimizer. We apply an early stopping mechanism with patience 5 and evaluate the model on the valid set (from cross-validation) after each epoch. Moreover, we define the dev performance of our early exiting architecture as the average performance of all the exits. We will select the model checkpoint with the best average performance in cross-validation.\n\nDynamic exiting mode inference. Following prior work (Zhou et al., 2020), dynamic exiting mode inference is on a per-instance basis, i.e., the batch size for inference is set to 1. We believe this setting mimics the common latency-sensitive production scenario when processing individual requests of different difficulties from different users. We adjust the hyper-parameters for each dynamic exiting method such that the speed-up ratio is between $1.80\\mathrm{x}$ to $2.1\\mathrm{x}$ .\n\nTable 2: Experimental results of models with BERT backbone on the GLUE's development set and test set. This table reports the results under the dynamic exiting mode inference. The mean performance scores of 5 runs are reported. The speed-up ratio is averaged across seven tasks. Best performances are bolded, \"*\" indicates the performance gains by our full model GAML-BERT against the baseline models by the literature are statistically significant.   \n\n<table><tr><td>Method</td><td>#Param</td><td>Speed-up</td><td>CoLA</td><td>MNLI</td><td>MRPC</td><td>QNLI</td><td>QQP</td><td>RTE</td><td>SST-2</td></tr><tr><td colspan=\"10\">Dev set</td></tr><tr><td>BERT-base</td><td>109M</td><td>1.00x</td><td>54.7</td><td>83.5</td><td>88.2</td><td>86.8</td><td>88.7</td><td>67.1</td><td>91.5</td></tr><tr><td>BERT-6L</td><td>66M</td><td>1.96x</td><td>36.4</td><td>77.1</td><td>83.9</td><td>80.2</td><td>84.8</td><td>60.3</td><td>88.6</td></tr><tr><td>DistillBERT</td><td>66M</td><td>1.96x</td><td>46.5</td><td>79.8</td><td>85.3</td><td>82.2</td><td>86.4</td><td>63.1</td><td>89.3</td></tr><tr><td>BERT-PKD</td><td>66M</td><td>1.96x</td><td>47.4</td><td>80.6</td><td>85.5</td><td>82.5</td><td>86.8</td><td>63.4</td><td>89.7</td></tr><tr><td>LayerDrop</td><td>66M</td><td>1.96x</td><td>43.2</td><td>80.1</td><td>85.2</td><td>81.7</td><td>86.2</td><td>62.8</td><td>89.1</td></tr><tr><td>BERT-of-Theseus</td><td>66M</td><td>1.96x</td><td>44.5</td><td>80.7</td><td>85.4</td><td>82.4</td><td>86.5</td><td>63.6</td><td>89.6</td></tr><tr><td>DeeBERT</td><td>109M</td><td>1.88x</td><td>43.4</td><td>81.2</td><td>85.8</td><td>82.5</td><td>87.3</td><td>63.9</td><td>90.0</td></tr><tr><td>Shallow-Deep</td><td>109M</td><td>1.95x</td><td>44.5</td><td>81.1</td><td>85.7</td><td>82.6</td><td>87.2</td><td>64.1</td><td>90.1</td></tr><tr><td>PABEE</td><td>109M</td><td>1.91x</td><td>45.2</td><td>81.5</td><td>86.2</td><td>83.1</td><td>87.5</td><td>64.5</td><td>90.5</td></tr><tr><td>FastBERT</td><td>109M</td><td>1.93x</td><td>48.6</td><td>82.1</td><td>86.7</td><td>83.6</td><td>88.1</td><td>64.9</td><td>90.8</td></tr><tr><td>FastBERT-GA (ours)</td><td>109M</td><td>1.95x</td><td>50.4</td><td>82.6</td><td>87.5</td><td>84.7</td><td>88.5</td><td>66.2</td><td>91.4</td></tr><tr><td>ML-BERT (ours)</td><td>109M</td><td>1.96x</td><td>49.2</td><td>82.7</td><td>87.3</td><td>84.2</td><td>88.6</td><td>65.7</td><td>91.3</td></tr><tr><td>GAML-BERT (ours) (GA-hard)</td><td>109M</td><td>1.95x</td><td>50.5</td><td>83.1</td><td>87.6</td><td>84.9</td><td>88.9</td><td>66.3</td><td>91.5</td></tr><tr><td>GAML-BERT (ours) (GA-soft)</td><td>109M</td><td>1.95x</td><td>51.1*</td><td>83.2*</td><td>88.1*</td><td>85.1*</td><td>89.1*</td><td>66.8*</td><td>91.9*</td></tr><tr><td colspan=\"10\">Test set</td></tr><tr><td>BERT-base</td><td>109M</td><td>1.00x</td><td>50.6</td><td>83.4</td><td>87.2</td><td>85.7</td><td>70.4</td><td>64.7</td><td>92.7</td></tr><tr><td>PABEE</td><td>109M</td><td>1.89x</td><td>44.8</td><td>81.6</td><td>85.2</td><td>82.2</td><td>69.2</td><td>62.1</td><td>91.3</td></tr><tr><td>FastBERT</td><td>109M</td><td>1.95x</td><td>45.7</td><td>82.0</td><td>85.7</td><td>82.6</td><td>69.8</td><td>62.6</td><td>91.7</td></tr><tr><td>GAML-BERT (ours) (GA-soft)</td><td>109M</td><td>1.96x</td><td>47.2*</td><td>83.3*</td><td>87.2*</td><td>84.2*</td><td>70.9*</td><td>64.3*</td><td>92.8*</td></tr></table>\n\nBudgeted exiting mode inference. In this setting, a multi-exit model is forced to output its prediction with a given exit. The results under this mode will be mainly reported in figures depicting the relation between the depth of the exit and the performance scores.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2021.emnlp-main.242::sections::2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "2",
+      "section_title": "preliminaries",
+      "evidence": "In this section, we introduce the necessary background for BERT early exiting. Throughout this work, we consider the case of multi-class classification with samples $\\{(x,y), x \\in \\mathcal{X}, y \\in \\mathcal{Y}, i = 1,2,\\dots,N\\}$ , e.g., sentences, and the number of classes is $K$ ."
+    },
+    {
+      "source_window_id": "2021.emnlp-main.242::sections::2.2.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "2.2.2",
+      "section_title": "inference",
+      "evidence": "At inference, the multi-exit BERT can operate in two different modes, depending on whether the computational budget to classify an example is known or not.\n\nBudgeted Exiting. If the computational budget is known, we can directly appoint a suitable exit of BERT, $f_{M'}(x; \\theta_{M'})$ , to predict all queries.\n\nDynamic Exiting. Under this mode, after receiving a query input $x$ , the model starts to predict on the classifiers $f_{1}(x;\\theta_{1})$ , $f_{2}(x;\\theta_{2})$ , ..., in turn in a forward pass, reusing computation where possible. It will continue to do so until it receives a signal to stop early at an exit $M'' < M$ , or arrives at the last exit $M$ . At this point, it will output the final predictions based on the current and previous predictions. Note that under this early exit setting, different samples might exit at different layers."
+    },
+    {
+      "source_window_id": "2021.emnlp-main.242::sections::6",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2021.emnlp-main.242::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "hyperparameter settings",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2021.emnlp-main.242::appendix::C.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C.1",
+      "section_title": "hyperparameters for each task in the pilot experiments",
+      "evidence": "Table 6 reports the important hyper-parameters of BERT for each task in the pilot experiments."
+    },
+    {
+      "source_window_id": "2021.emnlp-main.242::appendix::C.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C.2",
+      "section_title": "hyper-parameters for each task in the main experiments",
+      "evidence": "Table 7 reports the important hyper-parameters of GAML-BERT for each task. Note that our hyperparameter search was done on the training set with cross-validation so that the GLUE benchmarks' dev set information was not revealed during training."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "6.4"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2021\\2021.emnlp-main.242\\auto\\full.md",
+    "source_md_sha256": "d6a0a69a711a86e38d641ee4c0ae1a12c1a7c4897511f33da59cb6c2eadfafd7",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "2f0b6bf06ed46b81ec464e45ed904d0601f1b38cbfb09fd385a8ac02d49c4859"
+  }
+}

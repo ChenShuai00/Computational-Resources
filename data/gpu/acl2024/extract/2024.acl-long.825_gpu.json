@@ -1,0 +1,141 @@
+{
+  "paper_id": "2024.acl-long.825",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.825::sections::3",
+      "paper_id": "2024.acl-long.825",
+      "section_number": "3",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "In this paper, we propose a two-stage ICL framework that improves performance through multiple forward iterations. As shown in Figure 2, we assign the demonstrations and test input to the DeepThinking and test stages, respectively, where Key-Value matrices serve as a bridge between the two stages. Next, we describe these two stages in detail.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.825::sections::4",
+      "paper_id": "2024.acl-long.825",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.825::sections::4.3",
+      "paper_id": "2024.acl-long.825",
+      "section_number": "4.3",
+      "section_title": "implementation details and evaluation",
+      "normalized_section_title": "implementation details and evaluation",
+      "window_text": "All experiments are conducted on a single NVIDIA A100 GPU. For all baselines and Deep-Thinking, we run each method over ten random seeds and\n\nreport the average performance. For conventional ICL tasks, we follow (Li and Qiu, 2023) that the number of demonstrations for SST2, SST5, TREC, MR, and AGNews is 8, 10, 12, 8, and 8, respectively. For MMLU and BBH, the demonstrations come from the dataset's inherent demonstrations. Specifically five demonstrations for MMLU and three demonstrations for BBH per task. In the in-context setting without a dev set, we fix the iteration number $T$ at 5, with the gating parameter $\\eta$ set to 0.01. In the in-context setting with a dev set, we relax the max iteration number $T$ to 15, using the dev set to determine the final hyper-parameters. For the dev set, we randomly select a sample size identical to the test set and keep it fixed. For evaluation, similar to previous methods, we concatenate the test input with each candidate's answer and submit them to the LLM. The final answer is selected by summing the probabilities of the tokens belonging to the answer part and choosing the candidate answer with the highest probability.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.825::appendix::D",
+      "paper_id": "2024.acl-long.825",
+      "section_number": "D",
+      "section_title": "minimal implementation",
+      "normalized_section_title": "minimal implementation",
+      "window_text": "The provided minimal implementation code showcases our proposed method, primarily integrating with the Hugging Face Transformers library.\n\nclass GatedOptim: def__init__(self,step_size $\\coloneqq$ 0.01): self step_size $=$ step_size def upd_x(self,old_x,g): return old_x $^+$ self_STEP_size $\\ast g$ def__call__(self,oldxs,newxs): pesudoGs $=$ [newx-oldxforoldx,newx in zip(oldxs,newxs)] updated_kv $=$ [self.upd_x(old_x,g) for old_x,g in zip(old_xs,pesudoGs)] return updated_kv   \nclass AttnOptimWrapper: def__init__(self,1lm,\\*\\*optimizer_args): self.model $= 11\\mathrm{m}$ self.kv $=$ None self.update_k $=$ GatedOptim(\\*\\*optimizer_args) self.update_v $=$ GatedOptim(\\*\\*optimizer_args) def step(self,ctx_ids): L $=$ len(ctx_ids) ctx_ids $=$ ctx_ids unsqueeze(0)#[1,L] mask $=$ torch.ones_like(ctx_ids).repeat(1,2 if self.kv else 1) out $=$ self.model(ctx_ids,mask,past_key_values $\\equiv$ self.kv,use_cache $\\equiv$ True) out_kv $=$ out.past_key_values #kv@ (oldCtx + newCtx) cur_kv $=$ [[k:,:-L:,],v:,:-L:,]] for k,v in out_kv] # kv @ (newCtx) if not self.kv: self.kv $=$ cur_kv else: (old_ks,old.vs),cur_ks,cur.vs) $=$ zip(\\*self.kv),zip(\\*cur_kv) upd_ks $=$ self.update_k(old_ks,cur_ks) upd_vs $=$ self.update_v(old.vs,cur_vs) self.kv $=$ list(zip(upd_ks,upd.vs)) # kv @ (mergedctx) return self.kv   \ndef main(): #...initialization (dataset, model,tokenizer, logger,etc) ex_str $=$ load_exemplar() ex_ids,ex_mask $=$ tokenizer(ex_str) meta_optim $=$ AttnOptimWrapper(model) for idx in range(args.meta_steps): ex_kv $=$ meta_optim_STEP(ex_ids) for B_queryids,B_query_mask in inferenceloader: bs $=$ len(B_query_ids) # [B(expanded),L+L'(concat)] B_merged_mask $=$ torch.cat((ex_mask.expand(bs,-1),B_query_mask),dim=1) B_kv_shape $=$ (bs,-1,-1,-1) B_kv $=$ [[k.expand(B_kv_shape),v.expand(B_kv_shape)] for k,v in ex_kv] B_out $=$ model(B_queryids,B_merged_mask,past_key_values=B_kv).logits B_out $=$ F.log softmax(B_out,dim=-1) #...",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.825::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "All experiments are conducted on a single NVIDIA A100 GPU. For all baselines and Deep-Thinking, we run each method over ten random seeds and\n\nreport the average performance. For conventional ICL tasks, we follow (Li and Qiu, 2023) that the number of demonstrations for SST2, SST5, TREC, MR, and AGNews is 8, 10, 12, 8, and 8, respectively. For MMLU and BBH, the demonstrations come from the dataset's inherent demonstrations. Specifically five demonstrations for MMLU and three demonstrations for BBH per task. In the in-context setting without a dev set, we fix the iteration number $T$ at 5, with the gating parameter $\\eta$ set to 0.01. In the in-context setting with a dev set, we relax the max iteration number $T$ to 15, using the dev set to determine the final hyper-parameters. For the dev set, we randomly select a sample size identical to the test set and keep it fixed. For evaluation, similar to previous methods, we concatenate the test input with each candidate's answer and submit them to the LLM. The final answer is selected by summing the probabilities of the tokens belonging to the answer part and choosing the candidate answer with the highest probability.",
+      "section_number": "4.3",
+      "section_title": "implementation details and evaluation",
+      "normalized_section_title": "implementation details and evaluation"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.825::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "4.3",
+      "section_title": "implementation details and evaluation",
+      "normalized_section_title": "implementation details and evaluation",
+      "evidence": "All experiments are conducted on a single NVIDIA A100 GPU. For all baselines and Deep-Thinking, we run each method over ten random seeds and\n\nreport the average performance. For conventional ICL tasks, we follow (Li and Qiu, 2023) that the number of demonstrations for SST2, SST5, TREC, MR, and AGNews is 8, 10, 12, 8, and 8, respectively. For MMLU and BBH, the demonstrations come from the dataset's inherent demonstrations. Specifically five demonstrations for MMLU and three demonstrations for BBH per task. In the in-context setting without a dev set, we fix the iteration number $T$ at 5, with the gating parameter $\\eta$ set to 0.01. In the in-context setting with a dev set, we relax the max iteration number $T$ to 15, using the dev set to determine the final hyper-parameters. For the dev set, we randomly select a sample size identical to the test set and keep it fixed. For evaluation, similar to previous methods, we concatenate the test input with each candidate's answer and submit them to the LLM. The final answer is selected by summing the probabilities of the tokens belonging to the answer part and choosing the candidate answer with the highest probability.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.acl-long.825::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methodology",
+      "evidence": "In this paper, we propose a two-stage ICL framework that improves performance through multiple forward iterations. As shown in Figure 2, we assign the demonstrations and test input to the DeepThinking and test stages, respectively, where Key-Value matrices serve as a bridge between the two stages. Next, we describe these two stages in detail."
+    },
+    {
+      "source_window_id": "2024.acl-long.825::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.acl-long.825::appendix::D",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D",
+      "section_title": "minimal implementation",
+      "evidence": "The provided minimal implementation code showcases our proposed method, primarily integrating with the Hugging Face Transformers library.\n\nclass GatedOptim: def__init__(self,step_size $\\coloneqq$ 0.01): self step_size $=$ step_size def upd_x(self,old_x,g): return old_x $^+$ self_STEP_size $\\ast g$ def__call__(self,oldxs,newxs): pesudoGs $=$ [newx-oldxforoldx,newx in zip(oldxs,newxs)] updated_kv $=$ [self.upd_x(old_x,g) for old_x,g in zip(old_xs,pesudoGs)] return updated_kv   \nclass AttnOptimWrapper: def__init__(self,1lm,\\*\\*optimizer_args): self.model $= 11\\mathrm{m}$ self.kv $=$ None self.update_k $=$ GatedOptim(\\*\\*optimizer_args) self.update_v $=$ GatedOptim(\\*\\*optimizer_args) def step(self,ctx_ids): L $=$ len(ctx_ids) ctx_ids $=$ ctx_ids unsqueeze(0)#[1,L] mask $=$ torch.ones_like(ctx_ids).repeat(1,2 if self.kv else 1) out $=$ self.model(ctx_ids,mask,past_key_values $\\equiv$ self.kv,use_cache $\\equiv$ True) out_kv $=$ out.past_key_values #kv@ (oldCtx + newCtx) cur_kv $=$ [[k:,:-L:,],v:,:-L:,]] for k,v in out_kv] # kv @ (newCtx) if not self.kv: self.kv $=$ cur_kv else: (old_ks,old.vs),cur_ks,cur.vs) $=$ zip(\\*self.kv),zip(\\*cur_kv) upd_ks $=$ self.update_k(old_ks,cur_ks) upd_vs $=$ self.update_v(old.vs,cur_vs) self.kv $=$ list(zip(upd_ks,upd.vs)) # kv @ (mergedctx) return self.kv   \ndef main(): #...initialization (dataset, model,tokenizer, logger,etc) ex_str $=$ load_exemplar() ex_ids,ex_mask $=$ tokenizer(ex_str) meta_optim $=$ AttnOptimWrapper(model) for idx in range(args.meta_steps): ex_kv $=$ meta_optim_STEP(ex_ids) for B_queryids,B_query_mask in inferenceloader: bs $=$ len(B_query_ids) # [B(expanded),L+L'(concat)] B_merged_mask $=$ torch.cat((ex_mask.expand(bs,-1),B_query_mask),dim=1) B_kv_shape $=$ (bs,-1,-1,-1) B_kv $=$ [[k.expand(B_kv_shape),v.expand(B_kv_shape)] for k,v in ex_kv] B_out $=$ model(B_queryids,B_merged_mask,past_key_values=B_kv).logits B_out $=$ F.log softmax(B_out,dim=-1) #..."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.3"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2024\\2024.acl-long.825\\auto\\full.md",
+    "source_md_sha256": "9b8453e4bb33b6f764aa4fa10e151f96b115fd14bccf4a1d9b9cb6f0495bb690",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "ad96f3b6ca003898756db958dd17467668c845886fa3f1f835d26a866c8af3f0"
+  }
+}

@@ -1,0 +1,183 @@
+{
+  "paper_id": "2025.acl-long.59",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.59::sections::2",
+      "paper_id": "2025.acl-long.59",
+      "section_number": "2",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "We overview two fundamental concepts to understand our method: (i) selective rationalization and (ii) genetic-based search.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.59::sections::6",
+      "paper_id": "2025.acl-long.59",
+      "section_number": "6",
+      "section_title": "experimental settings",
+      "normalized_section_title": "experimental settings",
+      "window_text": "We compare GenSPP to several competitors for unsupervised selective rationalization $^2$ on two benchmarks. We describe the data, models, and evaluation metrics in detail. See Appendix A for additional details.\n\nToy Dataset. We build and release a controlled toy dataset of random strings. We define three classification classes, each corresponding to a unique character-based highlight: aba, baa, abc. We design highlights to ensure that all their characters have to be selected in order to determine the corresponding class. To avoid degenerate solutions in which only a portion of the highlight is sufficient for classification, we contaminate generated strings with randomly sampled chunks of other class highlights. Lastly, we enforce that a single highlight is contained in each string. Generated strings not compliant with the aforementioned rules are discarded. We set the generated string length to 20 characters. In total, we generate 10k random strings and split them into train (6.4k), validation (1.6k), and test (2k) partitions.\n\nHateXplain Dataset. A dataset of $\\sim 20\\mathrm{k}$ English posts from social media platforms like X and Gab (Mathew et al., 2021). Each post is annotated from three different perspectives: hate speech (hate, offensive, normal), the target community victim of hate speech, and the rationales which the labeling decision about hate speech is based on. To account for annotation subjectivity, each post is annotated by at least three annotators (Waseem, 2016; Sap et al., 2022). We notice that annotations vary significantly among annotators regarding the number of selected tokens. This might hinder rationalization evaluation since longer highlights might be preferred. For this reason, we employ a majority voting strategy to merge annotators' highlights and identify top relevance tokens. As a side effect, extracted ground-truth highlights are less cohesive. We filter out texts longer than 30 tokens to reduce the computational overhead. The dataset is split into train ( $\\sim 10\\mathrm{k}$ ), validation ( $\\sim 1.3\\mathrm{k}$ ), and test ( $\\sim 1.3\\mathrm{k}$ ) partitions. We consider hate speech as a\n\nbinary classification problem by merging hate and offensive classes.\n\nModels. We consider the architecture of Yu et al. (2021) for all models, including ours, described as follows. An input text $x$ is encoded via a frozen pretrained embedding layer. We use one-hot encoding for Toy and 25-dimension GloVe embeddings (Pennington et al., 2014) pre-trained on Twitter for HateXplain. The generator $g_{\\theta}$ comprises a RNN layer with a dense layer on top for token selection. The predictor $f_{\\omega}$ comprises a RNN layer followed by a max-pooling layer and a final linear layer for classification. We set the RNN layer to a biGRU for baselines and GRU for GenSPP, respectively. We consider the following baselines. FR (Liu et al., 2022), an end-to-end SPP framework using Gumbel softmax for discrete mask generation, where $g_{\\theta}$ and $f_{\\omega}$ share the same RNN layers. MGR (Liu et al., 2023b), an SPP framework where multiple generators are considered to extract distinct highlights that are fed to a single predictor. At inference time, only the first generator is considered since all generators eventually align on the same mask $m$ . MCD (Liu et al., 2023c), a guidance-based SPP framework, where an additional predictor trained using the original input text $x$ is used to guide selective rationalization towards better highlights. G-RAT (Hu and Yu, 2024), a recent guidance-based SPP framework, where an attention-based soft SPP framework is used as guidance.\n\nEvaluation Metrics. We focus on classification performance and rationalization quality (Chang et al., 2019; Yu et al., 2021). Regarding classification performance, we report macro F1-score averaged over all classes (Clf-F1). Regarding generated highlights, we report binary token-level F1-score (Hl-F1), selection ratio $(R)$ , and selection size $(S)$ .",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.59::sections::8",
+      "paper_id": "2025.acl-long.59",
+      "section_number": "8",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "Computational Comparison. Breaking interlocking in GenSPP comes with some limitations. Intuitively, genetic-based search requires more computational time than solutions based on SGD since $I$ predictors are trained at each generation. On average, a seed run of GenSPP takes $\\sim 36\\mathrm{min}$ in Toy and $\\sim 78\\mathrm{min}$ in HateXplain. In contrast, a seed run for baseline models requires $\\sim 8\\mathrm{min}$ and $\\sim 4\\mathrm{min}$ , respectively. Nonetheless, we remark on two aspects regarding our implementation: (i) individuals are evaluated sequentially, and (ii) we make use of standard genetic operations for individual evaluation and selection. More efficient implementations (e.g., allowing parallel computation of individuals) and advanced algorithms, such as the CMA-ES (Hansen and Ostermeier, 2001), can significantly reduce convergence time. We leave these\n\nimprovements as future work. This drawback is mitigated by two main properties of GenSPP. First, GenSPP has low variance, avoiding, in principle, multiple seed runs for evaluation. Second, global search via crossover allows for employing lighter and yet more efficient models. Compared to competitors, GenSPP has the same size as the smallest model (i.e., FR), which is 2-4x smaller than other baselines.\n\nGenetic Search. Genetic search can be more time-consuming than other approaches like gradient-based methods. Since scalability issues are attributable to model complexity (number of parameters) rather than dataset size, they can be mitigated via parallel and efficient implementations (Cantú-Paz and Goldberg, 2000). Model complexity is correlated with task complexity and is often addressed by increasing model parameterization. Genetic-based search can help reduce overparameterization. Indeed, we shot that GenSPP outperforms competitors despite having a smaller number of parameters, independently of the size of the dataset. Regarding text length (i.e., the number of tokens), token-level rationalization has O(n) time complexity (i.e., time scales linearly with tokens). However, we point out that selective rationalization for longer sequences is often accomplished at the sentence level to reduce task complexity (Antognini et al., 2021; Hu et al., 2022).\n\nRationale Evaluation. In comparing models, sparsity and performance are equally important (Lei et al., 2016). In particular, there is a preference for sparser models inspired by studies on human cognition (Hoeffler et al., 2021). The novelty of GenSPP over gradient-based methods is that it does not require a specific sparsity threshold. In contrast, these methods present such a limitation to avoid unstable training regimes (Chang et al., 2020). Like gradient-based methods, GenSPP can be optimized for a certain sparsity threshold (see Tables 6 and 7). Additionally, GenSPP can be optimized for sparser solutions while maintaining high accuracy without additional constraints.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.59::appendix::A",
+      "paper_id": "2025.acl-long.59",
+      "section_number": "A",
+      "section_title": "experimental settings",
+      "normalized_section_title": "experimental settings",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.59::appendix::A.2",
+      "paper_id": "2025.acl-long.59",
+      "section_number": "A.2",
+      "section_title": "training setup",
+      "normalized_section_title": "training setup",
+      "window_text": "We carry out a repeated train-and-test evaluation routine using the provided dataset partitions. We evaluate models in five distinct seed runs. We consider layer norm (Ba et al., 2016), and early stopping on validation loss with patience set to 30 epochs as regularization methods. We train models using batch size 64 and Adam optimizer (Kingma and Ba, 2015) with learning rate set to $10^{-3}$ . All baseline models are trained with SGD following\n\nEq. 3 as training objective, where $\\mathcal{L}_{ce}$ is the categorical cross-entropy. We set $\\lambda_{s} = 1.0$ and $\\lambda_{c} = 2.0$ in the Toy dataset, while we set $\\lambda_{c} = 0$ for HateXplain since highlights are inherently more fragmented (Fig. 2). We set the sparsity threshold $\\alpha = 0.15$ in the Toy dataset. This value of $\\alpha$ encourages $\\sum_{i=0}^{n} m^{i} = 3$ , which is the length of all character-based highlights in the Toy dataset. Conversely, we set $\\alpha = 0.22$ in HateXplain based on training data statistics of ground-truth highlights.\n\nRegarding GenSPP, we set $G = 100$ and $I = 50$ , with mutation and crossover probabilities $p^m = p^c = 1.0$ and selection and survival rates $p^{sl} = p^{su} = 0.5$ . We perform mutation by adding a Gaussian noise sample from $\\mathcal{N}(0.0, 0.05)$ . We train predictors during the genetic-based search for 3 epochs with batch size 64 and learning rate of $10^{-2}$ . We set evaluation tolerance $l + \\epsilon$ equal to 0.1 and 0.6 for Toy and HateXplain case studies, respectively.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.59::appendix::A.4",
+      "paper_id": "2025.acl-long.59",
+      "section_number": "A.4",
+      "section_title": "hardware and implementation details",
+      "normalized_section_title": "hardware and implementation details",
+      "window_text": "For our experiments, we implemented all baselines and methods in PyTorch (Paszke et al., 2019), relying on open-source frameworks like PyTorch Lightning (Falcon and The PyTorch Lightning team, 2019). We will release all of the code and data to reproduce our experiments in an MIT-licensed public repository. All experiments were run on a private machine with an NVIDIA 3060Ti GPU with 8 GB dedicated VRAM.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.59::appendix::A.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA 3060Ti 8GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "For our experiments, we implemented all baselines and methods in PyTorch (Paszke et al., 2019), relying on open-source frameworks like PyTorch Lightning (Falcon and The PyTorch Lightning team, 2019). We will release all of the code and data to reproduce our experiments in an MIT-licensed public repository. All experiments were run on a private machine with an NVIDIA 3060Ti GPU with 8 GB dedicated VRAM.",
+      "section_number": "A.4",
+      "section_title": "hardware and implementation details",
+      "normalized_section_title": "hardware and implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.59::appendix::A.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA 3060Ti 8GB",
+      "cleaned_hardware_name": "nvidia 3060 ti 8gb",
+      "normalized_hardware_name": "NVIDIA 3060Ti 8GB",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.4",
+      "section_title": "hardware and implementation details",
+      "normalized_section_title": "hardware and implementation details",
+      "evidence": "For our experiments, we implemented all baselines and methods in PyTorch (Paszke et al., 2019), relying on open-source frameworks like PyTorch Lightning (Falcon and The PyTorch Lightning team, 2019). We will release all of the code and data to reproduce our experiments in an MIT-licensed public repository. All experiments were run on a private machine with an NVIDIA 3060Ti GPU with 8 GB dedicated VRAM.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.59::sections::2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "2",
+      "section_title": "preliminaries",
+      "evidence": "We overview two fundamental concepts to understand our method: (i) selective rationalization and (ii) genetic-based search."
+    },
+    {
+      "source_window_id": "2025.acl-long.59::sections::6",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6",
+      "section_title": "experimental settings",
+      "evidence": "We compare GenSPP to several competitors for unsupervised selective rationalization $^2$ on two benchmarks. We describe the data, models, and evaluation metrics in detail. See Appendix A for additional details.\n\nToy Dataset. We build and release a controlled toy dataset of random strings. We define three classification classes, each corresponding to a unique character-based highlight: aba, baa, abc. We design highlights to ensure that all their characters have to be selected in order to determine the corresponding class. To avoid degenerate solutions in which only a portion of the highlight is sufficient for classification, we contaminate generated strings with randomly sampled chunks of other class highlights. Lastly, we enforce that a single highlight is contained in each string. Generated strings not compliant with the aforementioned rules are discarded. We set the generated string length to 20 characters. In total, we generate 10k random strings and split them into train (6.4k), validation (1.6k), and test (2k) partitions.\n\nHateXplain Dataset. A dataset of $\\sim 20\\mathrm{k}$ English posts from social media platforms like X and Gab (Mathew et al., 2021). Each post is annotated from three different perspectives: hate speech (hate, offensive, normal), the target community victim of hate speech, and the rationales which the labeling decision about hate speech is based on. To account for annotation subjectivity, each post is annotated by at least three annotators (Waseem, 2016; Sap et al., 2022). We notice that annotations vary significantly among annotators regarding the number of selected tokens. This might hinder rationalization evaluation since longer highlights might be preferred. For this reason, we employ a majority voting strategy to merge annotators' highlights and identify top relevance tokens. As a side effect, extracted ground-truth highlights are less cohesive. We filter out texts longer than 30 tokens to reduce the computational overhead. The dataset is split into train ( $\\sim 10\\mathrm{k}$ ), validation ( $\\sim 1.3\\mathrm{k}$ ), and test ( $\\sim 1.3\\mathrm{k}$ ) partitions. We consider hate speech as a\n\nbinary classification problem by merging hate and offensive classes.\n\nModels. We consider the architecture of Yu et al. (2021) for all models, including ours, described as follows. An input text $x$ is encoded via a frozen pretrained embedding layer. We use one-hot encoding for Toy and 25-dimension GloVe embeddings (Pennington et al., 2014) pre-trained on Twitter for HateXplain. The generator $g_{\\theta}$ comprises a RNN layer with a dense layer on top for token selection. The predictor $f_{\\omega}$ comprises a RNN layer followed by a max-pooling layer and a final linear layer for classification. We set the RNN layer to a biGRU for baselines and GRU for GenSPP, respectively. We consider the following baselines. FR (Liu et al., 2022), an end-to-end SPP framework using Gumbel softmax for discrete mask generation, where $g_{\\theta}$ and $f_{\\omega}$ share the same RNN layers. MGR (Liu et al., 2023b), an SPP framework where multiple generators are considered to extract distinct highlights that are fed to a single predictor. At inference time, only the first generator is considered since all generators eventually align on the same mask $m$ . MCD (Liu et al., 2023c), a guidance-based SPP framework, where an additional predictor trained using the original input text $x$ is used to guide selective rationalization towards better highlights. G-RAT (Hu and Yu, 2024), a recent guidance-based SPP framework, where an attention-based soft SPP framework is used as guidance.\n\nEvaluation Metrics. We focus on classification performance and rationalization quality (Chang et al., 2019; Yu et al., 2021). Regarding classification performance, we report macro F1-score averaged over all classes (Clf-F1). Regarding generated highlights, we report binary token-level F1-score (Hl-F1), selection ratio $(R)$ , and selection size $(S)$ ."
+    },
+    {
+      "source_window_id": "2025.acl-long.59::sections::8",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "8",
+      "section_title": "discussion",
+      "evidence": "Computational Comparison. Breaking interlocking in GenSPP comes with some limitations. Intuitively, genetic-based search requires more computational time than solutions based on SGD since $I$ predictors are trained at each generation. On average, a seed run of GenSPP takes $\\sim 36\\mathrm{min}$ in Toy and $\\sim 78\\mathrm{min}$ in HateXplain. In contrast, a seed run for baseline models requires $\\sim 8\\mathrm{min}$ and $\\sim 4\\mathrm{min}$ , respectively. Nonetheless, we remark on two aspects regarding our implementation: (i) individuals are evaluated sequentially, and (ii) we make use of standard genetic operations for individual evaluation and selection. More efficient implementations (e.g., allowing parallel computation of individuals) and advanced algorithms, such as the CMA-ES (Hansen and Ostermeier, 2001), can significantly reduce convergence time. We leave these\n\nimprovements as future work. This drawback is mitigated by two main properties of GenSPP. First, GenSPP has low variance, avoiding, in principle, multiple seed runs for evaluation. Second, global search via crossover allows for employing lighter and yet more efficient models. Compared to competitors, GenSPP has the same size as the smallest model (i.e., FR), which is 2-4x smaller than other baselines.\n\nGenetic Search. Genetic search can be more time-consuming than other approaches like gradient-based methods. Since scalability issues are attributable to model complexity (number of parameters) rather than dataset size, they can be mitigated via parallel and efficient implementations (Cantú-Paz and Goldberg, 2000). Model complexity is correlated with task complexity and is often addressed by increasing model parameterization. Genetic-based search can help reduce overparameterization. Indeed, we shot that GenSPP outperforms competitors despite having a smaller number of parameters, independently of the size of the dataset. Regarding text length (i.e., the number of tokens), token-level rationalization has O(n) time complexity (i.e., time scales linearly with tokens). However, we point out that selective rationalization for longer sequences is often accomplished at the sentence level to reduce task complexity (Antognini et al., 2021; Hu et al., 2022).\n\nRationale Evaluation. In comparing models, sparsity and performance are equally important (Lei et al., 2016). In particular, there is a preference for sparser models inspired by studies on human cognition (Hoeffler et al., 2021). The novelty of GenSPP over gradient-based methods is that it does not require a specific sparsity threshold. In contrast, these methods present such a limitation to avoid unstable training regimes (Chang et al., 2020). Like gradient-based methods, GenSPP can be optimized for a certain sparsity threshold (see Tables 6 and 7). Additionally, GenSPP can be optimized for sparser solutions while maintaining high accuracy without additional constraints."
+    },
+    {
+      "source_window_id": "2025.acl-long.59::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "experimental settings",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.59::appendix::A.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.2",
+      "section_title": "training setup",
+      "evidence": "We carry out a repeated train-and-test evaluation routine using the provided dataset partitions. We evaluate models in five distinct seed runs. We consider layer norm (Ba et al., 2016), and early stopping on validation loss with patience set to 30 epochs as regularization methods. We train models using batch size 64 and Adam optimizer (Kingma and Ba, 2015) with learning rate set to $10^{-3}$ . All baseline models are trained with SGD following\n\nEq. 3 as training objective, where $\\mathcal{L}_{ce}$ is the categorical cross-entropy. We set $\\lambda_{s} = 1.0$ and $\\lambda_{c} = 2.0$ in the Toy dataset, while we set $\\lambda_{c} = 0$ for HateXplain since highlights are inherently more fragmented (Fig. 2). We set the sparsity threshold $\\alpha = 0.15$ in the Toy dataset. This value of $\\alpha$ encourages $\\sum_{i=0}^{n} m^{i} = 3$ , which is the length of all character-based highlights in the Toy dataset. Conversely, we set $\\alpha = 0.22$ in HateXplain based on training data statistics of ground-truth highlights.\n\nRegarding GenSPP, we set $G = 100$ and $I = 50$ , with mutation and crossover probabilities $p^m = p^c = 1.0$ and selection and survival rates $p^{sl} = p^{su} = 0.5$ . We perform mutation by adding a Gaussian noise sample from $\\mathcal{N}(0.0, 0.05)$ . We train predictors during the genetic-based search for 3 epochs with batch size 64 and learning rate of $10^{-2}$ . We set evaluation tolerance $l + \\epsilon$ equal to 0.1 and 0.6 for Toy and HateXplain case studies, respectively."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.4"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA 3060Ti 8GB",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.59\\auto\\full.md",
+    "source_md_sha256": "41f9645202828219b5b7757b43ca0a7e51fde46fefbb53173af44855f6938a8c",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "ad96f3b6ca003898756db958dd17467668c845886fa3f1f835d26a866c8af3f0"
+  }
+}

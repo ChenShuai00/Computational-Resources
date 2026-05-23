@@ -1,0 +1,162 @@
+{
+  "paper_id": "2020.emnlp-main.426",
+  "candidate_windows": [
+    {
+      "window_id": "2020.emnlp-main.426::sections::4",
+      "paper_id": "2020.emnlp-main.426",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.emnlp-main.426::sections::4.2",
+      "paper_id": "2020.emnlp-main.426",
+      "section_number": "4.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "We follow the training and inference settings of medium-size GPT-2 as in Radford et al. (2019) (for completion, we provide full details in Appendix A.2). Our models are implemented with the Texar toolkit (Hu et al., 2019).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.emnlp-main.426::appendix::A",
+      "paper_id": "2020.emnlp-main.426",
+      "section_number": "A",
+      "section_title": "training and experiment setup",
+      "normalized_section_title": "training and experiment setup",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.emnlp-main.426::appendix::A.1",
+      "paper_id": "2020.emnlp-main.426",
+      "section_number": "A.1",
+      "section_title": "obtaining emotion reactions during rl-em training",
+      "normalized_section_title": "obtaining emotion reactions during rl-em training",
+      "window_text": "During self-critical training, for each training instance, two stories are generated: $\\pmb{y}^s$ which is sampled from the model's probability distribution, and $\\hat{\\pmb{y}}$ which is greedily decoded. Then for each sampled or greedy story, the value of the reward is computed. For computing the EC-EM reward, we need to identify and track the protagonist and obtain his/her emotional reactions for each sentence of the sampled or greedy story. This requires identifying the protagonist and determining his/her role, Agent or Other, in every sentence so that the appropriate argument for COMET (xReact or oReact) can be chosen. In principle, this can be done using the annotation pipeline described in §4.1 of the main paper. However, doing this is computationally prohibitive during training as the pipeline requires running dependency parsing for each sentence and coreference resolution for every sampled or greedy story. To this end, upon analyzing our corpus and some generated stories, we devised several heuristics that approximate the tasks (i.e. identifying protagonists and their roles) with high accuracy. We describe these heuristics below.\n\nFor identifying the protagonist, we use the following heuristics. The first heuristic is based on the observation that if the narrator features in a story, the story primarily focuses on the narrator and his/her experiences, thus making him/her the protagonist. So our first heuristic is that if first person pronouns (I, We) appear in the story, they are considered the protagonist. Our second heuristic is based on the observation that the protagonist is usually introduced fairly early in the story. Especially, in our case, where the stories are 5-sentence long, the protagonist appears mostly in the first couple of sentences of the story. With this in mind, we define the first noun that appears in a lexicon of common protagonists as the protagonist of the story. This lexicon consists of terms for Male_Char, Female_Char, Social_Group, Generic_People, and the NLTK name corpus. Example of these terms are shown in Table 5. This also let's us identify the gender of the protagonist (using the lexicon category that the protagonist belongs to) and hence the pronouns that will be used in the following sentences to refer to the protagonist. This combination of protagonist's mentions and pronouns lets us track\n\nhim/her throughout the story.\n\nFor identifying the role of the protagonist, if the first noun that occurs in a sentence matches the protagonist or his/her corresponding pronoun, we assume that the protagonist's role is Agent, otherwise the role is Other. Depending on this role, we use xReact or oReact when obtaining protagonist's emotional reaction in that sentence using COMET.\n\nTable 5: Predefined terms used for tracking the protagonist.   \n\n<table><tr><td>Male_Char</td><td>husband, father, dad, dady, brother, grandpa, granddad, son, nephew, man, boy, boyfriend</td></tr><tr><td>Female_Char</td><td>wife, mother, mom, momy, sister, grandma, grandmother, niece, daughter, nana, woman, girl, girlfriend</td></tr><tr><td>Social_Group</td><td>family, parents, grandparents, children, kids, couple, friends, boys, girls, band</td></tr><tr><td>Generic_People</td><td>cousin, friend, fiance, boss, manager, assistant, doctor, nurse</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.emnlp-main.426::appendix::A.2",
+      "paper_id": "2020.emnlp-main.426",
+      "section_number": "A.2",
+      "section_title": "training hyper-parameters",
+      "normalized_section_title": "training hyper-parameters",
+      "window_text": "Our proposed models follow the setting of medium-sized GPT-2 (Radford et al., 2019) (345 million parameters) that used a 24-layer decoder-only transformer, 1024-dimensional hidden states, and 16 attention heads. The stories are encoded using BPE with vocabulary size of 50, 257. We set the maximum sequence length to 128 tokens, as it is large enough to contain complete stories and additional inputs. We use Adam optimization (Kingma and Ba, 2015) with an initial learning rate of $10^{-5}$ and minibatch of size 4. For stability, we first pre-train the models with teacher forcing until convergence, then fine-tune them with the mixed loss. Hyperparameter $\\gamma = 0.97$ is tuned manually on the validation set. All models were trained until there was no improvement on the validation set performance. We use a NVIDIA GTX 1080 Ti GPU machine to train our models. At inference time, we generate stories using top- $k$ sampling scheme (Fan et al., 2018b) with $k=40$ and a softmax temperature of 0.7. It took about 3 hours to generate stories for our test set of size 9, 796.\n\nFor generating commonsense inferences about the protagonist's emotions using $\\mathbb{C}\\mathsf{OMET}$ , we use greedy decoding algorithm since it has been shown to have superior performance as evaluated by humans (Bosselut et al., 2019).\n\nTable 6: Emotion classification results on the tweets dataset (upper block), and the automatically annotated story corpus (lower block).   \n\n<table><tr><td>Models</td><td>Domain</td><td>Accuracy (Jaccard)</td><td>Mico F1</td><td>Macro F1</td></tr><tr><td>Meisheri and Dey (2018)</td><td>tweets</td><td>0.582</td><td>0.694</td><td>0.534</td></tr><tr><td>Baziotis et al. (2018)</td><td>tweets</td><td>0.595</td><td>0.709</td><td>0.542</td></tr><tr><td>Kant et al. (2019)</td><td>tweets</td><td>0.577</td><td>0.690</td><td>0.561</td></tr><tr><td>BERTlarge(ours)</td><td>tweets</td><td>0.595</td><td>0.708</td><td>0.522</td></tr><tr><td>BERTlarge(ours)</td><td>stories</td><td>0.617</td><td>0.650</td><td>0.557</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2020.emnlp-main.426::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA GTX 1080 Ti",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Our proposed models follow the setting of medium-sized GPT-2 (Radford et al., 2019) (345 million parameters) that used a 24-layer decoder-only transformer, 1024-dimensional hidden states, and 16 attention heads. The stories are encoded using BPE with vocabulary size of 50, 257. We set the maximum sequence length to 128 tokens, as it is large enough to contain complete stories and additional inputs. We use Adam optimization (Kingma and Ba, 2015) with an initial learning rate of $10^{-5}$ and minibatch of size 4. For stability, we first pre-train the models with teacher forcing until convergence, then fine-tune them with the mixed loss. Hyperparameter $\\gamma = 0.97$ is tuned manually on the validation set. All models were trained until there was no improvement on the validation set performance. We use a NVIDIA GTX 1080 Ti GPU machine to train our models. At inference time, we generate stories using top- $k$ sampling scheme (Fan et al., 2018b) with $k=40$ and a softmax temperature of 0.7. It took about 3 hours to generate stories for our test set of size 9, 796.\n\nFor generating commonsense inferences about the protagonist's emotions using $\\mathbb{C}\\mathsf{OMET}$ , we use greedy decoding algorithm since it has been shown to have superior performance as evaluated by humans (Bosselut et al., 2019).\n\nTable 6: Emotion classification results on the tweets dataset (upper block), and the automatically annotated story corpus (lower block).   \n\n<table><tr><td>Models</td><td>Domain</td><td>Accuracy (Jaccard)</td><td>Mico F1</td><td>Macro F1</td></tr><tr><td>Meisheri and Dey (2018)</td><td>tweets</td><td>0.582</td><td>0.694</td><td>0.534</td></tr><tr><td>Baziotis et al. (2018)</td><td>tweets</td><td>0.595</td><td>0.709</td><td>0.542</td></tr><tr><td>Kant et al. (2019)</td><td>tweets</td><td>0.577</td><td>0.690</td><td>0.561</td></tr><tr><td>BERTlarge(ours)</td><td>tweets</td><td>0.595</td><td>0.708</td><td>0.522</td></tr><tr><td>BERTlarge(ours)</td><td>stories</td><td>0.617</td><td>0.650</td><td>0.557</td></tr></table>",
+      "section_number": "A.2",
+      "section_title": "training hyper-parameters",
+      "normalized_section_title": "training hyper-parameters"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2020.emnlp-main.426::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA GTX 1080 Ti",
+      "cleaned_hardware_name": "nvidia gtx 1080 ti",
+      "normalized_hardware_name": "NVIDIA GeForce GTX 1080 Ti",
+      "benchmark_hardware_name": "NVIDIA GeForce GTX 1080 Ti",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.2",
+      "section_title": "training hyper-parameters",
+      "normalized_section_title": "training hyper-parameters",
+      "evidence": "Our proposed models follow the setting of medium-sized GPT-2 (Radford et al., 2019) (345 million parameters) that used a 24-layer decoder-only transformer, 1024-dimensional hidden states, and 16 attention heads. The stories are encoded using BPE with vocabulary size of 50, 257. We set the maximum sequence length to 128 tokens, as it is large enough to contain complete stories and additional inputs. We use Adam optimization (Kingma and Ba, 2015) with an initial learning rate of $10^{-5}$ and minibatch of size 4. For stability, we first pre-train the models with teacher forcing until convergence, then fine-tune them with the mixed loss. Hyperparameter $\\gamma = 0.97$ is tuned manually on the validation set. All models were trained until there was no improvement on the validation set performance. We use a NVIDIA GTX 1080 Ti GPU machine to train our models. At inference time, we generate stories using top- $k$ sampling scheme (Fan et al., 2018b) with $k=40$ and a softmax temperature of 0.7. It took about 3 hours to generate stories for our test set of size 9, 796.\n\nFor generating commonsense inferences about the protagonist's emotions using $\\mathbb{C}\\mathsf{OMET}$ , we use greedy decoding algorithm since it has been shown to have superior performance as evaluated by humans (Bosselut et al., 2019).\n\nTable 6: Emotion classification results on the tweets dataset (upper block), and the automatically annotated story corpus (lower block).   \n\n<table><tr><td>Models</td><td>Domain</td><td>Accuracy (Jaccard)</td><td>Mico F1</td><td>Macro F1</td></tr><tr><td>Meisheri and Dey (2018)</td><td>tweets</td><td>0.582</td><td>0.694</td><td>0.534</td></tr><tr><td>Baziotis et al. (2018)</td><td>tweets</td><td>0.595</td><td>0.709</td><td>0.542</td></tr><tr><td>Kant et al. (2019)</td><td>tweets</td><td>0.577</td><td>0.690</td><td>0.561</td></tr><tr><td>BERTlarge(ours)</td><td>tweets</td><td>0.595</td><td>0.708</td><td>0.522</td></tr><tr><td>BERTlarge(ours)</td><td>stories</td><td>0.617</td><td>0.650</td><td>0.557</td></tr></table>",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2020.emnlp-main.426::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2020.emnlp-main.426::sections::4.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2",
+      "section_title": "implementation details",
+      "evidence": "We follow the training and inference settings of medium-size GPT-2 as in Radford et al. (2019) (for completion, we provide full details in Appendix A.2). Our models are implemented with the Texar toolkit (Hu et al., 2019)."
+    },
+    {
+      "source_window_id": "2020.emnlp-main.426::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "training and experiment setup",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2020.emnlp-main.426::appendix::A.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.1",
+      "section_title": "obtaining emotion reactions during rl-em training",
+      "evidence": "During self-critical training, for each training instance, two stories are generated: $\\pmb{y}^s$ which is sampled from the model's probability distribution, and $\\hat{\\pmb{y}}$ which is greedily decoded. Then for each sampled or greedy story, the value of the reward is computed. For computing the EC-EM reward, we need to identify and track the protagonist and obtain his/her emotional reactions for each sentence of the sampled or greedy story. This requires identifying the protagonist and determining his/her role, Agent or Other, in every sentence so that the appropriate argument for COMET (xReact or oReact) can be chosen. In principle, this can be done using the annotation pipeline described in §4.1 of the main paper. However, doing this is computationally prohibitive during training as the pipeline requires running dependency parsing for each sentence and coreference resolution for every sampled or greedy story. To this end, upon analyzing our corpus and some generated stories, we devised several heuristics that approximate the tasks (i.e. identifying protagonists and their roles) with high accuracy. We describe these heuristics below.\n\nFor identifying the protagonist, we use the following heuristics. The first heuristic is based on the observation that if the narrator features in a story, the story primarily focuses on the narrator and his/her experiences, thus making him/her the protagonist. So our first heuristic is that if first person pronouns (I, We) appear in the story, they are considered the protagonist. Our second heuristic is based on the observation that the protagonist is usually introduced fairly early in the story. Especially, in our case, where the stories are 5-sentence long, the protagonist appears mostly in the first couple of sentences of the story. With this in mind, we define the first noun that appears in a lexicon of common protagonists as the protagonist of the story. This lexicon consists of terms for Male_Char, Female_Char, Social_Group, Generic_People, and the NLTK name corpus. Example of these terms are shown in Table 5. This also let's us identify the gender of the protagonist (using the lexicon category that the protagonist belongs to) and hence the pronouns that will be used in the following sentences to refer to the protagonist. This combination of protagonist's mentions and pronouns lets us track\n\nhim/her throughout the story.\n\nFor identifying the role of the protagonist, if the first noun that occurs in a sentence matches the protagonist or his/her corresponding pronoun, we assume that the protagonist's role is Agent, otherwise the role is Other. Depending on this role, we use xReact or oReact when obtaining protagonist's emotional reaction in that sentence using COMET.\n\nTable 5: Predefined terms used for tracking the protagonist.   \n\n<table><tr><td>Male_Char</td><td>husband, father, dad, dady, brother, grandpa, granddad, son, nephew, man, boy, boyfriend</td></tr><tr><td>Female_Char</td><td>wife, mother, mom, momy, sister, grandma, grandmother, niece, daughter, nana, woman, girl, girlfriend</td></tr><tr><td>Social_Group</td><td>family, parents, grandparents, children, kids, couple, friends, boys, girls, band</td></tr><tr><td>Generic_People</td><td>cousin, friend, fiance, boss, manager, assistant, doctor, nurse</td></tr></table>"
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce GTX 1080 Ti",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2020\\2020.emnlp-main.426\\auto\\full.md",
+    "source_md_sha256": "4e5a4af78e0c186d73802780de910e346afcf6b2d58c44571d39e6d77c8a61b6",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "eea9740fb55f6bcfee0ac43ef150f8c7282577b729733d31ca0788dd36b4abba"
+  }
+}

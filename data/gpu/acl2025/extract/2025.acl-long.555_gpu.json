@@ -1,0 +1,204 @@
+{
+  "paper_id": "2025.acl-long.555",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.555::sections::4",
+      "paper_id": "2025.acl-long.555",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.555::sections::4.3",
+      "paper_id": "2025.acl-long.555",
+      "section_number": "4.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "For all LLMs, including open- and closed-source LLMs, we use the sampling decoding strategy, and follow Liu et al. (2023) to set the temperature to 0.1. Besides, the maximum generation length is set to 400 tokens (the length of more than $97.8\\%$ of summaries in used data is less than 400 tokens). Since different LLMs have different maximum support lengths, we truncate the input source-language document to ensure the input length is within 3600 tokens to ensure fair comparison. Please refer to Appendix E.2 for more details of utilized model checkpoints, instruction-tuning LLMs, fine-tuning traditional models, and training hours.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.555::sections::6",
+      "paper_id": "2025.acl-long.555",
+      "section_number": "6",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "Are generated summaries in the correct language? As reported by Wang et al. (2023c), using traditional models as multi-lingual summarizers might generate in the wrong languages instead of the given target language. We wonder whether LLM-generated summaries are in the correct language. To this end, we use fastlangid² to detect the generated summaries, and calculate the rate of the generated summaries in the correct language, named correct language rate (CR). As shown in Table 5, we find that most zero-shot LLMs could follow the language requirements in the prompt and generate summaries in the right target language with $\\geq 95$ CR score. This is because the LLMs are trained with multi-lingual corpora that include a large number of parallel sentences across different languages, making the model already learn the multi-lingual skills. After tuning, LLMs generally improve their CR scores. Thus, using LLMs to serve as the backbones of the M2MS systems has great potential in real-world applications.\n\n<table><tr><td>LLM</td><td>Before</td><td>After</td><td>LLM</td><td>Before</td><td>After</td></tr><tr><td>LLaMa-2-13B</td><td>53.5</td><td>54.3</td><td>Baichuan2-13B</td><td>54.5</td><td>54.1</td></tr><tr><td>LLaMa-2-7B</td><td>47.2</td><td>47.3</td><td>Baichuan2-7B</td><td>52.9</td><td>52.0</td></tr><tr><td>Vicuna-13B</td><td>55.5</td><td>55.8</td><td>Qwen-14B</td><td>66.0</td><td>65.9</td></tr><tr><td>Vicuna-13B-16k</td><td>54.3</td><td>54.5</td><td>Qwen-7B</td><td>56.2</td><td>57.0</td></tr><tr><td>Vicuna-7B</td><td>49.8</td><td>49.6</td><td>Internlm2-20B</td><td>65.0</td><td>64.6</td></tr><tr><td>Vicuna-7B-16k</td><td>48.0</td><td>48.4</td><td>Internlm2-7B</td><td>59.1</td><td>58.9</td></tr></table>\n\nTable 6: The LLMs' performance on MMLU. \"Before\" and \"After\" denote the results of LLMs before and after the M2MS instruction tuning, respectively.\n\nDoes the instruction tuning on M2MS influence LLMs' general ability? As shown in Section 5, LLMs can improve their M2MS ability by instruction-tuning on the collected training samples. An important question arises naturally, i.e., does this task-specific improvement sacrifice the general task-solving ability of LLMs? To figure out this question, we further evaluate the LLMs before and after M2MS instruction tuning on the MMLU evaluation dataset (Hendrycks et al., 2021). The MMLU dataset covers 57 tasks including elementary mathematics, US history, computer science, law, etc, and is designed to evaluate models' world knowledge and problem-solving ability. We follow previous LLM work (Touvron et al., 2023b; Yang et al., 2023; Bai et al., 2023), and adopt the 5-shot evaluation strategy. The experimental results are provided in Table 6. As we can see, the M2MS instruction tuning on LLMs does not sacrifice their general task-solving ability. Some instruction-tuned LLMs (i.e., LLaMa-2-13B and Qwen-7B) even outperform their original models.\n\nCan large model generate factually consistent summaries? As revealed by Maynez et al. (2020); Gao et al. (2023), the model-generated summaries might be inconsistent with the source documents. We want to know if LLMs can generate factually consistent summaries. To this end, we randomly select 100 samples from the testing set and conduct fine-grained human evaluation on the summaries generated by GPT-4, zero-shot & tuned LLaMa2-13B, and zero-shot & tuned Vicuna-13B-16k. Following Gao et al. (2023), for each sample, we employ human evaluators to annotate the following four types of factual errors (if has): (1) hallucination error: a generated summary contains events not directly inferable from the given document. (2) particulars error: the summary contains the right events but some details are inaccurate or mistaken. (3) predicate error: the predicate in the summary is contradictory to the source document. (4) entity error: the entity of an event in the summary is wrong.\n\n<table><tr><td></td><td>Hallu.</td><td>Parti.</td><td>Predi.</td><td>Entity</td></tr><tr><td>GPT-4</td><td>8</td><td>3</td><td>5</td><td>3</td></tr><tr><td>Zero-shot LLaMa-2-13B</td><td>17</td><td>13</td><td>9</td><td>12</td></tr><tr><td>Tuned LLaMa-2-13B</td><td>23</td><td>18</td><td>7</td><td>9</td></tr><tr><td>Zero-shot Vicuna-13B-16k</td><td>12</td><td>8</td><td>8</td><td>10</td></tr><tr><td>Tuned Vicuna-13B-16k</td><td>17</td><td>16</td><td>10</td><td>6</td></tr></table>\n\nTable 7: Fine-grained human evaluation results on factuality (Hallu.: hallucination; Parti.: particulars; Predi.: predicate).\n\nMore details about human evaluation are given in Appendix H. Table 7 reports the proportion of each error. The summaries generated by GPT-4 have the lowest error proportion in terms of all errors. Besides, among all types of factual errors, the hallucination error occurs more frequently, indicating it is a non-trivial issue when adapting LLMs as the summarizers. Another finding is that instruction tuning on LLMs might intensify their factual issue especially the hallucination and the particulars errors. We conjecture this because the summaries in the training samples are written by humans, thus they might involve more information (like background information) beyond the given documents. Such an information gap might encourage LLMs to generate hallucinations during tuning. As reported by previous studies (Wang et al., 2022a;Gao et al., 2023), the ground truth references in summarization data also have the hallucination error. Therefore, when building LLM M2MS summarizers in the real applications, this error should be carefully considered during instruction tuning.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.555::appendix::E",
+      "paper_id": "2025.acl-long.555",
+      "section_number": "E",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.555::appendix::E.1",
+      "paper_id": "2025.acl-long.555",
+      "section_number": "E.1",
+      "section_title": "implementation details of evaluation metrics",
+      "normalized_section_title": "implementation details of evaluation metrics",
+      "window_text": "To calculate the ROUGE scores in the multi-lingual setting, we use the multi-lingual rouge<sup>5</sup> toolkit. For BERTScore, we use the bert-score<sup>6</sup> toolkit, and set the backbone to bert-base-multilingual-cased.\n\nDuring evaluation via GPT-4o, the used prompt is \"I will provide you with a summary of a document. Please rate the summary on a scale of one to five in terms of conciseness, coherence, and relevance.\" We use gpt-4o-2024-0816 as the evaluator. Since the testing set in our study contains more than 14K samples, it is a high cost to evaluate all model-generated summaries via GPT-4o. Thus, we randomly select 500 samples to conduct the LLM evaluation.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.555::appendix::E.2",
+      "paper_id": "2025.acl-long.555",
+      "section_number": "E.2",
+      "section_title": "implementation details of llms",
+      "normalized_section_title": "implementation details of llms",
+      "window_text": "Instruction-Tuning Details. All LLMs are tuned on $8 \\times$ NVIDIA A800 GPUs (80G) with 1e-5 learning rate and 32 ( $8 \\times 4$ gradient accumulation) batch size. We follow the success of instruction tuning in LLaMa-2 (Touvron et al., 2023b), and set the training epochs to 2. We use the DeepSpeed optimization library, and set ZeRO-2 optimization. For Internlm2-chat-20B, we also offload the optimizer into the CPU to avoid CUDA out-of-memory error. Flash attention (v2) (Dao et al., 2022) is also employed to save memory. During tuning, documents are also truncated to ensure the input length is within 3,600 tokens to ensure fairness. For the\n\n$^{5}$ https://github.com/csebuetnlp/xl-sum/tree/master/multilingual_rouge_scoring\n\n<https://github.com/Tiiger/bert_score\n\n<sup>7</sup>https://github.com/microsoft/\n\nDeepSpeed\n\ninstruction-tuned LLMs, we use the same decoding strategy as the zero-shot ones.\n\nModel Checkpoints. (1) For traditional multilingual language models, we use mBART-50 $(610\\mathrm{M})^{8}$ (Tang et al., 2021) and PISCES $(610\\mathrm{M})^{9}$ (Wang et al., 2023c). (2) For open-source LLMs, we use $LLaMa-2-7B-chat^{10}$ , $LLaMa-2-13B-chat^{11}$ , $LLaMa-3-8B-chat^{12}$ , Vicuna-7B-v1.5 $^{13}$ , Vicuna-7B-v1.5-16k $^{14}$ , Vicuna-13B-v1.5 $^{15}$ , Vicuna-13B-v1.5-16k $^{16}$ , Baichuan2-7B-Chat $^{17}$ , Baichuan2-13B-Chat $^{18}$ , Qwen-7B-Chat $^{19}$ , Qwen-14B-Chat $^{20}$ , Qwen2.5-7B-Chat $^{21}$ , Qwen2.5-14B-Chat $^{22}$ , Internlm2-chat-7B $^{23}$ and Internlm2-chat-20B $^{24}$ in experiments. All model checkpoints are available at the Huggingface community.\n\nFine-Tuning Details. To fine-tune traditional multi-lingual language models, i.e., mBART-50 and PISCES, we follow Wang et al. (2023c) and set the learning rate to 3e-5, batch size to $8 \\times 8$ , and epochs to 10. Experiments are conducted on $8 \\times$ NVIDIA A800 GPUs (80G). Different from LLMs, the source-language documents are directly input into these models without any prompts. Following previous work (Wang et al., 2023c; Bhattacharjee et al., 2023), a language tag is appended\n\nhttps://huggingface.co/facebook/mbart-large-50-many-to-many-mmt   \n<sup>9</sup>https://huggingface.co/Krystalan/PISCES   \n10https://huggingface.co/meta-llama/ LLaMa-2-7B-chat-hf   \n11https://huggingface.co/meta-llama/ LLaMa-2-13B-chat-hf   \n$^{12}$ https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct   \n<sup>13</sup>https://huggingface.co/lmsys/Vicuna-7B-v1.5   \n$^{14}$ https://huggingface.co/lmsys/Vicuna-7B-v1.5-16k   \n15https://huggingface.co/lmsys/ Vicuna-13B-v1.5   \n$^{16}$ https://huggingface.co/lmsys/Vicuna-13B-v1.5-16k   \n$^{17}$ https://huggingface.co/baichuan-inc/ Baichuan2-7B-Chat   \n$^{18}$ https://huggingface.co/baichuan-inc/ Baichuan2-13B-Chat   \n19https://huggingface.co/Qwen/ Qwen-7B-Chat   \n20https://huggingface.co/Qwen/ Qwen-14B-Chat   \n$^{21}$ https://huggingface.co/Qwen/Qwen2.5-7B-Instruct   \n$^{22}$ https://huggingface.co/Qwen/Qwen2.5-14B-Instruct   \n$^{23}$ https://huggingface.co/internlm/Internlm2-chat-7B   \n$^{24}$ https://huggingface.co/internlm/Internlm2-chat-20B\n\nTable 11: Experimental results of the overall performance and fine-grained results in each domain. The **bold** denotes the best performance under each setting. Encyc.: Encyclopedia; Tech.: Technology.   \n\n<table><tr><td>LLM</td><td>Overall (R1 / R2 / RL / BS)</td><td>News (R1 / R2 / RL / BS)</td><td>Encyc. (R1 / R2 / RL / BS)</td><td>Dialogue (R1 / R2 / RL / BS)</td><td>Guide (R1 / R2 / RL / BS)</td><td>Tech. (R1 / R2 / RL / BS)</td></tr><tr><td colspan=\"7\">Setting 1: Zero-Shot LLMs</td></tr><tr><td>GPT-4o</td><td>26.0 / 12.3 / 16.6 / 66.7</td><td>19.8 / 09.1 / 12.9 / 66.8</td><td>27.9 / 12.5 / 16.3 / 66.0</td><td>29.5 / 17.3 / 22.1 / 70.4</td><td>25.1 / 11.3 / 16.1 / 69.0</td><td>34.2 / 16.3 / 19.1 / 69.1</td></tr><tr><td>GPT-4</td><td>25.7 / 12.1 / 16.4 / 66.4</td><td>19.5 / 08.8 / 12.5 / 65.9</td><td>26.9 / 11.2 / 14.5 / 64.8</td><td>28.9 / 17.0 / 21.6 / 70.0</td><td>24.0 / 10.7 / 15.5 / 68.4</td><td>33.8 / 16.1 / 18.8 / 68.9</td></tr><tr><td>GPT-3.5-turbo</td><td>25.2 / 11.3 / 16.1 / 66.7</td><td>19.3 / 08.8 / 12.4 / 66.5</td><td>28.1 / 12.2 / 16.1 / 65.8</td><td>24.0 / 13.5 / 18.5 / 66.4</td><td>22.4 / 09.4 / 14.6 / 67.9</td><td>33.6 / 14.9 / 19.3 / 69.2</td></tr><tr><td>LLaMa-2-13B</td><td>21.5 / 09.2 / 13.0 / 64.1</td><td>17.9 / 08.0 / 11.8 / 65.1</td><td>25.5 / 10.8 / 14.6 / 63.8</td><td>19.3 / 09.2 / 13.8 / 64.0</td><td>18.4 / 06.3 / 11.3 / 64.3</td><td>30.7 / 12.6 / 17.2 / 64.5</td></tr><tr><td>LLaMa-2-7B</td><td>18.2 / 06.9 / 10.8 / 63.3</td><td>14.2 / 05.6 / 09.0 / 64.0</td><td>22.7 / 08.3 / 12.7 / 62.4</td><td>17.4 / 07.4 / 12.7 / 62.6</td><td>15.0 / 04.9 / 09.3 / 63.6</td><td>23.6 / 08.2 / 13.8 / 62.5</td></tr><tr><td>LLaMa-3-8B</td><td>19.5 / 07.9 / 12.4 / 63.5</td><td>14.9 / 05.8 / 09.5 / 64.6</td><td>23.3 / 08.6 / 13.3 / 62.8</td><td>18.0 / 07.7 / 13.1 / 62.8</td><td>15.7 / 05.2 / 10.0 / 64.2</td><td>24.1 / 08.5 / 14.4 / 63.0</td></tr><tr><td>Vicuna-13B</td><td>22.4 / 08.9 / 13.4 / 65.5</td><td>18.5 / 08.4 / 11.8 / 65.1</td><td>25.9 / 10.6 / 14.9 / 64.9</td><td>22.5 / 11.1 / 16.5 / 65.9</td><td>18.8 / 07.0 / 11.9 / 64.8</td><td>32.5 / 13.7 / 18.0 / 68.6</td></tr><tr><td>Vicuna-13B-16k</td><td>22.9 / 09.7 / 13.9 / 66.0</td><td>19.0 / 08.2 / 11.9 / 65.3</td><td>27.2 / 11.0 / 15.5 / 65.3</td><td>22.6 / 11.5 / 17.1 / 66.1</td><td>20.3 / 08.0 / 12.9 / 65.9</td><td>33.0 / 14.7 / 19.2 / 69.1</td></tr><tr><td>Vicuna-7B</td><td>22.3 / 09.1 / 13.7 / 65.0</td><td>17.8 / 07.6 / 11.6 / 65.5</td><td>26.0 / 10.4 / 15.4 / 64.9</td><td>22.1 / 10.7 / 16.2 / 67.1</td><td>18.5 / 06.9 / 11.3 / 65.3</td><td>31.1 / 12.8 / 17.5 / 67.4</td></tr><tr><td>Vicuna-7B-16k</td><td>22.8 / 09.4 / 14.1 / 65.3</td><td>18.3 / 08.1 / 12.0 / 65.8</td><td>27.0 / 11.2 / 15.1 / 65.1</td><td>21.6 / 10.0 / 16.2 / 66.1</td><td>19.2 / 06.7 / 11.7 / 64.5</td><td>31.9 / 13.1 / 18.2 / 66.7</td></tr><tr><td>Baichuan2-13B</td><td>20.5 / 08.6 / 12.8 / 65.0</td><td>15.9 / 06.8 / 10.2 / 64.9</td><td>24.4 / 09.6 / 13.7 / 64.1</td><td>19.8 / 09.9 / 15.3 / 64.9</td><td>18.1 / 06.2 / 11.1 / 65.0</td><td>30.0 / 12.3 / 16.8 / 66.2</td></tr><tr><td>Baichuan2-7B</td><td>20.8 / 08.4 / 13.2 / 65.1</td><td>16.5 / 06.8 / 10.5 / 65.3</td><td>24.6 / 09.5 / 14.1 / 64.2</td><td>21.4 / 10.2 / 16.2 / 66.0</td><td>17.8 / 06.3 / 11.1 / 64.9</td><td>30.1 / 12.5 / 16.1 / 64.8</td></tr><tr><td>Qwen-14B</td><td>21.6 / 09.6 / 13.0 / 65.2</td><td>17.9 / 08.2 / 11.5 / 65.6</td><td>25.3 / 10.8 / 14.3 / 64.7</td><td>21.8 / 10.9 / 16.3 / 66.5</td><td>18.1 / 07.2 / 11.1 / 64.7</td><td>32.0 / 13.5 / 17.8 / 64.8</td></tr><tr><td>Qwen-7B</td><td>21.8 / 08.5 / 13.1 / 64.9</td><td>18.3 / 08.0 / 11.5 / 66.0</td><td>25.9 / 10.7 / 15.1 / 65.1</td><td>21.3 / 10.6 / 15.9 / 66.4</td><td>17.8 / 06.6 / 10.9 / 65.2</td><td>30.8 / 12.9 / 17.8 / 65.6</td></tr><tr><td>Qwen2.5-14B</td><td>22.1 / 09.8 / 13.1 / 65.4</td><td>18.4 / 08.4 / 11.7 / 65.8</td><td>25.8 / 11.2 / 14.8 / 65.2</td><td>22.0 / 11.1 / 16.6/ 66.8</td><td>18.5 / 07.3 / 11.6/ 64.9</td><td>32.6 / 13.8 / 18.1 / 65.2</td></tr><tr><td>Qwen2.5-7B</td><td>21.9 / 08.4 / 13.3 / 65.1</td><td>18.6 / 08.1 / 11.8 / 66.5</td><td>26.5 / 10.9 / 15.4 / 65.4</td><td>21.9 / 11.0 / 16.1 / 66.6</td><td>18.1 / 06.7 / 10.9 / 65.6</td><td>30.9 / 12.9 / 18.0 / 65.7</td></tr><tr><td>Interlm2-20B</td><td>19.2 / 07.8 / 12.0 / 62.9</td><td>14.9 / 06.5 / 09.6 / 62.7</td><td>24.0 / 10.0 / 13.9 / 63.8</td><td>11.6 / 05.4 / 08.8 / 59.1</td><td>16.2 / 06.1 / 10.1 / 63.0</td><td>30.6 / 13.9 / 17.5 / 66.6</td></tr><tr><td>Interlm2-7B</td><td>18.5 / 07.2 / 11.6 / 62.2</td><td>14.3 / 06.3 / 09.5 / 62.6</td><td>23.9 / 09.7 / 13.3 / 63.2</td><td>11.6 / 05.5 / 09.1 / 58.4</td><td>16.2 / 06.3 / 09.9 / 62.4</td><td>29.7 / 13.2 / 17.7 / 64.1</td></tr><tr><td colspan=\"7\">Setting 2: Fine-Tuned Traditional Multi-Lingual Language Models</td></tr><tr><td>mBART-50</td><td>27.4 / 11.9 / 19.9 / 67.8</td><td>27.2 / 12.5 / 20.1 / 67.8</td><td>26.6 / 12.7 / 20.1 / 65.3</td><td>32.9 / 17.5 / 24.9 / 71.0</td><td>25.8 / 11.1 / 19.5 / 68.1</td><td>23.2 / 10.8 / 16.7 / 65.4</td></tr><tr><td>PISCES</td><td>30.8 / 15.0 / 22.8 / 68.6</td><td>27.2 / 12.0 / 19.8 / 68.7</td><td>28.2 / 12.9 / 20.9 / 66.0</td><td>34.1 / 18.0 / 26.8 / 70.9</td><td>36.3 / 20.7 / 28.8 / 71.9</td><td>24.3 / 11.0 / 17.4 / 65.7</td></tr><tr><td colspan=\"7\">Setting 3: Instruction-Tuned LLMs</td></tr><tr><td>LLaMa-2-13B</td><td>37.7 / 21.2 / 29.4 / 74.4</td><td>37.1 / 20.0 / 27.2 / 74.2</td><td>40.2 / 25.1 / 32.2 / 74.2</td><td>40.3 / 24.3 / 32.4 / 75.4</td><td>33.0 / 17.1 / 26.6 / 73.4</td><td>38.2 / 20.5 / 26.2 / 73.4</td></tr><tr><td>LLaMa-2-7B</td><td>35.5 / 19.6 / 27.0 / 73.0</td><td>34.9 / 18.4 / 26.5 / 73.2</td><td>37.6 / 22.8 / 29.2 / 73.2</td><td>37.9 / 22.4 / 30.8 / 75.0</td><td>31.8 / 15.8 / 25.9 / 72.6</td><td>37.8 / 20.2 / 25.7 / 72.7</td></tr><tr><td>LLaMa-3-8B</td><td>36.2 / 20.0 / 27.5 / 73.4</td><td>35.4 / 18.7 / 26.9 / 73.4</td><td>37.9 / 23.5 / 29.8 / 73.9</td><td>38.6 / 22.8 / 31.5 / 75.7</td><td>32.5 / 16.4 / 26.4 / 73.2</td><td>38.5 / 20.7 / 26.2 / 73.3</td></tr><tr><td>Vicuna-13B</td><td>37.3 / 21.7 / 28.7 / 73.9</td><td>36.3 / 20.9 / 28.0 / 73.6</td><td>39.8 / 26.2 / 32.3 / 74.4</td><td>40.4 / 24.5 / 32.3 / 75.9</td><td>34.2 / 17.6 / 28.1 / 73.5</td><td>38.4 / 20.9 / 26.6 / 73.7</td></tr><tr><td>Vicuna-13B-16k</td><td>38.0 / 23.0 / 30.2 / 74.1</td><td>36.9 / 20.9 / 28.6 / 74.7</td><td>40.4 / 26.7 / 32.9 / 74.2</td><td>41.2 / 24.6 / 33.6 / 75.9</td><td>34.5 / 18.4 / 28.5 / 73.9</td><td>38.3 / 20.6 / 26.4 / 73.5</td></tr><tr><td>Vicuna-7B</td><td>35.6 / 20.8 / 28.0 / 73.1</td><td>34.5 / 19.0 / 26.2 / 73.8</td><td>38.3 / 23.9 / 29.1 / 73.3</td><td>38.9 / 23.0 / 32.3 / 75.4</td><td>31.2 / 15.5 / 25.7 / 72.9</td><td>36.8 / 19.4 / 24.5 / 72.4</td></tr><tr><td>Vicuna-7B-16k</td><td>36.2 / 21.3 / 28.6 / 73.7</td><td>35.5 / 20.1 / 27.7 / 73.4</td><td>38.7 / 24.2 / 30.3 / 74.2</td><td>38.9 / 23.0 / 31.8 / 75.3</td><td>32.3 / 15.6 / 25.9 / 72.2</td><td>37.7 / 20.8 / 26.5 / 73.3</td></tr><tr><td>Baichuan2-13B</td><td>36.1 / 20.8 / 28.0 / 74.4</td><td>35.9 / 20.0 / 26.4 / 73.1</td><td>38.0 / 24.8 / 29.8 / 73.2</td><td>40.7 / 24.8 / 34.1 / 75.9</td><td>33.5 / 17.0 / 25.7 / 73.7</td><td>39.2 / 20.7 / 25.3 / 73.8</td></tr><tr><td>Baichuan2-7B</td><td>35.0 / 19.9 / 27.4 / 73.5</td><td>35.4 / 19.4 / 26.6 / 73.0</td><td>37.3 / 23.0 / 29.4 / 73.3</td><td>38.8 / 22.8 / 31.5 / 74.9</td><td>31.8 / 14.8 / 23.9 / 72.6</td><td>38.1 / 19.9 / 25.9 / 73.7</td></tr><tr><td>Qwen-14B</td><td>37.1 / 21.9 / 28.4 / 74.2</td><td>36.0 / 19.6 / 26.8 / 73.2</td><td>38.4 / 24.5 / 30.8 / 73.4</td><td>40.2 / 25.4 / 33.4 / 75.5</td><td>34.4 / 19.0 / 28.5 / 74.4</td><td>39.1 / 20.6 / 26.4 / 74.4</td></tr><tr><td>Qwen-7B</td><td>34.8 / 18.6 / 26.8 / 73.2</td><td>33.5 / 18.3 / 25.0 / 72.5</td><td>36.1 / 21.1 / 27.6 / 73.0</td><td>38.9 / 22.9 / 31.5 / 75.2</td><td>33.1 / 16.1 / 25.7 / 73.2</td><td>37.0 / 19.6 / 24.3 / 73.0</td></tr><tr><td>Qwen2.5-14B</td><td>37.8 / 22.5 / 29.3 / 74.3</td><td>36.7 / 20.3 / 28.0 / 74.0</td><td>39.4 / 25.6 / 31.6 / 73.9</td><td>40.8 / 25.7 / 33.6 / 75.8</td><td>34.4 / 19.2 / 28.8 / 74.7</td><td>39.4 / 20.8 / 26.6 / 74.8</td></tr><tr><td>Qwen2.5-7B</td><td>35.2 / 19.0 / 27.3 / 73.7</td><td>34.2 / 18.7 / 25.6 / 72.9</td><td>36.6 / 21.4 / 28.2 / 73.7</td><td>39.5 / 23.6 / 32.3 / 76.0</td><td>33.4 / 16.5 / 26.5 / 73.6</td><td>37.7 / 20.0 / 24.9 / 73.6</td></tr><tr><td>Interlm2-20B</td><td>36.7 / 21.5 / 28.2 / 73.7</td><td>35.0 / 19.2 / 25.6 / 73.0</td><td>38.0 / 24.1 / 29.0 / 72.8</td><td>41.1 / 26.0 / 34.2 / 76.2</td><td>34.5 / 19.0 / 27.9 / 74.3</td><td>39.3 / 20.4 / 25.7 / 73.4</td></tr><tr><td>Interlm2-7B</td><td>35.7 / 19.9 / 27.2 / 73.5</td><td>34.1 / 18.7 / 25.6 / 72.6</td><td>36.2 / 22.0 / 28.4 / 72.8</td><td>40.7 / 25.4 / 33.5 / 75.9</td><td>33.3 / 17.7 / 27.0 / 73.3</td><td>37.8 / 20.6 / 25.6 / 73.0</td></tr></table>\n\non the decoder side and serves as the decoder start token to control which language should be generated in the summaries. Besides, we set the maximum number of tokens for input sequences to 1024 (mBART-50 and PISCES accept input text with a maximum length of 1K, and this is also a shortcoming of traditional models compared with LLMs). The fine-tuned traditional models use the same decoding strategy as the LLMs.\n\nTraining/Tuning Hours. All experiments are conducted on NVIDIA A800 GPUs with 80G memory, and we use its GPU hours to denote the consumption of computing resources. Each instruction-tuned 7B LLM needs 19 GPU hours, while each 13B LLM needs 32 GPU hours. For Internlm2-chat20B, it costs 80 GPU hours since we offload the optimizer. To fine-tune the traditional multi-lingual language models, 3 GPU hours are cost.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.acl-long.555::appendix::G",
+      "paper_id": "2025.acl-long.555",
+      "section_number": "G",
+      "section_title": "the effects of training scales",
+      "normalized_section_title": "the effects of training scales",
+      "window_text": "To assess the impact of training scales, we randomly select the training samples into various sizes (2K, 4K, 8K, 12K, 16K, and 19.5K) and subse\n\nsequently fine-tune the models mBART-50, PISCES, and Vicuna-13B-16k for each scale. During the randomly selection, we use probability sampling to ensure the balance of each language as well as each domain. As shown in Figure 5, compared with LLMs, the performance of traditional models is more sensitive with the training scale. Specifically, when decreasing the training data from $19.5\\mathrm{K}$ to $2\\mathrm{K}$ , mBART-50 and PISCES sacrifice 21.8 and 23.6 R1 (ROUGE-1) scores, respectively, while the counterpart of Vicuna-13B-16k is 12.4.Human Evaluation Following Gao et al. (2023), we employ three graduate students with high levels of fluency in both English and Chinese as our evaluators. We randomly select 100 English documents from the testing set, and let the evaluators judge whether factual errors in the Chinese summaries generated by GPT-4, zero-shot & tuned LLaMa-2-13B, and zero-shot & tuned Vicuna-13B-16k. If a generated summary has factual errors, evaluators also should label which types of factual errors in the summary. Finally, the Fleiss' Kappa scores (Fleiss, 1971) of hallucination error, particulars error, predicate error and entity error are 0.78, 0.73, 0.81, 0.75, respectively, indicating a good inter-agreement among our evaluators.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.555::appendix::E.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A800 80G",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "All LLMs are tuned on $8 \\times$ NVIDIA A800 GPUs (80G) with 1e-5 learning rate and 32 ( $8 \\times 4$ gradient accumulation) batch size. Experiments are conducted on $8 \\times$ NVIDIA A800 GPUs (80G). All experiments are conducted on NVIDIA A800 GPUs with 80G memory, and we use its GPU hours to denote the consumption of computing resources. Each instruction-tuned 7B LLM needs 19 GPU hours, while each 13B LLM needs 32 GPU hours. For Internlm2-chat20B, it costs 80 GPU hours since we offload the optimizer. To fine-tune the traditional multi-lingual language models, 3 GPU hours are cost.",
+      "section_number": "E.2",
+      "section_title": "implementation details of llms",
+      "normalized_section_title": "implementation details of llms"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.555::appendix::E.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A800 80G",
+      "cleaned_hardware_name": "nvidia a800 80gb",
+      "normalized_hardware_name": "NVIDIA A800 PCIe 80 GB",
+      "benchmark_hardware_name": "NVIDIA A800 PCIe 80 GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "E.2",
+      "section_title": "implementation details of llms",
+      "normalized_section_title": "implementation details of llms",
+      "evidence": "All LLMs are tuned on $8 \\times$ NVIDIA A800 GPUs (80G) with 1e-5 learning rate and 32 ( $8 \\times 4$ gradient accumulation) batch size. Experiments are conducted on $8 \\times$ NVIDIA A800 GPUs (80G). All experiments are conducted on NVIDIA A800 GPUs with 80G memory, and we use its GPU hours to denote the consumption of computing resources. Each instruction-tuned 7B LLM needs 19 GPU hours, while each 13B LLM needs 32 GPU hours. For Internlm2-chat20B, it costs 80 GPU hours since we offload the optimizer. To fine-tune the traditional multi-lingual language models, 3 GPU hours are cost.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.555::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.555::sections::4.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.3",
+      "section_title": "implementation details",
+      "evidence": "For all LLMs, including open- and closed-source LLMs, we use the sampling decoding strategy, and follow Liu et al. (2023) to set the temperature to 0.1. Besides, the maximum generation length is set to 400 tokens (the length of more than $97.8\\%$ of summaries in used data is less than 400 tokens). Since different LLMs have different maximum support lengths, we truncate the input source-language document to ensure the input length is within 3600 tokens to ensure fair comparison. Please refer to Appendix E.2 for more details of utilized model checkpoints, instruction-tuning LLMs, fine-tuning traditional models, and training hours."
+    },
+    {
+      "source_window_id": "2025.acl-long.555::sections::6",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6",
+      "section_title": "discussion",
+      "evidence": "Are generated summaries in the correct language? As reported by Wang et al. (2023c), using traditional models as multi-lingual summarizers might generate in the wrong languages instead of the given target language. We wonder whether LLM-generated summaries are in the correct language. To this end, we use fastlangid² to detect the generated summaries, and calculate the rate of the generated summaries in the correct language, named correct language rate (CR). As shown in Table 5, we find that most zero-shot LLMs could follow the language requirements in the prompt and generate summaries in the right target language with $\\geq 95$ CR score. This is because the LLMs are trained with multi-lingual corpora that include a large number of parallel sentences across different languages, making the model already learn the multi-lingual skills. After tuning, LLMs generally improve their CR scores. Thus, using LLMs to serve as the backbones of the M2MS systems has great potential in real-world applications.\n\n<table><tr><td>LLM</td><td>Before</td><td>After</td><td>LLM</td><td>Before</td><td>After</td></tr><tr><td>LLaMa-2-13B</td><td>53.5</td><td>54.3</td><td>Baichuan2-13B</td><td>54.5</td><td>54.1</td></tr><tr><td>LLaMa-2-7B</td><td>47.2</td><td>47.3</td><td>Baichuan2-7B</td><td>52.9</td><td>52.0</td></tr><tr><td>Vicuna-13B</td><td>55.5</td><td>55.8</td><td>Qwen-14B</td><td>66.0</td><td>65.9</td></tr><tr><td>Vicuna-13B-16k</td><td>54.3</td><td>54.5</td><td>Qwen-7B</td><td>56.2</td><td>57.0</td></tr><tr><td>Vicuna-7B</td><td>49.8</td><td>49.6</td><td>Internlm2-20B</td><td>65.0</td><td>64.6</td></tr><tr><td>Vicuna-7B-16k</td><td>48.0</td><td>48.4</td><td>Internlm2-7B</td><td>59.1</td><td>58.9</td></tr></table>\n\nTable 6: The LLMs' performance on MMLU. \"Before\" and \"After\" denote the results of LLMs before and after the M2MS instruction tuning, respectively.\n\nDoes the instruction tuning on M2MS influence LLMs' general ability? As shown in Section 5, LLMs can improve their M2MS ability by instruction-tuning on the collected training samples. An important question arises naturally, i.e., does this task-specific improvement sacrifice the general task-solving ability of LLMs? To figure out this question, we further evaluate the LLMs before and after M2MS instruction tuning on the MMLU evaluation dataset (Hendrycks et al., 2021). The MMLU dataset covers 57 tasks including elementary mathematics, US history, computer science, law, etc, and is designed to evaluate models' world knowledge and problem-solving ability. We follow previous LLM work (Touvron et al., 2023b; Yang et al., 2023; Bai et al., 2023), and adopt the 5-shot evaluation strategy. The experimental results are provided in Table 6. As we can see, the M2MS instruction tuning on LLMs does not sacrifice their general task-solving ability. Some instruction-tuned LLMs (i.e., LLaMa-2-13B and Qwen-7B) even outperform their original models.\n\nCan large model generate factually consistent summaries? As revealed by Maynez et al. (2020); Gao et al. (2023), the model-generated summaries might be inconsistent with the source documents. We want to know if LLMs can generate factually consistent summaries. To this end, we randomly select 100 samples from the testing set and conduct fine-grained human evaluation on the summaries generated by GPT-4, zero-shot & tuned LLaMa2-13B, and zero-shot & tuned Vicuna-13B-16k. Following Gao et al. (2023), for each sample, we employ human evaluators to annotate the following four types of factual errors (if has): (1) hallucination error: a generated summary contains events not directly inferable from the given document. (2) particulars error: the summary contains the right events but some details are inaccurate or mistaken. (3) predicate error: the predicate in the summary is contradictory to the source document. (4) entity error: the entity of an event in the summary is wrong.\n\n<table><tr><td></td><td>Hallu.</td><td>Parti.</td><td>Predi.</td><td>Entity</td></tr><tr><td>GPT-4</td><td>8</td><td>3</td><td>5</td><td>3</td></tr><tr><td>Zero-shot LLaMa-2-13B</td><td>17</td><td>13</td><td>9</td><td>12</td></tr><tr><td>Tuned LLaMa-2-13B</td><td>23</td><td>18</td><td>7</td><td>9</td></tr><tr><td>Zero-shot Vicuna-13B-16k</td><td>12</td><td>8</td><td>8</td><td>10</td></tr><tr><td>Tuned Vicuna-13B-16k</td><td>17</td><td>16</td><td>10</td><td>6</td></tr></table>\n\nTable 7: Fine-grained human evaluation results on factuality (Hallu.: hallucination; Parti.: particulars; Predi.: predicate).\n\nMore details about human evaluation are given in Appendix H. Table 7 reports the proportion of each error. The summaries generated by GPT-4 have the lowest error proportion in terms of all errors. Besides, among all types of factual errors, the hallucination error occurs more frequently, indicating it is a non-trivial issue when adapting LLMs as the summarizers. Another finding is that instruction tuning on LLMs might intensify their factual issue especially the hallucination and the particulars errors. We conjecture this because the summaries in the training samples are written by humans, thus they might involve more information (like background information) beyond the given documents. Such an information gap might encourage LLMs to generate hallucinations during tuning. As reported by previous studies (Wang et al., 2022a;Gao et al., 2023), the ground truth references in summarization data also have the hallucination error. Therefore, when building LLM M2MS summarizers in the real applications, this error should be carefully considered during instruction tuning."
+    },
+    {
+      "source_window_id": "2025.acl-long.555::appendix::E",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "E",
+      "section_title": "implementation details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.555::appendix::E.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "E.1",
+      "section_title": "implementation details of evaluation metrics",
+      "evidence": "To calculate the ROUGE scores in the multi-lingual setting, we use the multi-lingual rouge<sup>5</sup> toolkit. For BERTScore, we use the bert-score<sup>6</sup> toolkit, and set the backbone to bert-base-multilingual-cased.\n\nDuring evaluation via GPT-4o, the used prompt is \"I will provide you with a summary of a document. Please rate the summary on a scale of one to five in terms of conciseness, coherence, and relevance.\" We use gpt-4o-2024-0816 as the evaluator. Since the testing set in our study contains more than 14K samples, it is a high cost to evaluate all model-generated summaries via GPT-4o. Thus, we randomly select 500 samples to conduct the LLM evaluation."
+    },
+    {
+      "source_window_id": "2025.acl-long.555::appendix::G",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "G",
+      "section_title": "the effects of training scales",
+      "evidence": "To assess the impact of training scales, we randomly select the training samples into various sizes (2K, 4K, 8K, 12K, 16K, and 19.5K) and subse\n\nsequently fine-tune the models mBART-50, PISCES, and Vicuna-13B-16k for each scale. During the randomly selection, we use probability sampling to ensure the balance of each language as well as each domain. As shown in Figure 5, compared with LLMs, the performance of traditional models is more sensitive with the training scale. Specifically, when decreasing the training data from $19.5\\mathrm{K}$ to $2\\mathrm{K}$ , mBART-50 and PISCES sacrifice 21.8 and 23.6 R1 (ROUGE-1) scores, respectively, while the counterpart of Vicuna-13B-16k is 12.4.Human Evaluation Following Gao et al. (2023), we employ three graduate students with high levels of fluency in both English and Chinese as our evaluators. We randomly select 100 English documents from the testing set, and let the evaluators judge whether factual errors in the Chinese summaries generated by GPT-4, zero-shot & tuned LLaMa-2-13B, and zero-shot & tuned Vicuna-13B-16k. If a generated summary has factual errors, evaluators also should label which types of factual errors in the summary. Finally, the Fleiss' Kappa scores (Fleiss, 1971) of hallucination error, particulars error, predicate error and entity error are 0.78, 0.73, 0.81, 0.75, respectively, indicating a good inter-agreement among our evaluators."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "E.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A800 PCIe 80 GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.555\\auto\\full.md",
+    "source_md_sha256": "9b750a984c0202d7444714ba9b312f122877c88dd913364358ff8d7897ddf1da",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

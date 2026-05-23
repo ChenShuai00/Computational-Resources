@@ -1,0 +1,105 @@
+{
+  "paper_id": "2024.emnlp-main.512",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.512::sections::4.4",
+      "paper_id": "2024.emnlp-main.512",
+      "section_number": "4.4",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "For the prompting baselines, we use the same implementation and hyperparameters as the public code repository in Feng et al. (2024) for a fair comparison. We use the latest base LLM from the GPT-4 family, GPT-4o (as of June 13, 2024), instead of GPT-3.5, to further strengthen their performance. For DiVERT, we use MetaMath-Mistral 7B (Yu et al., 2023) as our base LLM since it is one of the best-performing LLMs in the 7B family on mathematical reasoning; we found that it outperforms other open-source LLMs with similar size on our tasks. See Supplementary Material F for detailed parameter settings. At test time, we overgenerate $N_{e} = 10$ errors via $\\mathrm{LLM}^{e}$ using diverse beam search (Vijayakumar et al., 2018) and $N_{d} = 10$ distractors through $\\mathrm{LLM}^{d}$ using standard beam search. Among the set of $N_{e} \\times N_{d} = 100$ error-distractor pairs we select the top- $K \\in \\{3, 10\\}$ . For DisSearch-ED CoT, we use standard beam search with 100 beams for a fair comparison with DiVERT. DisSearch-D performs better with 10 beams so we report its performance with 10 beams. For the primary results in Table 1, we perform a 5-fold cross-validation, rotating the test set over the dataset, and report the average and standard deviation of metrics across methods. For all other experiments, we evaluate on a single fold to reduce training time.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.512::appendix::A",
+      "paper_id": "2024.emnlp-main.512",
+      "section_number": "A",
+      "section_title": "monte carlo approximation of elbo training objective",
+      "normalized_section_title": "monte carlo approximation of elbo training objective",
+      "window_text": "Since exact inference of the posterior distribution is computationally intractable, $q_{\\phi}(e|s,d)$ is an approximation of the true posterior. We perform approximate inference by maximizing the evidence lower bound (ELBO) on the observed data log-likelihood, given in Equation 2. The ELBO in Equation 2 can easily be approximated by Monte Carlo simulation, with samples drawn from $q_{\\phi}(e|s,d)$ , as shown below:\n\n$$\n\\begin{array}{l} \\mathbb {E} _ {q _ {\\phi} (e | s, d)} [ \\log p _ {\\theta_ {d}} (d | s, e) ] \\\\ - \\beta D _ {\\mathrm {K L}} \\left(q _ {\\phi} (e | s, d) | | p _ {\\theta_ {e}} (e | s)\\right) \\\\ = \\mathbb {E} _ {q _ {\\phi} (e | s, d)} [ \\log p _ {\\theta_ {d}} (d | s, e) ] \\\\ - \\beta \\mathbb {E} _ {q _ {\\phi} (e | s, d)} [ \\log q _ {\\phi} (e | s, d) - \\log p _ {\\theta_ {e}} (e | s) ] \\\\ \\approx \\sum_ {\\hat {e} \\sim q _ {\\phi} (e | s, d)} \\log p _ {\\theta_ {d}} (d | s, \\hat {e}) - \\beta \\log q _ {\\phi} (\\hat {e} | s, d) \\\\ + \\beta \\log p _ {\\theta e} (\\hat {e} | s) \\\\ \\end{array}\n$$",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.512::appendix::C",
+      "paper_id": "2024.emnlp-main.512",
+      "section_number": "C",
+      "section_title": "variational training ablation: q model helps divert learn a robust error space",
+      "normalized_section_title": "variational training ablation: q model helps divert learn a robust error space",
+      "window_text": "In real-world educational scenarios, there are multiple errors plausible among real students for the same MCQ stem. DiVERT, can learn a robust error space, by leveraging sampled errors from $q_{\\phi}(e|s,d)$ around the original human-authored ones during variational training. As shown in Figure 3, sampling errors from $q_{\\phi}$ on a higher number of question-distractor pairs in the train set, leads to a more robust learned error space, with better downstream distractor generation performance.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.512::appendix::F",
+      "paper_id": "2024.emnlp-main.512",
+      "section_number": "F",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "As detailed in Section 3.2, we finetune all three LLMs, $\\mathrm{LLM}^e$ , $\\mathrm{LLM}^d$ , and $\\mathrm{LLM}^q$ , using the collection of error label annotations behind question-distractor $(s,d)$ pairs obtained from middle school math teachers, to initialize $p_{\\theta_e}(e|s)$ , $p_{\\theta_d}(d|s,e)$ , and $q_{\\phi}(e|s,d)$ , respectively. We use the AdamW (Loshchilov and Hutter, 2019) optimizer with a batch size of 32, a learning rate of $2e-5$ , and perform gradient clipping for training stability. We use the Parameter Efficient Fine-Tuning (PEFT) library from HuggingFace (Wolf et al., 2020) to load the base LLM, MetaMath-Mistral 7B, and train via low-rank adaptation (LoRA) (Hu et al., 2022) ( $LoRA\\alpha = 256$ , $LoRAr = 128$ , $LoRAdropout = 0.05$ ) using 8-bit quantization (Dettmers et al., 2024). We fine-tune for 5 epochs with early stopping on the validation set on a single NVIDIA A100 80GB GPU, with each epoch taking up to 35 minutes. We follow the same training setup for our finetuning baselines, DisSearch-D, DisSearch-ED, and DisSearch-ED CoT Pipeline.\n\nAfter initialization, we perform DiVERT training for $\\mathrm{LLM}^e$ , $\\mathrm{LLM}^d$ , and $\\mathrm{LLM}^q$ using the same QLoRA setup as above. We use Monte Carlo simulation to approximate the ELBO in Equation 2 with 4 error samples drawn from $q_{\\phi}(e|s,d)$ . We use AdamW with a learning rate of $5e - 6$ , matching the learning rate in MetaMath finetuning (Yu et al., 2023), and perform gradient clipping for training stability. A single batch contains 16 question-distractor pairs, each having 4 Monte Carlo samples, for an effective batch size of 64. We set $\\beta$ in Equation 2 to 0.1, following prior work (Ghosh et al., 2020) to upweight the reconstruction loss. We set $\\alpha$ in Equation 4 to 0.95 to upweight the ELBO compared to the Q regularization loss. We train for 1 epoch on a single NVIDIA A100 80GB GPU, which takes up to 9 hours. Wherever possi\n\nble, we use standard hyperparameters and do not do extensive parameter tuning like a grid search. Due to high computational and Open AI API cost, we report performance on one run of our DiVERT model and baselines. For metrics, for ROUGE we use the rouge-score library with Porter stemmer enabled, and for BERTScore we use the bert-score library with microsoft/deberta-xlarge-mnli as the underlying model. We additionally note that we used GitHub Copilot minimally in the writing of our code. All software we use in the development of this work is open source. We are consistent with the terms and intended use of all software and with the OpenAI API.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.512::appendix::F",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "As detailed in Section 3.2, we finetune all three LLMs, $\\mathrm{LLM}^e$ , $\\mathrm{LLM}^d$ , and $\\mathrm{LLM}^q$ , using the collection of error label annotations behind question-distractor $(s,d)$ pairs obtained from middle school math teachers, to initialize $p_{\\theta_e}(e|s)$ , $p_{\\theta_d}(d|s,e)$ , and $q_{\\phi}(e|s,d)$ , respectively. We use the AdamW (Loshchilov and Hutter, 2019) optimizer with a batch size of 32, a learning rate of $2e-5$ , and perform gradient clipping for training stability. We use the Parameter Efficient Fine-Tuning (PEFT) library from HuggingFace (Wolf et al., 2020) to load the base LLM, MetaMath-Mistral 7B, and train via low-rank adaptation (LoRA) (Hu et al., 2022) ( $LoRA\\alpha = 256$ , $LoRAr = 128$ , $LoRAdropout = 0.05$ ) using 8-bit quantization (Dettmers et al., 2024). We fine-tune for 5 epochs with early stopping on the validation set on a single NVIDIA A100 80GB GPU, with each epoch taking up to 35 minutes. We follow the same training setup for our finetuning baselines, DisSearch-D, DisSearch-ED, and DisSearch-ED CoT Pipeline.\n\nAfter initialization, we perform DiVERT training for $\\mathrm{LLM}^e$ , $\\mathrm{LLM}^d$ , and $\\mathrm{LLM}^q$ using the same QLoRA setup as above. We use Monte Carlo simulation to approximate the ELBO in Equation 2 with 4 error samples drawn from $q_{\\phi}(e|s,d)$ . We use AdamW with a learning rate of $5e - 6$ , matching the learning rate in MetaMath finetuning (Yu et al., 2023), and perform gradient clipping for training stability. A single batch contains 16 question-distractor pairs, each having 4 Monte Carlo samples, for an effective batch size of 64. We set $\\beta$ in Equation 2 to 0.1, following prior work (Ghosh et al., 2020) to upweight the reconstruction loss. We set $\\alpha$ in Equation 4 to 0.95 to upweight the ELBO compared to the Q regularization loss. We train for 1 epoch on a single NVIDIA A100 80GB GPU, which takes up to 9 hours. Wherever possi\n\nble, we use standard hyperparameters and do not do extensive parameter tuning like a grid search. Due to high computational and Open AI API cost, we report performance on one run of our DiVERT model and baselines. For metrics, for ROUGE we use the rouge-score library with Porter stemmer enabled, and for BERTScore we use the bert-score library with microsoft/deberta-xlarge-mnli as the underlying model. We additionally note that we used GitHub Copilot minimally in the writing of our code. All software we use in the development of this work is open source. We are consistent with the terms and intended use of all software and with the OpenAI API.",
+      "section_number": "F",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.512::appendix::F",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "F",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "evidence": "As detailed in Section 3.2, we finetune all three LLMs, $\\mathrm{LLM}^e$ , $\\mathrm{LLM}^d$ , and $\\mathrm{LLM}^q$ , using the collection of error label annotations behind question-distractor $(s,d)$ pairs obtained from middle school math teachers, to initialize $p_{\\theta_e}(e|s)$ , $p_{\\theta_d}(d|s,e)$ , and $q_{\\phi}(e|s,d)$ , respectively. We use the AdamW (Loshchilov and Hutter, 2019) optimizer with a batch size of 32, a learning rate of $2e-5$ , and perform gradient clipping for training stability. We use the Parameter Efficient Fine-Tuning (PEFT) library from HuggingFace (Wolf et al., 2020) to load the base LLM, MetaMath-Mistral 7B, and train via low-rank adaptation (LoRA) (Hu et al., 2022) ( $LoRA\\alpha = 256$ , $LoRAr = 128$ , $LoRAdropout = 0.05$ ) using 8-bit quantization (Dettmers et al., 2024). We fine-tune for 5 epochs with early stopping on the validation set on a single NVIDIA A100 80GB GPU, with each epoch taking up to 35 minutes. We follow the same training setup for our finetuning baselines, DisSearch-D, DisSearch-ED, and DisSearch-ED CoT Pipeline.\n\nAfter initialization, we perform DiVERT training for $\\mathrm{LLM}^e$ , $\\mathrm{LLM}^d$ , and $\\mathrm{LLM}^q$ using the same QLoRA setup as above. We use Monte Carlo simulation to approximate the ELBO in Equation 2 with 4 error samples drawn from $q_{\\phi}(e|s,d)$ . We use AdamW with a learning rate of $5e - 6$ , matching the learning rate in MetaMath finetuning (Yu et al., 2023), and perform gradient clipping for training stability. A single batch contains 16 question-distractor pairs, each having 4 Monte Carlo samples, for an effective batch size of 64. We set $\\beta$ in Equation 2 to 0.1, following prior work (Ghosh et al., 2020) to upweight the reconstruction loss. We set $\\alpha$ in Equation 4 to 0.95 to upweight the ELBO compared to the Q regularization loss. We train for 1 epoch on a single NVIDIA A100 80GB GPU, which takes up to 9 hours. Wherever possi\n\nble, we use standard hyperparameters and do not do extensive parameter tuning like a grid search. Due to high computational and Open AI API cost, we report performance on one run of our DiVERT model and baselines. For metrics, for ROUGE we use the rouge-score library with Porter stemmer enabled, and for BERTScore we use the bert-score library with microsoft/deberta-xlarge-mnli as the underlying model. We additionally note that we used GitHub Copilot minimally in the writing of our code. All software we use in the development of this work is open source. We are consistent with the terms and intended use of all software and with the OpenAI API.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": ""
+    }
+  ],
+  "review_flags": [],
+  "pred_result": {
+    "sec": [
+      "F"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 1
+      }
+    ]
+  }
+}

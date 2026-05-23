@@ -1,0 +1,109 @@
+{
+  "paper_id": "2022.emnlp-main.50",
+  "candidate_windows": [
+    {
+      "window_id": "2022.emnlp-main.50::appendix::B",
+      "paper_id": "2022.emnlp-main.50",
+      "section_number": "B",
+      "section_title": "training details",
+      "normalized_section_title": "training details",
+      "window_text": "We mainly implement our methods based on the GitHub repositories provided by Lin et al. (2020) and He et al. (2021a). Our code will be made public after the review procedure.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.50::appendix::B.1",
+      "paper_id": "2022.emnlp-main.50",
+      "section_number": "B.1",
+      "section_title": "general training settings",
+      "normalized_section_title": "general training settings",
+      "window_text": "For the NLU tasks, we exactly follow the experimental setup used by He et al. (2021a), and more details can be found in Appendix B.2.\n\nFor the two NLG tasks, we mainly follow the experimental setting adopted by Lin et al. (2020), and specifically, keep using \"task embeddings\" in our experiments, as they are also applied in the original GPT-2 model. These task embeddings are specialized segment embeddings used to indicate the different components of the text input (e.g., the three components of a triple in WebNLG, questions, and answers in CoQA, etc.).<sup>8</sup>\n\nWe list the task embedding used in each NLG task: for CoQA, we follow the task embedding suggested by Lin et al. (2020); for WebNLG, we simply use the special tokens to indicate the different components in the triples. The details of the special tokens in each task are summarized in Table 4. Notably, the parameter budget for task embedding is much smaller than the number of tunable parameters in the aforementioned parameter-efficient adaptation methods (around 2M).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.50::appendix::B.2",
+      "paper_id": "2022.emnlp-main.50",
+      "section_number": "B.2",
+      "section_title": "hyper-parameters for training",
+      "normalized_section_title": "hyper-parameters for training",
+      "window_text": "For NLU tasks, we train the models with Adam (Kingma and Ba, 2015) optimizer and use a polynomial learning rate scheduler to make the learning rate linearly decay; specifically, the learning rate is linearly warmed up from 0 for the first 6For NLG tasks, an AdamW (Loshchilov and Hutter, 2018) optimizer is applied to train the models, and a linear learning rate scheduler with a 500-step warmup duration is used.\n\nTable 4: The special tokens used in different tasks and the corresponding size of trainable parameters.   \n\n<table><tr><td>Datasets</td><td>Special tokens</td><td># of trainable parameters for task embedding</td></tr><tr><td>WebNLG</td><td>&lt;bos_webnlg&gt;, &lt;eos_webnlg&gt;, &lt;subject&gt;, &lt;property&gt;, &lt;object&gt;, &lt;target_webnlg&gt;</td><td>6 * 768 = 4608</td></tr><tr><td>CoQA</td><td>&lt;bos_qa&gt;, &lt;eos_qa&gt;, &lt;question&gt;, &lt;answer&gt;, &lt;document&gt;</td><td>5 * 768 = 3840</td></tr></table>\n\nFor the evaluation of NLG tasks, we follow the script provided by Lin et al. (2020) to generate the texts through a greedy search for both WebNLG and CoQA. As for the number of epochs and the argument for weight decay, we mainly follow the setting used by Lin et al. (2020); Hu et al. (2021): for WebNLG, we train the model for 10 epochs; for CoQA, we train the model for 5 epochs.\n\nFor the model-specific hyper-parameters, namely batch size (gradient accumulation is used if necessary) and learning rate, we decide them for different methods based on the loss on the validation set. For the proposed method inducer-tuning with/without LoRA and MAM inducer-tuning in Table 1, we set the learning rate as 0.00125, and the batch size is 16 for WebNLG; for CoQA, the learning rate we use is 0.001, and the batch size is 16. On MNLI, we set the learning rate as 0.0002 for both two methods and the batch size as 32 for inducer-tuning with LoRA and 16 for MAM inducer-tuning; on SST2, the learning rate is similarly set as 0.0002, the batch size for inducer-tuning with LoRA is 16, and for MAM inducer-tuning 64.\n\nTo reduce the random variability in the results, all the methods reported are trained for multiple independent runs. In particular, for WebNLG, we train models over 5 runs, and for CoQA, MNLI, and SST2 3 runs. The reported numbers in the cells in Tables 1 and 2 are the mean value averaged over the runs, and the significance tests in Table 1 are also based on the replicates.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.50::appendix::B.3",
+      "paper_id": "2022.emnlp-main.50",
+      "section_number": "B.3",
+      "section_title": "training efficiency and implementation details",
+      "normalized_section_title": "training efficiency and implementation details",
+      "window_text": "All the models in this work are implemented by PyTorch. For the training runtime, if we perform the training using 1 Tesla V100 16GB GPU, on WebNLG, it will take inducer-tuning and its variants around 8 minutes to finish one epoch; on CoQA, the time cost is around 160 minute/epoch. On MNLI and SST2, the runtime is 120 and 25 minute/epoch, respectively. We remark all the\n\nparameter-efficient tuning methods have a similar time cost, while indeed, they solely slightly save training time compared to fine-tuning. The same phenomenon is also observed by Lin et al. (2020); Rücklé et al. (2020).\n\nFor the implementation of $\\overline{\\mathrm{MLP}}_v$ , we provide the exact expression for $\\overline{\\mathrm{MLP}}_v^{(h)}(\\mathbf{Q}^{(h)})$ in head $h$ as follows:\n\n$$\n\\sigma \\left(\\boldsymbol {Q} ^ {(h)} \\boldsymbol {W} _ {1} ^ {(h)} + \\mathbf {1} \\left(\\boldsymbol {b} _ {1} ^ {(h)}\\right) ^ {T}\\right) \\boldsymbol {W} _ {2} ^ {(h)} + \\mathbf {1} \\boldsymbol {b} _ {2} ^ {T}, \\tag {11}\n$$\n\nwhere $\\sigma$ is the activation function. As the superscript suggests, $W_{1}^{(h)}\\in \\mathbb{R}^{p\\times r}$ , $b_{1}^{(h)}\\in \\mathbb{R}^{r}$ , and $W_{2}^{(h)}\\in \\mathbb{R}^{r\\times N_{h}p}$ are specific to the head $h$ , while $b_{2}\\in \\mathbb{R}^{N_{h}p}$ are shared among all the heads, which is the same case as in Equation (4) (in the original attention sub-layer, the bias term $b_{o}$ applies to all the heads as well).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.emnlp-main.50::appendix::B.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100 16GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "All the models in this work are implemented by PyTorch. For the training runtime, if we perform the training using 1 Tesla V100 16GB GPU, on WebNLG, it will take inducer-tuning and its variants around 8 minutes to finish one epoch; on CoQA, the time cost is around 160 minute/epoch. On MNLI and SST2, the runtime is 120 and 25 minute/epoch, respectively. We remark all the\n\nparameter-efficient tuning methods have a similar time cost, while indeed, they solely slightly save training time compared to fine-tuning. The same phenomenon is also observed by Lin et al. (2020); Rücklé et al. (2020).\n\nFor the implementation of $\\overline{\\mathrm{MLP}}_v$ , we provide the exact expression for $\\overline{\\mathrm{MLP}}_v^{(h)}(\\mathbf{Q}^{(h)})$ in head $h$ as follows:\n\n$$\n\\sigma \\left(\\boldsymbol {Q} ^ {(h)} \\boldsymbol {W} _ {1} ^ {(h)} + \\mathbf {1} \\left(\\boldsymbol {b} _ {1} ^ {(h)}\\right) ^ {T}\\right) \\boldsymbol {W} _ {2} ^ {(h)} + \\mathbf {1} \\boldsymbol {b} _ {2} ^ {T}, \\tag {11}\n$$\n\nwhere $\\sigma$ is the activation function. As the superscript suggests, $W_{1}^{(h)}\\in \\mathbb{R}^{p\\times r}$ , $b_{1}^{(h)}\\in \\mathbb{R}^{r}$ , and $W_{2}^{(h)}\\in \\mathbb{R}^{r\\times N_{h}p}$ are specific to the head $h$ , while $b_{2}\\in \\mathbb{R}^{N_{h}p}$ are shared among all the heads, which is the same case as in Equation (4) (in the original attention sub-layer, the bias term $b_{o}$ applies to all the heads as well).",
+      "section_number": "B.3",
+      "section_title": "training efficiency and implementation details",
+      "normalized_section_title": "training efficiency and implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.emnlp-main.50::appendix::B.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100 16GB",
+      "cleaned_hardware_name": "tesla v100 16gb",
+      "normalized_hardware_name": "Tesla V100 16GB",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "B.3",
+      "section_title": "training efficiency and implementation details",
+      "normalized_section_title": "training efficiency and implementation details",
+      "evidence": "All the models in this work are implemented by PyTorch. For the training runtime, if we perform the training using 1 Tesla V100 16GB GPU, on WebNLG, it will take inducer-tuning and its variants around 8 minutes to finish one epoch; on CoQA, the time cost is around 160 minute/epoch. On MNLI and SST2, the runtime is 120 and 25 minute/epoch, respectively. We remark all the\n\nparameter-efficient tuning methods have a similar time cost, while indeed, they solely slightly save training time compared to fine-tuning. The same phenomenon is also observed by Lin et al. (2020); Rücklé et al. (2020).\n\nFor the implementation of $\\overline{\\mathrm{MLP}}_v$ , we provide the exact expression for $\\overline{\\mathrm{MLP}}_v^{(h)}(\\mathbf{Q}^{(h)})$ in head $h$ as follows:\n\n$$\n\\sigma \\left(\\boldsymbol {Q} ^ {(h)} \\boldsymbol {W} _ {1} ^ {(h)} + \\mathbf {1} \\left(\\boldsymbol {b} _ {1} ^ {(h)}\\right) ^ {T}\\right) \\boldsymbol {W} _ {2} ^ {(h)} + \\mathbf {1} \\boldsymbol {b} _ {2} ^ {T}, \\tag {11}\n$$\n\nwhere $\\sigma$ is the activation function. As the superscript suggests, $W_{1}^{(h)}\\in \\mathbb{R}^{p\\times r}$ , $b_{1}^{(h)}\\in \\mathbb{R}^{r}$ , and $W_{2}^{(h)}\\in \\mathbb{R}^{r\\times N_{h}p}$ are specific to the head $h$ , while $b_{2}\\in \\mathbb{R}^{N_{h}p}$ are shared among all the heads, which is the same case as in Equation (4) (in the original attention sub-layer, the bias term $b_{o}$ applies to all the heads as well).",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B.3"
+    ],
+    "pred": [
+      {
+        "name": "Tesla V100 16GB",
+        "num": 1
+      }
+    ]
+  }
+}

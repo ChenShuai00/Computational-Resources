@@ -1,0 +1,96 @@
+{
+  "paper_id": "2023.acl-long.519",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.519::sections::4.2",
+      "paper_id": "2023.acl-long.519",
+      "section_number": "4.2",
+      "section_title": "models",
+      "normalized_section_title": "models",
+      "window_text": "We evaluate two standard CLS baselines, namely pipeline method and End2End method, and pro-\n\npose a novel 2-Step framework, which differ from each other in the way the cross-lingual summary is generated. Figure 2 summarizes the main difference between their workflows.\n\nPipeline Method Previous work decomposes CLS into mono-lingual summarization and machine translation (Zhu et al., 2019), by deploying first-summarize, then-translate (S-T) or firsttranslate, then-summarize (T-S) strategies.\n\nWe compare with S-T as it can benefit from large mono-lingual summarization and monologue translation data, while T-S has been proven much worse (Feng et al., 2022) as both dialogue translation and non-English summarization data are very limited. For QMSumX, we additionally translate $Q ^ { t g t }$ into $Q ^ { s r c }$ before mono-lingual summarization and translation, to which we refer as T-S-T.\n\nEnd2End Method Previous work models the CLS task and has shown better performance on previous datasets compared with pipeline methods (Zhu et al., 2019; Xu et al., 2019).\n\nWe compare two End2End methods: First, we directly fine-tune a multi-lingual model on $\\langle D ^ { s r c } , S ^ { t g t } \\rangle$ (DialogSumX) and $\\langle \\{ Q ^ { t g t } ; D ^ { s r c } \\} , S ^ { t g t } \\rangle$ (QMSumX), marked as E2E; Second, inspired by Bai et al. (2021), where an End2End model first generates mono-lingual summary and then cross-lingual summary in an auto-regressive way and shows good performance in few-shot setting, we fine-tune a multi-lingual model on $\\langle D ^ { s r c } , \\{ S ^ { s r c } ; S ^ { t g t } \\} \\rangle$ (DialogSumX) and $\\langle \\{ Q ^ { t g t } ; D ^ { s r c } \\} , \\{ S ^ { s r c } ; S ^ { t g t } \\} \\rangle$ (QMSumX), marked as E2M (M means mixed).\n\n2-Step Method Inspired by our data analysis $( \\ S \\ 2 )$ that mono-lingual summary can help guiding salient information for cross-lingual summary,\n\n![](images/a72ed95bdd9ed74988d0c647f46b1c164eeb19c6d9a2876314c9ccedd00b4fbb.jpg)  \n(a) Pipeline framework   \nFigure 2: Illustration of pipeline method, end2end method, and our 2-Step method. MLS: mono-lingual summarizer; CLS: cross-lingual summarizer; Tans: translator.\n\nand generating proper translation requires information from source input text, we proposed a 2-Step method. Conceptually, 2-Step is designed to simulate human annotation, where we ask an end2end model to generate $S ^ { t g t }$ given concatenated $S ^ { s r c }$ and $D ^ { s r c }$ . Compared with pipeline methods, 2- Step method can explicitly make use of information from source input. Compared with End2End methods, 2-Step can focus on relevant information with the help of mono-lingual summaries.\n\nSimilarly, for QMSumX, we obtain the source language summaries by first translating $Q ^ { t g t }$ into $Q ^ { s r c }$ and then using mono-lingual summarizers. During inference, we use model-generated source summaries as $S ^ { s r c }$ , which are obtained using the same way of pipeline methods.\n\nNote all individual models are in a seq2seq manner. The terms “pipeline”, “End2End” and “2-Step” are stated from the perspective between source input text and output cross-lingual summaries.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.519::sections::5",
+      "paper_id": "2023.acl-long.519",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "Metrics For automatic evaluation, we use ROUGE (Lin, $2 0 0 4 ) ^ { 5 }$ and BERTSCORE (Zhang et al., $2 0 2 0 ) ^ { 6 }$ . ROUGE measures the $n$ -gram overlap between generated and reference summaries. BERTSCORE calculates the pariwise cosine similarity between BERT (Devlin et al., 2019) token embeddings of generated and reference summaries. We report the F -1 scores of ROUGE-1 (R1), ROUGE-2 (R2), ROUGE-L (RL) and BERTSCORE (BS).\n\nImplementation Details For mono-lingual generation, we use UNISUMM7 for model initialization, further pre-training it on original training sets of DIALOGSUM and QMSum, and then prefix-tuning it on our few-shot training data. For cross-lingual generation (MT or CLS), we use mBART-large-50-many-to-many-mmt8 for model initialization and then fine-tune it on our crosslingual data. All experiments are conducted on NVIDIA A100 GPU. We conduct a hyperparameter search for learning rate and batch size, from [1.5e-4, 1e-4, 5e-5, 3e-5, 1e-5] and [8, 16, 32, 64], and choose the best checkpoint based on R2 score on our few-shot dev sets.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.519::appendix::C",
+      "paper_id": "2023.acl-long.519",
+      "section_number": "C",
+      "section_title": "experiment on pipelined datasets",
+      "normalized_section_title": "experiment on pipelined datasets",
+      "window_text": "We conduct experiments on two pipelined datasets, namely XSAMSum and XMediaSum from the CLIDSUM benchmark and compare our pipeline and 2-Step methods with best-reported systems from (Wang et al., 2022a):\n\nSumm-Trans Pipeline They use BART $( D _ { a l l } )$ for mono-lingual summarization (Feng et al., 2021), and Google Translate 11 for summary translation.\n\nTrans-Summ Pipeline They use Google Translate to first generate cross-lingual dialogues, and then use mBART-50 to generate target language summaries.\n\n$\\mathbf { m B A R T } _ { E 2 E }$ They directly fine-tune an mBART-50 on cross-lingual $\\langle S ^ { s r c } , S ^ { t g t } \\rangle$ pairs, which is also an E2E baseline in our $\\ S 4$ .\n\nmDialBART $E 2 E$ They further pre-train an mBART-50 model using multiple tasks, including action filling, utterance permutation, mono-lingual\n\nsummarization and machine translation, on Media-Sum (Zhu et al., 2021).\n\nFor more fair comparison, we fine-tune BART-large on corresponding mono-lingual data for mono-lingual summarization and fine-tune mBART-50 for translation and our 2-Step model. The result is shown in Table 8.\n\nWe see that without fine-tuning, our pipeline method $( S { - } T ^ { * } )$ shows low performance. However, equipped with fine-tuned mBART as translator, S-$T$ outperforms all previous methods on all tasks (e.g., S-T outperforms the best-reported mDial-BART on En2Zh XMediaSum by 1 R1) except for the S-T pipeline on En2De XSAMSum, which can be because that Google Translate is better than mBART-50 at En2De translation. However, our 2-Step method, which is explicitly presented with source dialogue information and outperforms S-$T$ on ConvSum, only shows comparable or even worse results compared with S-T on XSAMSum and XMediaSum. The contradiction of such model performance on CLIDSUM can be explained by that such pipelined datasets focus more on how to directly translate the mono-lingual summary, while adding more source dialogue information is less useful and sometimes harmful.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.519::sections::5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Metrics For automatic evaluation, we use ROUGE (Lin, $2 0 0 4 ) ^ { 5 }$ and BERTSCORE (Zhang et al., $2 0 2 0 ) ^ { 6 }$ . ROUGE measures the $n$ -gram overlap between generated and reference summaries. BERTSCORE calculates the pariwise cosine similarity between BERT (Devlin et al., 2019) token embeddings of generated and reference summaries. We report the F -1 scores of ROUGE-1 (R1), ROUGE-2 (R2), ROUGE-L (RL) and BERTSCORE (BS).\n\nImplementation Details For mono-lingual generation, we use UNISUMM7 for model initialization, further pre-training it on original training sets of DIALOGSUM and QMSum, and then prefix-tuning it on our few-shot training data. For cross-lingual generation (MT or CLS), we use mBART-large-50-many-to-many-mmt8 for model initialization and then fine-tune it on our crosslingual data. All experiments are conducted on NVIDIA A100 GPU. We conduct a hyperparameter search for learning rate and batch size, from [1.5e-4, 1e-4, 5e-5, 3e-5, 1e-5] and [8, 16, 32, 64], and choose the best checkpoint based on R2 score on our few-shot dev sets.",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.519::sections::5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "evidence": "Metrics For automatic evaluation, we use ROUGE (Lin, $2 0 0 4 ) ^ { 5 }$ and BERTSCORE (Zhang et al., $2 0 2 0 ) ^ { 6 }$ . ROUGE measures the $n$ -gram overlap between generated and reference summaries. BERTSCORE calculates the pariwise cosine similarity between BERT (Devlin et al., 2019) token embeddings of generated and reference summaries. We report the F -1 scores of ROUGE-1 (R1), ROUGE-2 (R2), ROUGE-L (RL) and BERTSCORE (BS).\n\nImplementation Details For mono-lingual generation, we use UNISUMM7 for model initialization, further pre-training it on original training sets of DIALOGSUM and QMSum, and then prefix-tuning it on our few-shot training data. For cross-lingual generation (MT or CLS), we use mBART-large-50-many-to-many-mmt8 for model initialization and then fine-tune it on our crosslingual data. All experiments are conducted on NVIDIA A100 GPU. We conduct a hyperparameter search for learning rate and batch size, from [1.5e-4, 1e-4, 5e-5, 3e-5, 1e-5] and [8, 16, 32, 64], and choose the best checkpoint based on R2 score on our few-shot dev sets.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "5"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 1
+      }
+    ]
+  }
+}

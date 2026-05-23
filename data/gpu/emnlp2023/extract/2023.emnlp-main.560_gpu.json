@@ -1,0 +1,120 @@
+{
+  "paper_id": "2023.emnlp-main.560",
+  "candidate_windows": [
+    {
+      "window_id": "2023.emnlp-main.560::sections::3",
+      "paper_id": "2023.emnlp-main.560",
+      "section_number": "3",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "We experiment with English-German (En-De) and English-French (En-Fr) language directions.\n\nTraining Data: For parallel text translation data, we use WMT'16 En-De (Bojar et al., 2016) and WMT'14 En-Fr (Bojar et al., 2014) news translation task data for the corresponding language directions. To get the ASR data for contrastive learning, we use Open AI Whisper base ASR (Radford et al., 2022) to transcribe the speech in the training sets from Mozilla Common Voice 12.0 (Ardila et al., 2020), VoxPopuli (Wang et al., 2021), and the English set of Multilingual LibrSpeech (Pratap et al., 2020) for both language directions. As an additional experiment, we also try adding in-domain MuST-C training data. The full statistics of the datasets are in Appendix A.2 (Table 8).\n\nEvaluation: We use MuST-C (Di Gangi et al., 2019) tst-COMMON as our test set and MuST-C dev as our validation set. For MT and ST tasks, the inputs to the model are the Whisper (base) ASR outputs and the corresponding human transcripts,\n\nTable 2: Performance of various models on MT and ST tasks on MuST-C tst-COMMON.   \n\n<table><tr><td rowspan=\"2\">NMT</td><td colspan=\"2\">En-De</td><td colspan=\"2\">En-Fr</td></tr><tr><td>MT</td><td>ST</td><td>MT</td><td>ST</td></tr><tr><td>Transformer-base</td><td>28.1</td><td>23.5</td><td>36.1</td><td>30.8</td></tr><tr><td>CONF-ASR (Wang et al., 2022)</td><td>28.2</td><td>25.2</td><td>36.3</td><td>32.0</td></tr><tr><td>CSA-NMT (Wei et al., 2021)</td><td>29.5</td><td>24.4</td><td>37.2</td><td>31.3</td></tr><tr><td>CLAD-ST</td><td>28.8</td><td>26.6</td><td>36.5</td><td>33.4</td></tr></table>\n\nrespectively. We evaluate against the English and French reference translations for the respective translation directions. We use case-sensitive, detokenized BLEU computed using sacrebleu $^{1}$ (Post, 2018). We also compute statistical significance using paired bootstrap resampling (Koehn, 2004). Models: We use a base Transformer (Vaswani et al., 2017) as our baseline NMT model, which we extend to support our proposed approach, Contrastive Learning with Adversarial Data for Speech Translation (CLAD-ST). We also compare against two recent state-of-the-art approaches for NMT robustness which we re-implement: (1) CONF-ASR (Wang et al., 2022) generates adversarial examples by substituting random source tokens with candidate tokens from ASR confusion set based on their embedding distances to the original token. (2) CSA-NMT (Wei et al., 2022) $^{2}$ uses a separate semantic encoder to model a semantic region around the source and target sentences. To improve NMT robustness, samples from this region are used to augment the NMT decoder representations.\n\nWe tokenize all datasets using a sentencepiece model (Kudo and Richardson, 2018) for each language pair on the text translation datasets with a shared source-target vocabulary size of 32,000. We use OpenAI Wispher (base) ASR as our main upstream model. We also evaluate the ST performance of our model using Whisper large ASR. Other training details and hyperparameters are in Appendix A.1.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.560::appendix::A",
+      "paper_id": "2023.emnlp-main.560",
+      "section_number": "A",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.560::appendix::A.1",
+      "paper_id": "2023.emnlp-main.560",
+      "section_number": "A.1",
+      "section_title": "training details and hyperparameters",
+      "normalized_section_title": "training details and hyperparameters",
+      "window_text": "We implement our approach and (Wang et al., 2022) using $\\text{Fairseq}^3$ . For Wang et al. (2021), we randomly selected $14\\%$ tokens of sentences for a replacement to generate adversarial examples based on the ASR word error rate. All experiments are performed on A100 GPU, and gradient accumulation and batch size are set to 8 iterations and 8k tokens. For CLAD-ST, our NMT model is pretrained for the first 50K batches for NMT loss in the curriculum. For evaluation, the beam size and length penalty are set to 4 and 0.6 for both tasks. Hyperparameters for all the models are shown in Table 7.\n\nTable 7: Model hyperparameters   \n\n<table><tr><td>Hyperparameter</td><td>Baseline</td><td>CONF-ASR</td><td>CSA-NMT</td><td>CLAD-ST</td></tr><tr><td>encoder layers</td><td></td><td>6</td><td></td><td></td></tr><tr><td>encoder embed dim</td><td></td><td>256</td><td></td><td></td></tr><tr><td>encoder ffn embed dim</td><td></td><td>2048</td><td></td><td></td></tr><tr><td>encoder attention heads</td><td></td><td>8</td><td></td><td></td></tr><tr><td>decoder layers</td><td></td><td>6</td><td></td><td></td></tr><tr><td>decoder embed dim</td><td></td><td>256</td><td></td><td></td></tr><tr><td>decoder ffn embed dim</td><td></td><td>2048</td><td></td><td></td></tr><tr><td>decoder attention heads</td><td></td><td>8</td><td></td><td></td></tr><tr><td>dropout</td><td></td><td>0.3</td><td></td><td></td></tr><tr><td>optimizer</td><td></td><td>adam</td><td></td><td></td></tr><tr><td>adam-β</td><td></td><td>(0.9, 0.98)</td><td></td><td></td></tr><tr><td>clip-norm</td><td></td><td>0.0</td><td></td><td></td></tr><tr><td>lr scheduler</td><td></td><td>invers-sqrt</td><td></td><td></td></tr><tr><td>learning rate</td><td></td><td>5e-4</td><td></td><td></td></tr><tr><td>warmup-updates</td><td></td><td>4000</td><td></td><td></td></tr><tr><td>label-smoothing</td><td></td><td>0.1</td><td></td><td></td></tr><tr><td>max tokens</td><td>12800</td><td>8192</td><td>6144</td><td>8192</td></tr><tr><td>num-initial-updates-nmt</td><td>N/A</td><td>50000</td><td>50000</td><td>50000</td></tr><tr><td>csanmt-semantic-samples</td><td>N/A</td><td>N/A</td><td>20</td><td>N/A</td></tr></table>\n\nTable 8: Statistics of datasets used in the experiments.   \n\n<table><tr><td>Type</td><td>Name</td><td>Lang.</td><td>#Examples</td></tr><tr><td rowspan=\"4\">MT Data</td><td>WMT&#x27;16</td><td>En-De</td><td>4.5M</td></tr><tr><td>WMT&#x27;14</td><td>En-Fr</td><td>40 M</td></tr><tr><td>MuST-C</td><td>En-De</td><td>251K</td></tr><tr><td>train</td><td>En-Fr</td><td>275K</td></tr><tr><td rowspan=\"3\">ASR Data</td><td>VoxPopuli</td><td>En</td><td>0.18M</td></tr><tr><td>Commonvoice</td><td>En</td><td>0.99M</td></tr><tr><td>MLS</td><td>En</td><td>11M</td></tr><tr><td rowspan=\"2\">Dev</td><td rowspan=\"2\">MuST-C Dev</td><td>En-De</td><td>1415</td></tr><tr><td>En-Fr</td><td>1412</td></tr><tr><td rowspan=\"2\">Test</td><td>MuST-C</td><td>En-De</td><td>2580</td></tr><tr><td>tst-COMMON</td><td>En-Fr</td><td>2632</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.emnlp-main.560::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We implement our approach and (Wang et al., 2022) using $\\text{Fairseq}^3$ . For Wang et al. (2021), we randomly selected $14\\%$ tokens of sentences for a replacement to generate adversarial examples based on the ASR word error rate. All experiments are performed on A100 GPU, and gradient accumulation and batch size are set to 8 iterations and 8k tokens. For CLAD-ST, our NMT model is pretrained for the first 50K batches for NMT loss in the curriculum. For evaluation, the beam size and length penalty are set to 4 and 0.6 for both tasks. Hyperparameters for all the models are shown in Table 7.\n\nTable 7: Model hyperparameters   \n\n<table><tr><td>Hyperparameter</td><td>Baseline</td><td>CONF-ASR</td><td>CSA-NMT</td><td>CLAD-ST</td></tr><tr><td>encoder layers</td><td></td><td>6</td><td></td><td></td></tr><tr><td>encoder embed dim</td><td></td><td>256</td><td></td><td></td></tr><tr><td>encoder ffn embed dim</td><td></td><td>2048</td><td></td><td></td></tr><tr><td>encoder attention heads</td><td></td><td>8</td><td></td><td></td></tr><tr><td>decoder layers</td><td></td><td>6</td><td></td><td></td></tr><tr><td>decoder embed dim</td><td></td><td>256</td><td></td><td></td></tr><tr><td>decoder ffn embed dim</td><td></td><td>2048</td><td></td><td></td></tr><tr><td>decoder attention heads</td><td></td><td>8</td><td></td><td></td></tr><tr><td>dropout</td><td></td><td>0.3</td><td></td><td></td></tr><tr><td>optimizer</td><td></td><td>adam</td><td></td><td></td></tr><tr><td>adam-β</td><td></td><td>(0.9, 0.98)</td><td></td><td></td></tr><tr><td>clip-norm</td><td></td><td>0.0</td><td></td><td></td></tr><tr><td>lr scheduler</td><td></td><td>invers-sqrt</td><td></td><td></td></tr><tr><td>learning rate</td><td></td><td>5e-4</td><td></td><td></td></tr><tr><td>warmup-updates</td><td></td><td>4000</td><td></td><td></td></tr><tr><td>label-smoothing</td><td></td><td>0.1</td><td></td><td></td></tr><tr><td>max tokens</td><td>12800</td><td>8192</td><td>6144</td><td>8192</td></tr><tr><td>num-initial-updates-nmt</td><td>N/A</td><td>50000</td><td>50000</td><td>50000</td></tr><tr><td>csanmt-semantic-samples</td><td>N/A</td><td>N/A</td><td>20</td><td>N/A</td></tr></table>\n\nTable 8: Statistics of datasets used in the experiments.   \n\n<table><tr><td>Type</td><td>Name</td><td>Lang.</td><td>#Examples</td></tr><tr><td rowspan=\"4\">MT Data</td><td>WMT&#x27;16</td><td>En-De</td><td>4.5M</td></tr><tr><td>WMT&#x27;14</td><td>En-Fr</td><td>40 M</td></tr><tr><td>MuST-C</td><td>En-De</td><td>251K</td></tr><tr><td>train</td><td>En-Fr</td><td>275K</td></tr><tr><td rowspan=\"3\">ASR Data</td><td>VoxPopuli</td><td>En</td><td>0.18M</td></tr><tr><td>Commonvoice</td><td>En</td><td>0.99M</td></tr><tr><td>MLS</td><td>En</td><td>11M</td></tr><tr><td rowspan=\"2\">Dev</td><td rowspan=\"2\">MuST-C Dev</td><td>En-De</td><td>1415</td></tr><tr><td>En-Fr</td><td>1412</td></tr><tr><td rowspan=\"2\">Test</td><td>MuST-C</td><td>En-De</td><td>2580</td></tr><tr><td>tst-COMMON</td><td>En-Fr</td><td>2632</td></tr></table>",
+      "section_number": "A.1",
+      "section_title": "training details and hyperparameters",
+      "normalized_section_title": "training details and hyperparameters"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.emnlp-main.560::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "cleaned_hardware_name": "a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.1",
+      "section_title": "training details and hyperparameters",
+      "normalized_section_title": "training details and hyperparameters",
+      "evidence": "We implement our approach and (Wang et al., 2022) using $\\text{Fairseq}^3$ . For Wang et al. (2021), we randomly selected $14\\%$ tokens of sentences for a replacement to generate adversarial examples based on the ASR word error rate. All experiments are performed on A100 GPU, and gradient accumulation and batch size are set to 8 iterations and 8k tokens. For CLAD-ST, our NMT model is pretrained for the first 50K batches for NMT loss in the curriculum. For evaluation, the beam size and length penalty are set to 4 and 0.6 for both tasks. Hyperparameters for all the models are shown in Table 7.\n\nTable 7: Model hyperparameters   \n\n<table><tr><td>Hyperparameter</td><td>Baseline</td><td>CONF-ASR</td><td>CSA-NMT</td><td>CLAD-ST</td></tr><tr><td>encoder layers</td><td></td><td>6</td><td></td><td></td></tr><tr><td>encoder embed dim</td><td></td><td>256</td><td></td><td></td></tr><tr><td>encoder ffn embed dim</td><td></td><td>2048</td><td></td><td></td></tr><tr><td>encoder attention heads</td><td></td><td>8</td><td></td><td></td></tr><tr><td>decoder layers</td><td></td><td>6</td><td></td><td></td></tr><tr><td>decoder embed dim</td><td></td><td>256</td><td></td><td></td></tr><tr><td>decoder ffn embed dim</td><td></td><td>2048</td><td></td><td></td></tr><tr><td>decoder attention heads</td><td></td><td>8</td><td></td><td></td></tr><tr><td>dropout</td><td></td><td>0.3</td><td></td><td></td></tr><tr><td>optimizer</td><td></td><td>adam</td><td></td><td></td></tr><tr><td>adam-β</td><td></td><td>(0.9, 0.98)</td><td></td><td></td></tr><tr><td>clip-norm</td><td></td><td>0.0</td><td></td><td></td></tr><tr><td>lr scheduler</td><td></td><td>invers-sqrt</td><td></td><td></td></tr><tr><td>learning rate</td><td></td><td>5e-4</td><td></td><td></td></tr><tr><td>warmup-updates</td><td></td><td>4000</td><td></td><td></td></tr><tr><td>label-smoothing</td><td></td><td>0.1</td><td></td><td></td></tr><tr><td>max tokens</td><td>12800</td><td>8192</td><td>6144</td><td>8192</td></tr><tr><td>num-initial-updates-nmt</td><td>N/A</td><td>50000</td><td>50000</td><td>50000</td></tr><tr><td>csanmt-semantic-samples</td><td>N/A</td><td>N/A</td><td>20</td><td>N/A</td></tr></table>\n\nTable 8: Statistics of datasets used in the experiments.   \n\n<table><tr><td>Type</td><td>Name</td><td>Lang.</td><td>#Examples</td></tr><tr><td rowspan=\"4\">MT Data</td><td>WMT&#x27;16</td><td>En-De</td><td>4.5M</td></tr><tr><td>WMT&#x27;14</td><td>En-Fr</td><td>40 M</td></tr><tr><td>MuST-C</td><td>En-De</td><td>251K</td></tr><tr><td>train</td><td>En-Fr</td><td>275K</td></tr><tr><td rowspan=\"3\">ASR Data</td><td>VoxPopuli</td><td>En</td><td>0.18M</td></tr><tr><td>Commonvoice</td><td>En</td><td>0.99M</td></tr><tr><td>MLS</td><td>En</td><td>11M</td></tr><tr><td rowspan=\"2\">Dev</td><td rowspan=\"2\">MuST-C Dev</td><td>En-De</td><td>1415</td></tr><tr><td>En-Fr</td><td>1412</td></tr><tr><td rowspan=\"2\">Test</td><td>MuST-C</td><td>En-De</td><td>2580</td></tr><tr><td>tst-COMMON</td><td>En-Fr</td><td>2632</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.emnlp-main.560::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "experimental setup",
+      "evidence": "We experiment with English-German (En-De) and English-French (En-Fr) language directions.\n\nTraining Data: For parallel text translation data, we use WMT'16 En-De (Bojar et al., 2016) and WMT'14 En-Fr (Bojar et al., 2014) news translation task data for the corresponding language directions. To get the ASR data for contrastive learning, we use Open AI Whisper base ASR (Radford et al., 2022) to transcribe the speech in the training sets from Mozilla Common Voice 12.0 (Ardila et al., 2020), VoxPopuli (Wang et al., 2021), and the English set of Multilingual LibrSpeech (Pratap et al., 2020) for both language directions. As an additional experiment, we also try adding in-domain MuST-C training data. The full statistics of the datasets are in Appendix A.2 (Table 8).\n\nEvaluation: We use MuST-C (Di Gangi et al., 2019) tst-COMMON as our test set and MuST-C dev as our validation set. For MT and ST tasks, the inputs to the model are the Whisper (base) ASR outputs and the corresponding human transcripts,\n\nTable 2: Performance of various models on MT and ST tasks on MuST-C tst-COMMON.   \n\n<table><tr><td rowspan=\"2\">NMT</td><td colspan=\"2\">En-De</td><td colspan=\"2\">En-Fr</td></tr><tr><td>MT</td><td>ST</td><td>MT</td><td>ST</td></tr><tr><td>Transformer-base</td><td>28.1</td><td>23.5</td><td>36.1</td><td>30.8</td></tr><tr><td>CONF-ASR (Wang et al., 2022)</td><td>28.2</td><td>25.2</td><td>36.3</td><td>32.0</td></tr><tr><td>CSA-NMT (Wei et al., 2021)</td><td>29.5</td><td>24.4</td><td>37.2</td><td>31.3</td></tr><tr><td>CLAD-ST</td><td>28.8</td><td>26.6</td><td>36.5</td><td>33.4</td></tr></table>\n\nrespectively. We evaluate against the English and French reference translations for the respective translation directions. We use case-sensitive, detokenized BLEU computed using sacrebleu $^{1}$ (Post, 2018). We also compute statistical significance using paired bootstrap resampling (Koehn, 2004). Models: We use a base Transformer (Vaswani et al., 2017) as our baseline NMT model, which we extend to support our proposed approach, Contrastive Learning with Adversarial Data for Speech Translation (CLAD-ST). We also compare against two recent state-of-the-art approaches for NMT robustness which we re-implement: (1) CONF-ASR (Wang et al., 2022) generates adversarial examples by substituting random source tokens with candidate tokens from ASR confusion set based on their embedding distances to the original token. (2) CSA-NMT (Wei et al., 2022) $^{2}$ uses a separate semantic encoder to model a semantic region around the source and target sentences. To improve NMT robustness, samples from this region are used to augment the NMT decoder representations.\n\nWe tokenize all datasets using a sentencepiece model (Kudo and Richardson, 2018) for each language pair on the text translation datasets with a shared source-target vocabulary size of 32,000. We use OpenAI Wispher (base) ASR as our main upstream model. We also evaluate the ST performance of our model using Whisper large ASR. Other training details and hyperparameters are in Appendix A.1."
+    },
+    {
+      "source_window_id": "2023.emnlp-main.560::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "implementation details",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2023\\2023.emnlp-main.560\\auto\\full.md",
+    "source_md_sha256": "3e18e5bb861569cb2f8f96087a7d39d30d5309d7c115f9c836254f41919de2c1",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "44ecc0af216a9e5fe6ff4e8a000ce2b17b722bcc41b386c829c53021783d2d05"
+  }
+}

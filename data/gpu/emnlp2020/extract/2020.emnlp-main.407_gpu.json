@@ -1,0 +1,157 @@
+{
+  "paper_id": "2020.emnlp-main.407",
+  "candidate_windows": [
+    {
+      "window_id": "2020.emnlp-main.407::sections::5.1",
+      "paper_id": "2020.emnlp-main.407",
+      "section_number": "5.1",
+      "section_title": "settings",
+      "normalized_section_title": "settings",
+      "window_text": "Baselines. We compare our method with previous established hierarchical document methods adapted for the task of similarity learning described in Section 3.2. For baseline selection, we considered only methods that could deal with documents of arbitrary length on all of the examined datasets. In particular, we focus on two types of hierarchical attention networks (HANs), namely the first is using pretrained transformer representations from BERT and the other bidirectional GRU trained end-to-end:\n\n- BERT-AVG: represents each sentence with the average embedding of its tokens from BERT (Devlin et al., 2019). The representation of the document is computed as the average of the sentence representations.   \n- BERT-HAN: uses BERT to represent sentences with the average embedding. Following Pappagari et al. (2019), the representation of the document is computed by the HAN network starting from the sentence-level representations. The model does not have direct access to word-level representations.   \n- GRU-HAN: encodes documents with a hierarchical attention network with word-level and sentence-level abstractions based on GRU (Yang et al., 2016; Jiang et al., 2019).\n\nFor our augmentation, we equip both types of hierarchical encoders with a SHALLOW or a DEEP\n\nCDA component, keeping the base setup exactly the same. GRU and BERT are widely used contextualizers in NLP, while each can be viewed as a strong representative of the family of recurrent neural networks and transformers respectively. Note that BERT-HAN only trains a model over sentence-level representations, thus DEEP does not apply to BERT-HAN. For the S2D task, we extract sentence representations from the candidate document $\\mathbf{v} \\in \\mathcal{B}$ per model and rank them according to their similarity with the target document vector $\\mathbf{d}_A$ using an attention function:\n\n$$\n\\operatorname {A t t S c o r e} = \\frac {\\exp \\mathbf {v} ^ {\\top} \\mathbf {d} _ {A}}{\\sum_ {\\mathbf {v} ^ {\\prime} \\in \\mathcal {B}} \\exp \\mathbf {v} ^ {\\prime \\top} \\mathbf {d} _ {A}}, \\tag {3}\n$$\n\nor a cosine similarity function:\n\n$$\n\\operatorname {C o s S c o r e} = \\frac {\\mathbf {v} ^ {\\top} \\mathbf {d} _ {A}}{\\| \\mathbf {v} \\| \\| \\mathbf {d} _ {A} \\|}. \\tag {4}\n$$\n\nWe will refer to them as attention alignment and cosine alignment respectively. The best scores for each metric and encoder type are marked in bold.\n\nNote that the goal of our experiments was not to compare to state-of-the-art document models but to make a controlled experiment using various hierarchical configurations and provide some initial estimates of the difficulty of our benchmark for multilevel document alignment.\n\nConfiguration. All the models are implemented in PyTorch. Our code is available on Github.<sup>5</sup> We use Adam to optimize the parameters with an initial learning rate of $10^{-5}$ . The dimensions of hidden state vectors in GRUs and other hidden layers are set to 50 as in the original HAN (Yang et al., 2016). For word embeddings, we use 50-dimensional GloVe embeddings, which are updated during the training phase.\n\nFor pretrained contextualized embeddings, we use BERT-large implemented by HuggingFace. Note that, due to budget constraints, we keep BERT frozen in all experiments except for the finetuning experiment in Section 5.2. Unless otherwise noted, we perform early stopping based on the validation loss if there is no improvement for 5 consecutive epochs. The size of parameters of HAN models with GRU and BERT (kept frozen) are 20M and 1M respectively. Our corresponding models with\n\nTable 2: Comparison of our models with the HAN baseline using different encoders on document-to-document alignment over AAN, OC, and S2ORC datasets in terms of accuracy and $F_{1}$ score.   \n\n<table><tr><td rowspan=\"2\">Encoder</td><td rowspan=\"2\">CDA</td><td colspan=\"2\">AAN</td><td colspan=\"2\">OC</td><td colspan=\"2\">S2ORC</td><td colspan=\"2\">PAN</td></tr><tr><td>Acc</td><td>F1</td><td>Acc</td><td>F1</td><td>Acc</td><td>F1</td><td>Acc</td><td>F1</td></tr><tr><td>BERT-AVG</td><td>-</td><td>53.54</td><td>53.89</td><td>84.72</td><td>84.99</td><td>77.78</td><td>76.92</td><td>79.62</td><td>76.60</td></tr><tr><td rowspan=\"2\">BERT-HAN</td><td>-</td><td>67.32</td><td>64.97</td><td>85.96</td><td>86.33</td><td>90.67</td><td>90.76</td><td>87.57</td><td>87.36</td></tr><tr><td>SHALLOW</td><td>71.57</td><td>69.08</td><td>87.81</td><td>87.89</td><td>91.92</td><td>92.07</td><td>86.23</td><td>86.19</td></tr><tr><td rowspan=\"3\">GRU-HAN</td><td>-</td><td>68.01</td><td>67.23</td><td>84.46</td><td>82.26</td><td>82.36</td><td>83.28</td><td>75.70</td><td>75.88</td></tr><tr><td>SHALLOW</td><td>74.51</td><td>74.81</td><td>88.71</td><td>88.96</td><td>88.91</td><td>89.92</td><td>77.04</td><td>78.23</td></tr><tr><td>DEEP</td><td>75.08</td><td>75.18</td><td>89.79</td><td>89.92</td><td>91.59</td><td>91.61</td><td>75.77</td><td>76.71</td></tr></table>\n\nTable 3: Comparison with BERT-HAN using finetuning on document-to-document alignment on AAN.   \n\n<table><tr><td>Encoder</td><td>CDA</td><td>Acc</td><td>F1</td></tr><tr><td rowspan=\"2\">BERT-HAN</td><td>-</td><td>73.36</td><td>73.51</td></tr><tr><td>SHALLOW</td><td>82.03</td><td>82.08</td></tr></table>\n\na cross-document alignment component increase the number of parameters marginally, namely by 20K parameters. The networks with hierarchical configuration have $\\mathcal{O}(T\\log D)$ complexity with GRU and $\\mathcal{O}(T^2\\log D)$ with BERT ( $T$ : sequence length, $D$ : number of layers). SHALLOW (DEEP) adds one (two) more linear and quadratic terms respectively to these complexities, hence the asymptotic complexity remains the same. In practice, adding CDA negligibly impacts decoding speed. $^7$ For more training details, see Appendix A.2.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.emnlp-main.407::appendix::A.2",
+      "paper_id": "2020.emnlp-main.407",
+      "section_number": "A.2",
+      "section_title": "experimental setup details",
+      "normalized_section_title": "experimental setup details",
+      "window_text": "For our experiments, we used the following computing infrastructure: 1 GeForce 960, 1 GeForce 1080, and 1 Titan Xp for the model training. The batch size is set to 128 for GRU-HAN (including our augmentation) experiments on AAN task, and is set to 256 for all other experiments. The running time ranges from 36 hours to 48 hours for the GRU-based models, and from 1 to 2 hours for BERT-frozen models, and about 24 hours for BERT-finetuning models.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2020.emnlp-main.407::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GeForce 960",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "For our experiments, we used the following computing infrastructure: 1 GeForce 960, 1 GeForce 1080, and 1 Titan Xp for the model training. The batch size is set to 128 for GRU-HAN (including our augmentation) experiments on AAN task, and is set to 256 for all other experiments. The running time ranges from 36 hours to 48 hours for the GRU-based models, and from 1 to 2 hours for BERT-frozen models, and about 24 hours for BERT-finetuning models.",
+      "section_number": "A.2",
+      "section_title": "experimental setup details",
+      "normalized_section_title": "experimental setup details"
+    },
+    {
+      "window_id": "2020.emnlp-main.407::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GeForce 1080",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "For our experiments, we used the following computing infrastructure: 1 GeForce 960, 1 GeForce 1080, and 1 Titan Xp for the model training. The batch size is set to 128 for GRU-HAN (including our augmentation) experiments on AAN task, and is set to 256 for all other experiments. The running time ranges from 36 hours to 48 hours for the GRU-based models, and from 1 to 2 hours for BERT-frozen models, and about 24 hours for BERT-finetuning models.",
+      "section_number": "A.2",
+      "section_title": "experimental setup details",
+      "normalized_section_title": "experimental setup details"
+    },
+    {
+      "window_id": "2020.emnlp-main.407::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Titan Xp",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "For our experiments, we used the following computing infrastructure: 1 GeForce 960, 1 GeForce 1080, and 1 Titan Xp for the model training. The batch size is set to 128 for GRU-HAN (including our augmentation) experiments on AAN task, and is set to 256 for all other experiments. The running time ranges from 36 hours to 48 hours for the GRU-based models, and from 1 to 2 hours for BERT-frozen models, and about 24 hours for BERT-finetuning models.",
+      "section_number": "A.2",
+      "section_title": "experimental setup details",
+      "normalized_section_title": "experimental setup details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2020.emnlp-main.407::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GeForce 960",
+      "cleaned_hardware_name": "geforce 960",
+      "normalized_hardware_name": "GeForce 960",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.2",
+      "section_title": "experimental setup details",
+      "normalized_section_title": "experimental setup details",
+      "evidence": "For our experiments, we used the following computing infrastructure: 1 GeForce 960, 1 GeForce 1080, and 1 Titan Xp for the model training. The batch size is set to 128 for GRU-HAN (including our augmentation) experiments on AAN task, and is set to 256 for all other experiments. The running time ranges from 36 hours to 48 hours for the GRU-based models, and from 1 to 2 hours for BERT-frozen models, and about 24 hours for BERT-finetuning models.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2020.emnlp-main.407::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GeForce 1080",
+      "cleaned_hardware_name": "geforce 1080",
+      "normalized_hardware_name": "GeForce 1080",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.2",
+      "section_title": "experimental setup details",
+      "normalized_section_title": "experimental setup details",
+      "evidence": "For our experiments, we used the following computing infrastructure: 1 GeForce 960, 1 GeForce 1080, and 1 Titan Xp for the model training. The batch size is set to 128 for GRU-HAN (including our augmentation) experiments on AAN task, and is set to 256 for all other experiments. The running time ranges from 36 hours to 48 hours for the GRU-based models, and from 1 to 2 hours for BERT-frozen models, and about 24 hours for BERT-finetuning models.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2020.emnlp-main.407::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Titan Xp",
+      "cleaned_hardware_name": "titan xp",
+      "normalized_hardware_name": "NVIDIA TITAN Xp",
+      "benchmark_hardware_name": "NVIDIA TITAN Xp",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.2",
+      "section_title": "experimental setup details",
+      "normalized_section_title": "experimental setup details",
+      "evidence": "For our experiments, we used the following computing infrastructure: 1 GeForce 960, 1 GeForce 1080, and 1 Titan Xp for the model training. The batch size is set to 128 for GRU-HAN (including our augmentation) experiments on AAN task, and is set to 256 for all other experiments. The running time ranges from 36 hours to 48 hours for the GRU-based models, and from 1 to 2 hours for BERT-frozen models, and about 24 hours for BERT-finetuning models.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.2"
+    ],
+    "pred": [
+      {
+        "name": "GeForce 960",
+        "num": 1
+      },
+      {
+        "name": "GeForce 1080",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA TITAN Xp",
+        "num": 1
+      }
+    ]
+  }
+}

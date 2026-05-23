@@ -1,0 +1,96 @@
+{
+  "paper_id": "2024.acl-long.256",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.256::sections::3",
+      "paper_id": "2024.acl-long.256",
+      "section_number": "3",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "Table 1: Overview of the number of documents per dataset. For the BookSum STS task, we test in a zero-shot setting.   \n\n<table><tr><td>Dataset</td><td>Pile Books 3</td><td>BookSum</td><td>MuLD-Mov</td><td>QuALITY</td></tr><tr><td>Training</td><td>156,266</td><td>-</td><td>1,256</td><td>2,009</td></tr><tr><td>Validation</td><td>19,532</td><td>-</td><td>166</td><td>514</td></tr><tr><td>Testing</td><td>19,539</td><td>5,206</td><td>86</td><td>2,086</td></tr><tr><td># tokens (avg.)</td><td>~ 125,000</td><td>3,958</td><td>34,706</td><td>5,430</td></tr><tr><td># tokens (max.)</td><td>30,368,036</td><td>42,158</td><td>130,356</td><td>7,992</td></tr></table>\n\nTo study the overall effectiveness as well as the influence of different chunk encoders and chunk sizes, we pretrain NextLevelBERT on the books3\n\ndataset and then evaluate the model on three downstream tasks: 1) Zero-shot semantic textual similarity (STS) with document vectors, 2) document classification, 3) multiple-choice question answering. We believe that these task types, while not exhaustive, are representative of common application scenarios for long-document embeddings. Furthermore, they are all story-based, and likely particularly dependent on long-range connections.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.256::sections::3.1",
+      "paper_id": "2024.acl-long.256",
+      "section_number": "3.1",
+      "section_title": "pretraining",
+      "normalized_section_title": "pretraining",
+      "window_text": "Data The books3 dataset is a collection of 197,000 books in plain-text format that is also part of The Pile (Gao et al., 2020), a larger collection of Web text from diverse domains and sources that is frequently used for language modeling. Books are particularly useful due to their length as well as the presence of long-range dependencies that a model may attempt to capture.\n\nSetup We pretrain each version of the model for 20 epochs on the encoded books3 dataset for up to five days on four Tesla V100-SXM2-32GB. Pretraining time is shorter for larger chunk sizes. We use a cosine learning rate schedule (max. $10^{-4}$ ) with linear warm-up (first $5\\%$ of the total number of steps) and the AdamW (Loshchilov and Hutter, 2018) optimizer $(\\beta_{1} = 0.9, \\beta_{2} = 0.999$ , weight decay: 0.01). Unless otherwise stated, we use a global batch size of 512, a masking rate of $15\\%$ and a smooth L1 loss. By default, to encode the input chunks into vectors, we use the MiniLM-L6 model from the Sentence Transformers library<sup>1</sup>. In practice, we encode the input chunks during preprocessing, since this can be done very efficiently in large batches over multiple GPUs and can be cached for later reuse. We initialize the NextLevelModel's weights with the pretrained weights of the chunk encoder, since we found that this is crucial for convergence (see Section 4.5).\n\nPretrained Chunk Encoder Models To evaluate the choice of chunk encoder, we pretrain several NextLevelBERT versions with different SBERT encoder models (Reimers and Gurevych, 2019a). Our focus is on the following three lightweight models with moderate embedding sizes to keep computation costs and memory usage low.\n\n(1) MiniLM-L6 (Wang et al., 2020) is a lightweight BERT-based distilled model with strong performance on the GLUE benchmark. We\n\nuse the version with six layers.2\n\n(2) MPNet (Song et al., 2020) is an encoder-only model that leverages permuted language modeling and improved position modeling to address drawbacks from previous encoder-only language models. It demonstrates strong performance for sentence embedding tasks. It is almost four times larger than the MiniLM-L6 model in terms of parameters and uses a larger embedding dimensionality of 768. This might be advantageous for modeling longer text, since the additional dimensions can capture more information.   \n(3) DistilRoBERTa (Sanh et al., 2019) is a distilled version of RoBERTa-base. This model is smaller than MPNet while also offering a larger embedding dimensionality of 768.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.256::sections::3.3",
+      "paper_id": "2024.acl-long.256",
+      "section_number": "3.3",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "We evaluate against the following baselines:\n\nLongformer (Beltagy et al., 2020), an encoder-only model that uses a local attention window and selected global attention tokens. It is a widely known model for long document tasks. We use the base version with a maximum token length of 4,096.\n\nSBERT (Reimers and Gurevych, 2019b) is a set of models trained in a cross-encoder setting for STS tasks. We use BERT-based versions, mostly with a 512 token limit to maintain high encoding efficiency. Input text beyond the token limit is truncated.\n\nAvg. SBERT consists of the same SBERT embeddings of the input chunks that NextLevelBERT uses, but simply mean-pools them. Theoretically, the model therefore has access to all information in the document and can directly show the effect of contextualizing the text embeddings with NextLevelBERT. We therefore select the MiniLM\n\nTable 2: Evaluation results (in %, averaged over five fine-tuning runs). Best results per dataset and metric are presented in bold. The sentence-based NextLevelBERT model's context size is estimated from Books3's average sentence length. For the Chunk Mean approach, there is no overall context limit due to the simple mean-pooling aggregation.   \n\n<table><tr><td rowspan=\"2\">Model &amp; Chunking</td><td rowspan=\"2\">Context</td><td rowspan=\"2\">Emb-Dim.</td><td rowspan=\"2\">Size (MB)</td><td colspan=\"2\">BookSum</td><td colspan=\"2\">MuLD-Mov</td><td>QuALITY</td></tr><tr><td>MRR</td><td>HR@10</td><td>Acc</td><td>F1</td><td>Acc</td></tr><tr><td>NextLevelBERT</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>— Sentence-based</td><td>~12,288</td><td>384</td><td>160</td><td>31.99</td><td>51.11</td><td>80.47</td><td>82.79</td><td>32.12</td></tr><tr><td>— 16</td><td>8,192</td><td>384</td><td>160</td><td>29.78</td><td>49.64</td><td>58.14</td><td>73.53</td><td>24.20</td></tr><tr><td>— 32</td><td>16,384</td><td>384</td><td>160</td><td>24.52</td><td>44.26</td><td>58.14</td><td>73.53</td><td>30.45</td></tr><tr><td>— 64</td><td>32,768</td><td>384</td><td>160</td><td>38.99</td><td>64.89</td><td>59.77</td><td>74.18</td><td>31.58</td></tr><tr><td>— 128</td><td>65,536</td><td>384</td><td>160</td><td>60.27</td><td>81.81</td><td>72.33</td><td>73.67</td><td>32.49</td></tr><tr><td>— 256</td><td>131,072</td><td>384</td><td>160</td><td>65.45</td><td>85.57</td><td>83.49</td><td>85.70</td><td>31.23</td></tr><tr><td>— 512</td><td>262,144</td><td>384</td><td>160</td><td>48.04</td><td>72.13</td><td>64.65</td><td>72.97</td><td>29.03</td></tr><tr><td>Avg. SBERT: MiniLM</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>— Sentence-based</td><td>N/A</td><td>384</td><td>80</td><td>30.94</td><td>50.85</td><td>58.14</td><td>73.53</td><td>32.51</td></tr><tr><td>— 16</td><td>N/A</td><td>384</td><td>80</td><td>25.63</td><td>43.64</td><td>58.14</td><td>73.53</td><td>31.93</td></tr><tr><td>— 32</td><td>N/A</td><td>384</td><td>80</td><td>38.64</td><td>59.93</td><td>58.14</td><td>73.53</td><td>31.69</td></tr><tr><td>— 64</td><td>N/A</td><td>384</td><td>80</td><td>50.35</td><td>73.18</td><td>58.14</td><td>73.53</td><td>31.81</td></tr><tr><td>— 128</td><td>N/A</td><td>384</td><td>80</td><td>59.37</td><td>80.85</td><td>58.14</td><td>73.53</td><td>31.95</td></tr><tr><td>— 256</td><td>N/A</td><td>384</td><td>80</td><td>56.84</td><td>78.49</td><td>58.14</td><td>73.53</td><td>31.89</td></tr><tr><td>— 512</td><td>N/A</td><td>384</td><td>80</td><td>29.25</td><td>48.98</td><td>58.14</td><td>73.53</td><td>31.67</td></tr><tr><td>SBERT: MiniLM</td><td>512</td><td>384</td><td>80</td><td>30.87</td><td>48.35</td><td>58.14</td><td>73.53</td><td>31.96</td></tr><tr><td>Longformer-base</td><td>4,096</td><td>768</td><td>595</td><td>1.92</td><td>4.48</td><td>58.14</td><td>73.53</td><td>26.41</td></tr><tr><td>Nomic Embed</td><td>8,192</td><td>768</td><td>550</td><td>65.07</td><td>84.90</td><td>60.47</td><td>73.85</td><td>36.58</td></tr></table>\n\nmodel that NextLevelBERT uses in our default setting to encode text chunks.\n\nNomic Embed (Nussbaum et al., 2024) is a text embedding model for document lengths up to 8,192 tokens. Based on a BERT architecture, the model is trained via Masked Language Modeling and both unsupervised as well as supervised contrastive textual similarity tasks. We choose this model as a highly competitive baseline with a long context window yet relatively small size at 137M parameters.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.256::sections::3.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100-SXM2-32GB",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "Data The books3 dataset is a collection of 197,000 books in plain-text format that is also part of The Pile (Gao et al., 2020), a larger collection of Web text from diverse domains and sources that is frequently used for language modeling. Books are particularly useful due to their length as well as the presence of long-range dependencies that a model may attempt to capture.\n\nSetup We pretrain each version of the model for 20 epochs on the encoded books3 dataset for up to five days on four Tesla V100-SXM2-32GB. Pretraining time is shorter for larger chunk sizes. We use a cosine learning rate schedule (max. $10^{-4}$ ) with linear warm-up (first $5\\%$ of the total number of steps) and the AdamW (Loshchilov and Hutter, 2018) optimizer $(\\beta_{1} = 0.9, \\beta_{2} = 0.999$ , weight decay: 0.01). Unless otherwise stated, we use a global batch size of 512, a masking rate of $15\\%$ and a smooth L1 loss. By default, to encode the input chunks into vectors, we use the MiniLM-L6 model from the Sentence Transformers library<sup>1</sup>. In practice, we encode the input chunks during preprocessing, since this can be done very efficiently in large batches over multiple GPUs and can be cached for later reuse. We initialize the NextLevelModel's weights with the pretrained weights of the chunk encoder, since we found that this is crucial for convergence (see Section 4.5).\n\nPretrained Chunk Encoder Models To evaluate the choice of chunk encoder, we pretrain several NextLevelBERT versions with different SBERT encoder models (Reimers and Gurevych, 2019a). Our focus is on the following three lightweight models with moderate embedding sizes to keep computation costs and memory usage low.\n\n(1) MiniLM-L6 (Wang et al., 2020) is a lightweight BERT-based distilled model with strong performance on the GLUE benchmark. We\n\nuse the version with six layers.2\n\n(2) MPNet (Song et al., 2020) is an encoder-only model that leverages permuted language modeling and improved position modeling to address drawbacks from previous encoder-only language models. It demonstrates strong performance for sentence embedding tasks. It is almost four times larger than the MiniLM-L6 model in terms of parameters and uses a larger embedding dimensionality of 768. This might be advantageous for modeling longer text, since the additional dimensions can capture more information.   \n(3) DistilRoBERTa (Sanh et al., 2019) is a distilled version of RoBERTa-base. This model is smaller than MPNet while also offering a larger embedding dimensionality of 768.",
+      "section_number": "3.1",
+      "section_title": "pretraining",
+      "normalized_section_title": "pretraining"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.256::sections::3.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100-SXM2-32GB",
+      "cleaned_hardware_name": "tesla v100 sxm2 32gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 SXM2 32GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 SXM2 32GB",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "3.1",
+      "section_title": "pretraining",
+      "normalized_section_title": "pretraining",
+      "evidence": "Data The books3 dataset is a collection of 197,000 books in plain-text format that is also part of The Pile (Gao et al., 2020), a larger collection of Web text from diverse domains and sources that is frequently used for language modeling. Books are particularly useful due to their length as well as the presence of long-range dependencies that a model may attempt to capture.\n\nSetup We pretrain each version of the model for 20 epochs on the encoded books3 dataset for up to five days on four Tesla V100-SXM2-32GB. Pretraining time is shorter for larger chunk sizes. We use a cosine learning rate schedule (max. $10^{-4}$ ) with linear warm-up (first $5\\%$ of the total number of steps) and the AdamW (Loshchilov and Hutter, 2018) optimizer $(\\beta_{1} = 0.9, \\beta_{2} = 0.999$ , weight decay: 0.01). Unless otherwise stated, we use a global batch size of 512, a masking rate of $15\\%$ and a smooth L1 loss. By default, to encode the input chunks into vectors, we use the MiniLM-L6 model from the Sentence Transformers library<sup>1</sup>. In practice, we encode the input chunks during preprocessing, since this can be done very efficiently in large batches over multiple GPUs and can be cached for later reuse. We initialize the NextLevelModel's weights with the pretrained weights of the chunk encoder, since we found that this is crucial for convergence (see Section 4.5).\n\nPretrained Chunk Encoder Models To evaluate the choice of chunk encoder, we pretrain several NextLevelBERT versions with different SBERT encoder models (Reimers and Gurevych, 2019a). Our focus is on the following three lightweight models with moderate embedding sizes to keep computation costs and memory usage low.\n\n(1) MiniLM-L6 (Wang et al., 2020) is a lightweight BERT-based distilled model with strong performance on the GLUE benchmark. We\n\nuse the version with six layers.2\n\n(2) MPNet (Song et al., 2020) is an encoder-only model that leverages permuted language modeling and improved position modeling to address drawbacks from previous encoder-only language models. It demonstrates strong performance for sentence embedding tasks. It is almost four times larger than the MiniLM-L6 model in terms of parameters and uses a larger embedding dimensionality of 768. This might be advantageous for modeling longer text, since the additional dimensions can capture more information.   \n(3) DistilRoBERTa (Sanh et al., 2019) is a distilled version of RoBERTa-base. This model is smaller than MPNet while also offering a larger embedding dimensionality of 768.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "3.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 SXM2 32GB",
+        "num": 4
+      }
+    ]
+  }
+}

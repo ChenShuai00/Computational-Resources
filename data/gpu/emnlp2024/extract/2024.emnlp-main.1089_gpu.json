@@ -1,0 +1,204 @@
+{
+  "paper_id": "2024.emnlp-main.1089",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.1089::sections::4",
+      "paper_id": "2024.emnlp-main.1089",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1089::sections::4.2",
+      "paper_id": "2024.emnlp-main.1089",
+      "section_number": "4.2",
+      "section_title": "evaluations",
+      "normalized_section_title": "evaluations",
+      "window_text": "We evaluate the BM25T model by exploiting our built relevance thesaurus in two ways: ranking effectiveness and fidelity. Ranking effectiveness is measured by standard ranking evaluation metrics that use ground truth judgments. It demonstrates to what extent BM25T can be used for relevance ranking. Fidelity expresses the extent to which the BM25T faithfully explains the behavior of the target ranking model, i.e., the cross-encoder model.\n\nTo demonstrate the generalizability of the relevance thesaurus obtained from PaRM, we developed QLT (Query Likelihood with Thesaurus), a variant of BM25T (PaRM) based on the query-likelihood (QL) framework (Ponte and Croft, 1998). QLT incorporates the translation language model (Berger and Lafferty, 1999) and uses translation probabilities extracted from our relevance thesaurus. Unlike BM25T which computes the score of a query term based on the most relevant document term, QLT computes the score by summing the relevance scores of the document terms.\n\nTo provide a baseline comparison and demonstrate the effectiveness of PaRM in building a relevance thesaurus, we re-purposed a local expla\n\nTable 2: Ranking performance on the MS MARCO driven datasets. $\\ddagger$ marks the statistically significant difference $\\left( {p < {0.01}}\\right)$ to the baseline in each group.   \n\n<table><tr><td>Model</td><td>TREC DL19 NDCG@10</td><td>TREC DL20 NDCG@10</td><td>Dev MRR</td></tr><tr><td>BM25</td><td>0.516</td><td>0.503</td><td>0.160</td></tr><tr><td>BM25T (L to G)</td><td>0.518</td><td>0.501</td><td>0.158</td></tr><tr><td>BM25T (PaRM)</td><td>0.550‡</td><td>0.546‡</td><td>0.180‡</td></tr><tr><td>QL</td><td>0.495</td><td>0.509</td><td>0.153</td></tr><tr><td>QLT (PaRM)</td><td>0.543‡</td><td>0.540‡</td><td>0.170‡</td></tr><tr><td>Cross-encoder</td><td>0.763</td><td>0.739</td><td>0.375</td></tr></table>\n\nnation method (Llordes et al., 2023) as a global explanation (Lundberg et al., 2020), denoted as BM25T (L to G). Given a query and ranked candidates documents for it, this explanation method identifies which terms in the document are relevant to the query.\n\nWe adapted it by aligning each document term to the most relevant query term using a cross-encoder and aggregating alignments across 400K training queries. The aggregated scores of term pairs create a relevance thesaurus, which augments the BM25 scoring function as in BM25T (PaRM) (See Appendix B for details).\n\nIn-domain ranking effectiveness. First, we evaluate ranking effectiveness on three datasets derived from MS MARCO. TREC DL 2019 and 2020 (Craswell et al., 2020, 2021) contain 43 and 53 queries, respectively. Top-ranked documents are thoroughly judged by NIST assessors, which make them more reliable for evaluating the ranking effectiveness.\n\nWe also used a larger dataset called MS MARCO-dev, which we built by sampling 1,000 queries from the development split of MS MARCO. As this dataset is sparsely judged, with most queries having only one relevant document, we evaluated it using mean reciprocal rank (MRR). MS MARCO-dev will also be used for evaluating fidelity, where more data points are preferable.\n\nTable 2 shows the ranking effectiveness of methods on the MS MARCO datasets. BM25T with our proposed PaRM shows significant gains $(p < 0.01)$ over BM25 in all datasets. The obtained gains demonstrate that the distilled relevance thesaurus effectively improves the vocabulary mismatch problem of BM25. In contrast, the BM25T (L to G) does not show consistent improvements. BM25T still has a gap from the cross-encoder model, showing room for improvement in\n\nTable 3: The ranking effectiveness measure (NDCG@10) of the methods on BEIR datasets. $^\\dagger$ marks the statistically significant difference $(p <   0.05)$ between BM25 and BM25T   \n\n<table><tr><td>Dataset</td><td>BM25</td><td>BM25T</td><td>Cross Encoder</td></tr><tr><td>HotpotQA</td><td>0.633</td><td>0.641†</td><td>0.725</td></tr><tr><td>DBPedia</td><td>0.325</td><td>0.350†</td><td>0.447</td></tr><tr><td>NQ</td><td>0.307</td><td>0.332†</td><td>0.462</td></tr><tr><td>Touché-2020</td><td>0.499†</td><td>0.337</td><td>0.272</td></tr><tr><td>SCIDOCS</td><td>0.150</td><td>0.148</td><td>0.163</td></tr><tr><td>TREC-COVID</td><td>0.583</td><td>0.602</td><td>0.733</td></tr><tr><td>FiQA-2018</td><td>0.245</td><td>0.248</td><td>0.341</td></tr><tr><td>Quora</td><td>0.775†</td><td>0.738</td><td>0.823</td></tr><tr><td>ArguAna</td><td>0.407†</td><td>0.359</td><td>0.311</td></tr><tr><td>SciFact</td><td>0.678</td><td>0.678</td><td>0.688</td></tr><tr><td>NFCorpus</td><td>0.319</td><td>0.348†</td><td>0.369</td></tr><tr><td>ViHealthQA</td><td>0.217†</td><td>0.173</td><td>0.168</td></tr></table>\n\nfuture work. Note that we do not include other retrieval models to compare with their ranking effectiveness, as they cannot be used to make a global explanation. QLT (PaRM) also has better effectiveness compared to QL. Considering that the thesaurus is only tuned for BM25 but not for QL, this result demonstrates the generalization ability of the acquired relevance thesaurus.\n\nOut-of-domain ranking effectiveness. The BEIR benchmark (Thakur et al., 2021) is a collection of IR datasets and is widely used to measure the generalizability of models without domain-specific training. We evaluate the zero-shot ranking effectiveness of the BM25T model over this benchmark, using the same relevance thesaurus distilled from the cross-encoder model that is trained on MS MARCO.\n\nTable 3 shows evaluation results on the BEIR datasets. Out of the 12 datasets, the performance difference between BM25 and BM25T is statistically significant $(p < 0.05)$ in 8 datasets. Among these datasets, BM25T outperforms BM25 on 7 datasets, showing a performance closer to that of the cross-encoder. Thus, we conclude that the relevance thesaurus is not limited to the corpus on which it is trained and can effectively perform semantic matching in out-of-domain datasets.\n\nFidelity. As our task is a ranking task, we measure faithfulness in terms of the correlation between the scores from the explanations and the target model.\n\nGiven a query $q$ and its corresponding candidate documents $\\{d_1, d_2, \\dots, d_n\\}$ , the fidelity of an explanation is computed as the correlation between\n\nthe scores $\\{S_{b}(q,d_{1}),S_{b}(q,d_{2}),\\dots,S_{b}(q,d_{n})\\}$ from the targeted neural model and the global predictor from explanations (e.g., BM25T) $\\{S_e(q,d_1),S_e(q,d_2),\\ldots ,S_e(q,d_n)\\}$\n\nFor the fidelity score for a dataset, we calculate this correlation for each query and then average them across all queries in the dataset. For each query, the top 1,000 documents retrieved by BM25 are used as candidate documents. The Pearson correlation coefficient, which ranges from -1 to 1, is used as a measure of correlation, with 1 indicating the strongest positive correlation. Appendix C reports results for other correlation measures, which show similar findings.\n\nIn addition to the cross-encoder model, which was used for training PaRM, we apply fidelity evaluation to the other IR models that fine-tune Transformer-based models on MS MARCO. Four popular retrieval models are included. The first two models are TAS-B (Hofstätter et al., 2021) and Splade v2 (Formal et al., 2021a) which are trained using knowledge distillation from the cross-encoders. The next two are Contriever and Contriever+M (Izacard et al., 2021). Contriever is trained with unsupervised learning unsupervised, and Contriever+M is the model that further finetunes Contriever using MS MARCO. These four models are dual-encoders, where the query and document are independently encoded into vectors using Transformer encoders.\n\nTable 4: Fidelity of the explanations to the ranking models, measured by Pearson correlations on the MS MARCO Dev dataset. Both BM25 and BM25T are considered explanations for the corresponding ranking models. The ranking performance, measured by Mean Reciprocal Rank (MRR), is provided as a reference.   \n\n<table><tr><td></td><td colspan=\"2\">Fidelity</td><td>Ranking</td></tr><tr><td>Ranking Model</td><td>BM25</td><td>BM25T</td><td>MRR</td></tr><tr><td>Cross-encoder</td><td>0.484</td><td>0.580</td><td>0.375</td></tr><tr><td>Splade v2</td><td>0.490</td><td>0.583</td><td>0.335</td></tr><tr><td>TAS-B</td><td>0.421</td><td>0.513</td><td>0.318</td></tr><tr><td>Contriever</td><td>0.417</td><td>0.454</td><td>0.174</td></tr><tr><td>Contriever+M</td><td>0.411</td><td>0.495</td><td>0.307</td></tr></table>\n\nTable 4 shows the fidelity of BM25 and BM25T to these neural retrieval models on MS MARCOdev. First, we can observe that in all ranking models, BM25T has higher fidelity than BM25. Also, the gain is larger on models that are trained on MS MARCO. Contriever is not trained based on the MS MARCO dataset, on which BM25T showed the lowest fidelity and smallest fidelity gain.\n\nWe conclude that the relevance thesaurus can serve to explain the behavior of the models that are trained with similar training data.\n\nThe fidelity evaluations on BEIR datasets also confirm that BM25T is more faithful than BM25 in explaining the cross-encoder model (Table 10). The fidelity of BM25T is higher than BM25 across all datasets, except in the Quora dataset. The average fidelity across the datasets improved from 0.507 with BM25 to 0.630 with BM25T.\n\nThe high fidelity of BM25T to the cross-encoder model is further evidenced by its performance across the BEIR datasets, as shown in Table 3. In fact, BM25T mirrors the CE's performance drops in the ArguAna and Touche-2020 datasets. This consistency suggests that the relevance thesaurus effectively captures the semantic matching patterns of the CE, even when those patterns lead to decreased performance. Further analysis of the relevance thesaurus could provide insights into why the additional semantic matches sometimes result in worse performance in these specific datasets",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1089::appendix::B",
+      "paper_id": "2024.emnlp-main.1089",
+      "section_number": "B",
+      "section_title": "experiments details",
+      "normalized_section_title": "experiments details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1089::appendix::C",
+      "paper_id": "2024.emnlp-main.1089",
+      "section_number": "C",
+      "section_title": "full experiments results",
+      "normalized_section_title": "full experiments results",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1089::appendix::D",
+      "paper_id": "2024.emnlp-main.1089",
+      "section_number": "D",
+      "section_title": "parm implementation details",
+      "normalized_section_title": "parm implementation details",
+      "window_text": "In the first phase, PaRM calculates a relevance score for the given query-document by generating\n\nTable 9: Fidelity of BM25 and BM25T when measured by different metrics.   \n\n<table><tr><td></td><td colspan=\"2\">Pearson r</td><td colspan=\"2\">Kendall τ</td><td colspan=\"2\">Pairwise</td><td colspan=\"2\">Top-k overlap</td></tr><tr><td>Model</td><td>BM25</td><td>BM25T</td><td>BM25</td><td>BM25T</td><td>BM25</td><td>BM25T</td><td>BM25</td><td>BM25T</td></tr><tr><td>Cross Encoder</td><td>0.484</td><td>0.580</td><td>0.260</td><td>0.341</td><td>0.632</td><td>0.672</td><td>0.293</td><td>0.334</td></tr><tr><td>Splade v2</td><td>0.490</td><td>0.583</td><td>0.268</td><td>0.346</td><td>0.636</td><td>0.674</td><td>0.304</td><td>0.345</td></tr><tr><td>TAS-B</td><td>0.421</td><td>0.513</td><td>0.228</td><td>0.304</td><td>0.616</td><td>0.653</td><td>0.256</td><td>0.293</td></tr><tr><td>Contriever</td><td>0.417</td><td>0.454</td><td>0.230</td><td>0.259</td><td>0.617</td><td>0.631</td><td>0.273</td><td>0.289</td></tr><tr><td>Contriever + M</td><td>0.411</td><td>0.495</td><td>0.225</td><td>0.294</td><td>0.615</td><td>0.648</td><td>0.264</td><td>0.303</td></tr></table>\n\nTable 10: Fidelity (Pearson correlation) of the BM25 and BM25T as explanation to the cross encoder ranking model.   \n\n<table><tr><td>Dataset</td><td>BM25</td><td>BM25T</td></tr><tr><td>HotpotQA</td><td>0.535</td><td>0.647</td></tr><tr><td>DBPedia</td><td>0.477</td><td>0.612</td></tr><tr><td>NQ</td><td>0.474</td><td>0.658</td></tr><tr><td>Touché-2020</td><td>0.403</td><td>0.689</td></tr><tr><td>SCIDOCS</td><td>0.598</td><td>0.663</td></tr><tr><td>TREC-COVID</td><td>0.276</td><td>0.705</td></tr><tr><td>FiQA-2018</td><td>0.481</td><td>0.514</td></tr><tr><td>Quora</td><td>0.659</td><td>0.640</td></tr><tr><td>ArguAna</td><td>0.656</td><td>0.722</td></tr><tr><td>SciFact</td><td>0.634</td><td>0.677</td></tr><tr><td>NFCorpus</td><td>0.584</td><td>0.626</td></tr><tr><td>ViHealthQA</td><td>0.314</td><td>0.410</td></tr></table>\n\nscores for two inputs, $(q_{1},d_{1})$ and $(q_{2},d_{2})$ , which are built from the given query $q$ and document $d$ . Each of the two inputs is then scored through PaRM and these two scores are summed as the relevance score for the query-document pair. Using the relevance label for the query and document, PaRM is trained end-to-end to predict relevance for partial sequences of the query and document without fine-grained labels.\n\nWe build $q_{1}$ by extracting a continuous span from $q$ and build $q_{2}$ with the remaining tokens, leaving a [MASK] token where $q_{1}$ was extracted. Given $q_{1}, q_{2}$ , and $d$ , we build $d_{1}$ and $d_{2}$ by masking some tokens of the document $d$ , while keeping tokens that are likely to be relevant to the corresponding $q_{i}$ . Both $d_{1}$ and $d_{2}$ can be composed of many non-continuous spans.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1089::appendix::D.3",
+      "paper_id": "2024.emnlp-main.1089",
+      "section_number": "D.3",
+      "section_title": "training configurations",
+      "normalized_section_title": "training configurations",
+      "window_text": "Both phases use the query-documents triplets provided with MS MARCO passage ranking dataset (Nguyen et al., 2016), which makes about 400,000 training instances.\n\nFor the first stage training of PaRM, we apply early stopping based on the loss validation set. We used the batch size of 16 and learning rate of 2e-5, which were not tuned.\n\nFor the second stage of training of PaRM, we tuned the learning rate and batch sizes based on its loss on holdout split and BM25T augmented\n\nperformance (MRR) in a validation set that is separately sampled from MS MARCO dev. The reported model used a batch size of 256 and a learning rate of 1e-5.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1089::appendix::D.4",
+      "paper_id": "2024.emnlp-main.1089",
+      "section_number": "D.4",
+      "section_title": "computational cost",
+      "normalized_section_title": "computational cost",
+      "window_text": "We used four NVIDIA GeForce GTX 1080 Ti GPUs for training. Both the first and second stages of training took less than 10 hours each. The inference for relevance thesaurus construction was run on approximately 100 GPUs, including GeForce GTX 1080 Ti and GTX Titan X models, and took about 700 GPU hours.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.1089::appendix::D.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA GeForce GTX 1080 Ti",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "We used four NVIDIA GeForce GTX 1080 Ti GPUs for training. Both the first and second stages of training took less than 10 hours each. The inference for relevance thesaurus construction was run on approximately 100 GPUs, including GeForce GTX 1080 Ti and GTX Titan X models, and took about 700 GPU hours.",
+      "section_number": "D.4",
+      "section_title": "computational cost",
+      "normalized_section_title": "computational cost"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.1089::appendix::D.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA GeForce GTX 1080 Ti",
+      "cleaned_hardware_name": "nvidia geforce gtx 1080 ti",
+      "normalized_hardware_name": "NVIDIA GeForce GTX 1080 Ti",
+      "benchmark_hardware_name": "NVIDIA GeForce GTX 1080 Ti",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "D.4",
+      "section_title": "computational cost",
+      "normalized_section_title": "computational cost",
+      "evidence": "We used four NVIDIA GeForce GTX 1080 Ti GPUs for training. Both the first and second stages of training took less than 10 hours each. The inference for relevance thesaurus construction was run on approximately 100 GPUs, including GeForce GTX 1080 Ti and GTX Titan X models, and took about 700 GPU hours.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.emnlp-main.1089::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.1089::sections::4.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2",
+      "section_title": "evaluations",
+      "evidence": "We evaluate the BM25T model by exploiting our built relevance thesaurus in two ways: ranking effectiveness and fidelity. Ranking effectiveness is measured by standard ranking evaluation metrics that use ground truth judgments. It demonstrates to what extent BM25T can be used for relevance ranking. Fidelity expresses the extent to which the BM25T faithfully explains the behavior of the target ranking model, i.e., the cross-encoder model.\n\nTo demonstrate the generalizability of the relevance thesaurus obtained from PaRM, we developed QLT (Query Likelihood with Thesaurus), a variant of BM25T (PaRM) based on the query-likelihood (QL) framework (Ponte and Croft, 1998). QLT incorporates the translation language model (Berger and Lafferty, 1999) and uses translation probabilities extracted from our relevance thesaurus. Unlike BM25T which computes the score of a query term based on the most relevant document term, QLT computes the score by summing the relevance scores of the document terms.\n\nTo provide a baseline comparison and demonstrate the effectiveness of PaRM in building a relevance thesaurus, we re-purposed a local expla\n\nTable 2: Ranking performance on the MS MARCO driven datasets. $\\ddagger$ marks the statistically significant difference $\\left( {p < {0.01}}\\right)$ to the baseline in each group.   \n\n<table><tr><td>Model</td><td>TREC DL19 NDCG@10</td><td>TREC DL20 NDCG@10</td><td>Dev MRR</td></tr><tr><td>BM25</td><td>0.516</td><td>0.503</td><td>0.160</td></tr><tr><td>BM25T (L to G)</td><td>0.518</td><td>0.501</td><td>0.158</td></tr><tr><td>BM25T (PaRM)</td><td>0.550‡</td><td>0.546‡</td><td>0.180‡</td></tr><tr><td>QL</td><td>0.495</td><td>0.509</td><td>0.153</td></tr><tr><td>QLT (PaRM)</td><td>0.543‡</td><td>0.540‡</td><td>0.170‡</td></tr><tr><td>Cross-encoder</td><td>0.763</td><td>0.739</td><td>0.375</td></tr></table>\n\nnation method (Llordes et al., 2023) as a global explanation (Lundberg et al., 2020), denoted as BM25T (L to G). Given a query and ranked candidates documents for it, this explanation method identifies which terms in the document are relevant to the query.\n\nWe adapted it by aligning each document term to the most relevant query term using a cross-encoder and aggregating alignments across 400K training queries. The aggregated scores of term pairs create a relevance thesaurus, which augments the BM25 scoring function as in BM25T (PaRM) (See Appendix B for details).\n\nIn-domain ranking effectiveness. First, we evaluate ranking effectiveness on three datasets derived from MS MARCO. TREC DL 2019 and 2020 (Craswell et al., 2020, 2021) contain 43 and 53 queries, respectively. Top-ranked documents are thoroughly judged by NIST assessors, which make them more reliable for evaluating the ranking effectiveness.\n\nWe also used a larger dataset called MS MARCO-dev, which we built by sampling 1,000 queries from the development split of MS MARCO. As this dataset is sparsely judged, with most queries having only one relevant document, we evaluated it using mean reciprocal rank (MRR). MS MARCO-dev will also be used for evaluating fidelity, where more data points are preferable.\n\nTable 2 shows the ranking effectiveness of methods on the MS MARCO datasets. BM25T with our proposed PaRM shows significant gains $(p < 0.01)$ over BM25 in all datasets. The obtained gains demonstrate that the distilled relevance thesaurus effectively improves the vocabulary mismatch problem of BM25. In contrast, the BM25T (L to G) does not show consistent improvements. BM25T still has a gap from the cross-encoder model, showing room for improvement in\n\nTable 3: The ranking effectiveness measure (NDCG@10) of the methods on BEIR datasets. $^\\dagger$ marks the statistically significant difference $(p <   0.05)$ between BM25 and BM25T   \n\n<table><tr><td>Dataset</td><td>BM25</td><td>BM25T</td><td>Cross Encoder</td></tr><tr><td>HotpotQA</td><td>0.633</td><td>0.641†</td><td>0.725</td></tr><tr><td>DBPedia</td><td>0.325</td><td>0.350†</td><td>0.447</td></tr><tr><td>NQ</td><td>0.307</td><td>0.332†</td><td>0.462</td></tr><tr><td>Touché-2020</td><td>0.499†</td><td>0.337</td><td>0.272</td></tr><tr><td>SCIDOCS</td><td>0.150</td><td>0.148</td><td>0.163</td></tr><tr><td>TREC-COVID</td><td>0.583</td><td>0.602</td><td>0.733</td></tr><tr><td>FiQA-2018</td><td>0.245</td><td>0.248</td><td>0.341</td></tr><tr><td>Quora</td><td>0.775†</td><td>0.738</td><td>0.823</td></tr><tr><td>ArguAna</td><td>0.407†</td><td>0.359</td><td>0.311</td></tr><tr><td>SciFact</td><td>0.678</td><td>0.678</td><td>0.688</td></tr><tr><td>NFCorpus</td><td>0.319</td><td>0.348†</td><td>0.369</td></tr><tr><td>ViHealthQA</td><td>0.217†</td><td>0.173</td><td>0.168</td></tr></table>\n\nfuture work. Note that we do not include other retrieval models to compare with their ranking effectiveness, as they cannot be used to make a global explanation. QLT (PaRM) also has better effectiveness compared to QL. Considering that the thesaurus is only tuned for BM25 but not for QL, this result demonstrates the generalization ability of the acquired relevance thesaurus.\n\nOut-of-domain ranking effectiveness. The BEIR benchmark (Thakur et al., 2021) is a collection of IR datasets and is widely used to measure the generalizability of models without domain-specific training. We evaluate the zero-shot ranking effectiveness of the BM25T model over this benchmark, using the same relevance thesaurus distilled from the cross-encoder model that is trained on MS MARCO.\n\nTable 3 shows evaluation results on the BEIR datasets. Out of the 12 datasets, the performance difference between BM25 and BM25T is statistically significant $(p < 0.05)$ in 8 datasets. Among these datasets, BM25T outperforms BM25 on 7 datasets, showing a performance closer to that of the cross-encoder. Thus, we conclude that the relevance thesaurus is not limited to the corpus on which it is trained and can effectively perform semantic matching in out-of-domain datasets.\n\nFidelity. As our task is a ranking task, we measure faithfulness in terms of the correlation between the scores from the explanations and the target model.\n\nGiven a query $q$ and its corresponding candidate documents $\\{d_1, d_2, \\dots, d_n\\}$ , the fidelity of an explanation is computed as the correlation between\n\nthe scores $\\{S_{b}(q,d_{1}),S_{b}(q,d_{2}),\\dots,S_{b}(q,d_{n})\\}$ from the targeted neural model and the global predictor from explanations (e.g., BM25T) $\\{S_e(q,d_1),S_e(q,d_2),\\ldots ,S_e(q,d_n)\\}$\n\nFor the fidelity score for a dataset, we calculate this correlation for each query and then average them across all queries in the dataset. For each query, the top 1,000 documents retrieved by BM25 are used as candidate documents. The Pearson correlation coefficient, which ranges from -1 to 1, is used as a measure of correlation, with 1 indicating the strongest positive correlation. Appendix C reports results for other correlation measures, which show similar findings.\n\nIn addition to the cross-encoder model, which was used for training PaRM, we apply fidelity evaluation to the other IR models that fine-tune Transformer-based models on MS MARCO. Four popular retrieval models are included. The first two models are TAS-B (Hofstätter et al., 2021) and Splade v2 (Formal et al., 2021a) which are trained using knowledge distillation from the cross-encoders. The next two are Contriever and Contriever+M (Izacard et al., 2021). Contriever is trained with unsupervised learning unsupervised, and Contriever+M is the model that further finetunes Contriever using MS MARCO. These four models are dual-encoders, where the query and document are independently encoded into vectors using Transformer encoders.\n\nTable 4: Fidelity of the explanations to the ranking models, measured by Pearson correlations on the MS MARCO Dev dataset. Both BM25 and BM25T are considered explanations for the corresponding ranking models. The ranking performance, measured by Mean Reciprocal Rank (MRR), is provided as a reference.   \n\n<table><tr><td></td><td colspan=\"2\">Fidelity</td><td>Ranking</td></tr><tr><td>Ranking Model</td><td>BM25</td><td>BM25T</td><td>MRR</td></tr><tr><td>Cross-encoder</td><td>0.484</td><td>0.580</td><td>0.375</td></tr><tr><td>Splade v2</td><td>0.490</td><td>0.583</td><td>0.335</td></tr><tr><td>TAS-B</td><td>0.421</td><td>0.513</td><td>0.318</td></tr><tr><td>Contriever</td><td>0.417</td><td>0.454</td><td>0.174</td></tr><tr><td>Contriever+M</td><td>0.411</td><td>0.495</td><td>0.307</td></tr></table>\n\nTable 4 shows the fidelity of BM25 and BM25T to these neural retrieval models on MS MARCOdev. First, we can observe that in all ranking models, BM25T has higher fidelity than BM25. Also, the gain is larger on models that are trained on MS MARCO. Contriever is not trained based on the MS MARCO dataset, on which BM25T showed the lowest fidelity and smallest fidelity gain.\n\nWe conclude that the relevance thesaurus can serve to explain the behavior of the models that are trained with similar training data.\n\nThe fidelity evaluations on BEIR datasets also confirm that BM25T is more faithful than BM25 in explaining the cross-encoder model (Table 10). The fidelity of BM25T is higher than BM25 across all datasets, except in the Quora dataset. The average fidelity across the datasets improved from 0.507 with BM25 to 0.630 with BM25T.\n\nThe high fidelity of BM25T to the cross-encoder model is further evidenced by its performance across the BEIR datasets, as shown in Table 3. In fact, BM25T mirrors the CE's performance drops in the ArguAna and Touche-2020 datasets. This consistency suggests that the relevance thesaurus effectively captures the semantic matching patterns of the CE, even when those patterns lead to decreased performance. Further analysis of the relevance thesaurus could provide insights into why the additional semantic matches sometimes result in worse performance in these specific datasets"
+    },
+    {
+      "source_window_id": "2024.emnlp-main.1089::appendix::B",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B",
+      "section_title": "experiments details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.1089::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "full experiments results",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.1089::appendix::D",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D",
+      "section_title": "parm implementation details",
+      "evidence": "In the first phase, PaRM calculates a relevance score for the given query-document by generating\n\nTable 9: Fidelity of BM25 and BM25T when measured by different metrics.   \n\n<table><tr><td></td><td colspan=\"2\">Pearson r</td><td colspan=\"2\">Kendall τ</td><td colspan=\"2\">Pairwise</td><td colspan=\"2\">Top-k overlap</td></tr><tr><td>Model</td><td>BM25</td><td>BM25T</td><td>BM25</td><td>BM25T</td><td>BM25</td><td>BM25T</td><td>BM25</td><td>BM25T</td></tr><tr><td>Cross Encoder</td><td>0.484</td><td>0.580</td><td>0.260</td><td>0.341</td><td>0.632</td><td>0.672</td><td>0.293</td><td>0.334</td></tr><tr><td>Splade v2</td><td>0.490</td><td>0.583</td><td>0.268</td><td>0.346</td><td>0.636</td><td>0.674</td><td>0.304</td><td>0.345</td></tr><tr><td>TAS-B</td><td>0.421</td><td>0.513</td><td>0.228</td><td>0.304</td><td>0.616</td><td>0.653</td><td>0.256</td><td>0.293</td></tr><tr><td>Contriever</td><td>0.417</td><td>0.454</td><td>0.230</td><td>0.259</td><td>0.617</td><td>0.631</td><td>0.273</td><td>0.289</td></tr><tr><td>Contriever + M</td><td>0.411</td><td>0.495</td><td>0.225</td><td>0.294</td><td>0.615</td><td>0.648</td><td>0.264</td><td>0.303</td></tr></table>\n\nTable 10: Fidelity (Pearson correlation) of the BM25 and BM25T as explanation to the cross encoder ranking model.   \n\n<table><tr><td>Dataset</td><td>BM25</td><td>BM25T</td></tr><tr><td>HotpotQA</td><td>0.535</td><td>0.647</td></tr><tr><td>DBPedia</td><td>0.477</td><td>0.612</td></tr><tr><td>NQ</td><td>0.474</td><td>0.658</td></tr><tr><td>Touché-2020</td><td>0.403</td><td>0.689</td></tr><tr><td>SCIDOCS</td><td>0.598</td><td>0.663</td></tr><tr><td>TREC-COVID</td><td>0.276</td><td>0.705</td></tr><tr><td>FiQA-2018</td><td>0.481</td><td>0.514</td></tr><tr><td>Quora</td><td>0.659</td><td>0.640</td></tr><tr><td>ArguAna</td><td>0.656</td><td>0.722</td></tr><tr><td>SciFact</td><td>0.634</td><td>0.677</td></tr><tr><td>NFCorpus</td><td>0.584</td><td>0.626</td></tr><tr><td>ViHealthQA</td><td>0.314</td><td>0.410</td></tr></table>\n\nscores for two inputs, $(q_{1},d_{1})$ and $(q_{2},d_{2})$ , which are built from the given query $q$ and document $d$ . Each of the two inputs is then scored through PaRM and these two scores are summed as the relevance score for the query-document pair. Using the relevance label for the query and document, PaRM is trained end-to-end to predict relevance for partial sequences of the query and document without fine-grained labels.\n\nWe build $q_{1}$ by extracting a continuous span from $q$ and build $q_{2}$ with the remaining tokens, leaving a [MASK] token where $q_{1}$ was extracted. Given $q_{1}, q_{2}$ , and $d$ , we build $d_{1}$ and $d_{2}$ by masking some tokens of the document $d$ , while keeping tokens that are likely to be relevant to the corresponding $q_{i}$ . Both $d_{1}$ and $d_{2}$ can be composed of many non-continuous spans."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.1089::appendix::D.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D.3",
+      "section_title": "training configurations",
+      "evidence": "Both phases use the query-documents triplets provided with MS MARCO passage ranking dataset (Nguyen et al., 2016), which makes about 400,000 training instances.\n\nFor the first stage training of PaRM, we apply early stopping based on the loss validation set. We used the batch size of 16 and learning rate of 2e-5, which were not tuned.\n\nFor the second stage of training of PaRM, we tuned the learning rate and batch sizes based on its loss on holdout split and BM25T augmented\n\nperformance (MRR) in a validation set that is separately sampled from MS MARCO dev. The reported model used a batch size of 256 and a learning rate of 1e-5."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "D.4"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce GTX 1080 Ti",
+        "num": 4
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2024\\2024.emnlp-main.1089\\auto\\full.md",
+    "source_md_sha256": "11696215e71932a6ece709fc89c90ad6b33f1899971782dd81118e17dd6146fa",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "c528636f3bbfba595f8edb98c2892f86618e38f5077330ffb55606b0029e9d1d"
+  }
+}

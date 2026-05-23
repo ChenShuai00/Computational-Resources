@@ -1,0 +1,387 @@
+{
+  "paper_id": "2025.acl-long.581",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.581::sections::1",
+      "paper_id": "2025.acl-long.581",
+      "section_number": "1",
+      "section_title": "introduction",
+      "normalized_section_title": "introduction",
+      "window_text": "LLMs are crucial for NLP tasks. However, they face challenges in applications involving long context, such as in-context learning (Brown et al., 2020), long document summarization (Koh et al., 2022), long-form QA (Krishna et al., 2021), document-level retrieval (Callan, 1994) and and multi-modal QA (Yang et al., 2025a,b). These challenges stem from their limited effective context\n\nwindow size during the pretraining process, making long-context generalization difficult.\n\nA straightforward approach is to continually pretrain or fine-tune these models on long context input (Fu et al., 2024). However, expanding the context window usually results in a quadratic increase in computational and memory costs. According to the training setup in (Fu et al., 2024), extending the Llama-2 7B model's context window from 4k to 80k using 8 A100 GPUs (80G each) takes five days. The costs of resources and time increase significantly for larger models and more extended training periods. In addition to the methods mentioned, there are techniques aimed at extending the length of the context window more efficiently during fine-tuning, including PI (Chen et al., 2023), Yarn (Peng et al., 2024), and LongLoRA (Chen et al., 2024b). However, these techniques still require full-length fine-tuning, meaning they must fine-tune with the context of the target length, which is both memory- and time-intensive. Meanwhile, Randomized Positional Encoding Scheme (Ruoss et al., 2023) and PoSE (Zhu et al., 2023) simulate longer inputs within a fixed window by adjusting position indices, allowing LLMs that are trained on shorter contexts to be extended to longer context windows. However, randomized position embeddings in (Ruoss et al., 2023) disrupt local sentence structures by exaggerating the dependency lengths between neighboring tokens. PoSE, on the other hand, only considers two chunks to mimic the position index, consistently omitting longer dependencies in the sequence. This distortion creates a significant generalization gap in understanding token relationships across the sequence when extending LLMs to a long context window.\n\nTo address the aforementioned issues and further uncover the potential of efficient training for long-context generalization in LLMs, we present LongRecipe, an efficient framework designed to enhance long-context capabilities in models. Long\n\nRotary Position Embeddings have been shown to effectively encode positional information ....... (Long Sequence of Input)\n\n![](images/2ed181048e42e8b64af432d5c541f73a156b0e055afcd19392aceab853b699cf.jpg)  \nFigure 1: Method Overview\n\ncontext generalization depends on token distances set by position indexes, which are then combined with token representations. LongRecipe is primarily focused on optimizing the learning process by efficiently handling both position indexes and token representations. Our framework introduces Impactful Token Analysis to identify tokens that significantly influence long-text training. By focusing on these tokens, we extract shorter segments from long-text corpora, reducing text length while preserving key information. We then apply Position Index Transformation to simulate long-sequence positional indices using these shortened texts, extending the model's ability to handle long sequences without needing actual long texts. Additionally, we implement training optimizations — pretraining data replay and model merging — to enhance the model's long-text processing capabilities. As illustrated in Figure 1, LongRecipe compares the logits of output tokens from an untuned LLM with those from a tuned LLM within a longer context. This reveals significant token logit changes from long context generalization training. Sentences or paragraphs with these tokens are selected, upsampled, and segmented with continuous positional indices, then used to train the LLM, effectively extending its context window. This method efficiently captures key changes in long-context training while improving training efficiency by streamlining samples. The position index transformation also sharpens the\n\nmodel's understanding of long-range dependencies and sequences in extended texts.\n\nTo validate the effectiveness of LongRecipe, we conduct the empirical evaluation with Llama3-8B, Mistral-7B, Qwen2-7B on Multi-Needle In A Haystack (gkamradt, 2023), RULER (Hsieh et al., 2024) and LongBench (Bai et al., 2023). Applied with LongRecipe, we can extend the effective context window of an open-source LLM from 8k or 32k to 80k or 128k. The experimental results demonstrate that LongRecipe achieves an average improvement of approximately $5.5\\%$ across four metrics in three types of models, with context windows 80k and 128k. Additionally, using as little as $30\\%$ of the tokens with around 1/8 of the GPU computational resources can achieve nearly the same performance as full context window training. Currently, we can extend an open-source LLM's context window from 8k to 128k, matching GPT-4-Turbo's performance with just one day of training on a single H100 GPU. Furthermore, we test the performance of our method in general tasks, including MMLU (Hendrycks et al., 2021), GSM8K (Cobbe et al., 2021), and HumanEval (Chen et al., 2021) to assess if our method impacts LLMs' general abilities, showing it largely preserves their original performance. To summarize, our contributions are as follows:\n\n- We introduce LongRecipe, leveraging impactful token analysis and position index transfor\n\nmation to fully uncover the potential of efficient training for long context generalization.\n\n- LongRecipe uses training strategies of the pretraining data replay and model merging to enable LLMs to preserve the original foundational abilities and enhance long context generalization ability stably.   \n- Experiments on context lengths from 8k-128k across three types of LLMs validate LongRecipe's effectiveness.",
+      "rule_tier": "soft_skip",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.acl-long.581::sections::4",
+      "paper_id": "2025.acl-long.581",
+      "section_number": "4",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.581::sections::5",
+      "paper_id": "2025.acl-long.581",
+      "section_number": "5",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.581::sections::5.1",
+      "paper_id": "2025.acl-long.581",
+      "section_number": "5.1",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "We use the following long context training method as our baseline:\n\n1. Full-length Text Training (FLT). We train the LLMs using a corpus that contains the full target context length. This approach serves as a baseline for comparing the performance and observing any potential loss when applying our method.\n\n2. Randomized Positional Encoding Scheme (RPES) (Ruoss et al., 2023) simulates the positions of longer sequences and randomly selects an ordered subset to match the longer length.   \n3. Positional Skip-wisE (PoSE) (Zhu et al., 2023) simulates long inputs using a fixed context window. It divides the original context window into two chunks and applies distinct skipping bias terms to manipulate the position indices of each chunk. These bias terms and the lengths of the chunks are changed for each training example, enabling the model to adapt to positions within the target length.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.581::sections::5.3",
+      "paper_id": "2025.acl-long.581",
+      "section_number": "5.3",
+      "section_title": "setup",
+      "normalized_section_title": "setup",
+      "window_text": "Long Context Training We train the LLMs using samples with $30\\%$ of the extended context window length and optimize efficiency with FlashAttention 2 (Dao et al., 2022) and DeepSpeed Zero 3 (Aminabadi et al., 2022). To further train the LLMs with longer context window, we utilize Accelerator of Huggingface (Face) and Sequence Parallel technique (e.g. DeepSpeed-Ulysses (Jacobs et al., 2023) and Ring Attention (Liu et al., 2023; Zhu)) to optimize the GPU memory demands. More details including RoPE scaling, Batch Size, Hours to Train and others are in Appendix B.\n\nPretraining Data Replay We use WizardLM-evol-instruct-70k (Luo et al., 2023) and Magicoder-OSS-Instruct-75K(Wei et al., 2024), totally with 68M tokens. Based on the findings in (Yang et al., 2024b), replaying $5\\%$ to $10\\%$ of the post-training dataset is considered the optimal configuration. For our setup, we use a batch size of 96, a learning rate of 5e-6, and a decay rate of 0.1. Model Merging We set $\\lambda_{1}$ and $\\lambda_{2}$ as 0.5, hence it would be the average weight for model merging.\n\nLLMs We test various LLMs to evaluate our approach, including Llama3 (Meta.AI, 2024), Mistral (Mistral.AI, 2024), Qwen2 (Yang et al., 2024a), GPT-4 (OpenAI: Josh Achiam et al., 2023), Gemini-1.5-Pro (Reid et al., 2024) and others. Information about all models is in Appendix C.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.581::appendix::A",
+      "paper_id": "2025.acl-long.581",
+      "section_number": "A",
+      "section_title": "longbench experiment results",
+      "normalized_section_title": "longbench experiment results",
+      "window_text": "Shown by Table 5, our method remains competitive on Llama3-8B and Qwen2 while outperforming others on Mistral. Additionally, as mentioned in the section Limitation and Ongoing Work, our current experiments involve post-continual pretraining but have not yet included supervised fine-tuning (SFT). In future work, we will conduct SFT experiments and include the results in the next version to further validate the effectiveness of LongRecipe in the whole process of post-training.\n\nFor LongBench, we report the average score across all 21 subsets for the models.\n\nTable 5: LongBench scores for different models and methods on 80k length experiments.   \n\n<table><tr><td>Model</td><td>Method</td><td>LongBench</td></tr><tr><td rowspan=\"4\">Llama3-8B-I</td><td>FLT</td><td>28.1</td></tr><tr><td>RPES</td><td>27.3</td></tr><tr><td>PoSE</td><td>26.7</td></tr><tr><td>LongRecipe</td><td>25.5</td></tr><tr><td rowspan=\"4\">Mistral-7B</td><td>FLT</td><td>17.7</td></tr><tr><td>RPES</td><td>21.8</td></tr><tr><td>PoSE</td><td>22.3</td></tr><tr><td>LongRecipe</td><td>23.7</td></tr><tr><td rowspan=\"4\">Qwen2-7B</td><td>FLT</td><td>17.7</td></tr><tr><td>RPES</td><td>26.8</td></tr><tr><td>PoSE</td><td>27.7</td></tr><tr><td>LongRecipe</td><td>26.2</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.581::appendix::B",
+      "paper_id": "2025.acl-long.581",
+      "section_number": "B",
+      "section_title": "training setup",
+      "normalized_section_title": "training setup",
+      "window_text": "We elaborate the setup of our training method in Table 6.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.581::appendix::C",
+      "paper_id": "2025.acl-long.581",
+      "section_number": "C",
+      "section_title": "models",
+      "normalized_section_title": "models",
+      "window_text": "We select in total 15 models for evaluation and analysis. We assess two commercial close-source GPT-4 and Gemini-1.5, and 13 open-source models. The details are demonstrated in Table 7.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.581::appendix::E",
+      "paper_id": "2025.acl-long.581",
+      "section_number": "E",
+      "section_title": "details about long context benchmarks",
+      "normalized_section_title": "details about long context benchmarks",
+      "window_text": "NIAH (M) and RULER: For NIAH (M), we report the average score across three tasks in RULER: niah-multikey, niahMULTIvalue, and niahMULTIquery. For RULER, we present the average score for all 13 subsets with Llama3-8B-Instruct and Mistral-7B-v0.3, and the average score for 12 subsets (excluding Variable Tracking) with Qwen2-7B.\n\nTable 6: Training Configuration Details   \n\n<table><tr><td>Model</td><td colspan=\"2\">Llama3-8B</td><td colspan=\"2\">Qwen2-7B</td></tr><tr><td>Extended Context Length</td><td>80k</td><td>128k</td><td>80k</td><td>128k</td></tr><tr><td>Training Sample Length</td><td>24k</td><td>38.4k</td><td>24k</td><td>38.4k</td></tr><tr><td>RoPE scaling (Dynamic NTK)</td><td>48.9M</td><td>131.5M</td><td>13.5M</td><td>13.5M</td></tr><tr><td>RoPE factor (Dynamic NTK)</td><td>10</td><td>16</td><td>4</td><td>4</td></tr><tr><td>Batch Size</td><td>96</td><td>96</td><td>96</td><td>96</td></tr><tr><td>Steps</td><td>104</td><td>104</td><td>104</td><td>104</td></tr><tr><td>Total Tokens</td><td>240M</td><td>384M</td><td>240M</td><td>384M</td></tr><tr><td>Learning Rate</td><td>5e-5</td><td>5e-5</td><td>5e-5</td><td>5e-5</td></tr><tr><td># GPUs and Type</td><td>1×A800/H100</td><td>2×A800/H100</td><td>1×A800/H100</td><td>1×A800/H100</td></tr><tr><td>Total GPU Memory</td><td>56G</td><td>104G</td><td>64G</td><td>72G</td></tr><tr><td>Total CPU Memory</td><td>148G</td><td>172G</td><td>168G</td><td>208G</td></tr><tr><td>Hours to Train</td><td>26/16</td><td>30/20</td><td>23/15</td><td>44/28</td></tr></table>\n\nTable 7: Information of evaluated and analyzed models.   \n\n<table><tr><td>Model</td><td>Size</td><td>Context Length</td><td>Huggingface (Wolf et al., 2019) / API</td></tr><tr><td>GPT-4 (OpenAI: Josh Achiam et al., 2023)</td><td>-</td><td>128K</td><td>gpt-4-1106-preview</td></tr><tr><td>Gemini-1.5-Pro (Reid et al., 2024)</td><td>-</td><td>1M</td><td>gemini-1.5-pro</td></tr><tr><td>Llama3-8B-I (Meta.AI, 2024)</td><td>8B</td><td>8K</td><td>meta-llama/Meta-Llama-3-8B-Instruct</td></tr><tr><td>Llama3.1-8B (Meta.AI, 2024)</td><td>8B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-8B</td></tr><tr><td>Llama3.1-8B-Instruct (Meta.AI, 2024)</td><td>8B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-8B-Instruct</td></tr><tr><td>Llama3.1-70B-Instruct (Meta.AI, 2024)</td><td>70B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-70B-Instruct</td></tr><tr><td>Qwen2-7B (Yang et al., 2024a)</td><td>7B</td><td>128K</td><td>Qwen/Qwen2-72B-Instruct</td></tr><tr><td>Qwen2-7B-Instruct (Yang et al., 2024a)</td><td>7B</td><td>128K</td><td>Qwen/Qwen2-7B-Instruct</td></tr><tr><td>Qwen2-7B-Instruct (Yang et al., 2024a)</td><td>72B</td><td>128K</td><td>Qwen/Qwen2-72B-Instruct</td></tr><tr><td>Yi-9B-200k (Young et al., 2024)</td><td>9B</td><td>200K</td><td>01-ai/Yi-34B-200K</td></tr><tr><td>Yi-34B-200k (Young et al., 2024)</td><td>34B</td><td>200K</td><td>01-ai/Yi-34B-200K</td></tr><tr><td>Mistral-7B (Mistral.AI, 2024)</td><td>7B</td><td>32K</td><td>mistralai/Mistral-7B-Instruct-v0.3</td></tr><tr><td>GLM4-9B-Chat-1M (GLM et al., 2024)</td><td>9B</td><td>1M</td><td>THUDM/glm-4-9b-chat-1m</td></tr><tr><td>Gradient-Llama3-8B (AI, 2024)</td><td>8B</td><td>1M</td><td>gradientai/Llama-3-8B-InstructGradient-1048k</td></tr><tr><td>Gradient-Llama3-70B (AI, 2024)</td><td>70B</td><td>1M</td><td>gradientai/Llama-3-70B-InstructGradient-1048k</td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.581::sections::1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "H100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "LLMs are crucial for NLP tasks. However, they face challenges in applications involving long context, such as in-context learning (Brown et al., 2020), long document summarization (Koh et al., 2022), long-form QA (Krishna et al., 2021), document-level retrieval (Callan, 1994) and and multi-modal QA (Yang et al., 2025a,b). These challenges stem from their limited effective context\n\nwindow size during the pretraining process, making long-context generalization difficult.\n\nA straightforward approach is to continually pretrain or fine-tune these models on long context input (Fu et al., 2024). However, expanding the context window usually results in a quadratic increase in computational and memory costs. According to the training setup in (Fu et al., 2024), extending the Llama-2 7B model's context window from 4k to 80k using 8 A100 GPUs (80G each) takes five days. The costs of resources and time increase significantly for larger models and more extended training periods. In addition to the methods mentioned, there are techniques aimed at extending the length of the context window more efficiently during fine-tuning, including PI (Chen et al., 2023), Yarn (Peng et al., 2024), and LongLoRA (Chen et al., 2024b). However, these techniques still require full-length fine-tuning, meaning they must fine-tune with the context of the target length, which is both memory- and time-intensive. Meanwhile, Randomized Positional Encoding Scheme (Ruoss et al., 2023) and PoSE (Zhu et al., 2023) simulate longer inputs within a fixed window by adjusting position indices, allowing LLMs that are trained on shorter contexts to be extended to longer context windows. However, randomized position embeddings in (Ruoss et al., 2023) disrupt local sentence structures by exaggerating the dependency lengths between neighboring tokens. PoSE, on the other hand, only considers two chunks to mimic the position index, consistently omitting longer dependencies in the sequence. This distortion creates a significant generalization gap in understanding token relationships across the sequence when extending LLMs to a long context window.\n\nTo address the aforementioned issues and further uncover the potential of efficient training for long-context generalization in LLMs, we present LongRecipe, an efficient framework designed to enhance long-context capabilities in models. Long\n\nRotary Position Embeddings have been shown to effectively encode positional information ....... (Long Sequence of Input)\n\n![](images/2ed181048e42e8b64af432d5c541f73a156b0e055afcd19392aceab853b699cf.jpg)  \nFigure 1: Method Overview\n\ncontext generalization depends on token distances set by position indexes, which are then combined with token representations. LongRecipe is primarily focused on optimizing the learning process by efficiently handling both position indexes and token representations. Our framework introduces Impactful Token Analysis to identify tokens that significantly influence long-text training. By focusing on these tokens, we extract shorter segments from long-text corpora, reducing text length while preserving key information. We then apply Position Index Transformation to simulate long-sequence positional indices using these shortened texts, extending the model's ability to handle long sequences without needing actual long texts. Additionally, we implement training optimizations — pretraining data replay and model merging — to enhance the model's long-text processing capabilities. As illustrated in Figure 1, LongRecipe compares the logits of output tokens from an untuned LLM with those from a tuned LLM within a longer context. This reveals significant token logit changes from long context generalization training. Sentences or paragraphs with these tokens are selected, upsampled, and segmented with continuous positional indices, then used to train the LLM, effectively extending its context window. This method efficiently captures key changes in long-context training while improving training efficiency by streamlining samples. The position index transformation also sharpens the\n\nmodel's understanding of long-range dependencies and sequences in extended texts.\n\nTo validate the effectiveness of LongRecipe, we conduct the empirical evaluation with Llama3-8B, Mistral-7B, Qwen2-7B on Multi-Needle In A Haystack (gkamradt, 2023), RULER (Hsieh et al., 2024) and LongBench (Bai et al., 2023). Applied with LongRecipe, we can extend the effective context window of an open-source LLM from 8k or 32k to 80k or 128k. The experimental results demonstrate that LongRecipe achieves an average improvement of approximately $5.5\\%$ across four metrics in three types of models, with context windows 80k and 128k. Additionally, using as little as $30\\%$ of the tokens with around 1/8 of the GPU computational resources can achieve nearly the same performance as full context window training. Currently, we can extend an open-source LLM's context window from 8k to 128k, matching GPT-4-Turbo's performance with just one day of training on a single H100 GPU. Furthermore, we test the performance of our method in general tasks, including MMLU (Hendrycks et al., 2021), GSM8K (Cobbe et al., 2021), and HumanEval (Chen et al., 2021) to assess if our method impacts LLMs' general abilities, showing it largely preserves their original performance. To summarize, our contributions are as follows:\n\n- We introduce LongRecipe, leveraging impactful token analysis and position index transfor\n\nmation to fully uncover the potential of efficient training for long context generalization.\n\n- LongRecipe uses training strategies of the pretraining data replay and model merging to enable LLMs to preserve the original foundational abilities and enhance long context generalization ability stably.   \n- Experiments on context lengths from 8k-128k across three types of LLMs validate LongRecipe's effectiveness.",
+      "section_number": "1",
+      "section_title": "introduction",
+      "normalized_section_title": "introduction"
+    },
+    {
+      "window_id": "2025.acl-long.581::appendix::E",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A800",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "NIAH (M) and RULER: For NIAH (M), we report the average score across three tasks in RULER: niah-multikey, niahMULTIvalue, and niahMULTIquery. For RULER, we present the average score for all 13 subsets with Llama3-8B-Instruct and Mistral-7B-v0.3, and the average score for 12 subsets (excluding Variable Tracking) with Qwen2-7B.\n\nTable 6: Training Configuration Details   \n\n<table><tr><td>Model</td><td colspan=\"2\">Llama3-8B</td><td colspan=\"2\">Qwen2-7B</td></tr><tr><td>Extended Context Length</td><td>80k</td><td>128k</td><td>80k</td><td>128k</td></tr><tr><td>Training Sample Length</td><td>24k</td><td>38.4k</td><td>24k</td><td>38.4k</td></tr><tr><td>RoPE scaling (Dynamic NTK)</td><td>48.9M</td><td>131.5M</td><td>13.5M</td><td>13.5M</td></tr><tr><td>RoPE factor (Dynamic NTK)</td><td>10</td><td>16</td><td>4</td><td>4</td></tr><tr><td>Batch Size</td><td>96</td><td>96</td><td>96</td><td>96</td></tr><tr><td>Steps</td><td>104</td><td>104</td><td>104</td><td>104</td></tr><tr><td>Total Tokens</td><td>240M</td><td>384M</td><td>240M</td><td>384M</td></tr><tr><td>Learning Rate</td><td>5e-5</td><td>5e-5</td><td>5e-5</td><td>5e-5</td></tr><tr><td># GPUs and Type</td><td>1×A800/H100</td><td>2×A800/H100</td><td>1×A800/H100</td><td>1×A800/H100</td></tr><tr><td>Total GPU Memory</td><td>56G</td><td>104G</td><td>64G</td><td>72G</td></tr><tr><td>Total CPU Memory</td><td>148G</td><td>172G</td><td>168G</td><td>208G</td></tr><tr><td>Hours to Train</td><td>26/16</td><td>30/20</td><td>23/15</td><td>44/28</td></tr></table>\n\nTable 7: Information of evaluated and analyzed models.   \n\n<table><tr><td>Model</td><td>Size</td><td>Context Length</td><td>Huggingface (Wolf et al., 2019) / API</td></tr><tr><td>GPT-4 (OpenAI: Josh Achiam et al., 2023)</td><td>-</td><td>128K</td><td>gpt-4-1106-preview</td></tr><tr><td>Gemini-1.5-Pro (Reid et al., 2024)</td><td>-</td><td>1M</td><td>gemini-1.5-pro</td></tr><tr><td>Llama3-8B-I (Meta.AI, 2024)</td><td>8B</td><td>8K</td><td>meta-llama/Meta-Llama-3-8B-Instruct</td></tr><tr><td>Llama3.1-8B (Meta.AI, 2024)</td><td>8B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-8B</td></tr><tr><td>Llama3.1-8B-Instruct (Meta.AI, 2024)</td><td>8B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-8B-Instruct</td></tr><tr><td>Llama3.1-70B-Instruct (Meta.AI, 2024)</td><td>70B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-70B-Instruct</td></tr><tr><td>Qwen2-7B (Yang et al., 2024a)</td><td>7B</td><td>128K</td><td>Qwen/Qwen2-72B-Instruct</td></tr><tr><td>Qwen2-7B-Instruct (Yang et al., 2024a)</td><td>7B</td><td>128K</td><td>Qwen/Qwen2-7B-Instruct</td></tr><tr><td>Qwen2-7B-Instruct (Yang et al., 2024a)</td><td>72B</td><td>128K</td><td>Qwen/Qwen2-72B-Instruct</td></tr><tr><td>Yi-9B-200k (Young et al., 2024)</td><td>9B</td><td>200K</td><td>01-ai/Yi-34B-200K</td></tr><tr><td>Yi-34B-200k (Young et al., 2024)</td><td>34B</td><td>200K</td><td>01-ai/Yi-34B-200K</td></tr><tr><td>Mistral-7B (Mistral.AI, 2024)</td><td>7B</td><td>32K</td><td>mistralai/Mistral-7B-Instruct-v0.3</td></tr><tr><td>GLM4-9B-Chat-1M (GLM et al., 2024)</td><td>9B</td><td>1M</td><td>THUDM/glm-4-9b-chat-1m</td></tr><tr><td>Gradient-Llama3-8B (AI, 2024)</td><td>8B</td><td>1M</td><td>gradientai/Llama-3-8B-InstructGradient-1048k</td></tr><tr><td>Gradient-Llama3-70B (AI, 2024)</td><td>70B</td><td>1M</td><td>gradientai/Llama-3-70B-InstructGradient-1048k</td></tr></table>",
+      "section_number": "E",
+      "section_title": "details about long context benchmarks",
+      "normalized_section_title": "details about long context benchmarks"
+    },
+    {
+      "window_id": "2025.acl-long.581::appendix::E",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "H100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "NIAH (M) and RULER: For NIAH (M), we report the average score across three tasks in RULER: niah-multikey, niahMULTIvalue, and niahMULTIquery. For RULER, we present the average score for all 13 subsets with Llama3-8B-Instruct and Mistral-7B-v0.3, and the average score for 12 subsets (excluding Variable Tracking) with Qwen2-7B.\n\nTable 6: Training Configuration Details   \n\n<table><tr><td>Model</td><td colspan=\"2\">Llama3-8B</td><td colspan=\"2\">Qwen2-7B</td></tr><tr><td>Extended Context Length</td><td>80k</td><td>128k</td><td>80k</td><td>128k</td></tr><tr><td>Training Sample Length</td><td>24k</td><td>38.4k</td><td>24k</td><td>38.4k</td></tr><tr><td>RoPE scaling (Dynamic NTK)</td><td>48.9M</td><td>131.5M</td><td>13.5M</td><td>13.5M</td></tr><tr><td>RoPE factor (Dynamic NTK)</td><td>10</td><td>16</td><td>4</td><td>4</td></tr><tr><td>Batch Size</td><td>96</td><td>96</td><td>96</td><td>96</td></tr><tr><td>Steps</td><td>104</td><td>104</td><td>104</td><td>104</td></tr><tr><td>Total Tokens</td><td>240M</td><td>384M</td><td>240M</td><td>384M</td></tr><tr><td>Learning Rate</td><td>5e-5</td><td>5e-5</td><td>5e-5</td><td>5e-5</td></tr><tr><td># GPUs and Type</td><td>1×A800/H100</td><td>2×A800/H100</td><td>1×A800/H100</td><td>1×A800/H100</td></tr><tr><td>Total GPU Memory</td><td>56G</td><td>104G</td><td>64G</td><td>72G</td></tr><tr><td>Total CPU Memory</td><td>148G</td><td>172G</td><td>168G</td><td>208G</td></tr><tr><td>Hours to Train</td><td>26/16</td><td>30/20</td><td>23/15</td><td>44/28</td></tr></table>\n\nTable 7: Information of evaluated and analyzed models.   \n\n<table><tr><td>Model</td><td>Size</td><td>Context Length</td><td>Huggingface (Wolf et al., 2019) / API</td></tr><tr><td>GPT-4 (OpenAI: Josh Achiam et al., 2023)</td><td>-</td><td>128K</td><td>gpt-4-1106-preview</td></tr><tr><td>Gemini-1.5-Pro (Reid et al., 2024)</td><td>-</td><td>1M</td><td>gemini-1.5-pro</td></tr><tr><td>Llama3-8B-I (Meta.AI, 2024)</td><td>8B</td><td>8K</td><td>meta-llama/Meta-Llama-3-8B-Instruct</td></tr><tr><td>Llama3.1-8B (Meta.AI, 2024)</td><td>8B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-8B</td></tr><tr><td>Llama3.1-8B-Instruct (Meta.AI, 2024)</td><td>8B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-8B-Instruct</td></tr><tr><td>Llama3.1-70B-Instruct (Meta.AI, 2024)</td><td>70B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-70B-Instruct</td></tr><tr><td>Qwen2-7B (Yang et al., 2024a)</td><td>7B</td><td>128K</td><td>Qwen/Qwen2-72B-Instruct</td></tr><tr><td>Qwen2-7B-Instruct (Yang et al., 2024a)</td><td>7B</td><td>128K</td><td>Qwen/Qwen2-7B-Instruct</td></tr><tr><td>Qwen2-7B-Instruct (Yang et al., 2024a)</td><td>72B</td><td>128K</td><td>Qwen/Qwen2-72B-Instruct</td></tr><tr><td>Yi-9B-200k (Young et al., 2024)</td><td>9B</td><td>200K</td><td>01-ai/Yi-34B-200K</td></tr><tr><td>Yi-34B-200k (Young et al., 2024)</td><td>34B</td><td>200K</td><td>01-ai/Yi-34B-200K</td></tr><tr><td>Mistral-7B (Mistral.AI, 2024)</td><td>7B</td><td>32K</td><td>mistralai/Mistral-7B-Instruct-v0.3</td></tr><tr><td>GLM4-9B-Chat-1M (GLM et al., 2024)</td><td>9B</td><td>1M</td><td>THUDM/glm-4-9b-chat-1m</td></tr><tr><td>Gradient-Llama3-8B (AI, 2024)</td><td>8B</td><td>1M</td><td>gradientai/Llama-3-8B-InstructGradient-1048k</td></tr><tr><td>Gradient-Llama3-70B (AI, 2024)</td><td>70B</td><td>1M</td><td>gradientai/Llama-3-70B-InstructGradient-1048k</td></tr></table>",
+      "section_number": "E",
+      "section_title": "details about long context benchmarks",
+      "normalized_section_title": "details about long context benchmarks"
+    },
+    {
+      "window_id": "2025.acl-long.581::appendix::E",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A800",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "NIAH (M) and RULER: For NIAH (M), we report the average score across three tasks in RULER: niah-multikey, niahMULTIvalue, and niahMULTIquery. For RULER, we present the average score for all 13 subsets with Llama3-8B-Instruct and Mistral-7B-v0.3, and the average score for 12 subsets (excluding Variable Tracking) with Qwen2-7B.\n\nTable 6: Training Configuration Details   \n\n<table><tr><td>Model</td><td colspan=\"2\">Llama3-8B</td><td colspan=\"2\">Qwen2-7B</td></tr><tr><td>Extended Context Length</td><td>80k</td><td>128k</td><td>80k</td><td>128k</td></tr><tr><td>Training Sample Length</td><td>24k</td><td>38.4k</td><td>24k</td><td>38.4k</td></tr><tr><td>RoPE scaling (Dynamic NTK)</td><td>48.9M</td><td>131.5M</td><td>13.5M</td><td>13.5M</td></tr><tr><td>RoPE factor (Dynamic NTK)</td><td>10</td><td>16</td><td>4</td><td>4</td></tr><tr><td>Batch Size</td><td>96</td><td>96</td><td>96</td><td>96</td></tr><tr><td>Steps</td><td>104</td><td>104</td><td>104</td><td>104</td></tr><tr><td>Total Tokens</td><td>240M</td><td>384M</td><td>240M</td><td>384M</td></tr><tr><td>Learning Rate</td><td>5e-5</td><td>5e-5</td><td>5e-5</td><td>5e-5</td></tr><tr><td># GPUs and Type</td><td>1×A800/H100</td><td>2×A800/H100</td><td>1×A800/H100</td><td>1×A800/H100</td></tr><tr><td>Total GPU Memory</td><td>56G</td><td>104G</td><td>64G</td><td>72G</td></tr><tr><td>Total CPU Memory</td><td>148G</td><td>172G</td><td>168G</td><td>208G</td></tr><tr><td>Hours to Train</td><td>26/16</td><td>30/20</td><td>23/15</td><td>44/28</td></tr></table>\n\nTable 7: Information of evaluated and analyzed models.   \n\n<table><tr><td>Model</td><td>Size</td><td>Context Length</td><td>Huggingface (Wolf et al., 2019) / API</td></tr><tr><td>GPT-4 (OpenAI: Josh Achiam et al., 2023)</td><td>-</td><td>128K</td><td>gpt-4-1106-preview</td></tr><tr><td>Gemini-1.5-Pro (Reid et al., 2024)</td><td>-</td><td>1M</td><td>gemini-1.5-pro</td></tr><tr><td>Llama3-8B-I (Meta.AI, 2024)</td><td>8B</td><td>8K</td><td>meta-llama/Meta-Llama-3-8B-Instruct</td></tr><tr><td>Llama3.1-8B (Meta.AI, 2024)</td><td>8B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-8B</td></tr><tr><td>Llama3.1-8B-Instruct (Meta.AI, 2024)</td><td>8B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-8B-Instruct</td></tr><tr><td>Llama3.1-70B-Instruct (Meta.AI, 2024)</td><td>70B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-70B-Instruct</td></tr><tr><td>Qwen2-7B (Yang et al., 2024a)</td><td>7B</td><td>128K</td><td>Qwen/Qwen2-72B-Instruct</td></tr><tr><td>Qwen2-7B-Instruct (Yang et al., 2024a)</td><td>7B</td><td>128K</td><td>Qwen/Qwen2-7B-Instruct</td></tr><tr><td>Qwen2-7B-Instruct (Yang et al., 2024a)</td><td>72B</td><td>128K</td><td>Qwen/Qwen2-72B-Instruct</td></tr><tr><td>Yi-9B-200k (Young et al., 2024)</td><td>9B</td><td>200K</td><td>01-ai/Yi-34B-200K</td></tr><tr><td>Yi-34B-200k (Young et al., 2024)</td><td>34B</td><td>200K</td><td>01-ai/Yi-34B-200K</td></tr><tr><td>Mistral-7B (Mistral.AI, 2024)</td><td>7B</td><td>32K</td><td>mistralai/Mistral-7B-Instruct-v0.3</td></tr><tr><td>GLM4-9B-Chat-1M (GLM et al., 2024)</td><td>9B</td><td>1M</td><td>THUDM/glm-4-9b-chat-1m</td></tr><tr><td>Gradient-Llama3-8B (AI, 2024)</td><td>8B</td><td>1M</td><td>gradientai/Llama-3-8B-InstructGradient-1048k</td></tr><tr><td>Gradient-Llama3-70B (AI, 2024)</td><td>70B</td><td>1M</td><td>gradientai/Llama-3-70B-InstructGradient-1048k</td></tr></table>",
+      "section_number": "E",
+      "section_title": "details about long context benchmarks",
+      "normalized_section_title": "details about long context benchmarks"
+    },
+    {
+      "window_id": "2025.acl-long.581::appendix::E",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "H100",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "NIAH (M) and RULER: For NIAH (M), we report the average score across three tasks in RULER: niah-multikey, niahMULTIvalue, and niahMULTIquery. For RULER, we present the average score for all 13 subsets with Llama3-8B-Instruct and Mistral-7B-v0.3, and the average score for 12 subsets (excluding Variable Tracking) with Qwen2-7B.\n\nTable 6: Training Configuration Details   \n\n<table><tr><td>Model</td><td colspan=\"2\">Llama3-8B</td><td colspan=\"2\">Qwen2-7B</td></tr><tr><td>Extended Context Length</td><td>80k</td><td>128k</td><td>80k</td><td>128k</td></tr><tr><td>Training Sample Length</td><td>24k</td><td>38.4k</td><td>24k</td><td>38.4k</td></tr><tr><td>RoPE scaling (Dynamic NTK)</td><td>48.9M</td><td>131.5M</td><td>13.5M</td><td>13.5M</td></tr><tr><td>RoPE factor (Dynamic NTK)</td><td>10</td><td>16</td><td>4</td><td>4</td></tr><tr><td>Batch Size</td><td>96</td><td>96</td><td>96</td><td>96</td></tr><tr><td>Steps</td><td>104</td><td>104</td><td>104</td><td>104</td></tr><tr><td>Total Tokens</td><td>240M</td><td>384M</td><td>240M</td><td>384M</td></tr><tr><td>Learning Rate</td><td>5e-5</td><td>5e-5</td><td>5e-5</td><td>5e-5</td></tr><tr><td># GPUs and Type</td><td>1×A800/H100</td><td>2×A800/H100</td><td>1×A800/H100</td><td>1×A800/H100</td></tr><tr><td>Total GPU Memory</td><td>56G</td><td>104G</td><td>64G</td><td>72G</td></tr><tr><td>Total CPU Memory</td><td>148G</td><td>172G</td><td>168G</td><td>208G</td></tr><tr><td>Hours to Train</td><td>26/16</td><td>30/20</td><td>23/15</td><td>44/28</td></tr></table>\n\nTable 7: Information of evaluated and analyzed models.   \n\n<table><tr><td>Model</td><td>Size</td><td>Context Length</td><td>Huggingface (Wolf et al., 2019) / API</td></tr><tr><td>GPT-4 (OpenAI: Josh Achiam et al., 2023)</td><td>-</td><td>128K</td><td>gpt-4-1106-preview</td></tr><tr><td>Gemini-1.5-Pro (Reid et al., 2024)</td><td>-</td><td>1M</td><td>gemini-1.5-pro</td></tr><tr><td>Llama3-8B-I (Meta.AI, 2024)</td><td>8B</td><td>8K</td><td>meta-llama/Meta-Llama-3-8B-Instruct</td></tr><tr><td>Llama3.1-8B (Meta.AI, 2024)</td><td>8B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-8B</td></tr><tr><td>Llama3.1-8B-Instruct (Meta.AI, 2024)</td><td>8B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-8B-Instruct</td></tr><tr><td>Llama3.1-70B-Instruct (Meta.AI, 2024)</td><td>70B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-70B-Instruct</td></tr><tr><td>Qwen2-7B (Yang et al., 2024a)</td><td>7B</td><td>128K</td><td>Qwen/Qwen2-72B-Instruct</td></tr><tr><td>Qwen2-7B-Instruct (Yang et al., 2024a)</td><td>7B</td><td>128K</td><td>Qwen/Qwen2-7B-Instruct</td></tr><tr><td>Qwen2-7B-Instruct (Yang et al., 2024a)</td><td>72B</td><td>128K</td><td>Qwen/Qwen2-72B-Instruct</td></tr><tr><td>Yi-9B-200k (Young et al., 2024)</td><td>9B</td><td>200K</td><td>01-ai/Yi-34B-200K</td></tr><tr><td>Yi-34B-200k (Young et al., 2024)</td><td>34B</td><td>200K</td><td>01-ai/Yi-34B-200K</td></tr><tr><td>Mistral-7B (Mistral.AI, 2024)</td><td>7B</td><td>32K</td><td>mistralai/Mistral-7B-Instruct-v0.3</td></tr><tr><td>GLM4-9B-Chat-1M (GLM et al., 2024)</td><td>9B</td><td>1M</td><td>THUDM/glm-4-9b-chat-1m</td></tr><tr><td>Gradient-Llama3-8B (AI, 2024)</td><td>8B</td><td>1M</td><td>gradientai/Llama-3-8B-InstructGradient-1048k</td></tr><tr><td>Gradient-Llama3-70B (AI, 2024)</td><td>70B</td><td>1M</td><td>gradientai/Llama-3-70B-InstructGradient-1048k</td></tr></table>",
+      "section_number": "E",
+      "section_title": "details about long context benchmarks",
+      "normalized_section_title": "details about long context benchmarks"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.581::sections::1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "H100",
+      "cleaned_hardware_name": "h100",
+      "normalized_hardware_name": "NVIDIA H100 PCIe",
+      "benchmark_hardware_name": "NVIDIA H100 PCIe",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "1",
+      "section_title": "introduction",
+      "normalized_section_title": "introduction",
+      "evidence": "LLMs are crucial for NLP tasks. However, they face challenges in applications involving long context, such as in-context learning (Brown et al., 2020), long document summarization (Koh et al., 2022), long-form QA (Krishna et al., 2021), document-level retrieval (Callan, 1994) and and multi-modal QA (Yang et al., 2025a,b). These challenges stem from their limited effective context\n\nwindow size during the pretraining process, making long-context generalization difficult.\n\nA straightforward approach is to continually pretrain or fine-tune these models on long context input (Fu et al., 2024). However, expanding the context window usually results in a quadratic increase in computational and memory costs. According to the training setup in (Fu et al., 2024), extending the Llama-2 7B model's context window from 4k to 80k using 8 A100 GPUs (80G each) takes five days. The costs of resources and time increase significantly for larger models and more extended training periods. In addition to the methods mentioned, there are techniques aimed at extending the length of the context window more efficiently during fine-tuning, including PI (Chen et al., 2023), Yarn (Peng et al., 2024), and LongLoRA (Chen et al., 2024b). However, these techniques still require full-length fine-tuning, meaning they must fine-tune with the context of the target length, which is both memory- and time-intensive. Meanwhile, Randomized Positional Encoding Scheme (Ruoss et al., 2023) and PoSE (Zhu et al., 2023) simulate longer inputs within a fixed window by adjusting position indices, allowing LLMs that are trained on shorter contexts to be extended to longer context windows. However, randomized position embeddings in (Ruoss et al., 2023) disrupt local sentence structures by exaggerating the dependency lengths between neighboring tokens. PoSE, on the other hand, only considers two chunks to mimic the position index, consistently omitting longer dependencies in the sequence. This distortion creates a significant generalization gap in understanding token relationships across the sequence when extending LLMs to a long context window.\n\nTo address the aforementioned issues and further uncover the potential of efficient training for long-context generalization in LLMs, we present LongRecipe, an efficient framework designed to enhance long-context capabilities in models. Long\n\nRotary Position Embeddings have been shown to effectively encode positional information ....... (Long Sequence of Input)\n\n![](images/2ed181048e42e8b64af432d5c541f73a156b0e055afcd19392aceab853b699cf.jpg)  \nFigure 1: Method Overview\n\ncontext generalization depends on token distances set by position indexes, which are then combined with token representations. LongRecipe is primarily focused on optimizing the learning process by efficiently handling both position indexes and token representations. Our framework introduces Impactful Token Analysis to identify tokens that significantly influence long-text training. By focusing on these tokens, we extract shorter segments from long-text corpora, reducing text length while preserving key information. We then apply Position Index Transformation to simulate long-sequence positional indices using these shortened texts, extending the model's ability to handle long sequences without needing actual long texts. Additionally, we implement training optimizations — pretraining data replay and model merging — to enhance the model's long-text processing capabilities. As illustrated in Figure 1, LongRecipe compares the logits of output tokens from an untuned LLM with those from a tuned LLM within a longer context. This reveals significant token logit changes from long context generalization training. Sentences or paragraphs with these tokens are selected, upsampled, and segmented with continuous positional indices, then used to train the LLM, effectively extending its context window. This method efficiently captures key changes in long-context training while improving training efficiency by streamlining samples. The position index transformation also sharpens the\n\nmodel's understanding of long-range dependencies and sequences in extended texts.\n\nTo validate the effectiveness of LongRecipe, we conduct the empirical evaluation with Llama3-8B, Mistral-7B, Qwen2-7B on Multi-Needle In A Haystack (gkamradt, 2023), RULER (Hsieh et al., 2024) and LongBench (Bai et al., 2023). Applied with LongRecipe, we can extend the effective context window of an open-source LLM from 8k or 32k to 80k or 128k. The experimental results demonstrate that LongRecipe achieves an average improvement of approximately $5.5\\%$ across four metrics in three types of models, with context windows 80k and 128k. Additionally, using as little as $30\\%$ of the tokens with around 1/8 of the GPU computational resources can achieve nearly the same performance as full context window training. Currently, we can extend an open-source LLM's context window from 8k to 128k, matching GPT-4-Turbo's performance with just one day of training on a single H100 GPU. Furthermore, we test the performance of our method in general tasks, including MMLU (Hendrycks et al., 2021), GSM8K (Cobbe et al., 2021), and HumanEval (Chen et al., 2021) to assess if our method impacts LLMs' general abilities, showing it largely preserves their original performance. To summarize, our contributions are as follows:\n\n- We introduce LongRecipe, leveraging impactful token analysis and position index transfor\n\nmation to fully uncover the potential of efficient training for long context generalization.\n\n- LongRecipe uses training strategies of the pretraining data replay and model merging to enable LLMs to preserve the original foundational abilities and enhance long context generalization ability stably.   \n- Experiments on context lengths from 8k-128k across three types of LLMs validate LongRecipe's effectiveness.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.581::appendix::E",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A800",
+      "cleaned_hardware_name": "a800",
+      "normalized_hardware_name": "NVIDIA A800 PCIe 40 GB",
+      "benchmark_hardware_name": "NVIDIA A800 PCIe 40 GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "E",
+      "section_title": "details about long context benchmarks",
+      "normalized_section_title": "details about long context benchmarks",
+      "evidence": "NIAH (M) and RULER: For NIAH (M), we report the average score across three tasks in RULER: niah-multikey, niahMULTIvalue, and niahMULTIquery. For RULER, we present the average score for all 13 subsets with Llama3-8B-Instruct and Mistral-7B-v0.3, and the average score for 12 subsets (excluding Variable Tracking) with Qwen2-7B.\n\nTable 6: Training Configuration Details   \n\n<table><tr><td>Model</td><td colspan=\"2\">Llama3-8B</td><td colspan=\"2\">Qwen2-7B</td></tr><tr><td>Extended Context Length</td><td>80k</td><td>128k</td><td>80k</td><td>128k</td></tr><tr><td>Training Sample Length</td><td>24k</td><td>38.4k</td><td>24k</td><td>38.4k</td></tr><tr><td>RoPE scaling (Dynamic NTK)</td><td>48.9M</td><td>131.5M</td><td>13.5M</td><td>13.5M</td></tr><tr><td>RoPE factor (Dynamic NTK)</td><td>10</td><td>16</td><td>4</td><td>4</td></tr><tr><td>Batch Size</td><td>96</td><td>96</td><td>96</td><td>96</td></tr><tr><td>Steps</td><td>104</td><td>104</td><td>104</td><td>104</td></tr><tr><td>Total Tokens</td><td>240M</td><td>384M</td><td>240M</td><td>384M</td></tr><tr><td>Learning Rate</td><td>5e-5</td><td>5e-5</td><td>5e-5</td><td>5e-5</td></tr><tr><td># GPUs and Type</td><td>1×A800/H100</td><td>2×A800/H100</td><td>1×A800/H100</td><td>1×A800/H100</td></tr><tr><td>Total GPU Memory</td><td>56G</td><td>104G</td><td>64G</td><td>72G</td></tr><tr><td>Total CPU Memory</td><td>148G</td><td>172G</td><td>168G</td><td>208G</td></tr><tr><td>Hours to Train</td><td>26/16</td><td>30/20</td><td>23/15</td><td>44/28</td></tr></table>\n\nTable 7: Information of evaluated and analyzed models.   \n\n<table><tr><td>Model</td><td>Size</td><td>Context Length</td><td>Huggingface (Wolf et al., 2019) / API</td></tr><tr><td>GPT-4 (OpenAI: Josh Achiam et al., 2023)</td><td>-</td><td>128K</td><td>gpt-4-1106-preview</td></tr><tr><td>Gemini-1.5-Pro (Reid et al., 2024)</td><td>-</td><td>1M</td><td>gemini-1.5-pro</td></tr><tr><td>Llama3-8B-I (Meta.AI, 2024)</td><td>8B</td><td>8K</td><td>meta-llama/Meta-Llama-3-8B-Instruct</td></tr><tr><td>Llama3.1-8B (Meta.AI, 2024)</td><td>8B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-8B</td></tr><tr><td>Llama3.1-8B-Instruct (Meta.AI, 2024)</td><td>8B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-8B-Instruct</td></tr><tr><td>Llama3.1-70B-Instruct (Meta.AI, 2024)</td><td>70B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-70B-Instruct</td></tr><tr><td>Qwen2-7B (Yang et al., 2024a)</td><td>7B</td><td>128K</td><td>Qwen/Qwen2-72B-Instruct</td></tr><tr><td>Qwen2-7B-Instruct (Yang et al., 2024a)</td><td>7B</td><td>128K</td><td>Qwen/Qwen2-7B-Instruct</td></tr><tr><td>Qwen2-7B-Instruct (Yang et al., 2024a)</td><td>72B</td><td>128K</td><td>Qwen/Qwen2-72B-Instruct</td></tr><tr><td>Yi-9B-200k (Young et al., 2024)</td><td>9B</td><td>200K</td><td>01-ai/Yi-34B-200K</td></tr><tr><td>Yi-34B-200k (Young et al., 2024)</td><td>34B</td><td>200K</td><td>01-ai/Yi-34B-200K</td></tr><tr><td>Mistral-7B (Mistral.AI, 2024)</td><td>7B</td><td>32K</td><td>mistralai/Mistral-7B-Instruct-v0.3</td></tr><tr><td>GLM4-9B-Chat-1M (GLM et al., 2024)</td><td>9B</td><td>1M</td><td>THUDM/glm-4-9b-chat-1m</td></tr><tr><td>Gradient-Llama3-8B (AI, 2024)</td><td>8B</td><td>1M</td><td>gradientai/Llama-3-8B-InstructGradient-1048k</td></tr><tr><td>Gradient-Llama3-70B (AI, 2024)</td><td>70B</td><td>1M</td><td>gradientai/Llama-3-70B-InstructGradient-1048k</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.581::appendix::E",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "H100",
+      "cleaned_hardware_name": "h100",
+      "normalized_hardware_name": "NVIDIA H100 PCIe",
+      "benchmark_hardware_name": "NVIDIA H100 PCIe",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "E",
+      "section_title": "details about long context benchmarks",
+      "normalized_section_title": "details about long context benchmarks",
+      "evidence": "NIAH (M) and RULER: For NIAH (M), we report the average score across three tasks in RULER: niah-multikey, niahMULTIvalue, and niahMULTIquery. For RULER, we present the average score for all 13 subsets with Llama3-8B-Instruct and Mistral-7B-v0.3, and the average score for 12 subsets (excluding Variable Tracking) with Qwen2-7B.\n\nTable 6: Training Configuration Details   \n\n<table><tr><td>Model</td><td colspan=\"2\">Llama3-8B</td><td colspan=\"2\">Qwen2-7B</td></tr><tr><td>Extended Context Length</td><td>80k</td><td>128k</td><td>80k</td><td>128k</td></tr><tr><td>Training Sample Length</td><td>24k</td><td>38.4k</td><td>24k</td><td>38.4k</td></tr><tr><td>RoPE scaling (Dynamic NTK)</td><td>48.9M</td><td>131.5M</td><td>13.5M</td><td>13.5M</td></tr><tr><td>RoPE factor (Dynamic NTK)</td><td>10</td><td>16</td><td>4</td><td>4</td></tr><tr><td>Batch Size</td><td>96</td><td>96</td><td>96</td><td>96</td></tr><tr><td>Steps</td><td>104</td><td>104</td><td>104</td><td>104</td></tr><tr><td>Total Tokens</td><td>240M</td><td>384M</td><td>240M</td><td>384M</td></tr><tr><td>Learning Rate</td><td>5e-5</td><td>5e-5</td><td>5e-5</td><td>5e-5</td></tr><tr><td># GPUs and Type</td><td>1×A800/H100</td><td>2×A800/H100</td><td>1×A800/H100</td><td>1×A800/H100</td></tr><tr><td>Total GPU Memory</td><td>56G</td><td>104G</td><td>64G</td><td>72G</td></tr><tr><td>Total CPU Memory</td><td>148G</td><td>172G</td><td>168G</td><td>208G</td></tr><tr><td>Hours to Train</td><td>26/16</td><td>30/20</td><td>23/15</td><td>44/28</td></tr></table>\n\nTable 7: Information of evaluated and analyzed models.   \n\n<table><tr><td>Model</td><td>Size</td><td>Context Length</td><td>Huggingface (Wolf et al., 2019) / API</td></tr><tr><td>GPT-4 (OpenAI: Josh Achiam et al., 2023)</td><td>-</td><td>128K</td><td>gpt-4-1106-preview</td></tr><tr><td>Gemini-1.5-Pro (Reid et al., 2024)</td><td>-</td><td>1M</td><td>gemini-1.5-pro</td></tr><tr><td>Llama3-8B-I (Meta.AI, 2024)</td><td>8B</td><td>8K</td><td>meta-llama/Meta-Llama-3-8B-Instruct</td></tr><tr><td>Llama3.1-8B (Meta.AI, 2024)</td><td>8B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-8B</td></tr><tr><td>Llama3.1-8B-Instruct (Meta.AI, 2024)</td><td>8B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-8B-Instruct</td></tr><tr><td>Llama3.1-70B-Instruct (Meta.AI, 2024)</td><td>70B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-70B-Instruct</td></tr><tr><td>Qwen2-7B (Yang et al., 2024a)</td><td>7B</td><td>128K</td><td>Qwen/Qwen2-72B-Instruct</td></tr><tr><td>Qwen2-7B-Instruct (Yang et al., 2024a)</td><td>7B</td><td>128K</td><td>Qwen/Qwen2-7B-Instruct</td></tr><tr><td>Qwen2-7B-Instruct (Yang et al., 2024a)</td><td>72B</td><td>128K</td><td>Qwen/Qwen2-72B-Instruct</td></tr><tr><td>Yi-9B-200k (Young et al., 2024)</td><td>9B</td><td>200K</td><td>01-ai/Yi-34B-200K</td></tr><tr><td>Yi-34B-200k (Young et al., 2024)</td><td>34B</td><td>200K</td><td>01-ai/Yi-34B-200K</td></tr><tr><td>Mistral-7B (Mistral.AI, 2024)</td><td>7B</td><td>32K</td><td>mistralai/Mistral-7B-Instruct-v0.3</td></tr><tr><td>GLM4-9B-Chat-1M (GLM et al., 2024)</td><td>9B</td><td>1M</td><td>THUDM/glm-4-9b-chat-1m</td></tr><tr><td>Gradient-Llama3-8B (AI, 2024)</td><td>8B</td><td>1M</td><td>gradientai/Llama-3-8B-InstructGradient-1048k</td></tr><tr><td>Gradient-Llama3-70B (AI, 2024)</td><td>70B</td><td>1M</td><td>gradientai/Llama-3-70B-InstructGradient-1048k</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.581::appendix::E",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A800",
+      "cleaned_hardware_name": "a800",
+      "normalized_hardware_name": "NVIDIA A800 PCIe 40 GB",
+      "benchmark_hardware_name": "NVIDIA A800 PCIe 40 GB",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "E",
+      "section_title": "details about long context benchmarks",
+      "normalized_section_title": "details about long context benchmarks",
+      "evidence": "NIAH (M) and RULER: For NIAH (M), we report the average score across three tasks in RULER: niah-multikey, niahMULTIvalue, and niahMULTIquery. For RULER, we present the average score for all 13 subsets with Llama3-8B-Instruct and Mistral-7B-v0.3, and the average score for 12 subsets (excluding Variable Tracking) with Qwen2-7B.\n\nTable 6: Training Configuration Details   \n\n<table><tr><td>Model</td><td colspan=\"2\">Llama3-8B</td><td colspan=\"2\">Qwen2-7B</td></tr><tr><td>Extended Context Length</td><td>80k</td><td>128k</td><td>80k</td><td>128k</td></tr><tr><td>Training Sample Length</td><td>24k</td><td>38.4k</td><td>24k</td><td>38.4k</td></tr><tr><td>RoPE scaling (Dynamic NTK)</td><td>48.9M</td><td>131.5M</td><td>13.5M</td><td>13.5M</td></tr><tr><td>RoPE factor (Dynamic NTK)</td><td>10</td><td>16</td><td>4</td><td>4</td></tr><tr><td>Batch Size</td><td>96</td><td>96</td><td>96</td><td>96</td></tr><tr><td>Steps</td><td>104</td><td>104</td><td>104</td><td>104</td></tr><tr><td>Total Tokens</td><td>240M</td><td>384M</td><td>240M</td><td>384M</td></tr><tr><td>Learning Rate</td><td>5e-5</td><td>5e-5</td><td>5e-5</td><td>5e-5</td></tr><tr><td># GPUs and Type</td><td>1×A800/H100</td><td>2×A800/H100</td><td>1×A800/H100</td><td>1×A800/H100</td></tr><tr><td>Total GPU Memory</td><td>56G</td><td>104G</td><td>64G</td><td>72G</td></tr><tr><td>Total CPU Memory</td><td>148G</td><td>172G</td><td>168G</td><td>208G</td></tr><tr><td>Hours to Train</td><td>26/16</td><td>30/20</td><td>23/15</td><td>44/28</td></tr></table>\n\nTable 7: Information of evaluated and analyzed models.   \n\n<table><tr><td>Model</td><td>Size</td><td>Context Length</td><td>Huggingface (Wolf et al., 2019) / API</td></tr><tr><td>GPT-4 (OpenAI: Josh Achiam et al., 2023)</td><td>-</td><td>128K</td><td>gpt-4-1106-preview</td></tr><tr><td>Gemini-1.5-Pro (Reid et al., 2024)</td><td>-</td><td>1M</td><td>gemini-1.5-pro</td></tr><tr><td>Llama3-8B-I (Meta.AI, 2024)</td><td>8B</td><td>8K</td><td>meta-llama/Meta-Llama-3-8B-Instruct</td></tr><tr><td>Llama3.1-8B (Meta.AI, 2024)</td><td>8B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-8B</td></tr><tr><td>Llama3.1-8B-Instruct (Meta.AI, 2024)</td><td>8B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-8B-Instruct</td></tr><tr><td>Llama3.1-70B-Instruct (Meta.AI, 2024)</td><td>70B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-70B-Instruct</td></tr><tr><td>Qwen2-7B (Yang et al., 2024a)</td><td>7B</td><td>128K</td><td>Qwen/Qwen2-72B-Instruct</td></tr><tr><td>Qwen2-7B-Instruct (Yang et al., 2024a)</td><td>7B</td><td>128K</td><td>Qwen/Qwen2-7B-Instruct</td></tr><tr><td>Qwen2-7B-Instruct (Yang et al., 2024a)</td><td>72B</td><td>128K</td><td>Qwen/Qwen2-72B-Instruct</td></tr><tr><td>Yi-9B-200k (Young et al., 2024)</td><td>9B</td><td>200K</td><td>01-ai/Yi-34B-200K</td></tr><tr><td>Yi-34B-200k (Young et al., 2024)</td><td>34B</td><td>200K</td><td>01-ai/Yi-34B-200K</td></tr><tr><td>Mistral-7B (Mistral.AI, 2024)</td><td>7B</td><td>32K</td><td>mistralai/Mistral-7B-Instruct-v0.3</td></tr><tr><td>GLM4-9B-Chat-1M (GLM et al., 2024)</td><td>9B</td><td>1M</td><td>THUDM/glm-4-9b-chat-1m</td></tr><tr><td>Gradient-Llama3-8B (AI, 2024)</td><td>8B</td><td>1M</td><td>gradientai/Llama-3-8B-InstructGradient-1048k</td></tr><tr><td>Gradient-Llama3-70B (AI, 2024)</td><td>70B</td><td>1M</td><td>gradientai/Llama-3-70B-InstructGradient-1048k</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.581::appendix::E",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "H100",
+      "cleaned_hardware_name": "h100",
+      "normalized_hardware_name": "NVIDIA H100 PCIe",
+      "benchmark_hardware_name": "NVIDIA H100 PCIe",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "E",
+      "section_title": "details about long context benchmarks",
+      "normalized_section_title": "details about long context benchmarks",
+      "evidence": "NIAH (M) and RULER: For NIAH (M), we report the average score across three tasks in RULER: niah-multikey, niahMULTIvalue, and niahMULTIquery. For RULER, we present the average score for all 13 subsets with Llama3-8B-Instruct and Mistral-7B-v0.3, and the average score for 12 subsets (excluding Variable Tracking) with Qwen2-7B.\n\nTable 6: Training Configuration Details   \n\n<table><tr><td>Model</td><td colspan=\"2\">Llama3-8B</td><td colspan=\"2\">Qwen2-7B</td></tr><tr><td>Extended Context Length</td><td>80k</td><td>128k</td><td>80k</td><td>128k</td></tr><tr><td>Training Sample Length</td><td>24k</td><td>38.4k</td><td>24k</td><td>38.4k</td></tr><tr><td>RoPE scaling (Dynamic NTK)</td><td>48.9M</td><td>131.5M</td><td>13.5M</td><td>13.5M</td></tr><tr><td>RoPE factor (Dynamic NTK)</td><td>10</td><td>16</td><td>4</td><td>4</td></tr><tr><td>Batch Size</td><td>96</td><td>96</td><td>96</td><td>96</td></tr><tr><td>Steps</td><td>104</td><td>104</td><td>104</td><td>104</td></tr><tr><td>Total Tokens</td><td>240M</td><td>384M</td><td>240M</td><td>384M</td></tr><tr><td>Learning Rate</td><td>5e-5</td><td>5e-5</td><td>5e-5</td><td>5e-5</td></tr><tr><td># GPUs and Type</td><td>1×A800/H100</td><td>2×A800/H100</td><td>1×A800/H100</td><td>1×A800/H100</td></tr><tr><td>Total GPU Memory</td><td>56G</td><td>104G</td><td>64G</td><td>72G</td></tr><tr><td>Total CPU Memory</td><td>148G</td><td>172G</td><td>168G</td><td>208G</td></tr><tr><td>Hours to Train</td><td>26/16</td><td>30/20</td><td>23/15</td><td>44/28</td></tr></table>\n\nTable 7: Information of evaluated and analyzed models.   \n\n<table><tr><td>Model</td><td>Size</td><td>Context Length</td><td>Huggingface (Wolf et al., 2019) / API</td></tr><tr><td>GPT-4 (OpenAI: Josh Achiam et al., 2023)</td><td>-</td><td>128K</td><td>gpt-4-1106-preview</td></tr><tr><td>Gemini-1.5-Pro (Reid et al., 2024)</td><td>-</td><td>1M</td><td>gemini-1.5-pro</td></tr><tr><td>Llama3-8B-I (Meta.AI, 2024)</td><td>8B</td><td>8K</td><td>meta-llama/Meta-Llama-3-8B-Instruct</td></tr><tr><td>Llama3.1-8B (Meta.AI, 2024)</td><td>8B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-8B</td></tr><tr><td>Llama3.1-8B-Instruct (Meta.AI, 2024)</td><td>8B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-8B-Instruct</td></tr><tr><td>Llama3.1-70B-Instruct (Meta.AI, 2024)</td><td>70B</td><td>128K</td><td>meta-llama/Meta-Llama-3.1-70B-Instruct</td></tr><tr><td>Qwen2-7B (Yang et al., 2024a)</td><td>7B</td><td>128K</td><td>Qwen/Qwen2-72B-Instruct</td></tr><tr><td>Qwen2-7B-Instruct (Yang et al., 2024a)</td><td>7B</td><td>128K</td><td>Qwen/Qwen2-7B-Instruct</td></tr><tr><td>Qwen2-7B-Instruct (Yang et al., 2024a)</td><td>72B</td><td>128K</td><td>Qwen/Qwen2-72B-Instruct</td></tr><tr><td>Yi-9B-200k (Young et al., 2024)</td><td>9B</td><td>200K</td><td>01-ai/Yi-34B-200K</td></tr><tr><td>Yi-34B-200k (Young et al., 2024)</td><td>34B</td><td>200K</td><td>01-ai/Yi-34B-200K</td></tr><tr><td>Mistral-7B (Mistral.AI, 2024)</td><td>7B</td><td>32K</td><td>mistralai/Mistral-7B-Instruct-v0.3</td></tr><tr><td>GLM4-9B-Chat-1M (GLM et al., 2024)</td><td>9B</td><td>1M</td><td>THUDM/glm-4-9b-chat-1m</td></tr><tr><td>Gradient-Llama3-8B (AI, 2024)</td><td>8B</td><td>1M</td><td>gradientai/Llama-3-8B-InstructGradient-1048k</td></tr><tr><td>Gradient-Llama3-70B (AI, 2024)</td><td>70B</td><td>1M</td><td>gradientai/Llama-3-70B-InstructGradient-1048k</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.581::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "methodology",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.581::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experimental setup",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.581::sections::5.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.1",
+      "section_title": "baselines",
+      "evidence": "We use the following long context training method as our baseline:\n\n1. Full-length Text Training (FLT). We train the LLMs using a corpus that contains the full target context length. This approach serves as a baseline for comparing the performance and observing any potential loss when applying our method.\n\n2. Randomized Positional Encoding Scheme (RPES) (Ruoss et al., 2023) simulates the positions of longer sequences and randomly selects an ordered subset to match the longer length.   \n3. Positional Skip-wisE (PoSE) (Zhu et al., 2023) simulates long inputs using a fixed context window. It divides the original context window into two chunks and applies distinct skipping bias terms to manipulate the position indices of each chunk. These bias terms and the lengths of the chunks are changed for each training example, enabling the model to adapt to positions within the target length."
+    },
+    {
+      "source_window_id": "2025.acl-long.581::sections::5.3",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.3",
+      "section_title": "setup",
+      "evidence": "Long Context Training We train the LLMs using samples with $30\\%$ of the extended context window length and optimize efficiency with FlashAttention 2 (Dao et al., 2022) and DeepSpeed Zero 3 (Aminabadi et al., 2022). To further train the LLMs with longer context window, we utilize Accelerator of Huggingface (Face) and Sequence Parallel technique (e.g. DeepSpeed-Ulysses (Jacobs et al., 2023) and Ring Attention (Liu et al., 2023; Zhu)) to optimize the GPU memory demands. More details including RoPE scaling, Batch Size, Hours to Train and others are in Appendix B.\n\nPretraining Data Replay We use WizardLM-evol-instruct-70k (Luo et al., 2023) and Magicoder-OSS-Instruct-75K(Wei et al., 2024), totally with 68M tokens. Based on the findings in (Yang et al., 2024b), replaying $5\\%$ to $10\\%$ of the post-training dataset is considered the optimal configuration. For our setup, we use a batch size of 96, a learning rate of 5e-6, and a decay rate of 0.1. Model Merging We set $\\lambda_{1}$ and $\\lambda_{2}$ as 0.5, hence it would be the average weight for model merging.\n\nLLMs We test various LLMs to evaluate our approach, including Llama3 (Meta.AI, 2024), Mistral (Mistral.AI, 2024), Qwen2 (Yang et al., 2024a), GPT-4 (OpenAI: Josh Achiam et al., 2023), Gemini-1.5-Pro (Reid et al., 2024) and others. Information about all models is in Appendix C."
+    },
+    {
+      "source_window_id": "2025.acl-long.581::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "longbench experiment results",
+      "evidence": "Shown by Table 5, our method remains competitive on Llama3-8B and Qwen2 while outperforming others on Mistral. Additionally, as mentioned in the section Limitation and Ongoing Work, our current experiments involve post-continual pretraining but have not yet included supervised fine-tuning (SFT). In future work, we will conduct SFT experiments and include the results in the next version to further validate the effectiveness of LongRecipe in the whole process of post-training.\n\nFor LongBench, we report the average score across all 21 subsets for the models.\n\nTable 5: LongBench scores for different models and methods on 80k length experiments.   \n\n<table><tr><td>Model</td><td>Method</td><td>LongBench</td></tr><tr><td rowspan=\"4\">Llama3-8B-I</td><td>FLT</td><td>28.1</td></tr><tr><td>RPES</td><td>27.3</td></tr><tr><td>PoSE</td><td>26.7</td></tr><tr><td>LongRecipe</td><td>25.5</td></tr><tr><td rowspan=\"4\">Mistral-7B</td><td>FLT</td><td>17.7</td></tr><tr><td>RPES</td><td>21.8</td></tr><tr><td>PoSE</td><td>22.3</td></tr><tr><td>LongRecipe</td><td>23.7</td></tr><tr><td rowspan=\"4\">Qwen2-7B</td><td>FLT</td><td>17.7</td></tr><tr><td>RPES</td><td>26.8</td></tr><tr><td>PoSE</td><td>27.7</td></tr><tr><td>LongRecipe</td><td>26.2</td></tr></table>"
+    },
+    {
+      "source_window_id": "2025.acl-long.581::appendix::B",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B",
+      "section_title": "training setup",
+      "evidence": "We elaborate the setup of our training method in Table 6."
+    },
+    {
+      "source_window_id": "2025.acl-long.581::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "models",
+      "evidence": "We select in total 15 models for evaluation and analysis. We assess two commercial close-source GPT-4 and Gemini-1.5, and 13 open-source models. The details are demonstrated in Table 7."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "1",
+      "E"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA H100 PCIe",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA A800 PCIe 40 GB",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA H100 PCIe",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA A800 PCIe 40 GB",
+        "num": 2
+      },
+      {
+        "name": "NVIDIA H100 PCIe",
+        "num": 2
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.581\\auto\\full.md",
+    "source_md_sha256": "2dcaadf03830a7dfbd77e9514e3663d933b743242487d2a8436261245c2ee1fc",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "paper_id": "2024.emnlp-main.823",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.823::sections::4.3",
+      "paper_id": "2024.emnlp-main.823",
+      "section_number": "4.3",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "For traditional GNN-based methods, we utilize the raw features of each dataset, which are derived using bag of words or one-hot vectors. For LM-based methods, we fine-tune LMs with raw texts of each node on downstream tasks. For recent TAGs methods, we select RoBERTa-base and RoBERTa-large as the LM backbones, and a two-layer SAGE with 64 hidden size as the GNN backbone. Regarding\n\nto our method, we select the same LM and GNN backbones with recent TAGs methods for a fair comparison. Additionally, we utilize RoBERTa-base as the LM encoder for our token reduction module. For alternative LMs used in token reduction, please refer to Appendix D.\n\nIn our experiments, we fine-tune all parameters for base language models such as RoBERTa-base. For larger models like RoBERTa-large, we employ LoRA (Hu et al., 2021) with a rank of 8 to ensure scalability and maintain consistency with the SimTeG approach (Duan et al., 2023).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.823::sections::4.7",
+      "paper_id": "2024.emnlp-main.823",
+      "section_number": "4.7",
+      "section_title": "scalability and efficiency analysis",
+      "normalized_section_title": "scalability and efficiency analysis",
+      "window_text": "Table 4: The scalability and efficiency analysis of training on the OGBN-ArXiv dataset with and without token reduction. The batch size was set to 1 for LM tuning, with total training time reported using a 48-core Intel(R) Xeon(R) CPU @ 2.50GHz and 8 NVIDIA GeForce RTX 3090 GPUs. 'OOM' refers to out of memory.   \n\n<table><tr><td>Walk Steps</td><td>Reduction</td><td>Memory (GB)</td><td>Total Time</td></tr><tr><td rowspan=\"2\">8</td><td>X</td><td>9.6</td><td>39h 14m</td></tr><tr><td>✓</td><td>3.2</td><td>13h 55m</td></tr><tr><td rowspan=\"2\">16</td><td>X</td><td>20.1</td><td>68h 42m</td></tr><tr><td>✓</td><td>4.6</td><td>18h 41m</td></tr><tr><td rowspan=\"2\">32</td><td>X</td><td>OOM</td><td>-</td></tr><tr><td>✓</td><td>7.7</td><td>31h 14m</td></tr><tr><td rowspan=\"2\">64</td><td>X</td><td>OOM</td><td>-</td></tr><tr><td>✓</td><td>15.2</td><td>61h 51m</td></tr></table>\n\nIn this section, we assess the scalability and efficiency of our method by reducing the sequence length through token reduction module, detailed in Section 3.2. RoBERTa-base serves as our LM backbone, and for this experiment, we use the rotatory position embeddings (Su et al., 2024) to accommo\n\n![](images/2f2afc22a6e62a8fe480c969a2909184f82218348f1b68dc292e358f7c94f1a6.jpg)  \nFigure 6: Experimental results of ablation study.\n\ndate sequences of unlimited length. Results presented in Table 4, demonstrate that without token reduction, method which considers neighboring textual information suffers from significant computational costs in terms of training time and GPU memory usage, and it may even run out of memory with a large number of walk steps (i.e., greater than 32). With our token reduction module, we only retain the most $k'$ crucial tokens for each nodes, thereby enhancing efficiency and scalability.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2024.emnlp-main.823::appendix::C",
+      "paper_id": "2024.emnlp-main.823",
+      "section_number": "C",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "In this section, we give the implementations details about our method GraphBridge.\n\nTraining of Graph-Aware Token Reduction Module. We train only the cross-attention module and the classifier, keeping the encoding language models frozen (Zhang et al., 2019, 2022). Each dataset undergoes 100 training epochs, with an early stopping patience of 10 epochs. The learning rate is explored within $\\{1\\mathrm{e} - 3,5\\mathrm{e} - 4,1\\mathrm{e} - 4\\}$ , and the regularization term $\\beta$ is set to 0.1.\n\nTraining of Language Models. Initially, we construct the sequence $Q$ by sampling adjacent nodes using a random walk with restart sampler $\\Gamma$ (Zhu et al., 2022, 2024). The number of walk steps for sampling varies among $\\{8, 16, 32\\}$ . Training epochs for the language models are adapted according to the dataset sizes: $\\{4, 6, 8\\}$ for small datasets (e.g., Cora, WikiCS, CiteSeer), $\\{4, 6\\}$ for medium datasets (e.g., ArXiv-2023, ElePhoto, OGBN-Products), and $\\{4\\}$ for the large-scale dataset (OGBN-ArXiv). We employ AdamW optimizers. The learning rate is explored within $\\{1e-4, 5e-5, 1e-5\\}$ for full parameter fine-tuning of RoBERTa-base $^{\\parallel}$ , and $\\{1e-3, 5e-4, 1e-4\\}$ for tuning RoBERTa-large $^{**}$ using LoRA (Hu et al., 2021) with a rank of 8. For the large language model LLaMA2-7B $^{\\dagger\\dagger}$ , as outlined in Table 3, we use LoRA with a rank of 4 and a learning rate within $\\{5e-4, 1e-4, 5e-5\\}$ .\n\nTraining of Graph Neural Networks. We train the GNNs models (i.e., SAGE) subsequent to acquiring node representations from the language models. Specifically, The number of training epochs is designated within the range of $\\{100, 200, 500\\}$ , complemented by an early stopping mechanism set at 20 epochs for each dataset. We utilize the Adam optimizers, and the learning rate is chosen from the set $\\{1e-2, 5e-3, 1e-3\\}$ .",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.823::sections::4.7",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA GeForce RTX 3090",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Table 4: The scalability and efficiency analysis of training on the OGBN-ArXiv dataset with and without token reduction. The batch size was set to 1 for LM tuning, with total training time reported using a 48-core Intel(R) Xeon(R) CPU @ 2.50GHz and 8 NVIDIA GeForce RTX 3090 GPUs. 'OOM' refers to out of memory.   \n\n<table><tr><td>Walk Steps</td><td>Reduction</td><td>Memory (GB)</td><td>Total Time</td></tr><tr><td rowspan=\"2\">8</td><td>X</td><td>9.6</td><td>39h 14m</td></tr><tr><td>✓</td><td>3.2</td><td>13h 55m</td></tr><tr><td rowspan=\"2\">16</td><td>X</td><td>20.1</td><td>68h 42m</td></tr><tr><td>✓</td><td>4.6</td><td>18h 41m</td></tr><tr><td rowspan=\"2\">32</td><td>X</td><td>OOM</td><td>-</td></tr><tr><td>✓</td><td>7.7</td><td>31h 14m</td></tr><tr><td rowspan=\"2\">64</td><td>X</td><td>OOM</td><td>-</td></tr><tr><td>✓</td><td>15.2</td><td>61h 51m</td></tr></table>\n\nIn this section, we assess the scalability and efficiency of our method by reducing the sequence length through token reduction module, detailed in Section 3.2. RoBERTa-base serves as our LM backbone, and for this experiment, we use the rotatory position embeddings (Su et al., 2024) to accommo\n\n![](images/2f2afc22a6e62a8fe480c969a2909184f82218348f1b68dc292e358f7c94f1a6.jpg)  \nFigure 6: Experimental results of ablation study.\n\ndate sequences of unlimited length. Results presented in Table 4, demonstrate that without token reduction, method which considers neighboring textual information suffers from significant computational costs in terms of training time and GPU memory usage, and it may even run out of memory with a large number of walk steps (i.e., greater than 32). With our token reduction module, we only retain the most $k'$ crucial tokens for each nodes, thereby enhancing efficiency and scalability.",
+      "section_number": "4.7",
+      "section_title": "scalability and efficiency analysis",
+      "normalized_section_title": "scalability and efficiency analysis"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.823::sections::4.7",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA GeForce RTX 3090",
+      "cleaned_hardware_name": "nvidia geforce rtx 3090",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 3090",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 3090",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "4.7",
+      "section_title": "scalability and efficiency analysis",
+      "normalized_section_title": "scalability and efficiency analysis",
+      "evidence": "Table 4: The scalability and efficiency analysis of training on the OGBN-ArXiv dataset with and without token reduction. The batch size was set to 1 for LM tuning, with total training time reported using a 48-core Intel(R) Xeon(R) CPU @ 2.50GHz and 8 NVIDIA GeForce RTX 3090 GPUs. 'OOM' refers to out of memory.   \n\n<table><tr><td>Walk Steps</td><td>Reduction</td><td>Memory (GB)</td><td>Total Time</td></tr><tr><td rowspan=\"2\">8</td><td>X</td><td>9.6</td><td>39h 14m</td></tr><tr><td>✓</td><td>3.2</td><td>13h 55m</td></tr><tr><td rowspan=\"2\">16</td><td>X</td><td>20.1</td><td>68h 42m</td></tr><tr><td>✓</td><td>4.6</td><td>18h 41m</td></tr><tr><td rowspan=\"2\">32</td><td>X</td><td>OOM</td><td>-</td></tr><tr><td>✓</td><td>7.7</td><td>31h 14m</td></tr><tr><td rowspan=\"2\">64</td><td>X</td><td>OOM</td><td>-</td></tr><tr><td>✓</td><td>15.2</td><td>61h 51m</td></tr></table>\n\nIn this section, we assess the scalability and efficiency of our method by reducing the sequence length through token reduction module, detailed in Section 3.2. RoBERTa-base serves as our LM backbone, and for this experiment, we use the rotatory position embeddings (Su et al., 2024) to accommo\n\n![](images/2f2afc22a6e62a8fe480c969a2909184f82218348f1b68dc292e358f7c94f1a6.jpg)  \nFigure 6: Experimental results of ablation study.\n\ndate sequences of unlimited length. Results presented in Table 4, demonstrate that without token reduction, method which considers neighboring textual information suffers from significant computational costs in terms of training time and GPU memory usage, and it may even run out of memory with a large number of walk steps (i.e., greater than 32). With our token reduction module, we only retain the most $k'$ crucial tokens for each nodes, thereby enhancing efficiency and scalability.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": ""
+    }
+  ],
+  "review_flags": [],
+  "pred_result": {
+    "sec": [
+      "4.7"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce RTX 3090",
+        "num": 8
+      }
+    ]
+  }
+}

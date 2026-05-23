@@ -1,0 +1,220 @@
+{
+  "paper_id": "2024.acl-long.89",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.89::sections::5",
+      "paper_id": "2024.acl-long.89",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.89::sections::5.1",
+      "paper_id": "2024.acl-long.89",
+      "section_number": "5.1",
+      "section_title": "experiment settings",
+      "normalized_section_title": "experiment settings",
+      "window_text": "We conduct two sets of experiments on cooking games provided in TextWorld (Côté et al., 2019) and house-holding tasks based on Virtual-Home (Puig et al., 2018).\n\nFor the TextWorld environment, all tasks are generated using the code provided in GATA (Adhikari et al., 2020) and follow the same task setup as described in GATA. In this experiment, agents will receive recipes described in natural language including ingredients and directions. It will also receive a knowledge graph including triplets like [white onion, fridge, in] describing the current state of the environment. Based on this information, agents will take natural language actions like \"take white onion from fridge\" to finish the given recipes. There are four difficulty levels, each containing 100 different tasks for training and 20 different tasks for test. In each task, the goal of the agent is to collect different ingredients and cook them based on the recipe.\n\nWe make the following modifications to make tasks more challenging. First, we remove the recipe information from the knowledge graph. Therefore, the agent has to use both the information from the\n\n![](images/04fa8e0772df4d58820bcfd76b95bca93d343ac18f14c840e889b34ac727f786.jpg)\n\n![](images/48a9dee100aacca1cb94887678f804c51d547a2556c85da2587780c2b8784424.jpg)\n\n![](images/feed53b55f4006683d8d25b4af492df8ff3fb4b2920200647fc3d9990cd07c3f.jpg)\n\n![](images/949fc926e0153981e1f71c9de06009888b3b4147bb45547e8f6f6741b268e393.jpg)  \nFigure 2: Learning curves of all the methods in TextWorld cooking games.\n\nknowledge graph and the information from texts to make proper decisions. Second, some actions are filtered in a hard-code manner in GATA, we recover these actions and result in a larger action space. Third, the text information contains only recipe information. With the above modifications, our setting is much harder than the original setting in GATA. More details about experiments and hyperparameters are included in Appendix A.3.\n\nFor the VirtualHome environment, we customize a set of house-holding tasks where agents are supposed to follow the given natural language instructions to tidy the room. For example, agents will receive natural language instructions like \"put waterglass-283 into / on kitchencabinet-238\", and a knowledge graph including triplets like [waterglass-283, kitchentable-232, on]. Based on these information, agents will take natural language actions like \"walktowards waterglass-283\" to finish the given instructions. In difficulty 1, agents will be given one instruction, and in difficulty 2, agents will be given two instructions. For the knowledge graph used in the VirtualHome environment, we use a rule-based filter to remove task-irrelevant objects in the scenarios (for example, floor, wall, ceiling) and only keep task-relevant objects. We then consider task-relevant objects in the scenarios and their relations as edges. The relations we considered in the knowledge graph of VirtualHome include \"inside\", \"on\", \"facing\", \"close\", \"is\", and \"holds\".",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.89::sections::5.2",
+      "paper_id": "2024.acl-long.89",
+      "section_number": "5.2",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "We consider the following three baselines compared against our method in the experiments.\n\nGATA (Adhikari et al., 2020): a knowledge-\n\nTable 1: Train game points in TextWorld cooking games. D1 is short for difficulty 1, the same for others.   \n\n<table><tr><td></td><td>D1</td><td>D2</td><td>D3</td><td>D4</td></tr><tr><td>MIPO</td><td>3.53±0.20</td><td>1.94±0.01</td><td>2.57±0.12</td><td>2.95±0.16</td></tr><tr><td>GATA</td><td>3.29±0.13</td><td>1.85±0.07</td><td>1.68±0.18</td><td>2.46±0.11</td></tr><tr><td>GATA-TrufLL</td><td>2.94±0.18</td><td>1.77±0.15</td><td>0.99±0.00</td><td>2.59±0.19</td></tr><tr><td>GATA-CSM</td><td>2.95±0.53</td><td>1.79±0.11</td><td>1.99±0.26</td><td>2.43±0.33</td></tr><tr><td>GATA-SayCan</td><td>0.08±0.02</td><td>0.11±0.00</td><td>0.05±0.00</td><td>0.10±0.02</td></tr></table>\n\ngraph based method, where the relational graph convolution network (Schlichtkrull et al., 2018) is used to process the information of knowledge graph and a transformer (Vaswani et al., 2017) encoder is used to process the text information of both the state and the action. Putting them together, we can have the representation of each state-action pair and then use it as the input of $Q(s,a)$ . The agent interacts with the environment using an $\\epsilon$ -greedy policy and is trained via DQN (Silver et al., 2017). More specifically, we use the GATA-GTF variant for our experiment, as the construction of the knowledge graph is beyond the scope of this paper.\n\nGATA-TrufLL (Martin et al., 2022): a reinforcement learning method paired with action space reduction using pretrained language models. As TrufLL was originally proposed for the language generation tasks, we re-implement TrufLL based on the framework of GATA. For the action space reduction, we use the probability threshold method as the truncation function. The truncation function is shown as follows:\n\n$$\ng _ {p _ {\\mathrm {t h}} (\\alpha)} (a | \\mathrm {s} _ {\\mathrm {t e x t}}) = \\mathbb {1} _ {f _ {\\mathrm {L M}} (a | \\mathrm {s} _ {\\mathrm {t e x t}}) > \\lambda},\n$$\n\nwhich keeps actions with a probability $f_{\\mathrm{LM}}(a|\\mathrm{s}_{\\mathrm{text}})$ greater than $\\lambda$ . We use a fixed language model to perform action space reduction, and the agent is trained as GATA with the reduced action space.\n\nGATA-CSM (Shi et al., 2023): a reinforcement learning method paired with action space reduction using pretrained language models. To adapt the pretrained model to the current task, CSM collects trajectories with good performance using a heap-based replay buffer and adapts the pretrained model based on this replay buffer. As CSM was originally proposed for the action generation setting, we re-implement CSM based on the framework of GATA. We use the same action space reduction method and training method as GATA-TrufLL for CSM, except the language model is not fixed, but dynamically adjusted based on the collected trajectories.\n\n![](images/cecf2479df338ed75d76917d092cdcb3a8807e6652e7aa59730c2ec05f528ca4.jpg)\n\n![](images/0ec495092dc6d9613f4fc0d46313556c47cc9f07018e57f543132a4c15ce1509.jpg)\n\n![](images/7e453cfe602821eb75561a5d7b421619e07c13c1f49f3732ddacda7a50f9d584.jpg)\n\n![](images/a4a21b984172eae04bce4a62dc918c13be5d954a50ac04fef5269c14313dcb27.jpg)  \nFigure 3: Learning curves of MIPO and GATA-KL in TextWorld cooking games.\n\nGATA-SayCan (Shi et al., 2023): a post-processing method to utilize the knowledge in the pretrained language model. In SayCan, we assume a learned state-action value function. When executed in the environment, the action is chosen based on not just the state-action value function, but also taking the probability provided by the language model into consideration as follows:\n\n$$\nQ ^ {\\text {c o m b i n e d}} (s, a) = Q (s, a) \\times f _ {\\mathrm {L M}} (a | \\mathrm {s} _ {\\text {t e x t}}).\n$$\n\nThe state-action value function used for SayCan is trained via GATA.\n\nMIPO: the proposed method in this paper. We implement our algorithm based on GATA with minimum changes to adapt to the policy iteration. For the prior policy $\\pi^{\\mathrm{prior}}$ , we use the output of the language model as the logit, and get the prior policy as follows:\n\n$$\n\\pi^ {\\mathrm {p r i o r}} (a | \\mathrm {s} _ {\\mathrm {t e x t}}) = \\frac {\\exp (f _ {\\mathrm {L M}} (a | \\mathrm {s} _ {\\mathrm {t e x t}}) / \\beta)}{\\sum_ {a \\in A} \\exp (f _ {\\mathrm {L M}} (a | \\mathrm {s} _ {\\mathrm {t e x t}}) / \\beta)}.\n$$",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.89::sections::5.3",
+      "paper_id": "2024.acl-long.89",
+      "section_number": "5.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "We use DistilBERT (Sanh et al., 2019) for methods paired with a language model. To compute $f_{\\mathrm{LM}}(a|\\mathrm{s}_{\\mathrm{text}})$ , we first get the last hidden state from the language model for both the text state information and the action semantic as the representation of the state and action. Then these representations are used to compute the cosine similarity, which serves as the probability $f_{\\mathrm{LM}}(a|\\mathrm{s}_{\\mathrm{text}})$ . For methods that adjust the language model, we fix all previous transformer blocks and only train the last one.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.89::appendix::A",
+      "paper_id": "2024.acl-long.89",
+      "section_number": "A",
+      "section_title": "appendix",
+      "normalized_section_title": "appendix",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.89::appendix::A.3",
+      "paper_id": "2024.acl-long.89",
+      "section_number": "A.3",
+      "section_title": "experiment details",
+      "normalized_section_title": "experiment details",
+      "window_text": "For TextWorld experiments, our method and all baselines are implemented using PyTorch based on the code of GATA (Adhikari et al., 2020) $^{1}$ . We use the default hyperparameters of GATA-GTF for all methods, except the maximum number of episodes is set from 100k to 60k and we do not use any pretrained word embedding and set all word embeddings to be trainable. As MIPO uses an actor-critic framework, we add an actor head that contains 3 fully-connected layers with 64/64/1 units activated by ReLU except the last one. This actor head takes the state-action representation provided by the GATA network with gradient detached and produces the logit for each action. The learning rate for the policy network and prior network is $5 \\times 10^{-4}$ . Except for the above-mentioned modifications, every detail is set to be the same as GATA. For VirtualHome $^{2}$ experiments, the maximum number of episodes is further reduced to 20k to accelerate the training process. Some hyperparameters are also changed to adapt to this faster training process, for example, the batch size is set to 128 and the multi-step hyperparameter is set to 1.\n\nFor MIPO $^3$ and GATA-KL, two hyperparameters $\\alpha$ , $\\beta$ are added. $\\beta$ is fixed as 0.04 for all difficulty levels during training. For $\\alpha$ , it always starts from $\\alpha_{start} = 0.5$ and gradually decays to $\\alpha_{min}$ in TextWorld experiments. A small-scale parameter search is performed in Difficulty 1 and 4 for $\\alpha_{min}$ . For Difficulty 1, we tried $\\alpha_{min} = [0.1, 0.15]$ and found 0.15 to be the best. For Difficulty 4, we tried $\\alpha_{min} =$\n\n[0.1, 0.15, 0.25] and found 0.25 to be the best. For Difficulty 2 and 3, $\\alpha_{min}$ is set to be 0.1 heuristically. In VirtualHome experiments, $\\alpha_{min}$ is set to be 0.1 for both difficulties. Also, for MIPO, a small replay buffer $\\tilde{\\mathcal{D}}$ is used for the language model adaption, we set the size of $\\tilde{\\mathcal{D}}$ to be 12500, which is much smaller than the size of $\\mathcal{D}$ (500000). For GATA-TrufLL and GATA-CSM, we set the threshold $\\lambda = 0.5$ . For methods using pretrained language models, we use DistilBERT (Sanh et al., 2019) downloaded from Hugging Face. Spacy with en_core_web_sm model is used in all methods, which is consistent with GATA.\n\nFor all tables, we report the mean and standard derivations of three different random seeds and bold the result with the best mean performance. For all plots, we plot the curves with the moving average of a window size of 10 and a half standard deviation. The unit of x-axis is 1k episodes. For the generalization results, as MIPO uses a stochastic policy, we evaluate the performance of MIPO 10 times for each generalization task and report the mean.\n\nIn terms of the computation budget, all TextWorld experiments are trained in machines rented from online services. All machines are equipped with 12 CPU cores and 1 RTX 3090 GPU. Depending on the algorithm and the difficulty level, each experiment takes around 5 to 45 hours to complete. For VirtualHome experiments, all methods are trained in a local machine with 4 Nvidia GPUs (A100) and 224 Intel CPU Cores. Depending on the algorithm and the difficulty level, each experiment takes around 2 to 5 days to complete.\n\nIn terms of the use of AI assistants. ChatGPT is used to polish some sentences in this paper.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.89::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 3090",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "For TextWorld experiments, our method and all baselines are implemented using PyTorch based on the code of GATA (Adhikari et al., 2020) $^{1}$ . We use the default hyperparameters of GATA-GTF for all methods, except the maximum number of episodes is set from 100k to 60k and we do not use any pretrained word embedding and set all word embeddings to be trainable. As MIPO uses an actor-critic framework, we add an actor head that contains 3 fully-connected layers with 64/64/1 units activated by ReLU except the last one. This actor head takes the state-action representation provided by the GATA network with gradient detached and produces the logit for each action. The learning rate for the policy network and prior network is $5 \\times 10^{-4}$ . Except for the above-mentioned modifications, every detail is set to be the same as GATA. For VirtualHome $^{2}$ experiments, the maximum number of episodes is further reduced to 20k to accelerate the training process. Some hyperparameters are also changed to adapt to this faster training process, for example, the batch size is set to 128 and the multi-step hyperparameter is set to 1.\n\nFor MIPO $^3$ and GATA-KL, two hyperparameters $\\alpha$ , $\\beta$ are added. $\\beta$ is fixed as 0.04 for all difficulty levels during training. For $\\alpha$ , it always starts from $\\alpha_{start} = 0.5$ and gradually decays to $\\alpha_{min}$ in TextWorld experiments. A small-scale parameter search is performed in Difficulty 1 and 4 for $\\alpha_{min}$ . For Difficulty 1, we tried $\\alpha_{min} = [0.1, 0.15]$ and found 0.15 to be the best. For Difficulty 4, we tried $\\alpha_{min} =$\n\n[0.1, 0.15, 0.25] and found 0.25 to be the best. For Difficulty 2 and 3, $\\alpha_{min}$ is set to be 0.1 heuristically. In VirtualHome experiments, $\\alpha_{min}$ is set to be 0.1 for both difficulties. Also, for MIPO, a small replay buffer $\\tilde{\\mathcal{D}}$ is used for the language model adaption, we set the size of $\\tilde{\\mathcal{D}}$ to be 12500, which is much smaller than the size of $\\mathcal{D}$ (500000). For GATA-TrufLL and GATA-CSM, we set the threshold $\\lambda = 0.5$ . For methods using pretrained language models, we use DistilBERT (Sanh et al., 2019) downloaded from Hugging Face. Spacy with en_core_web_sm model is used in all methods, which is consistent with GATA.\n\nFor all tables, we report the mean and standard derivations of three different random seeds and bold the result with the best mean performance. For all plots, we plot the curves with the moving average of a window size of 10 and a half standard deviation. The unit of x-axis is 1k episodes. For the generalization results, as MIPO uses a stochastic policy, we evaluate the performance of MIPO 10 times for each generalization task and report the mean.\n\nIn terms of the computation budget, all TextWorld experiments are trained in machines rented from online services. All machines are equipped with 12 CPU cores and 1 RTX 3090 GPU. Depending on the algorithm and the difficulty level, each experiment takes around 5 to 45 hours to complete. For VirtualHome experiments, all methods are trained in a local machine with 4 Nvidia GPUs (A100) and 224 Intel CPU Cores. Depending on the algorithm and the difficulty level, each experiment takes around 2 to 5 days to complete.\n\nIn terms of the use of AI assistants. ChatGPT is used to polish some sentences in this paper.",
+      "section_number": "A.3",
+      "section_title": "experiment details",
+      "normalized_section_title": "experiment details"
+    },
+    {
+      "window_id": "2024.acl-long.89::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A100",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "For TextWorld experiments, our method and all baselines are implemented using PyTorch based on the code of GATA (Adhikari et al., 2020) $^{1}$ . We use the default hyperparameters of GATA-GTF for all methods, except the maximum number of episodes is set from 100k to 60k and we do not use any pretrained word embedding and set all word embeddings to be trainable. As MIPO uses an actor-critic framework, we add an actor head that contains 3 fully-connected layers with 64/64/1 units activated by ReLU except the last one. This actor head takes the state-action representation provided by the GATA network with gradient detached and produces the logit for each action. The learning rate for the policy network and prior network is $5 \\times 10^{-4}$ . Except for the above-mentioned modifications, every detail is set to be the same as GATA. For VirtualHome $^{2}$ experiments, the maximum number of episodes is further reduced to 20k to accelerate the training process. Some hyperparameters are also changed to adapt to this faster training process, for example, the batch size is set to 128 and the multi-step hyperparameter is set to 1.\n\nFor MIPO $^3$ and GATA-KL, two hyperparameters $\\alpha$ , $\\beta$ are added. $\\beta$ is fixed as 0.04 for all difficulty levels during training. For $\\alpha$ , it always starts from $\\alpha_{start} = 0.5$ and gradually decays to $\\alpha_{min}$ in TextWorld experiments. A small-scale parameter search is performed in Difficulty 1 and 4 for $\\alpha_{min}$ . For Difficulty 1, we tried $\\alpha_{min} = [0.1, 0.15]$ and found 0.15 to be the best. For Difficulty 4, we tried $\\alpha_{min} =$\n\n[0.1, 0.15, 0.25] and found 0.25 to be the best. For Difficulty 2 and 3, $\\alpha_{min}$ is set to be 0.1 heuristically. In VirtualHome experiments, $\\alpha_{min}$ is set to be 0.1 for both difficulties. Also, for MIPO, a small replay buffer $\\tilde{\\mathcal{D}}$ is used for the language model adaption, we set the size of $\\tilde{\\mathcal{D}}$ to be 12500, which is much smaller than the size of $\\mathcal{D}$ (500000). For GATA-TrufLL and GATA-CSM, we set the threshold $\\lambda = 0.5$ . For methods using pretrained language models, we use DistilBERT (Sanh et al., 2019) downloaded from Hugging Face. Spacy with en_core_web_sm model is used in all methods, which is consistent with GATA.\n\nFor all tables, we report the mean and standard derivations of three different random seeds and bold the result with the best mean performance. For all plots, we plot the curves with the moving average of a window size of 10 and a half standard deviation. The unit of x-axis is 1k episodes. For the generalization results, as MIPO uses a stochastic policy, we evaluate the performance of MIPO 10 times for each generalization task and report the mean.\n\nIn terms of the computation budget, all TextWorld experiments are trained in machines rented from online services. All machines are equipped with 12 CPU cores and 1 RTX 3090 GPU. Depending on the algorithm and the difficulty level, each experiment takes around 5 to 45 hours to complete. For VirtualHome experiments, all methods are trained in a local machine with 4 Nvidia GPUs (A100) and 224 Intel CPU Cores. Depending on the algorithm and the difficulty level, each experiment takes around 2 to 5 days to complete.\n\nIn terms of the use of AI assistants. ChatGPT is used to polish some sentences in this paper.",
+      "section_number": "A.3",
+      "section_title": "experiment details",
+      "normalized_section_title": "experiment details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.89::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 3090",
+      "cleaned_hardware_name": "rtx 3090",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 3090",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 3090",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.3",
+      "section_title": "experiment details",
+      "normalized_section_title": "experiment details",
+      "evidence": "For TextWorld experiments, our method and all baselines are implemented using PyTorch based on the code of GATA (Adhikari et al., 2020) $^{1}$ . We use the default hyperparameters of GATA-GTF for all methods, except the maximum number of episodes is set from 100k to 60k and we do not use any pretrained word embedding and set all word embeddings to be trainable. As MIPO uses an actor-critic framework, we add an actor head that contains 3 fully-connected layers with 64/64/1 units activated by ReLU except the last one. This actor head takes the state-action representation provided by the GATA network with gradient detached and produces the logit for each action. The learning rate for the policy network and prior network is $5 \\times 10^{-4}$ . Except for the above-mentioned modifications, every detail is set to be the same as GATA. For VirtualHome $^{2}$ experiments, the maximum number of episodes is further reduced to 20k to accelerate the training process. Some hyperparameters are also changed to adapt to this faster training process, for example, the batch size is set to 128 and the multi-step hyperparameter is set to 1.\n\nFor MIPO $^3$ and GATA-KL, two hyperparameters $\\alpha$ , $\\beta$ are added. $\\beta$ is fixed as 0.04 for all difficulty levels during training. For $\\alpha$ , it always starts from $\\alpha_{start} = 0.5$ and gradually decays to $\\alpha_{min}$ in TextWorld experiments. A small-scale parameter search is performed in Difficulty 1 and 4 for $\\alpha_{min}$ . For Difficulty 1, we tried $\\alpha_{min} = [0.1, 0.15]$ and found 0.15 to be the best. For Difficulty 4, we tried $\\alpha_{min} =$\n\n[0.1, 0.15, 0.25] and found 0.25 to be the best. For Difficulty 2 and 3, $\\alpha_{min}$ is set to be 0.1 heuristically. In VirtualHome experiments, $\\alpha_{min}$ is set to be 0.1 for both difficulties. Also, for MIPO, a small replay buffer $\\tilde{\\mathcal{D}}$ is used for the language model adaption, we set the size of $\\tilde{\\mathcal{D}}$ to be 12500, which is much smaller than the size of $\\mathcal{D}$ (500000). For GATA-TrufLL and GATA-CSM, we set the threshold $\\lambda = 0.5$ . For methods using pretrained language models, we use DistilBERT (Sanh et al., 2019) downloaded from Hugging Face. Spacy with en_core_web_sm model is used in all methods, which is consistent with GATA.\n\nFor all tables, we report the mean and standard derivations of three different random seeds and bold the result with the best mean performance. For all plots, we plot the curves with the moving average of a window size of 10 and a half standard deviation. The unit of x-axis is 1k episodes. For the generalization results, as MIPO uses a stochastic policy, we evaluate the performance of MIPO 10 times for each generalization task and report the mean.\n\nIn terms of the computation budget, all TextWorld experiments are trained in machines rented from online services. All machines are equipped with 12 CPU cores and 1 RTX 3090 GPU. Depending on the algorithm and the difficulty level, each experiment takes around 5 to 45 hours to complete. For VirtualHome experiments, all methods are trained in a local machine with 4 Nvidia GPUs (A100) and 224 Intel CPU Cores. Depending on the algorithm and the difficulty level, each experiment takes around 2 to 5 days to complete.\n\nIn terms of the use of AI assistants. ChatGPT is used to polish some sentences in this paper.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized GeForce RTX shorthand rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.acl-long.89::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "A.3",
+      "section_title": "experiment details",
+      "normalized_section_title": "experiment details",
+      "evidence": "For TextWorld experiments, our method and all baselines are implemented using PyTorch based on the code of GATA (Adhikari et al., 2020) $^{1}$ . We use the default hyperparameters of GATA-GTF for all methods, except the maximum number of episodes is set from 100k to 60k and we do not use any pretrained word embedding and set all word embeddings to be trainable. As MIPO uses an actor-critic framework, we add an actor head that contains 3 fully-connected layers with 64/64/1 units activated by ReLU except the last one. This actor head takes the state-action representation provided by the GATA network with gradient detached and produces the logit for each action. The learning rate for the policy network and prior network is $5 \\times 10^{-4}$ . Except for the above-mentioned modifications, every detail is set to be the same as GATA. For VirtualHome $^{2}$ experiments, the maximum number of episodes is further reduced to 20k to accelerate the training process. Some hyperparameters are also changed to adapt to this faster training process, for example, the batch size is set to 128 and the multi-step hyperparameter is set to 1.\n\nFor MIPO $^3$ and GATA-KL, two hyperparameters $\\alpha$ , $\\beta$ are added. $\\beta$ is fixed as 0.04 for all difficulty levels during training. For $\\alpha$ , it always starts from $\\alpha_{start} = 0.5$ and gradually decays to $\\alpha_{min}$ in TextWorld experiments. A small-scale parameter search is performed in Difficulty 1 and 4 for $\\alpha_{min}$ . For Difficulty 1, we tried $\\alpha_{min} = [0.1, 0.15]$ and found 0.15 to be the best. For Difficulty 4, we tried $\\alpha_{min} =$\n\n[0.1, 0.15, 0.25] and found 0.25 to be the best. For Difficulty 2 and 3, $\\alpha_{min}$ is set to be 0.1 heuristically. In VirtualHome experiments, $\\alpha_{min}$ is set to be 0.1 for both difficulties. Also, for MIPO, a small replay buffer $\\tilde{\\mathcal{D}}$ is used for the language model adaption, we set the size of $\\tilde{\\mathcal{D}}$ to be 12500, which is much smaller than the size of $\\mathcal{D}$ (500000). For GATA-TrufLL and GATA-CSM, we set the threshold $\\lambda = 0.5$ . For methods using pretrained language models, we use DistilBERT (Sanh et al., 2019) downloaded from Hugging Face. Spacy with en_core_web_sm model is used in all methods, which is consistent with GATA.\n\nFor all tables, we report the mean and standard derivations of three different random seeds and bold the result with the best mean performance. For all plots, we plot the curves with the moving average of a window size of 10 and a half standard deviation. The unit of x-axis is 1k episodes. For the generalization results, as MIPO uses a stochastic policy, we evaluate the performance of MIPO 10 times for each generalization task and report the mean.\n\nIn terms of the computation budget, all TextWorld experiments are trained in machines rented from online services. All machines are equipped with 12 CPU cores and 1 RTX 3090 GPU. Depending on the algorithm and the difficulty level, each experiment takes around 5 to 45 hours to complete. For VirtualHome experiments, all methods are trained in a local machine with 4 Nvidia GPUs (A100) and 224 Intel CPU Cores. Depending on the algorithm and the difficulty level, each experiment takes around 2 to 5 days to complete.\n\nIn terms of the use of AI assistants. ChatGPT is used to polish some sentences in this paper.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.acl-long.89::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.acl-long.89::sections::5.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.1",
+      "section_title": "experiment settings",
+      "evidence": "We conduct two sets of experiments on cooking games provided in TextWorld (Côté et al., 2019) and house-holding tasks based on Virtual-Home (Puig et al., 2018).\n\nFor the TextWorld environment, all tasks are generated using the code provided in GATA (Adhikari et al., 2020) and follow the same task setup as described in GATA. In this experiment, agents will receive recipes described in natural language including ingredients and directions. It will also receive a knowledge graph including triplets like [white onion, fridge, in] describing the current state of the environment. Based on this information, agents will take natural language actions like \"take white onion from fridge\" to finish the given recipes. There are four difficulty levels, each containing 100 different tasks for training and 20 different tasks for test. In each task, the goal of the agent is to collect different ingredients and cook them based on the recipe.\n\nWe make the following modifications to make tasks more challenging. First, we remove the recipe information from the knowledge graph. Therefore, the agent has to use both the information from the\n\n![](images/04fa8e0772df4d58820bcfd76b95bca93d343ac18f14c840e889b34ac727f786.jpg)\n\n![](images/48a9dee100aacca1cb94887678f804c51d547a2556c85da2587780c2b8784424.jpg)\n\n![](images/feed53b55f4006683d8d25b4af492df8ff3fb4b2920200647fc3d9990cd07c3f.jpg)\n\n![](images/949fc926e0153981e1f71c9de06009888b3b4147bb45547e8f6f6741b268e393.jpg)  \nFigure 2: Learning curves of all the methods in TextWorld cooking games.\n\nknowledge graph and the information from texts to make proper decisions. Second, some actions are filtered in a hard-code manner in GATA, we recover these actions and result in a larger action space. Third, the text information contains only recipe information. With the above modifications, our setting is much harder than the original setting in GATA. More details about experiments and hyperparameters are included in Appendix A.3.\n\nFor the VirtualHome environment, we customize a set of house-holding tasks where agents are supposed to follow the given natural language instructions to tidy the room. For example, agents will receive natural language instructions like \"put waterglass-283 into / on kitchencabinet-238\", and a knowledge graph including triplets like [waterglass-283, kitchentable-232, on]. Based on these information, agents will take natural language actions like \"walktowards waterglass-283\" to finish the given instructions. In difficulty 1, agents will be given one instruction, and in difficulty 2, agents will be given two instructions. For the knowledge graph used in the VirtualHome environment, we use a rule-based filter to remove task-irrelevant objects in the scenarios (for example, floor, wall, ceiling) and only keep task-relevant objects. We then consider task-relevant objects in the scenarios and their relations as edges. The relations we considered in the knowledge graph of VirtualHome include \"inside\", \"on\", \"facing\", \"close\", \"is\", and \"holds\"."
+    },
+    {
+      "source_window_id": "2024.acl-long.89::sections::5.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.2",
+      "section_title": "baselines",
+      "evidence": "We consider the following three baselines compared against our method in the experiments.\n\nGATA (Adhikari et al., 2020): a knowledge-\n\nTable 1: Train game points in TextWorld cooking games. D1 is short for difficulty 1, the same for others.   \n\n<table><tr><td></td><td>D1</td><td>D2</td><td>D3</td><td>D4</td></tr><tr><td>MIPO</td><td>3.53±0.20</td><td>1.94±0.01</td><td>2.57±0.12</td><td>2.95±0.16</td></tr><tr><td>GATA</td><td>3.29±0.13</td><td>1.85±0.07</td><td>1.68±0.18</td><td>2.46±0.11</td></tr><tr><td>GATA-TrufLL</td><td>2.94±0.18</td><td>1.77±0.15</td><td>0.99±0.00</td><td>2.59±0.19</td></tr><tr><td>GATA-CSM</td><td>2.95±0.53</td><td>1.79±0.11</td><td>1.99±0.26</td><td>2.43±0.33</td></tr><tr><td>GATA-SayCan</td><td>0.08±0.02</td><td>0.11±0.00</td><td>0.05±0.00</td><td>0.10±0.02</td></tr></table>\n\ngraph based method, where the relational graph convolution network (Schlichtkrull et al., 2018) is used to process the information of knowledge graph and a transformer (Vaswani et al., 2017) encoder is used to process the text information of both the state and the action. Putting them together, we can have the representation of each state-action pair and then use it as the input of $Q(s,a)$ . The agent interacts with the environment using an $\\epsilon$ -greedy policy and is trained via DQN (Silver et al., 2017). More specifically, we use the GATA-GTF variant for our experiment, as the construction of the knowledge graph is beyond the scope of this paper.\n\nGATA-TrufLL (Martin et al., 2022): a reinforcement learning method paired with action space reduction using pretrained language models. As TrufLL was originally proposed for the language generation tasks, we re-implement TrufLL based on the framework of GATA. For the action space reduction, we use the probability threshold method as the truncation function. The truncation function is shown as follows:\n\n$$\ng _ {p _ {\\mathrm {t h}} (\\alpha)} (a | \\mathrm {s} _ {\\mathrm {t e x t}}) = \\mathbb {1} _ {f _ {\\mathrm {L M}} (a | \\mathrm {s} _ {\\mathrm {t e x t}}) > \\lambda},\n$$\n\nwhich keeps actions with a probability $f_{\\mathrm{LM}}(a|\\mathrm{s}_{\\mathrm{text}})$ greater than $\\lambda$ . We use a fixed language model to perform action space reduction, and the agent is trained as GATA with the reduced action space.\n\nGATA-CSM (Shi et al., 2023): a reinforcement learning method paired with action space reduction using pretrained language models. To adapt the pretrained model to the current task, CSM collects trajectories with good performance using a heap-based replay buffer and adapts the pretrained model based on this replay buffer. As CSM was originally proposed for the action generation setting, we re-implement CSM based on the framework of GATA. We use the same action space reduction method and training method as GATA-TrufLL for CSM, except the language model is not fixed, but dynamically adjusted based on the collected trajectories.\n\n![](images/cecf2479df338ed75d76917d092cdcb3a8807e6652e7aa59730c2ec05f528ca4.jpg)\n\n![](images/0ec495092dc6d9613f4fc0d46313556c47cc9f07018e57f543132a4c15ce1509.jpg)\n\n![](images/7e453cfe602821eb75561a5d7b421619e07c13c1f49f3732ddacda7a50f9d584.jpg)\n\n![](images/a4a21b984172eae04bce4a62dc918c13be5d954a50ac04fef5269c14313dcb27.jpg)  \nFigure 3: Learning curves of MIPO and GATA-KL in TextWorld cooking games.\n\nGATA-SayCan (Shi et al., 2023): a post-processing method to utilize the knowledge in the pretrained language model. In SayCan, we assume a learned state-action value function. When executed in the environment, the action is chosen based on not just the state-action value function, but also taking the probability provided by the language model into consideration as follows:\n\n$$\nQ ^ {\\text {c o m b i n e d}} (s, a) = Q (s, a) \\times f _ {\\mathrm {L M}} (a | \\mathrm {s} _ {\\text {t e x t}}).\n$$\n\nThe state-action value function used for SayCan is trained via GATA.\n\nMIPO: the proposed method in this paper. We implement our algorithm based on GATA with minimum changes to adapt to the policy iteration. For the prior policy $\\pi^{\\mathrm{prior}}$ , we use the output of the language model as the logit, and get the prior policy as follows:\n\n$$\n\\pi^ {\\mathrm {p r i o r}} (a | \\mathrm {s} _ {\\mathrm {t e x t}}) = \\frac {\\exp (f _ {\\mathrm {L M}} (a | \\mathrm {s} _ {\\mathrm {t e x t}}) / \\beta)}{\\sum_ {a \\in A} \\exp (f _ {\\mathrm {L M}} (a | \\mathrm {s} _ {\\mathrm {t e x t}}) / \\beta)}.\n$$"
+    },
+    {
+      "source_window_id": "2024.acl-long.89::sections::5.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.3",
+      "section_title": "implementation details",
+      "evidence": "We use DistilBERT (Sanh et al., 2019) for methods paired with a language model. To compute $f_{\\mathrm{LM}}(a|\\mathrm{s}_{\\mathrm{text}})$ , we first get the last hidden state from the language model for both the text state information and the action semantic as the representation of the state and action. Then these representations are used to compute the cosine similarity, which serves as the probability $f_{\\mathrm{LM}}(a|\\mathrm{s}_{\\mathrm{text}})$ . For methods that adjust the language model, we fix all previous transformer blocks and only train the last one."
+    },
+    {
+      "source_window_id": "2024.acl-long.89::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "appendix",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.3"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce RTX 3090",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 4
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2024\\2024.acl-long.89\\auto\\full.md",
+    "source_md_sha256": "30ec6682971f28051503a8bbf4acde666853dd8530304c1dd1a6026df0d8348b",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "ad96f3b6ca003898756db958dd17467668c845886fa3f1f835d26a866c8af3f0"
+  }
+}

@@ -1,0 +1,199 @@
+{
+  "paper_id": "2024.emnlp-main.442",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.442::sections::3",
+      "paper_id": "2024.emnlp-main.442",
+      "section_number": "3",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "This study explores the three key factors (F1-F3, illustrated in Figure 1) to enhance multilingual CoT distillation, which we formalize in this section.\n\nNative CoT distillation. According to Shi et al. (2022), in multilingual settings, one can prompt a teacher model to generate a CoT in English (English CoT, $p_{\\mathrm{CoT}}^{\\mathrm{en}}$ ) irrespective of the language of the input. Yet, the English CoT may not capture nuanced meanings inherent to the original language. Alternatively, the teacher model can be instructed to use the native language of the input for reasoning (Native CoT, $p_{\\mathrm{CoT}}^{\\mathrm{nt}}$ ).\n\nDiverse CoT (d-CoT) Distillation. To obtain a set of diverse rationales from the teacher, we use its stochasticity in generation as follows: $\\{r_{ij}\\}_{j=1}^{D}$\n\n$\\mathrm{LLM}(\\pmb{p}_{\\mathrm{CoT}}^{\\mathrm{L}}, \\pmb{x}_i; D)$ where L is the choice of CoT language and D is the teacher rational diversity (Ho et al., 2023). It is worth noting that, since some of the generated rationales explicitly lead to the incorrect answer, similar to Zelikman et al. (2022), we use a heuristic approach to filter out those negative rationales $(r_{ij}^{-})$ and only keep positive rationales $(r_{ij}^{+})$ . Then, d-CoT training samples can be written as $\\mathcal{D}_{\\mathrm{d - CoT}} = \\{(x_i, y_i, r_i^{+})\\}_{i=1}^M$ where M is the number of positive rationales for all samples. We denote the final training objective as:\n\n$$\n\\mathcal {L} _ {\\mathrm {d - C o T}} = - \\frac {1}{B \\cdot D} \\sum_ {j = 1} ^ {D} \\sum_ {i = 1} ^ {B} \\log p _ {\\theta} \\left(\\boldsymbol {y} _ {i}, \\boldsymbol {r} _ {i j} ^ {+} \\mid \\boldsymbol {x} _ {i}\\right) \\tag {2}\n$$\n\nDiverse CoT with negative rationales (d-CoT-nR) Distillation. Previous reasoning distillation studies (Ho et al., 2023; Kang et al., 2023) have exclusively employed the diversity of only positive rationales to guide the reasoning paths toward the correct answer. We hypothesize that incorporating negative rationales could assist in further refining the decoding search space. Specifically, there are multiple ways to train the model with negative rationales, as follows: (i) Unlikelihood objective (Welleck et al., 2020) (ii) Contrastive learning via CLICK (Zheng et al., 2023) (iii) Preference optimization using ORPO (Hong et al., 2024). Detailed descriptions are provided in Appendices A and B. We represent their objective function as $\\mathcal{L}_{\\mathrm{CoT - nR}}$ , and train the smaller model with d-CoT as follows:\n\n$$\n\\mathcal {L} _ {\\mathrm {d} - \\mathrm {C o T} - \\mathrm {n R}} = \\alpha \\mathcal {L} _ {\\mathrm {d} - \\mathrm {C o T}} + (1 - \\alpha) \\mathcal {L} _ {\\mathrm {C o T} - \\mathrm {n R}}, \\tag {3}\n$$\n\nwhere $\\alpha$ is the hyperparameter that decides the trade-off between d-CoT and CoT-nR.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.442::sections::4",
+      "paper_id": "2024.emnlp-main.442",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Datasets. To validate the capability of smaller (distilled) models in knowledge-intensive reasoning tasks, we use the EXAMS dataset (Hardalov et al., 2020). This dataset consists of multilingual high-school multiple-choice examination questions and their relevant passages across various subjects, e.g., chemistry, biology, and history. Based on the background knowledge corpus, languages are categorized into top-pportion languages (TPL) and bottom-pportion languages\n\n(BPL). We use accuracy as the main metric while using McNeMar's test for the significant test.\n\nLanguage Models. We use GPT3.5-turbo-1106 as the teacher model. For the student model, we experiment with mT5-base (580M) (Xue et al., 2021), XGLM (564M) (Lin et al., 2022), and Gemma-Instruct (2B) (Team et al., 2024) $^{3}$ . mT5 and XGLM are pre-trained on a multilingual corpus that compensated for language skewness, while the pretraining data for Gemma was predominately in English. Note that we report the average across three seeds for mT5 and XGLM in d-CoT and d-CoT-nR methods, while we report only one seed for Gemma. Additionally, the training details are described in Appendix C.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.442::appendix::C",
+      "paper_id": "2024.emnlp-main.442",
+      "section_number": "C",
+      "section_title": "training details",
+      "normalized_section_title": "training details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.442::appendix::C.2",
+      "paper_id": "2024.emnlp-main.442",
+      "section_number": "C.2",
+      "section_title": "hyperparameters tuning in d-cot-nr distillation",
+      "normalized_section_title": "hyperparameters tuning in d-cot-nr distillation",
+      "window_text": "We perform a grid search to find the optimal parameters on development set of the dataset using hyper-parameters listed in the Table 5. The best performing hyperparameters on the development set is reported in Table 6. In addition, we further experiment the optimal hyperparameters with 3 different seeds for the study.\n\nTable 5: Hyperparameter configurations.   \n\n<table><tr><td>Methods</td><td>α</td><td>γ</td></tr><tr><td>Unlikelihood</td><td>0.9, 0.95, 0.99</td><td>-</td></tr><tr><td>CLICK</td><td>0.9, 0.8, 0.7</td><td>15, 20</td></tr><tr><td>ORPO</td><td>0.9, 0.8, 0.7</td><td>-</td></tr></table>\n\nTable 6: Optimal hyperparameters.   \n\n<table><tr><td>Methods</td><td>Unlikelihood</td><td>CLICK</td><td>ORPO</td></tr><tr><td>mT5</td><td>α = 0.9</td><td>α = 0.8, γ = 20</td><td>α = 0.8</td></tr><tr><td>XGLM</td><td>α = 0.99</td><td>α = 0.9, γ = 15</td><td>α = 0.9</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.442::appendix::C.3",
+      "paper_id": "2024.emnlp-main.442",
+      "section_number": "C.3",
+      "section_title": "computing resources",
+      "normalized_section_title": "computing resources",
+      "window_text": "We trained the mT5 and XGLM models on an NVIDIA Tesla V100 GPU (32GB VRAM) over a period of 3 days, depending on the specific methods employed, with the inference phase for the test set requiring approximately 1-2 days. The Gemma model was fine-tuned on a single NVIDIA A100 GPU (80GB VRAM) for 3-4 days, with the test set inference phase extending to about 5 days. In total, it takes around 3,000 GPU hours on V100 and 840 GPU hours on A100. The associated training costs and performance improvements are detailed in Table 7.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.442::appendix::C.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100 32GB",
+      "count": null,
+      "count_text": "",
+      "evidence": "We trained the mT5 and XGLM models on an NVIDIA Tesla V100 GPU (32GB VRAM) over a period of 3 days, depending on the specific methods employed, with the inference phase for the test set requiring approximately 1-2 days. The Gemma model was fine-tuned on a single NVIDIA A100 GPU (80GB VRAM) for 3-4 days, with the test set inference phase extending to about 5 days. In total, it takes around 3,000 GPU hours on V100 and 840 GPU hours on A100. The associated training costs and performance improvements are detailed in Table 7.",
+      "section_number": "C.3",
+      "section_title": "computing resources",
+      "normalized_section_title": "computing resources"
+    },
+    {
+      "window_id": "2024.emnlp-main.442::appendix::C.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We trained the mT5 and XGLM models on an NVIDIA Tesla V100 GPU (32GB VRAM) over a period of 3 days, depending on the specific methods employed, with the inference phase for the test set requiring approximately 1-2 days. The Gemma model was fine-tuned on a single NVIDIA A100 GPU (80GB VRAM) for 3-4 days, with the test set inference phase extending to about 5 days. In total, it takes around 3,000 GPU hours on V100 and 840 GPU hours on A100. The associated training costs and performance improvements are detailed in Table 7.",
+      "section_number": "C.3",
+      "section_title": "computing resources",
+      "normalized_section_title": "computing resources"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.442::appendix::C.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100 32GB",
+      "cleaned_hardware_name": "nvidia tesla v100 32gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "count": null,
+      "count_text": "",
+      "section_number": "C.3",
+      "section_title": "computing resources",
+      "normalized_section_title": "computing resources",
+      "evidence": "We trained the mT5 and XGLM models on an NVIDIA Tesla V100 GPU (32GB VRAM) over a period of 3 days, depending on the specific methods employed, with the inference phase for the test set requiring approximately 1-2 days. The Gemma model was fine-tuned on a single NVIDIA A100 GPU (80GB VRAM) for 3-4 days, with the test set inference phase extending to about 5 days. In total, it takes around 3,000 GPU hours on V100 and 840 GPU hours on A100. The associated training costs and performance improvements are detailed in Table 7.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.emnlp-main.442::appendix::C.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "C.3",
+      "section_title": "computing resources",
+      "normalized_section_title": "computing resources",
+      "evidence": "We trained the mT5 and XGLM models on an NVIDIA Tesla V100 GPU (32GB VRAM) over a period of 3 days, depending on the specific methods employed, with the inference phase for the test set requiring approximately 1-2 days. The Gemma model was fine-tuned on a single NVIDIA A100 GPU (80GB VRAM) for 3-4 days, with the test set inference phase extending to about 5 days. In total, it takes around 3,000 GPU hours on V100 and 840 GPU hours on A100. The associated training costs and performance improvements are detailed in Table 7.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.emnlp-main.442::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methodology",
+      "evidence": "This study explores the three key factors (F1-F3, illustrated in Figure 1) to enhance multilingual CoT distillation, which we formalize in this section.\n\nNative CoT distillation. According to Shi et al. (2022), in multilingual settings, one can prompt a teacher model to generate a CoT in English (English CoT, $p_{\\mathrm{CoT}}^{\\mathrm{en}}$ ) irrespective of the language of the input. Yet, the English CoT may not capture nuanced meanings inherent to the original language. Alternatively, the teacher model can be instructed to use the native language of the input for reasoning (Native CoT, $p_{\\mathrm{CoT}}^{\\mathrm{nt}}$ ).\n\nDiverse CoT (d-CoT) Distillation. To obtain a set of diverse rationales from the teacher, we use its stochasticity in generation as follows: $\\{r_{ij}\\}_{j=1}^{D}$\n\n$\\mathrm{LLM}(\\pmb{p}_{\\mathrm{CoT}}^{\\mathrm{L}}, \\pmb{x}_i; D)$ where L is the choice of CoT language and D is the teacher rational diversity (Ho et al., 2023). It is worth noting that, since some of the generated rationales explicitly lead to the incorrect answer, similar to Zelikman et al. (2022), we use a heuristic approach to filter out those negative rationales $(r_{ij}^{-})$ and only keep positive rationales $(r_{ij}^{+})$ . Then, d-CoT training samples can be written as $\\mathcal{D}_{\\mathrm{d - CoT}} = \\{(x_i, y_i, r_i^{+})\\}_{i=1}^M$ where M is the number of positive rationales for all samples. We denote the final training objective as:\n\n$$\n\\mathcal {L} _ {\\mathrm {d - C o T}} = - \\frac {1}{B \\cdot D} \\sum_ {j = 1} ^ {D} \\sum_ {i = 1} ^ {B} \\log p _ {\\theta} \\left(\\boldsymbol {y} _ {i}, \\boldsymbol {r} _ {i j} ^ {+} \\mid \\boldsymbol {x} _ {i}\\right) \\tag {2}\n$$\n\nDiverse CoT with negative rationales (d-CoT-nR) Distillation. Previous reasoning distillation studies (Ho et al., 2023; Kang et al., 2023) have exclusively employed the diversity of only positive rationales to guide the reasoning paths toward the correct answer. We hypothesize that incorporating negative rationales could assist in further refining the decoding search space. Specifically, there are multiple ways to train the model with negative rationales, as follows: (i) Unlikelihood objective (Welleck et al., 2020) (ii) Contrastive learning via CLICK (Zheng et al., 2023) (iii) Preference optimization using ORPO (Hong et al., 2024). Detailed descriptions are provided in Appendices A and B. We represent their objective function as $\\mathcal{L}_{\\mathrm{CoT - nR}}$ , and train the smaller model with d-CoT as follows:\n\n$$\n\\mathcal {L} _ {\\mathrm {d} - \\mathrm {C o T} - \\mathrm {n R}} = \\alpha \\mathcal {L} _ {\\mathrm {d} - \\mathrm {C o T}} + (1 - \\alpha) \\mathcal {L} _ {\\mathrm {C o T} - \\mathrm {n R}}, \\tag {3}\n$$\n\nwhere $\\alpha$ is the hyperparameter that decides the trade-off between d-CoT and CoT-nR."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.442::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "evidence": "Datasets. To validate the capability of smaller (distilled) models in knowledge-intensive reasoning tasks, we use the EXAMS dataset (Hardalov et al., 2020). This dataset consists of multilingual high-school multiple-choice examination questions and their relevant passages across various subjects, e.g., chemistry, biology, and history. Based on the background knowledge corpus, languages are categorized into top-pportion languages (TPL) and bottom-pportion languages\n\n(BPL). We use accuracy as the main metric while using McNeMar's test for the significant test.\n\nLanguage Models. We use GPT3.5-turbo-1106 as the teacher model. For the student model, we experiment with mT5-base (580M) (Xue et al., 2021), XGLM (564M) (Lin et al., 2022), and Gemma-Instruct (2B) (Team et al., 2024) $^{3}$ . mT5 and XGLM are pre-trained on a multilingual corpus that compensated for language skewness, while the pretraining data for Gemma was predominately in English. Note that we report the average across three seeds for mT5 and XGLM in d-CoT and d-CoT-nR methods, while we report only one seed for Gemma. Additionally, the training details are described in Appendix C."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.442::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "training details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.442::appendix::C.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C.2",
+      "section_title": "hyperparameters tuning in d-cot-nr distillation",
+      "evidence": "We perform a grid search to find the optimal parameters on development set of the dataset using hyper-parameters listed in the Table 5. The best performing hyperparameters on the development set is reported in Table 6. In addition, we further experiment the optimal hyperparameters with 3 different seeds for the study.\n\nTable 5: Hyperparameter configurations.   \n\n<table><tr><td>Methods</td><td>α</td><td>γ</td></tr><tr><td>Unlikelihood</td><td>0.9, 0.95, 0.99</td><td>-</td></tr><tr><td>CLICK</td><td>0.9, 0.8, 0.7</td><td>15, 20</td></tr><tr><td>ORPO</td><td>0.9, 0.8, 0.7</td><td>-</td></tr></table>\n\nTable 6: Optimal hyperparameters.   \n\n<table><tr><td>Methods</td><td>Unlikelihood</td><td>CLICK</td><td>ORPO</td></tr><tr><td>mT5</td><td>α = 0.9</td><td>α = 0.8, γ = 20</td><td>α = 0.8</td></tr><tr><td>XGLM</td><td>α = 0.99</td><td>α = 0.9, γ = 15</td><td>α = 0.9</td></tr></table>"
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "C.3"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 32 GB",
+        "num": null
+      },
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2024\\2024.emnlp-main.442\\auto\\full.md",
+    "source_md_sha256": "74fe87612e7cd45d2a4371a61bf6df4b35be821ff0267fba54dc9c9dd59c6c78",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "749fdb433714bfa003499fb1c90f58c9bb6de4daf647bf52f54e32986186b91c"
+  }
+}

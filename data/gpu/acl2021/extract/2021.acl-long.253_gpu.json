@@ -1,0 +1,141 @@
+{
+  "paper_id": "2021.acl-long.253",
+  "candidate_windows": [
+    {
+      "window_id": "2021.acl-long.253::sections::4",
+      "paper_id": "2021.acl-long.253",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.253::sections::4.1",
+      "paper_id": "2021.acl-long.253",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Dataset. We conduct main experiments on the AMBIGQA dataset (Min et al., 2020). AMBIGQA is constructed to address the ambiguity of questions in open-domain QA. It samples 14,042 questions from NQ-OPEN, a large-scale open-domain QA dataset in which each question has a single answer (Kwiatkowski et al., 2019), and asks annotators to search for, navigate and read multiple Wikipedia pages to find as many interpretations as possible. As a result, each question is annotated with either a single answer or multiple disambiguated QA pairs, depending on how many interpretations can be found. The train, development, and test (not public) dataset sizes are 10036, 2002, 2004, respectively<sup>1</sup>. On average, there are 2.1 distinct answers per question in AMBIGQA. To test the generalization ability of REFUEL on any possibly ambiguous questions, we additionally evaluate it on two open-domain QA datasets: NQ-OPEN and TriviaQA (Joshi et al., 2017).\n\nImplementation Details are in Appendix A. We release source code for our models and experiments at https://github.com/amzn/refuel-open-domain-qa.\n\nEvaluation Metrics. Let $(q_{1},a_{1}),\\ldots ,(q_{m},a_{m})$ be $m$ QA pair predictions, $(\\hat{q}_1,\\hat{a}_1)$ ,..., $(\\hat{q}_n,\\hat{a}_n)$ be $n$ gold QA pairs, each predicted QA pair $(q_{i},a_{i})$ is evaluated in order by a correctness score towards all gold QA pairs: $c_{i} = \\mathbb{1}(a_{i} = \\hat{a}_{j})f(q_{i},\\hat{q}_{j})$ where $f(q_{i},\\hat{q}_{j})$ is a similarity function for questions. $(\\hat{q}_j,\\hat{a}_j)$ will not be further used to evaluate\n\nTable 1: Results on the dev. and hidden test set of AMBIGQA. \"REFUEL w/o RTP\" is the single pass prediction model without using round-trip prediction. In addition to metrics introduced in Section 4.1, we also show a combined metric \"Comb.\" = F1(ans (all) + F1EDIT-F1 which is used to rank models on the official leaderboard.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"2\">F1ans (all)</td><td colspan=\"2\">F1ans (multi)</td><td colspan=\"2\">F1BLEU</td><td colspan=\"2\">F1EDIT-F1</td><td colspan=\"2\">Comb.</td></tr><tr><td>dev</td><td>test</td><td>dev</td><td>test</td><td>dev</td><td>test</td><td>dev</td><td>test</td><td>dev</td><td>test</td></tr><tr><td>DISAMBIG-FIRST (Min et al., 2020)</td><td>28.1</td><td>24.8</td><td>21.9</td><td>18.8</td><td>4.2</td><td>4.0</td><td>2.7</td><td>2.2</td><td>30.8</td><td>27.0</td></tr><tr><td>DPR Reader (Min et al., 2020)</td><td>37.1</td><td>32.3</td><td>28.4</td><td>24.8</td><td>13.4</td><td>11.3</td><td>6.6</td><td>5.5</td><td>43.7</td><td>37.8</td></tr><tr><td>SPANSEQGEN (Min et al., 2020)</td><td>39.7</td><td>33.5</td><td>29.3</td><td>24.5</td><td>13.4</td><td>11.4</td><td>7.2</td><td>5.8</td><td>46.9</td><td>39.3</td></tr><tr><td>REFUEL w/o RTP (single model)</td><td>48.4</td><td>41.7</td><td>37.0</td><td>32.7</td><td>16.0</td><td>14.8</td><td>11.2</td><td>9.0</td><td>59.6</td><td>50.7</td></tr><tr><td>REFUEL (single model)</td><td>48.3</td><td>42.1</td><td>37.3</td><td>33.3</td><td>16.2</td><td>15.3</td><td>11.8</td><td>9.6</td><td>60.1</td><td>51.7</td></tr><tr><td>SPANSEQGEN (ensemble)</td><td>41.2</td><td>35.2</td><td>29.8</td><td>24.5</td><td>13.6</td><td>10.6</td><td>7.4</td><td>5.7</td><td>48.6</td><td>40.9</td></tr><tr><td>REFUEL (ensemble)</td><td>50.4</td><td>44.3</td><td>38.7</td><td>34.8</td><td>17.0</td><td>15.9</td><td>12.5</td><td>10.1</td><td>62.9</td><td>54.4</td></tr></table>\n\nother predicted QA pairs as it is used for $(q_{i},a_{i})$ . The overall correctness is calculated by F1 between predictions and references,\n\n$$\n\\mathbf {P} _ {f} = \\frac {\\sum_ {i = 1} ^ {m} c _ {i}}{m}, \\mathbf {R} _ {f} = \\frac {\\sum_ {i = 1} ^ {m} c _ {i}}{n}, \\mathbf {F} \\mathbf {1} _ {f} = \\frac {2 \\mathbf {P} _ {f} \\mathbf {R} _ {f}}{\\mathbf {P} _ {f} + \\mathbf {R} _ {f}}.\n$$\n\nAll examples are evaluated for the answer prediction subtask, in which $f$ function always yields 1. This metric is denoted as $\\mathrm{F1}_{\\mathrm{ans}}$ (all). For the subset of examples with multiple gold QA pairs, both answer prediction subtask and question disambiguation subtask are evaluated. The answer prediction metric only computed on this subset is denoted as $\\mathrm{F1}_{\\mathrm{ans}}$ (multi). To evaluate question disambiguation performance, BLEU (Papineni et al., 2002) and EDIT-F1 is used for the function $f$ , denoted as $\\mathrm{F1}_{\\mathrm{BLEU}}$ and $\\mathrm{F1}_{\\mathrm{EDIT - F1}}$ , respectively. EDIT-F1 compute the F1 score of added and deleted unigrams from the prompt question to the predicted disambiguated question towards references.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.253::sections::4.4",
+      "paper_id": "2021.acl-long.253",
+      "section_number": "4.4",
+      "section_title": "human evaluation",
+      "normalized_section_title": "human evaluation",
+      "window_text": "Since the answers collected in AMBIGQA are not necessarily exhaustive, there is a possibility that a model generates correct interpretations but they are missed in AMBIGQA. Therefore, we hire 3 workers from MTurk.com to evaluate the correctness of the answer given the generated disambiguated question and retrieved passages (instructions in Appendix C). Let $(q_{1},a_{1}),\\ldots ,(q_{n},a_{n})$ be $n$ generated QA pairs from the same prompt question, we define two levels of correctness as follows: #C-QAs: $(q_{i},a_{i})$ is considered Correct if $a_{i}$ is a correct answer of $q_{i}$ ; #CD-QAs: $(q_{i},a_{i})$ is considered correct iff. (1) $a_{i}$ is a correct answer of $q_{i}$ and (2) any $a_{j}(j\\neq i)$ is a wrong answer of $q_{i}$ . #CD-QAs is designed to examine the Correctness of ques\n\nTable 6: Ablation Study of REFUEL for the question disambiguation subtask on the dev. set. QDF: Question Disambiguation Fine-tuning, QGP: Question Generation Pre-training, TDP: Token-Deletion Pre-training.   \n\n<table><tr><td>Pre-train Method + Fine-tune Method</td><td>F1BLEU</td><td>F1EDIT-F1</td></tr><tr><td>Prompt Baseline</td><td>18.9</td><td>0.0</td></tr><tr><td>None + QDF</td><td>16.2</td><td>10.1</td></tr><tr><td>None + QDF (w/ filtered passages)</td><td>16.4</td><td>9.4</td></tr><tr><td>QGP + QDF</td><td>15.9</td><td>10.3</td></tr><tr><td>TDP + QDF</td><td>16.5</td><td>10.9</td></tr><tr><td>TDP + QDF (w/ insertion-based loss)</td><td>16.0</td><td>11.2</td></tr></table>\n\ntion Disambiguation because ambiguous questions can have multiple valid answers. We take the majority judgement from 3 annotators for each QA pair. For each dataset, we randomly sample 50 prompt questions which have multiple predicted answers, and apply the QA swapping strategy in #CD-QAs, resulting 960 question-answer-passages triples in total. Results in Table 5 show that REFUEL (w/o RTP) can correctly generate $113\\%$ more QA pairs than SPANSEQGEN on #CD-QAs. In addition, round-trip prediction (RTP) can find more correct interpretations across all datasets.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.253::appendix::A",
+      "paper_id": "2021.acl-long.253",
+      "section_number": "A",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "Evidence Corpus. We keep the version of English Wikipedia Dump consistent to the annotation timestep of NQ-OPEN and AMBIGQA, which is 2018-12-20 and 2020-01-20 respectively. Models pre-trained on NQ-OPEN use passages from dump 2018-12-20 while models fine-tuned on AMBIGQA take dump 2020-01-20. We use the AMBIGQA processed passages of these dumps, which takes the plain text and split Wikipedia pages into 100-word passages. As a result, there are 22M passages of Wikipedia Dump 2018-12-20 and 24M passages of Wikipedia Dump 2020-01-20.\n\nRetrieval & Reranking. We use the multiset version of Dense Passage Retriever (DPR) (Karpukhin et al., 2020), which is jointly trained on five open-domain QA datasets. For the reranker, we fine-tune a bert-large-cased model with a batch size 16, learning rate 1e-5, training epoch 10 on the NQ-OPEN dataset. We sample 1 positive and 31 negative passages in training to maximize log-likelihood of the positive passage. The best reranker model is selected according to the answer recall in top 100 reranked passages. The trained reranker model is used for both NQ-OPEN and AMBIGQA dataset (we tried to finetune this model on AMBIGQA but did not receive any sensible improvement). The total training takes 10 hours and we tune the learning rate from 1e-5 to 5e-5 and select the best one.\n\nAnswer Prediction. We train a $\\mathrm{BART}_{\\mathrm{large}}$ model on NQ-OPEN with a batch size 64, epoch 10, and learning rate 5e-5. Then we finetune the trained model on AMBIGQA with a batch size 64, epoch 30, and learning rate 3e-5. According to empirical results, we discard training samples which the gold answers do not appear in any input passages for training on both NQ-OPEN and AMBIGQA (in the case of AMBIGQA, we discard training examples only when none of gold answers are found). All models are selected according to the performance (EM for NQ-OPEN, $\\mathrm{F1}_{\\mathrm{ans}}$ (all) for AMBIGQA) on the development set.\n\nQuestion Disambiguation. We train a $\\mathrm{BART}_{\\mathrm{large}}$ model on NQ-OPEN with a batch size 64, epoch 10, and learning rate 1e-5. Then we finetune the trained model on AMBIGQA with a batch size 64, epoch 30, and learning rate 5e-5. Different from training in answer prediction, we do not filter training samples which the answer\n\ndoes not appear in any input passages according to empirical results. The best model is selected according to $\\mathrm{F1}_{\\mathrm{EDIT - F1}}$ for both NQ-OPEN and AMBIGQA on the development set.\n\nLM Verification. Based on the best QA model on NQ-OPEN trained in the Answer Prediction, we finetune it using the gold disambiguated QA pairs from AMBIGQA, in which each disambiguated question is only paired with one answer. We use a batch size 64, epoch 30, and learning rate 3e-5 for finetuning, and select the best model according to the EM score on the dev. set of AMBIGQA.\n\nAll the experiments are conducted on a single machine with 8 V100 GPUs. The pre-training on NQ-OPEN takes 60 hours for models in Answer Prediction, Question Disambiguation and LM Verification, and the fine-tuning takes 10 hours on AMBIGQA.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2021.acl-long.253::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Evidence Corpus. We keep the version of English Wikipedia Dump consistent to the annotation timestep of NQ-OPEN and AMBIGQA, which is 2018-12-20 and 2020-01-20 respectively. Models pre-trained on NQ-OPEN use passages from dump 2018-12-20 while models fine-tuned on AMBIGQA take dump 2020-01-20. We use the AMBIGQA processed passages of these dumps, which takes the plain text and split Wikipedia pages into 100-word passages. As a result, there are 22M passages of Wikipedia Dump 2018-12-20 and 24M passages of Wikipedia Dump 2020-01-20.\n\nRetrieval & Reranking. We use the multiset version of Dense Passage Retriever (DPR) (Karpukhin et al., 2020), which is jointly trained on five open-domain QA datasets. For the reranker, we fine-tune a bert-large-cased model with a batch size 16, learning rate 1e-5, training epoch 10 on the NQ-OPEN dataset. We sample 1 positive and 31 negative passages in training to maximize log-likelihood of the positive passage. The best reranker model is selected according to the answer recall in top 100 reranked passages. The trained reranker model is used for both NQ-OPEN and AMBIGQA dataset (we tried to finetune this model on AMBIGQA but did not receive any sensible improvement). The total training takes 10 hours and we tune the learning rate from 1e-5 to 5e-5 and select the best one.\n\nAnswer Prediction. We train a $\\mathrm{BART}_{\\mathrm{large}}$ model on NQ-OPEN with a batch size 64, epoch 10, and learning rate 5e-5. Then we finetune the trained model on AMBIGQA with a batch size 64, epoch 30, and learning rate 3e-5. According to empirical results, we discard training samples which the gold answers do not appear in any input passages for training on both NQ-OPEN and AMBIGQA (in the case of AMBIGQA, we discard training examples only when none of gold answers are found). All models are selected according to the performance (EM for NQ-OPEN, $\\mathrm{F1}_{\\mathrm{ans}}$ (all) for AMBIGQA) on the development set.\n\nQuestion Disambiguation. We train a $\\mathrm{BART}_{\\mathrm{large}}$ model on NQ-OPEN with a batch size 64, epoch 10, and learning rate 1e-5. Then we finetune the trained model on AMBIGQA with a batch size 64, epoch 30, and learning rate 5e-5. Different from training in answer prediction, we do not filter training samples which the answer\n\ndoes not appear in any input passages according to empirical results. The best model is selected according to $\\mathrm{F1}_{\\mathrm{EDIT - F1}}$ for both NQ-OPEN and AMBIGQA on the development set.\n\nLM Verification. Based on the best QA model on NQ-OPEN trained in the Answer Prediction, we finetune it using the gold disambiguated QA pairs from AMBIGQA, in which each disambiguated question is only paired with one answer. We use a batch size 64, epoch 30, and learning rate 3e-5 for finetuning, and select the best model according to the EM score on the dev. set of AMBIGQA.\n\nAll the experiments are conducted on a single machine with 8 V100 GPUs. The pre-training on NQ-OPEN takes 60 hours for models in Answer Prediction, Question Disambiguation and LM Verification, and the fine-tuning takes 10 hours on AMBIGQA.",
+      "section_number": "A",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2021.acl-long.253::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "cleaned_hardware_name": "v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "A",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "Evidence Corpus. We keep the version of English Wikipedia Dump consistent to the annotation timestep of NQ-OPEN and AMBIGQA, which is 2018-12-20 and 2020-01-20 respectively. Models pre-trained on NQ-OPEN use passages from dump 2018-12-20 while models fine-tuned on AMBIGQA take dump 2020-01-20. We use the AMBIGQA processed passages of these dumps, which takes the plain text and split Wikipedia pages into 100-word passages. As a result, there are 22M passages of Wikipedia Dump 2018-12-20 and 24M passages of Wikipedia Dump 2020-01-20.\n\nRetrieval & Reranking. We use the multiset version of Dense Passage Retriever (DPR) (Karpukhin et al., 2020), which is jointly trained on five open-domain QA datasets. For the reranker, we fine-tune a bert-large-cased model with a batch size 16, learning rate 1e-5, training epoch 10 on the NQ-OPEN dataset. We sample 1 positive and 31 negative passages in training to maximize log-likelihood of the positive passage. The best reranker model is selected according to the answer recall in top 100 reranked passages. The trained reranker model is used for both NQ-OPEN and AMBIGQA dataset (we tried to finetune this model on AMBIGQA but did not receive any sensible improvement). The total training takes 10 hours and we tune the learning rate from 1e-5 to 5e-5 and select the best one.\n\nAnswer Prediction. We train a $\\mathrm{BART}_{\\mathrm{large}}$ model on NQ-OPEN with a batch size 64, epoch 10, and learning rate 5e-5. Then we finetune the trained model on AMBIGQA with a batch size 64, epoch 30, and learning rate 3e-5. According to empirical results, we discard training samples which the gold answers do not appear in any input passages for training on both NQ-OPEN and AMBIGQA (in the case of AMBIGQA, we discard training examples only when none of gold answers are found). All models are selected according to the performance (EM for NQ-OPEN, $\\mathrm{F1}_{\\mathrm{ans}}$ (all) for AMBIGQA) on the development set.\n\nQuestion Disambiguation. We train a $\\mathrm{BART}_{\\mathrm{large}}$ model on NQ-OPEN with a batch size 64, epoch 10, and learning rate 1e-5. Then we finetune the trained model on AMBIGQA with a batch size 64, epoch 30, and learning rate 5e-5. Different from training in answer prediction, we do not filter training samples which the answer\n\ndoes not appear in any input passages according to empirical results. The best model is selected according to $\\mathrm{F1}_{\\mathrm{EDIT - F1}}$ for both NQ-OPEN and AMBIGQA on the development set.\n\nLM Verification. Based on the best QA model on NQ-OPEN trained in the Answer Prediction, we finetune it using the gold disambiguated QA pairs from AMBIGQA, in which each disambiguated question is only paired with one answer. We use a batch size 64, epoch 30, and learning rate 3e-5 for finetuning, and select the best model according to the EM score on the dev. set of AMBIGQA.\n\nAll the experiments are conducted on a single machine with 8 V100 GPUs. The pre-training on NQ-OPEN takes 60 hours for models in Answer Prediction, Question Disambiguation and LM Verification, and the fine-tuning takes 10 hours on AMBIGQA.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2021.acl-long.253::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2021.acl-long.253::sections::4.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "evidence": "Dataset. We conduct main experiments on the AMBIGQA dataset (Min et al., 2020). AMBIGQA is constructed to address the ambiguity of questions in open-domain QA. It samples 14,042 questions from NQ-OPEN, a large-scale open-domain QA dataset in which each question has a single answer (Kwiatkowski et al., 2019), and asks annotators to search for, navigate and read multiple Wikipedia pages to find as many interpretations as possible. As a result, each question is annotated with either a single answer or multiple disambiguated QA pairs, depending on how many interpretations can be found. The train, development, and test (not public) dataset sizes are 10036, 2002, 2004, respectively<sup>1</sup>. On average, there are 2.1 distinct answers per question in AMBIGQA. To test the generalization ability of REFUEL on any possibly ambiguous questions, we additionally evaluate it on two open-domain QA datasets: NQ-OPEN and TriviaQA (Joshi et al., 2017).\n\nImplementation Details are in Appendix A. We release source code for our models and experiments at https://github.com/amzn/refuel-open-domain-qa.\n\nEvaluation Metrics. Let $(q_{1},a_{1}),\\ldots ,(q_{m},a_{m})$ be $m$ QA pair predictions, $(\\hat{q}_1,\\hat{a}_1)$ ,..., $(\\hat{q}_n,\\hat{a}_n)$ be $n$ gold QA pairs, each predicted QA pair $(q_{i},a_{i})$ is evaluated in order by a correctness score towards all gold QA pairs: $c_{i} = \\mathbb{1}(a_{i} = \\hat{a}_{j})f(q_{i},\\hat{q}_{j})$ where $f(q_{i},\\hat{q}_{j})$ is a similarity function for questions. $(\\hat{q}_j,\\hat{a}_j)$ will not be further used to evaluate\n\nTable 1: Results on the dev. and hidden test set of AMBIGQA. \"REFUEL w/o RTP\" is the single pass prediction model without using round-trip prediction. In addition to metrics introduced in Section 4.1, we also show a combined metric \"Comb.\" = F1(ans (all) + F1EDIT-F1 which is used to rank models on the official leaderboard.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"2\">F1ans (all)</td><td colspan=\"2\">F1ans (multi)</td><td colspan=\"2\">F1BLEU</td><td colspan=\"2\">F1EDIT-F1</td><td colspan=\"2\">Comb.</td></tr><tr><td>dev</td><td>test</td><td>dev</td><td>test</td><td>dev</td><td>test</td><td>dev</td><td>test</td><td>dev</td><td>test</td></tr><tr><td>DISAMBIG-FIRST (Min et al., 2020)</td><td>28.1</td><td>24.8</td><td>21.9</td><td>18.8</td><td>4.2</td><td>4.0</td><td>2.7</td><td>2.2</td><td>30.8</td><td>27.0</td></tr><tr><td>DPR Reader (Min et al., 2020)</td><td>37.1</td><td>32.3</td><td>28.4</td><td>24.8</td><td>13.4</td><td>11.3</td><td>6.6</td><td>5.5</td><td>43.7</td><td>37.8</td></tr><tr><td>SPANSEQGEN (Min et al., 2020)</td><td>39.7</td><td>33.5</td><td>29.3</td><td>24.5</td><td>13.4</td><td>11.4</td><td>7.2</td><td>5.8</td><td>46.9</td><td>39.3</td></tr><tr><td>REFUEL w/o RTP (single model)</td><td>48.4</td><td>41.7</td><td>37.0</td><td>32.7</td><td>16.0</td><td>14.8</td><td>11.2</td><td>9.0</td><td>59.6</td><td>50.7</td></tr><tr><td>REFUEL (single model)</td><td>48.3</td><td>42.1</td><td>37.3</td><td>33.3</td><td>16.2</td><td>15.3</td><td>11.8</td><td>9.6</td><td>60.1</td><td>51.7</td></tr><tr><td>SPANSEQGEN (ensemble)</td><td>41.2</td><td>35.2</td><td>29.8</td><td>24.5</td><td>13.6</td><td>10.6</td><td>7.4</td><td>5.7</td><td>48.6</td><td>40.9</td></tr><tr><td>REFUEL (ensemble)</td><td>50.4</td><td>44.3</td><td>38.7</td><td>34.8</td><td>17.0</td><td>15.9</td><td>12.5</td><td>10.1</td><td>62.9</td><td>54.4</td></tr></table>\n\nother predicted QA pairs as it is used for $(q_{i},a_{i})$ . The overall correctness is calculated by F1 between predictions and references,\n\n$$\n\\mathbf {P} _ {f} = \\frac {\\sum_ {i = 1} ^ {m} c _ {i}}{m}, \\mathbf {R} _ {f} = \\frac {\\sum_ {i = 1} ^ {m} c _ {i}}{n}, \\mathbf {F} \\mathbf {1} _ {f} = \\frac {2 \\mathbf {P} _ {f} \\mathbf {R} _ {f}}{\\mathbf {P} _ {f} + \\mathbf {R} _ {f}}.\n$$\n\nAll examples are evaluated for the answer prediction subtask, in which $f$ function always yields 1. This metric is denoted as $\\mathrm{F1}_{\\mathrm{ans}}$ (all). For the subset of examples with multiple gold QA pairs, both answer prediction subtask and question disambiguation subtask are evaluated. The answer prediction metric only computed on this subset is denoted as $\\mathrm{F1}_{\\mathrm{ans}}$ (multi). To evaluate question disambiguation performance, BLEU (Papineni et al., 2002) and EDIT-F1 is used for the function $f$ , denoted as $\\mathrm{F1}_{\\mathrm{BLEU}}$ and $\\mathrm{F1}_{\\mathrm{EDIT - F1}}$ , respectively. EDIT-F1 compute the F1 score of added and deleted unigrams from the prompt question to the predicted disambiguated question towards references."
+    },
+    {
+      "source_window_id": "2021.acl-long.253::sections::4.4",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.4",
+      "section_title": "human evaluation",
+      "evidence": "Since the answers collected in AMBIGQA are not necessarily exhaustive, there is a possibility that a model generates correct interpretations but they are missed in AMBIGQA. Therefore, we hire 3 workers from MTurk.com to evaluate the correctness of the answer given the generated disambiguated question and retrieved passages (instructions in Appendix C). Let $(q_{1},a_{1}),\\ldots ,(q_{n},a_{n})$ be $n$ generated QA pairs from the same prompt question, we define two levels of correctness as follows: #C-QAs: $(q_{i},a_{i})$ is considered Correct if $a_{i}$ is a correct answer of $q_{i}$ ; #CD-QAs: $(q_{i},a_{i})$ is considered correct iff. (1) $a_{i}$ is a correct answer of $q_{i}$ and (2) any $a_{j}(j\\neq i)$ is a wrong answer of $q_{i}$ . #CD-QAs is designed to examine the Correctness of ques\n\nTable 6: Ablation Study of REFUEL for the question disambiguation subtask on the dev. set. QDF: Question Disambiguation Fine-tuning, QGP: Question Generation Pre-training, TDP: Token-Deletion Pre-training.   \n\n<table><tr><td>Pre-train Method + Fine-tune Method</td><td>F1BLEU</td><td>F1EDIT-F1</td></tr><tr><td>Prompt Baseline</td><td>18.9</td><td>0.0</td></tr><tr><td>None + QDF</td><td>16.2</td><td>10.1</td></tr><tr><td>None + QDF (w/ filtered passages)</td><td>16.4</td><td>9.4</td></tr><tr><td>QGP + QDF</td><td>15.9</td><td>10.3</td></tr><tr><td>TDP + QDF</td><td>16.5</td><td>10.9</td></tr><tr><td>TDP + QDF (w/ insertion-based loss)</td><td>16.0</td><td>11.2</td></tr></table>\n\ntion Disambiguation because ambiguous questions can have multiple valid answers. We take the majority judgement from 3 annotators for each QA pair. For each dataset, we randomly sample 50 prompt questions which have multiple predicted answers, and apply the QA swapping strategy in #CD-QAs, resulting 960 question-answer-passages triples in total. Results in Table 5 show that REFUEL (w/o RTP) can correctly generate $113\\%$ more QA pairs than SPANSEQGEN on #CD-QAs. In addition, round-trip prediction (RTP) can find more correct interpretations across all datasets."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2021\\2021.acl-long.253\\auto\\full.md",
+    "source_md_sha256": "6f6eb9ea5665a4985ab88e1b1df17551c411ebbeac1986a35672a3a66696ae9b",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "a2f4e0f2222ac944a84b28fba08cc5ab0184a6c6ccb3a5a4deb8a7eefc1e4438"
+  }
+}

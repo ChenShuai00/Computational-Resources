@@ -1,0 +1,204 @@
+{
+  "paper_id": "2025.acl-long.340",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.340::sections::4",
+      "paper_id": "2025.acl-long.340",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "We evaluate Drift for both the task performance and faithfulness of the generated rationale across three reasoning problems, i.e., student answer assessment, natural language inference and question answer. We further ablate the task reward and rationale reward to verify their effectiveness.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.340::sections::4.1",
+      "paper_id": "2025.acl-long.340",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "We present the evaluated dataset, the expert models incorporated, and the experiment setup for faithful evaluation.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.340::sections::4.3",
+      "paper_id": "2025.acl-long.340",
+      "section_number": "4.3",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "window_text": "We ablate the full Drift model into its task and rationale reward components to examine their individual effects, as shown in Fig. 3. For accuracy (Top), adding the rationale reward (w. Rationale) alone generally enhances task performance over the Backbone model on most tasks, or maintains comparable performance in others. In contrast, the task reward (w. Task) alone provides a notable improvement on the Student Answer Assessment task but is detrimental to performance on the NLI and QA tasks when compared to the Backbone. We attribute this due to the complexity of hard constraint task reward in a multiple token combined label space. The full Drift model, integrating both reward types, consistently achieves the highest accuracy across all three tasks shown. For faithfulness (Bottom), the rationale reward component (w. Global, depicted by the light blue/greenish bar) consistently improves faithfulness scores over the Backbone across all tasks. Notably, the full Drift model further enhances faithfulness beyond what the rationale reward achieves alone, obtaining the highest faithfulness scores in all evaluated tasks. This indicates that the combination of both task and rationale rewards within the Drift model is\n\nadvantageous for improving both task performance and rationale faithfulness.\n\n![](images/6ebca85b990328b4ac0b1825f2ff2dc630d90b12df46d96c3e18477a352d4e48.jpg)  \nFigure 3: Ablation results for task performance (Top) and faithfulness (Bottom). We compare among Backbone, Backbone w/ Task Reward, Backbone w/ Rationale Reward and Drift (full).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.340::appendix::A",
+      "paper_id": "2025.acl-long.340",
+      "section_number": "A",
+      "section_title": "appendix",
+      "normalized_section_title": "appendix",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.340::appendix::A.1",
+      "paper_id": "2025.acl-long.340",
+      "section_number": "A.1",
+      "section_title": "experiment setup",
+      "normalized_section_title": "experiment setup",
+      "window_text": "We utilize a comprehensive experiment approach with seven datasets across three distinct reasoning tasks. The backbone models adopted for experiments, dataset details, counterfactual generation algorithms and hyper-parameters setting are outlined below.\n\nBackbone model choice. Our experiments select two commonly used backbone model choices: LLaMA3.1-8B (Dubey et al., 2024)<sup>7</sup>, and Mistral-7B (Jiang et al., 2023)<sup>8</sup>. Both models are downloaded from the HuggingFace models' space, and we adopted the model implementation from the Huggingface Transformer<sup>9</sup>.\n\nHyper-parameters for inference. For efficient model inference, we applied 8-bit quantization on both the backbone and rationale reward models for Our+Expert and Our(full) experiments. The task reward models are loaded without any quantization. We set a maximum allowance of 10 different particles during decoding, which means it will keep a maximum of 10 different paths during the search through different weighted decoding paths. The beam factor for expanding searching at each particle is set as 3. To optimize the computational resources for generation, we applied different maximum token length sizes for each task, which we will introduce under each task. As demonstrated in Algorithm 1, our task rewards will be disabled once the answer token is generated to remove the token space constraint. We use a batch size of 64 to inference our framework on a single NVIDIA A100 40G graphic card. The random seed has been set as 42 for all the components.\n\nPredicted label evaluation details. Apart from the faithfulness evaluation details presented in Section 4, the evaluation for the predicted label is extracted and compared with the ground-truth label to calculate the accuracy score. Following each prompt template, we designed a regular expression to extract the score/labels from the generated sequence. If the model fails to follow the prompt to generate a format valid label token, then it counts as a wrongly predicted instance. In short, only correctly predicted instances that follow the prompt\n\nrequired output pattern count towards the accuracy score.\n\nDealing with rewards from different tokenisation models. In our approach, we address the challenge of integrating rewards derived from various tokenisation models used by rationale reward models. Specifically, after the generation of each token, it is converted into token IDs according to the rationale reward models' token space. Subsequently, rewards are calculated based on samples drawn from the reward model. This method ensures that the generated tokens are consistently evaluated in the context of the expert model's language modeling, and therefore generating meaningful predicted rewards.\n\nTable A1: Normalization ranges for each dataset.   \n\n<table><tr><td>Dataset</td><td>Min</td><td>Max</td></tr><tr><td>ASAP-1</td><td>0.005</td><td>0.123</td></tr><tr><td>ASAP-2</td><td>0.023</td><td>0.114</td></tr><tr><td>ASAP-3</td><td>0.019</td><td>0.089</td></tr><tr><td>ASAP-4</td><td>0.001</td><td>0.104</td></tr><tr><td>SNLI</td><td>0.110</td><td>0.220</td></tr><tr><td>MNLI</td><td>0.070</td><td>0.190</td></tr><tr><td>TruthfulQA</td><td>0.020</td><td>0.240</td></tr></table>\n\nMinimum and maximum values for normalization. Because our faithfulness metric does not naturally span the interval [0, 1] (unlike accuracy), we normalize all faithfulness scores and added up in the Overall scores using the dataset-specific ranges presented in Table A1:\n\n$$\n\\text {O v e r a l l} = \\text {A c c u r a c y} + \\text {N o r m} (\\text {F a i t h}).\n$$\n\nThe Faith columns reported in experiment tables contain the original, unnormalized values.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.340::appendix::B",
+      "paper_id": "2025.acl-long.340",
+      "section_number": "B",
+      "section_title": "additional experiment results",
+      "normalized_section_title": "additional experiment results",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.340::appendix::B.2",
+      "paper_id": "2025.acl-long.340",
+      "section_number": "B.2",
+      "section_title": "computation cost analysis",
+      "normalized_section_title": "computation cost analysis",
+      "window_text": "Although rationale and task rewards introduced new computations during the generation processes, we didn't observe a huge computational cost increment in our method. As shown in Figure A3, we calculated the inference time on the Student Answer Assessment question #4 to compare the time used between methods on the same GPU. We use a beam size of 3 and a maximum of 100 tokens in genera\n\ntion settings. Compared with the backbone model, our method only increased by $32\\%$ on inference time. Compared to other sequential Monte Carlo method, such as PPO-MCTS (Liu et al., 2024b), which has a $2S$ times overhead compared to standard decoding from PPO models ( $S$ is the number of simulations), our inference-time decoding maintains both the performance and greatly improve the computation efficiency.\n\nTable A3: Computation cost for different methods on Student Answer Assessment Q4.   \n\n<table><tr><td>Method</td><td>Time Cost</td></tr><tr><td>Backbone (Beam Search)</td><td>88 mins</td></tr><tr><td>:Drift w. Task</td><td>100 mins</td></tr><tr><td>:Drift w. Rationale</td><td>103 mins</td></tr><tr><td>Drift (Full)</td><td>116 mins</td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.340::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 40G",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We utilize a comprehensive experiment approach with seven datasets across three distinct reasoning tasks. The backbone models adopted for experiments, dataset details, counterfactual generation algorithms and hyper-parameters setting are outlined below.\n\nBackbone model choice. Our experiments select two commonly used backbone model choices: LLaMA3.1-8B (Dubey et al., 2024)<sup>7</sup>, and Mistral-7B (Jiang et al., 2023)<sup>8</sup>. Both models are downloaded from the HuggingFace models' space, and we adopted the model implementation from the Huggingface Transformer<sup>9</sup>.\n\nHyper-parameters for inference. For efficient model inference, we applied 8-bit quantization on both the backbone and rationale reward models for Our+Expert and Our(full) experiments. The task reward models are loaded without any quantization. We set a maximum allowance of 10 different particles during decoding, which means it will keep a maximum of 10 different paths during the search through different weighted decoding paths. The beam factor for expanding searching at each particle is set as 3. To optimize the computational resources for generation, we applied different maximum token length sizes for each task, which we will introduce under each task. As demonstrated in Algorithm 1, our task rewards will be disabled once the answer token is generated to remove the token space constraint. We use a batch size of 64 to inference our framework on a single NVIDIA A100 40G graphic card. The random seed has been set as 42 for all the components.\n\nPredicted label evaluation details. Apart from the faithfulness evaluation details presented in Section 4, the evaluation for the predicted label is extracted and compared with the ground-truth label to calculate the accuracy score. Following each prompt template, we designed a regular expression to extract the score/labels from the generated sequence. If the model fails to follow the prompt to generate a format valid label token, then it counts as a wrongly predicted instance. In short, only correctly predicted instances that follow the prompt\n\nrequired output pattern count towards the accuracy score.\n\nDealing with rewards from different tokenisation models. In our approach, we address the challenge of integrating rewards derived from various tokenisation models used by rationale reward models. Specifically, after the generation of each token, it is converted into token IDs according to the rationale reward models' token space. Subsequently, rewards are calculated based on samples drawn from the reward model. This method ensures that the generated tokens are consistently evaluated in the context of the expert model's language modeling, and therefore generating meaningful predicted rewards.\n\nTable A1: Normalization ranges for each dataset.   \n\n<table><tr><td>Dataset</td><td>Min</td><td>Max</td></tr><tr><td>ASAP-1</td><td>0.005</td><td>0.123</td></tr><tr><td>ASAP-2</td><td>0.023</td><td>0.114</td></tr><tr><td>ASAP-3</td><td>0.019</td><td>0.089</td></tr><tr><td>ASAP-4</td><td>0.001</td><td>0.104</td></tr><tr><td>SNLI</td><td>0.110</td><td>0.220</td></tr><tr><td>MNLI</td><td>0.070</td><td>0.190</td></tr><tr><td>TruthfulQA</td><td>0.020</td><td>0.240</td></tr></table>\n\nMinimum and maximum values for normalization. Because our faithfulness metric does not naturally span the interval [0, 1] (unlike accuracy), we normalize all faithfulness scores and added up in the Overall scores using the dataset-specific ranges presented in Table A1:\n\n$$\n\\text {O v e r a l l} = \\text {A c c u r a c y} + \\text {N o r m} (\\text {F a i t h}).\n$$\n\nThe Faith columns reported in experiment tables contain the original, unnormalized values.",
+      "section_number": "A.1",
+      "section_title": "experiment setup",
+      "normalized_section_title": "experiment setup"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.340::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 40G",
+      "cleaned_hardware_name": "nvidia a100 40gb",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.1",
+      "section_title": "experiment setup",
+      "normalized_section_title": "experiment setup",
+      "evidence": "We utilize a comprehensive experiment approach with seven datasets across three distinct reasoning tasks. The backbone models adopted for experiments, dataset details, counterfactual generation algorithms and hyper-parameters setting are outlined below.\n\nBackbone model choice. Our experiments select two commonly used backbone model choices: LLaMA3.1-8B (Dubey et al., 2024)<sup>7</sup>, and Mistral-7B (Jiang et al., 2023)<sup>8</sup>. Both models are downloaded from the HuggingFace models' space, and we adopted the model implementation from the Huggingface Transformer<sup>9</sup>.\n\nHyper-parameters for inference. For efficient model inference, we applied 8-bit quantization on both the backbone and rationale reward models for Our+Expert and Our(full) experiments. The task reward models are loaded without any quantization. We set a maximum allowance of 10 different particles during decoding, which means it will keep a maximum of 10 different paths during the search through different weighted decoding paths. The beam factor for expanding searching at each particle is set as 3. To optimize the computational resources for generation, we applied different maximum token length sizes for each task, which we will introduce under each task. As demonstrated in Algorithm 1, our task rewards will be disabled once the answer token is generated to remove the token space constraint. We use a batch size of 64 to inference our framework on a single NVIDIA A100 40G graphic card. The random seed has been set as 42 for all the components.\n\nPredicted label evaluation details. Apart from the faithfulness evaluation details presented in Section 4, the evaluation for the predicted label is extracted and compared with the ground-truth label to calculate the accuracy score. Following each prompt template, we designed a regular expression to extract the score/labels from the generated sequence. If the model fails to follow the prompt to generate a format valid label token, then it counts as a wrongly predicted instance. In short, only correctly predicted instances that follow the prompt\n\nrequired output pattern count towards the accuracy score.\n\nDealing with rewards from different tokenisation models. In our approach, we address the challenge of integrating rewards derived from various tokenisation models used by rationale reward models. Specifically, after the generation of each token, it is converted into token IDs according to the rationale reward models' token space. Subsequently, rewards are calculated based on samples drawn from the reward model. This method ensures that the generated tokens are consistently evaluated in the context of the expert model's language modeling, and therefore generating meaningful predicted rewards.\n\nTable A1: Normalization ranges for each dataset.   \n\n<table><tr><td>Dataset</td><td>Min</td><td>Max</td></tr><tr><td>ASAP-1</td><td>0.005</td><td>0.123</td></tr><tr><td>ASAP-2</td><td>0.023</td><td>0.114</td></tr><tr><td>ASAP-3</td><td>0.019</td><td>0.089</td></tr><tr><td>ASAP-4</td><td>0.001</td><td>0.104</td></tr><tr><td>SNLI</td><td>0.110</td><td>0.220</td></tr><tr><td>MNLI</td><td>0.070</td><td>0.190</td></tr><tr><td>TruthfulQA</td><td>0.020</td><td>0.240</td></tr></table>\n\nMinimum and maximum values for normalization. Because our faithfulness metric does not naturally span the interval [0, 1] (unlike accuracy), we normalize all faithfulness scores and added up in the Overall scores using the dataset-specific ranges presented in Table A1:\n\n$$\n\\text {O v e r a l l} = \\text {A c c u r a c y} + \\text {N o r m} (\\text {F a i t h}).\n$$\n\nThe Faith columns reported in experiment tables contain the original, unnormalized values.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.340::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": "We evaluate Drift for both the task performance and faithfulness of the generated rationale across three reasoning problems, i.e., student answer assessment, natural language inference and question answer. We further ablate the task reward and rationale reward to verify their effectiveness."
+    },
+    {
+      "source_window_id": "2025.acl-long.340::sections::4.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "evidence": "We present the evaluated dataset, the expert models incorporated, and the experiment setup for faithful evaluation."
+    },
+    {
+      "source_window_id": "2025.acl-long.340::sections::4.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.3",
+      "section_title": "ablation studies",
+      "evidence": "We ablate the full Drift model into its task and rationale reward components to examine their individual effects, as shown in Fig. 3. For accuracy (Top), adding the rationale reward (w. Rationale) alone generally enhances task performance over the Backbone model on most tasks, or maintains comparable performance in others. In contrast, the task reward (w. Task) alone provides a notable improvement on the Student Answer Assessment task but is detrimental to performance on the NLI and QA tasks when compared to the Backbone. We attribute this due to the complexity of hard constraint task reward in a multiple token combined label space. The full Drift model, integrating both reward types, consistently achieves the highest accuracy across all three tasks shown. For faithfulness (Bottom), the rationale reward component (w. Global, depicted by the light blue/greenish bar) consistently improves faithfulness scores over the Backbone across all tasks. Notably, the full Drift model further enhances faithfulness beyond what the rationale reward achieves alone, obtaining the highest faithfulness scores in all evaluated tasks. This indicates that the combination of both task and rationale rewards within the Drift model is\n\nadvantageous for improving both task performance and rationale faithfulness.\n\n![](images/6ebca85b990328b4ac0b1825f2ff2dc630d90b12df46d96c3e18477a352d4e48.jpg)  \nFigure 3: Ablation results for task performance (Top) and faithfulness (Bottom). We compare among Backbone, Backbone w/ Task Reward, Backbone w/ Rationale Reward and Drift (full)."
+    },
+    {
+      "source_window_id": "2025.acl-long.340::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "appendix",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.340::appendix::B",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B",
+      "section_title": "additional experiment results",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.340::appendix::B.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B.2",
+      "section_title": "computation cost analysis",
+      "evidence": "Although rationale and task rewards introduced new computations during the generation processes, we didn't observe a huge computational cost increment in our method. As shown in Figure A3, we calculated the inference time on the Student Answer Assessment question #4 to compare the time used between methods on the same GPU. We use a beam size of 3 and a maximum of 100 tokens in genera\n\ntion settings. Compared with the backbone model, our method only increased by $32\\%$ on inference time. Compared to other sequential Monte Carlo method, such as PPO-MCTS (Liu et al., 2024b), which has a $2S$ times overhead compared to standard decoding from PPO models ( $S$ is the number of simulations), our inference-time decoding maintains both the performance and greatly improve the computation efficiency.\n\nTable A3: Computation cost for different methods on Student Answer Assessment Q4.   \n\n<table><tr><td>Method</td><td>Time Cost</td></tr><tr><td>Backbone (Beam Search)</td><td>88 mins</td></tr><tr><td>:Drift w. Task</td><td>100 mins</td></tr><tr><td>:Drift w. Rationale</td><td>103 mins</td></tr><tr><td>Drift (Full)</td><td>116 mins</td></tr></table>"
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.340\\auto\\full.md",
+    "source_md_sha256": "4fd4a618ee0c92e38146de8c1f530b3bdc9096040e4c78efcb57fe6531146123",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

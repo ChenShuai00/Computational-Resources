@@ -1,0 +1,141 @@
+{
+  "paper_id": "2021.acl-long.485",
+  "candidate_windows": [
+    {
+      "window_id": "2021.acl-long.485::sections::3",
+      "paper_id": "2021.acl-long.485",
+      "section_number": "3",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "We introduce the notations about NER and NEN before getting into the details of the framework. For NER task, we denote $\\{(\\mathbf{X}_i,\\mathbf{y}_i)\\}_{i = 1}^{N^s}$ as a training set with $N^s$ samples, where $\\mathbf{X}_i$ is the medical text and $\\mathbf{y}_i$ is the NER label. Given a sentence with $N^w$ words, the medical text can be formulated as $\\mathbf{X} = \\{\\mathbf{x}_1,\\mathbf{x}_2,\\dots ,\\mathbf{x}_{N^w}\\}$ and the NER label is $\\mathbf{y} = \\{y_1,y_2,\\ldots ,y_{N^w}\\}$ . To solve the NER task, we try to maximize the posterior probability $p(\\mathbf{y}|\\mathbf{X})$ . According to the NER label, we can extract the medical mentions $\\{\\mathbf{m}_i\\}_{i = 1}^{N^m}$ from the medical text, where $N^m$ is the number of the mentions. For NEN task, we need to map each mention $\\mathbf{m}$ to a standard entity $\\mathbf{e}$ in the entity base $\\mathbf{B} = \\{\\mathbf{e}_i\\}_{i = 1}^{N^e}$ . We formulate the object of NEN task as a posterior probability $p(\\mathbf{e}|\\mathbf{m},\\mathbf{B})$ , and $\\mathbf{e}$ is the standard entity which the mention $\\mathbf{m}$ should be mapped to.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.485::sections::3.2",
+      "paper_id": "2021.acl-long.485",
+      "section_number": "3.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "We build on the progressive tasks to implement the framework E2EMERN as shown in Figure 2. Considering the logic of feature aggregation and the strategies for training different tasks, we need to give detailed explanations by the level of tasks.\n\nFor a given sentence $\\mathbf{X} = \\{\\mathbf{x}_1,\\mathbf{x}_2,\\dots ,\\mathbf{x}_{N^w}\\}$ we need to map it to the dense vector representations. With the impressive performances of pretrained models, we utilize BERT (Devlin et al.,\n\n2019) as feature extractors to acquire the distributed representations of sentences. The BERT architecture is composed by the transformer networks and its weights are trained with large number of corpus. The feature extraction process is simplified as $\\mathrm{BERT}(\\mathbf{X}) = \\{\\mathbf{h}_1,\\mathbf{h}_2,\\dots ,\\mathbf{h}_{N^w}\\}$ , where $\\mathbf{h}\\in \\mathbb{R}^{1024\\times 1}$ . The low-level task is defined as the same as NER, and we utilize the NER labels as the target. The sentence features $\\{\\mathbf{h}_i\\}_{i = 1}^{N^w}$ are fed into the softmax layer, and we can compute the prediction probabilities of low-level task as: $\\hat{y}_i = \\mathrm{softmax}(\\mathrm{W}_l\\mathbf{h}_i + \\mathbf{b}_l)$ where $\\mathbf{W}_l$ and $\\mathbf{b}_l$ are trainable parameters. For training, we utilize the cross-entropy loss as the objective function. The loss function of low-level task is defined as follows:\n\n$$\n\\mathcal {L} _ {l o w} = - \\sum_ {i = 1} ^ {N ^ {w}} y _ {i} \\log \\hat {y} _ {i}. \\tag {1}\n$$\n\nThe sample for the mid-level task is defined as a tuple $(\\mathbf{X}, \\mathbf{e}, y^{m})$ . If the text $\\mathbf{X}$ contains the mentions which should be mapped to the entity $\\mathbf{e}$ , $y^{m}$ is assigned 1 otherwise 0. To bridge the gap between the mentions and standard entities in the mid-level task, we need also to extract the features of standard entities. The standard entity $\\mathbf{e}$ is described with the specific name and some medical contents. We feed the name (or contents) of the entity into the BERT and perform the average pooling on the output of BERT. The feature vector of $i$ -th standard entity in the database is defined as $\\mathbf{h}_{i}^{e}$ . Considering the words of mentions in raw texts are more correlated to the standard entity, we adopt the attention mechanism (Zhou et al., 2016) to focus on the local words of sentences. The attention weighted average feature can be calculated as: $\\mathbf{h}^{a} = \\sum_{i=1}^{N^{w}} \\alpha_{i} \\mathbf{x}_{i}$ . And the attention score $\\alpha$ is defined as: $\\alpha_{i} = \\frac{\\exp(s(\\mathbf{x}_{i}, \\mathbf{h}^{e}))}{\\sum_{i=1}^{N^{w}} \\exp(s(\\mathbf{x}_{i}, \\mathbf{h}^{e}))}$ where $s(\\mathbf{x}_{i}, \\mathbf{h}^{e}) = \\mathbf{W}_{a}[\\mathbf{x}_{i}; \\mathbf{h}^{e}] + b_{a}$ . $\\mathbf{W}_{a}$ and $b_{a}$ are trainable weights in the attention module. After acquiring the entity-attention feature $\\mathbf{h}^{a}$ and standard entity feature $\\mathbf{h}^{e}$ , we can calculate the prediction probabilities $\\hat{y}^{m} = \\sigma(\\mathbf{W}_{m}[\\mathbf{h}^{e}; \\mathbf{h}^{a}] + b_{m})$ where $\\sigma$ is the sigmoid function. The loss function for the mid-level task is formulated as the cross-entropy:\n\n$$\n\\mathcal {L} _ {m i d} = - \\left(y ^ {m} \\log \\hat {y} ^ {m} + \\left(1 - y ^ {m}\\right) \\log \\left(1 - \\hat {y} ^ {m}\\right)\\right). \\tag {2}\n$$\n\nWe define the tuple $(\\mathbf{X},\\mathbf{e},\\mathbf{y}^h)$ as the sample for the high-level task where $\\mathbf{y}^h = \\{y_i^h\\}_{i = 1}^{N^w}$ . Given that the medical text $\\mathbf{X}$ is \"Familial Mediterranean fever is a recessive disorder.\" and standard en\n\n![](images/c163a4806eb28f968f3ed3ddc2d9455deccda5286ce5ae1b99bfc83709cecdda.jpg)  \nFigure 3: The original sample is from the dataset NCBI. The extended samples are built on the original one and used to train the model. The 3rd sample is generated by negative sampling.\n\ntity $\\mathbf{e}$ is \"D030342\", the label sequence $\\mathbf{y}^h$ should be \"O O O O O B-Disease I-Disease\". To take advantage of the pre-tasks, we propose the gate mechanism to aggregate the different features for solving this task. The sentence feature $\\{\\mathbf{h}_i\\}_{i=1}^{N^w}$ implicit the medical mentions while the entity attention feature $\\mathbf{h}^a$ contains clearer locations of the corresponding mentions. Therefore, we propose the gate mechanism to focus on the fine-grained feature dimensions. The formulation of the gate mechanism is $\\mathrm{G}(\\mathbf{H}, \\mathbf{H}^a) = \\sigma(\\mathrm{W}_g[\\mathbf{H}; \\mathbf{H}^a] + \\mathrm{b}_g)$ where $\\mathbf{H} = \\{\\mathbf{h}_i\\}_{i=1}^{N^w}$ and $\\mathbf{H}^a = [\\mathbf{h}^a; \\ldots; \\mathbf{h}^a] \\in \\mathbb{R}^{1024 \\times N^w}$ . Considering the semantic difference between the mentions and corresponding standard entities, we exploit the gate mechanism to fuse the standard entity feature with the sentence feature. The fusion sentence feature is formulated as: $\\mathbf{H}^f = \\mathbf{H} \\odot (1 - \\mathrm{G}(\\mathbf{H}, \\mathbf{H}^a)) + \\mathbf{H}^e \\odot \\mathrm{G}(\\mathbf{H}, \\mathbf{H}^a)$ where $\\odot$ is the element-wise production, $\\mathbf{H}^f = \\{\\mathbf{h}_i^f\\}_{i=1}^{N^w}$ and $\\mathbf{H}^e = [\\mathbf{h}^e; \\ldots; \\mathbf{h}^e] \\in \\mathbb{R}^{1024 \\times N^w}$ . We feed the fusion feature into the softmax layer to predict the probabilities $\\hat{y}_i^h = \\text{softmax}(\\mathrm{W}_h \\mathbf{h}_i^f + \\mathrm{b}_h)$ . As the same as the low-level task, we utilize the cross-entropy loss function as follows:\n\n$$\n\\mathcal {L} _ {h i g h} = - \\sum_ {i = 1} ^ {N ^ {w}} y _ {i} ^ {h} \\log \\hat {y} _ {i} ^ {h}. \\tag {3}\n$$",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.485::sections::4",
+      "paper_id": "2021.acl-long.485",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.485::sections::4.1",
+      "paper_id": "2021.acl-long.485",
+      "section_number": "4.1",
+      "section_title": "datasets and experiment settings",
+      "normalized_section_title": "datasets and experiment settings",
+      "window_text": "We compare our framework with the existing methods on two medical benchmark datasets. Table 1 presents the detailed statistical information of the two datasets. There are 798 public medical abstracts in the NCBI dataset (Dogan et al., 2014). Each medical mention in the text is annotated with MeSH/OMIM identifiers. BC5CDR dataset (Li et al., 2016) contains 1500 public medical abstracts which are also annotated with MeSH identifiers. We split each abstract into sentence samples with an average of 40 words according to the ends of sentences. The padding char is used for filling the unequal length samples to the fixed length.\n\nDuring the training process, we first train the model on the training set and test it on the development set for searching the best hyper-parameters. Then, we fix the best hyper-parameters and train the model on the set composed of the training and development sets. Before the model is trained to the searched maximum number of epochs, we take the F1 score as the reported result when the loss gets the lowest. In our experiments, we set the hyper-parameters $\\lambda$ , $\\mu$ and learning rate to 0.125, 0.1 and 1e-5 respectively. To train the model, we use the ADAM (Kingma and Ba, 2015) algorithm to update the weights. And all experiments are accelerated by the two NVIDIA GTX 2080Ti devices.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2021.acl-long.485::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA GTX 2080Ti",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "We compare our framework with the existing methods on two medical benchmark datasets. Table 1 presents the detailed statistical information of the two datasets. There are 798 public medical abstracts in the NCBI dataset (Dogan et al., 2014). Each medical mention in the text is annotated with MeSH/OMIM identifiers. BC5CDR dataset (Li et al., 2016) contains 1500 public medical abstracts which are also annotated with MeSH identifiers. We split each abstract into sentence samples with an average of 40 words according to the ends of sentences. The padding char is used for filling the unequal length samples to the fixed length.\n\nDuring the training process, we first train the model on the training set and test it on the development set for searching the best hyper-parameters. Then, we fix the best hyper-parameters and train the model on the set composed of the training and development sets. Before the model is trained to the searched maximum number of epochs, we take the F1 score as the reported result when the loss gets the lowest. In our experiments, we set the hyper-parameters $\\lambda$ , $\\mu$ and learning rate to 0.125, 0.1 and 1e-5 respectively. To train the model, we use the ADAM (Kingma and Ba, 2015) algorithm to update the weights. And all experiments are accelerated by the two NVIDIA GTX 2080Ti devices.",
+      "section_number": "4.1",
+      "section_title": "datasets and experiment settings",
+      "normalized_section_title": "datasets and experiment settings"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2021.acl-long.485::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA GTX 2080Ti",
+      "cleaned_hardware_name": "nvidia rtx 2080 ti",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "4.1",
+      "section_title": "datasets and experiment settings",
+      "normalized_section_title": "datasets and experiment settings",
+      "evidence": "We compare our framework with the existing methods on two medical benchmark datasets. Table 1 presents the detailed statistical information of the two datasets. There are 798 public medical abstracts in the NCBI dataset (Dogan et al., 2014). Each medical mention in the text is annotated with MeSH/OMIM identifiers. BC5CDR dataset (Li et al., 2016) contains 1500 public medical abstracts which are also annotated with MeSH identifiers. We split each abstract into sentence samples with an average of 40 words according to the ends of sentences. The padding char is used for filling the unequal length samples to the fixed length.\n\nDuring the training process, we first train the model on the training set and test it on the development set for searching the best hyper-parameters. Then, we fix the best hyper-parameters and train the model on the set composed of the training and development sets. Before the model is trained to the searched maximum number of epochs, we take the F1 score as the reported result when the loss gets the lowest. In our experiments, we set the hyper-parameters $\\lambda$ , $\\mu$ and learning rate to 0.125, 0.1 and 1e-5 respectively. To train the model, we use the ADAM (Kingma and Ba, 2015) algorithm to update the weights. And all experiments are accelerated by the two NVIDIA GTX 2080Ti devices.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized GeForce RTX shorthand rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2021.acl-long.485::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methodology",
+      "evidence": "We introduce the notations about NER and NEN before getting into the details of the framework. For NER task, we denote $\\{(\\mathbf{X}_i,\\mathbf{y}_i)\\}_{i = 1}^{N^s}$ as a training set with $N^s$ samples, where $\\mathbf{X}_i$ is the medical text and $\\mathbf{y}_i$ is the NER label. Given a sentence with $N^w$ words, the medical text can be formulated as $\\mathbf{X} = \\{\\mathbf{x}_1,\\mathbf{x}_2,\\dots ,\\mathbf{x}_{N^w}\\}$ and the NER label is $\\mathbf{y} = \\{y_1,y_2,\\ldots ,y_{N^w}\\}$ . To solve the NER task, we try to maximize the posterior probability $p(\\mathbf{y}|\\mathbf{X})$ . According to the NER label, we can extract the medical mentions $\\{\\mathbf{m}_i\\}_{i = 1}^{N^m}$ from the medical text, where $N^m$ is the number of the mentions. For NEN task, we need to map each mention $\\mathbf{m}$ to a standard entity $\\mathbf{e}$ in the entity base $\\mathbf{B} = \\{\\mathbf{e}_i\\}_{i = 1}^{N^e}$ . We formulate the object of NEN task as a posterior probability $p(\\mathbf{e}|\\mathbf{m},\\mathbf{B})$ , and $\\mathbf{e}$ is the standard entity which the mention $\\mathbf{m}$ should be mapped to."
+    },
+    {
+      "source_window_id": "2021.acl-long.485::sections::3.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3.2",
+      "section_title": "implementation details",
+      "evidence": "We build on the progressive tasks to implement the framework E2EMERN as shown in Figure 2. Considering the logic of feature aggregation and the strategies for training different tasks, we need to give detailed explanations by the level of tasks.\n\nFor a given sentence $\\mathbf{X} = \\{\\mathbf{x}_1,\\mathbf{x}_2,\\dots ,\\mathbf{x}_{N^w}\\}$ we need to map it to the dense vector representations. With the impressive performances of pretrained models, we utilize BERT (Devlin et al.,\n\n2019) as feature extractors to acquire the distributed representations of sentences. The BERT architecture is composed by the transformer networks and its weights are trained with large number of corpus. The feature extraction process is simplified as $\\mathrm{BERT}(\\mathbf{X}) = \\{\\mathbf{h}_1,\\mathbf{h}_2,\\dots ,\\mathbf{h}_{N^w}\\}$ , where $\\mathbf{h}\\in \\mathbb{R}^{1024\\times 1}$ . The low-level task is defined as the same as NER, and we utilize the NER labels as the target. The sentence features $\\{\\mathbf{h}_i\\}_{i = 1}^{N^w}$ are fed into the softmax layer, and we can compute the prediction probabilities of low-level task as: $\\hat{y}_i = \\mathrm{softmax}(\\mathrm{W}_l\\mathbf{h}_i + \\mathbf{b}_l)$ where $\\mathbf{W}_l$ and $\\mathbf{b}_l$ are trainable parameters. For training, we utilize the cross-entropy loss as the objective function. The loss function of low-level task is defined as follows:\n\n$$\n\\mathcal {L} _ {l o w} = - \\sum_ {i = 1} ^ {N ^ {w}} y _ {i} \\log \\hat {y} _ {i}. \\tag {1}\n$$\n\nThe sample for the mid-level task is defined as a tuple $(\\mathbf{X}, \\mathbf{e}, y^{m})$ . If the text $\\mathbf{X}$ contains the mentions which should be mapped to the entity $\\mathbf{e}$ , $y^{m}$ is assigned 1 otherwise 0. To bridge the gap between the mentions and standard entities in the mid-level task, we need also to extract the features of standard entities. The standard entity $\\mathbf{e}$ is described with the specific name and some medical contents. We feed the name (or contents) of the entity into the BERT and perform the average pooling on the output of BERT. The feature vector of $i$ -th standard entity in the database is defined as $\\mathbf{h}_{i}^{e}$ . Considering the words of mentions in raw texts are more correlated to the standard entity, we adopt the attention mechanism (Zhou et al., 2016) to focus on the local words of sentences. The attention weighted average feature can be calculated as: $\\mathbf{h}^{a} = \\sum_{i=1}^{N^{w}} \\alpha_{i} \\mathbf{x}_{i}$ . And the attention score $\\alpha$ is defined as: $\\alpha_{i} = \\frac{\\exp(s(\\mathbf{x}_{i}, \\mathbf{h}^{e}))}{\\sum_{i=1}^{N^{w}} \\exp(s(\\mathbf{x}_{i}, \\mathbf{h}^{e}))}$ where $s(\\mathbf{x}_{i}, \\mathbf{h}^{e}) = \\mathbf{W}_{a}[\\mathbf{x}_{i}; \\mathbf{h}^{e}] + b_{a}$ . $\\mathbf{W}_{a}$ and $b_{a}$ are trainable weights in the attention module. After acquiring the entity-attention feature $\\mathbf{h}^{a}$ and standard entity feature $\\mathbf{h}^{e}$ , we can calculate the prediction probabilities $\\hat{y}^{m} = \\sigma(\\mathbf{W}_{m}[\\mathbf{h}^{e}; \\mathbf{h}^{a}] + b_{m})$ where $\\sigma$ is the sigmoid function. The loss function for the mid-level task is formulated as the cross-entropy:\n\n$$\n\\mathcal {L} _ {m i d} = - \\left(y ^ {m} \\log \\hat {y} ^ {m} + \\left(1 - y ^ {m}\\right) \\log \\left(1 - \\hat {y} ^ {m}\\right)\\right). \\tag {2}\n$$\n\nWe define the tuple $(\\mathbf{X},\\mathbf{e},\\mathbf{y}^h)$ as the sample for the high-level task where $\\mathbf{y}^h = \\{y_i^h\\}_{i = 1}^{N^w}$ . Given that the medical text $\\mathbf{X}$ is \"Familial Mediterranean fever is a recessive disorder.\" and standard en\n\n![](images/c163a4806eb28f968f3ed3ddc2d9455deccda5286ce5ae1b99bfc83709cecdda.jpg)  \nFigure 3: The original sample is from the dataset NCBI. The extended samples are built on the original one and used to train the model. The 3rd sample is generated by negative sampling.\n\ntity $\\mathbf{e}$ is \"D030342\", the label sequence $\\mathbf{y}^h$ should be \"O O O O O B-Disease I-Disease\". To take advantage of the pre-tasks, we propose the gate mechanism to aggregate the different features for solving this task. The sentence feature $\\{\\mathbf{h}_i\\}_{i=1}^{N^w}$ implicit the medical mentions while the entity attention feature $\\mathbf{h}^a$ contains clearer locations of the corresponding mentions. Therefore, we propose the gate mechanism to focus on the fine-grained feature dimensions. The formulation of the gate mechanism is $\\mathrm{G}(\\mathbf{H}, \\mathbf{H}^a) = \\sigma(\\mathrm{W}_g[\\mathbf{H}; \\mathbf{H}^a] + \\mathrm{b}_g)$ where $\\mathbf{H} = \\{\\mathbf{h}_i\\}_{i=1}^{N^w}$ and $\\mathbf{H}^a = [\\mathbf{h}^a; \\ldots; \\mathbf{h}^a] \\in \\mathbb{R}^{1024 \\times N^w}$ . Considering the semantic difference between the mentions and corresponding standard entities, we exploit the gate mechanism to fuse the standard entity feature with the sentence feature. The fusion sentence feature is formulated as: $\\mathbf{H}^f = \\mathbf{H} \\odot (1 - \\mathrm{G}(\\mathbf{H}, \\mathbf{H}^a)) + \\mathbf{H}^e \\odot \\mathrm{G}(\\mathbf{H}, \\mathbf{H}^a)$ where $\\odot$ is the element-wise production, $\\mathbf{H}^f = \\{\\mathbf{h}_i^f\\}_{i=1}^{N^w}$ and $\\mathbf{H}^e = [\\mathbf{h}^e; \\ldots; \\mathbf{h}^e] \\in \\mathbb{R}^{1024 \\times N^w}$ . We feed the fusion feature into the softmax layer to predict the probabilities $\\hat{y}_i^h = \\text{softmax}(\\mathrm{W}_h \\mathbf{h}_i^f + \\mathrm{b}_h)$ . As the same as the low-level task, we utilize the cross-entropy loss function as follows:\n\n$$\n\\mathcal {L} _ {h i g h} = - \\sum_ {i = 1} ^ {N ^ {w}} y _ {i} ^ {h} \\log \\hat {y} _ {i} ^ {h}. \\tag {3}\n$$"
+    },
+    {
+      "source_window_id": "2021.acl-long.485::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce RTX 2080 Ti",
+        "num": 2
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2021\\2021.acl-long.485\\auto\\full.md",
+    "source_md_sha256": "d26523954d62557984ea2037c5abb0ac664535b0f7d27cd53b8952a568ffd068",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "a2f4e0f2222ac944a84b28fba08cc5ab0184a6c6ccb3a5a4deb8a7eefc1e4438"
+  }
+}

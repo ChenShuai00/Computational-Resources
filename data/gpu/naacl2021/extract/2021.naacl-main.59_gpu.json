@@ -1,0 +1,146 @@
+{
+  "paper_id": "2021.naacl-main.59",
+  "candidate_windows": [
+    {
+      "window_id": "2021.naacl-main.59::sections::4",
+      "paper_id": "2021.naacl-main.59",
+      "section_number": "4",
+      "section_title": "setup",
+      "normalized_section_title": "setup",
+      "window_text": "We consider two tasks where the input is an utterance $\\mathbf{x}$ with tokens $x_{1},\\ldots ,x_{n}$ and the output is some structure $\\mathbf{y}$ . For the slot filling task, the output $\\mathbf{y}$ is a set of non-overlapping labeled spans $\\{(r_i,\\ell_i)\\}_{i = 1}^m$ where $r_i$ is a span of $\\mathbf{x}$ (e.g., \"7 pm\") and $\\ell_{i}$ is a slot name (e.g., time). For the intent classification task, the output $\\mathbf{y}$ is simply an intent label $\\ell$ for the whole utterance $\\mathbf{x}$ . For notational consistency, we view intent classification as predicting a labeled span $(r,\\ell)$ where $r = \\mathbf{x}_{1:n}$ .\n\nIn the few-shot setup, examples $(\\mathbf{x},\\mathbf{y})$ are divided into source and target domains. Examples in the target domain may contain some labels $\\ell$ that are unseen in the source domain. The model will be given ample training data from the source domain, but only a few training examples from the target domain. For instance, the model receives only $K = 5$ examples for each unseen label. The model can be evaluated on test data from both domains.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.naacl-main.59::sections::5.2",
+      "paper_id": "2021.naacl-main.59",
+      "section_number": "5.2",
+      "section_title": "inference",
+      "normalized_section_title": "inference",
+      "window_text": "After training, we build a dense retrieval index where each entry $(r,\\ell)$ is indexed by $\\mathbf{z} = E(r)$ . The entries $(r,\\ell)$ come from examples $(\\mathbf{x},\\mathbf{y})$ in the support set which, depending on the setting, could be just the target training data or a mixture of source and target data. For each query span $r'$ of the input utterance $\\mathbf{x}$ , we embed the span and compute the similarity scores against all index entries.\n\nIntent classification For intent classification, both index entries and query spans are restricted to the whole utterances. The entire process thus boils down to retrieving the most similar utterance based on the [CLS] token embedding. We simply output the intent label of the retrieved utterance.\n\nSlot filling In contrast to BIO decoding for token-level similarity models (Hou et al., 2020), decoding with span retrieval results poses unique challenges as gold span boundaries are not known a priori. Hence, we use a modified beam search procedure with simple heuristics to compose the spans.\n\nSpecifically, for each of the $n \\times m$ spans in an utterance of length $n$ (where the hyperparameter $m$ is the maximum span length), we retrieve the most similar span from the retrieval index. Then we normalize the similarity scores by L2-norm so that they are within the range [0, 1]. Since we do not explicitly predict span boundaries, all $n \\times m$ spans, including non-meaningful ones (e.g., \"book $a$ \"), will have a retrieved span. Such non-meaningful spans should be dissimilar to any labeled span in the retrieval index. We thus choose to filter the spans with a score threshold to get a smaller set of candidate spans. In addition, we adjust the threshold dynamically (by reducing the threshold for a few times) if no span is above the current threshold.\n\nOnce we get candidate spans with similarity scores, we use beam search to decode a set of spans with maximum average scores. We go through the list of candidate spans in the descending order of their similarity scores. For each candidate span, we expand beam states if the span does not overlap with the existing spans in the beam. The search beams are pruned based on the average similarity score of the spans included so far. Lastly, we add spans in the filtered set which do not overlap with the final beam.\n\nBeam search can avoid suboptimal decisions that a greedy algorithm would make. For instance, if we greedily process the example in Figure 1, \"black\" and \"tavern\" would become two independent spans, even though their average similarity score is lower than the correct span \"black horse tavern\". Nevertheless, beam search is prone to mixing up span boundaries and occasionally predicts consecutive partial spans such as \"black horse\" and \"tavern\" as individual slots. Since consecutive spans of the same slot label are rare in slot filling\n\ndatasets, we merge the two spans if their retrieval scores are within a certain range:\n\n$$\nr _ {i: j}, r _ {j: k} = \\left\\{ \\begin{array}{l l} r _ {i: k} & \\text {i f} | s (\\mathbf {z} _ {i: j}, \\mathbf {z} ^ {\\prime}) - s (\\mathbf {z} _ {j: k}, \\mathbf {z} ^ {\\prime \\prime}) | <   \\lambda \\\\ r _ {i: j}, r _ {j: k} & \\text {o t h e r w i s e} \\end{array} \\right.\n$$\n\nwhere $r_{i:j}$ and $r_{j:k}$ are two consecutive potential spans sharing the same label, and $\\mathbf{z}'$ and $\\mathbf{z}''$ are the embeddings of their retrieved spans, respectively ( $r_{i:k}$ indicates merging the two spans into one span; $\\lambda$ is the merge threshold where $\\lambda = 1$ means always merge and $\\lambda = 0$ means never merge).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.naacl-main.59::sections::9",
+      "paper_id": "2021.naacl-main.59",
+      "section_number": "9",
+      "section_title": "ethical considerations",
+      "normalized_section_title": "ethical considerations",
+      "window_text": "Our intended use case is few-shot domain adaption to new classes. Our experiments are done on English data, but the method is not English-specific. We use 8 Cloud TPUs V2 cores<sup>5</sup> for training and one V100 GPU for inference. Since our model does not have to be retrained for the new domains, it can reduce the resources needed when applying such systems. We claim that our proposed method outperforms baselines on few-shot slot filling and intent classification examples. Our experiments mainly focus on the 5-shot setting and the 2-shot setting, which are typical testing scenarios applied by previous work with the same claim.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.naacl-main.59::appendix::A.1",
+      "paper_id": "2021.naacl-main.59",
+      "section_number": "A.1",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "We use the public uncased BERT-base model from https://github.com/google-research/bert for embedding spans. Our implementation is adapted from https://github.com/google-research/bert/blob/master/run-classifier.py. Since the span embeder in the retriever is the only trainable component in our model, the number of parameters is the same as the initial BERT model.\n\nOn SNIPS, we set the initial learning rate to be $2 \\times 10^{-5}$ with $10\\%$ data for warmup. We set per-class batch size to be 5 for 5-shot experiments. We use F1 score on the development domain as the metric for early stopping. For decoding, we set $m = 7$ to be the maximum span length and $\\lambda = 0.99$ as the merging threshold. For dynamic threshold, we decrease the threshold by 0.05 each time for 10 times until at least one span is above the current threshold. We also use the development domain results to choose individual threshold for each target domain to filter invalid spans. We use grid search between [0.85, 0.97] with a step of 0.05 to search for the best threshold on the development domain. Our span-level evaluation is modified from conlleval script: https://www.clips.uantwerpen.be/conll2000/chunking/conlleval.txt.\n\nOn CLINC, we set the initial learning rate to be $5 \\times 10^{-5}$ and $1 \\times 10^{-5}$ for fine-tuning on the target domain. We set per-class batch size to be 8 for training on the source domain, and 5 and 2 for 5-shot and 2-shot fine-tuning.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2021.naacl-main.59::sections::9",
+      "hardware_type": "TPU",
+      "raw_hardware_name": "Cloud TPU V2",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Our intended use case is few-shot domain adaption to new classes. Our experiments are done on English data, but the method is not English-specific. We use 8 Cloud TPUs V2 cores<sup>5</sup> for training and one V100 GPU for inference. Since our model does not have to be retrained for the new domains, it can reduce the resources needed when applying such systems. We claim that our proposed method outperforms baselines on few-shot slot filling and intent classification examples. Our experiments mainly focus on the 5-shot setting and the 2-shot setting, which are typical testing scenarios applied by previous work with the same claim.",
+      "section_number": "9",
+      "section_title": "ethical considerations",
+      "normalized_section_title": "ethical considerations"
+    },
+    {
+      "window_id": "2021.naacl-main.59::sections::9",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Our intended use case is few-shot domain adaption to new classes. Our experiments are done on English data, but the method is not English-specific. We use 8 Cloud TPUs V2 cores<sup>5</sup> for training and one V100 GPU for inference. Since our model does not have to be retrained for the new domains, it can reduce the resources needed when applying such systems. We claim that our proposed method outperforms baselines on few-shot slot filling and intent classification examples. Our experiments mainly focus on the 5-shot setting and the 2-shot setting, which are typical testing scenarios applied by previous work with the same claim.",
+      "section_number": "9",
+      "section_title": "ethical considerations",
+      "normalized_section_title": "ethical considerations"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2021.naacl-main.59::sections::9",
+      "hardware_type": "TPU",
+      "raw_hardware_name": "Cloud TPU V2",
+      "cleaned_hardware_name": "cloud tpu v2",
+      "normalized_hardware_name": "Google TPU v2",
+      "benchmark_hardware_name": "Google TPU v2",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "9",
+      "section_title": "ethical considerations",
+      "normalized_section_title": "ethical considerations",
+      "evidence": "Our intended use case is few-shot domain adaption to new classes. Our experiments are done on English data, but the method is not English-specific. We use 8 Cloud TPUs V2 cores<sup>5</sup> for training and one V100 GPU for inference. Since our model does not have to be retrained for the new domains, it can reduce the resources needed when applying such systems. We claim that our proposed method outperforms baselines on few-shot slot filling and intent classification examples. Our experiments mainly focus on the 5-shot setting and the 2-shot setting, which are typical testing scenarios applied by previous work with the same claim.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2021.naacl-main.59::sections::9",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "cleaned_hardware_name": "v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "9",
+      "section_title": "ethical considerations",
+      "normalized_section_title": "ethical considerations",
+      "evidence": "Our intended use case is few-shot domain adaption to new classes. Our experiments are done on English data, but the method is not English-specific. We use 8 Cloud TPUs V2 cores<sup>5</sup> for training and one V100 GPU for inference. Since our model does not have to be retrained for the new domains, it can reduce the resources needed when applying such systems. We claim that our proposed method outperforms baselines on few-shot slot filling and intent classification examples. Our experiments mainly focus on the 5-shot setting and the 2-shot setting, which are typical testing scenarios applied by previous work with the same claim.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "9"
+    ],
+    "pred": [
+      {
+        "name": "Google TPU v2",
+        "num": 8
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 1
+      }
+    ]
+  }
+}

@@ -1,0 +1,345 @@
+{
+  "paper_id": "2025.acl-long.551",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.551::sections::2.1",
+      "paper_id": "2025.acl-long.551",
+      "section_number": "2.1",
+      "section_title": "llm constrained decoding",
+      "normalized_section_title": "llm constrained decoding",
+      "window_text": "Constrained decoding (Hu et al., 2019) enforces strict grammatical adherence by dynamically pruning invalid tokens during generation. While effective for structural compliance, existing methods face two key challenges: (1) handling diverse grammars, large vocabularies, and complex token-to-text mappings, and (2) computational inefficiency at scale, especially under large batch processing where dynamic validation creates sequential bottlenecks.\n\nOur empirical analysis reveals this critical limitation. When evaluating XGrammar on Meta-Llama-3-8B (2×H800 GPUs), constrained decoding exhibits up to 37.5% higher latency (147.64 ms vs. 92.23 ms) at batch size 512 compared to unconstrained decoding (Table 1). The performance gap grows with batch size due to non-parallelizable validation steps, which is a fundamental constraint in current approaches. These findings motivate the need for a new constrained decoding approach that maintains grammatical correctness while achieving better computational efficiency at scale.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.551::sections::4",
+      "paper_id": "2025.acl-long.551",
+      "section_number": "4",
+      "section_title": "evaluation",
+      "normalized_section_title": "evaluation",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.551::sections::4.1",
+      "paper_id": "2025.acl-long.551",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Implementation: We implemented our approach in 2,000 lines of Python code and about 1,000 lines of $\\mathrm{C + + }$ code, and we seamlessly integrated with LightLLM (Gong et al., 2025), a popular LLM inference framework.\n\nHardware Setup: All the experiments are tested on a server with Intel(R) Xeon(R) Gold 6448Y CPU and 8 NVIDIA H800 GPUs. Depending on\n\n![](images/d87ae48bed5512de190722d8df92d53e65bdb8da41cb1573145b63c4a89b7c69.jpg)  \nFigure 6: Per-step decoding overhead across different grammars and models. Outlines incurs an overhead of up to several seconds per step. Experiments contain (1) Chain-of-Thought grammar, (2) JSON grammar. Models contain (a) Meta-Llama-3-8B on $1 \\times \\mathrm{H}800$ , (b) Meta-Llama-2-70B on $4 \\times \\mathrm{H}800$ .\n\nthe scale of the experiment, we use different numbers of GPUs.\n\nBaselines: We choose the following representative works on grammar constraint decoding.\n\n- XGrammar: An open-source library for structured generation in large-language models. It significantly enhances performance in tasks like JSON grammar generation with reduced latency and storage.   \n- Outlines: A text generation library, it offers a Python tool for grammar-guided generation, offering a fast generation method. We use vLLM integrated with Outlines for evaluation.   \n- Llama.cpp: A C/C++-based LLM inference tool, and also includes support for grammar constraint decoding.\n\nDatasets: In our experiments, we utilized the JSON-mode-eval (NousResearch, 2024) dataset from NousResearch as prompts. As there is a scarcity of datasets for structured output, we collected some private data additionally and incorporated it into the test dataset.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.acl-long.551::sections::4.4",
+      "paper_id": "2025.acl-long.551",
+      "section_number": "4.4",
+      "section_title": "realworld deployment",
+      "normalized_section_title": "realworld deployment",
+      "window_text": "To evaluate the throughput in real-world service environments, we compare the performance of XGrammar and $\\mathrm{Pre}^3$ , under varying system concurrency levels. We conducted simulation experiments on Meta-Llama-3-8B (2×H800) and Meta-Llama-2-70B (4×H800), measuring the throughput in burst scenarios at different levels of concurrency.\n\nThe results are shown in Figure 7. Both $\\mathrm{Pre}^3$ and XGrammar have lower throughput than the Original system due to the added overhead introduced by constraint decoding, while $\\mathrm{Pre}^3$ demonstrated a significant improvement over XGrammar, achieving up to $20\\%$ higher throughput at higher concurrency levels, showing that $\\mathrm{Pre}^3$ provides higher throughput in end-to-end deployment.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.551::sections::6",
+      "paper_id": "2025.acl-long.551",
+      "section_number": "6",
+      "section_title": "conclusion",
+      "normalized_section_title": "conclusion",
+      "window_text": "This work addressed the limitations of existing structured generation approaches by proposing a DPDA-based methodology $(\\mathrm{Pre}^3)$ , which integrates\n\nTable 2: Decode batch inference time comparison between our method and XGrammar. The “-” marker stands for the batch size cannot be executed on the given hardware setup.   \n\n<table><tr><td>Evaluation Configuration</td><td>Method</td><td>16</td><td>32</td><td>64</td><td>128</td><td>256</td><td>512</td><td>1024</td></tr><tr><td rowspan=\"2\">Llama-3-8B (Dubey et al., 2024)</td><td>XGrammar (ms)</td><td>15.19</td><td>43.69</td><td>52.07</td><td>65.21</td><td>90.98</td><td>147.64</td><td>272.77</td></tr><tr><td>Pre3(ms)</td><td>11.77</td><td>31.12</td><td>35.88</td><td>45.32</td><td>64.42</td><td>104.46</td><td>201.16</td></tr><tr><td>2×H800</td><td>Reduction</td><td>↓22.49%</td><td>↓28.78%</td><td>↓30.09%</td><td>↓30.50%</td><td>↓29.20%</td><td>↓29.24%</td><td>↓26.25%</td></tr><tr><td rowspan=\"2\">DeepSeek-V2-Lite-Chat (Liu et al., 2024)</td><td>XGrammar (ms)</td><td>51.76</td><td>59.45</td><td>77.74</td><td>104.06</td><td>121.46</td><td>-</td><td>-</td></tr><tr><td>Pre3(ms)</td><td>49.91</td><td>53.71</td><td>54.41</td><td>61.63</td><td>75.47</td><td>-</td><td>-</td></tr><tr><td>15.7B 2×H800</td><td>Reduction</td><td>↓3.57%</td><td>↓9.65%</td><td>↓30.01%</td><td>↓40.78%</td><td>↓37.86%</td><td>-</td><td>-</td></tr><tr><td rowspan=\"2\">Qwen2-14B (Yang et al., 2024a)</td><td>XGrammar (ms)</td><td>16.77</td><td>47.94</td><td>57.05</td><td>74.54</td><td>98.64</td><td>162.47</td><td>285.42</td></tr><tr><td>Pre3(ms)</td><td>16.52</td><td>47.94</td><td>47.89</td><td>65.50</td><td>90.20</td><td>143.83</td><td>232.18</td></tr><tr><td>INT8 2×H800</td><td>Reduction</td><td>↓1.52%</td><td>↓0.12%</td><td>↓2.37%</td><td>↓12.14%</td><td>↓8.55%</td><td>↓11.47%</td><td>↓18.65%</td></tr><tr><td rowspan=\"2\">Llama-2-70B (Touvron et al., 2023)</td><td>XGrammar (ms)</td><td>28.75</td><td>55.12</td><td>56.94</td><td>68.79</td><td>85.92</td><td>-</td><td>-</td></tr><tr><td>Pre3(ms)</td><td>27.20</td><td>54.24</td><td>54.18</td><td>62.27</td><td>75.72</td><td>-</td><td>-</td></tr><tr><td>4×H800</td><td>Reduction</td><td>↓5.39%</td><td>↓1.60%</td><td>↓4.85%</td><td>↓9.48%</td><td>↓11.87%</td><td>-</td><td>-</td></tr></table>\n\n![](images/88953cd97caeaef78da7fc418e4f0d1083d103fec25c6ed0b18338d2a3007540.jpg)\n\n![](images/8138d51f0f772476ef011636ec82f9c622c632540664fca0da910b72c7101fa2.jpg)\n\n![](images/4d4c677d562da6c88cf2337f9a382a4bd0e41a2e92760f6af208cd915781d645.jpg)  \nFigure 7: System throughput based on different models and concurrency levels. Left: Llama3-8B, Middle: Llama2-70B, Right: DeepSeek-V2-Lite-Chat.\n\nTable 3: Per-step decode time comparison between our method and XGrammar.   \n\n<table><tr><td></td><td colspan=\"2\">Llama-3-8B</td><td colspan=\"2\">Llama-2-70B</td></tr><tr><td>Batchsize</td><td>Pre3</td><td>XGrammar</td><td>Pre3</td><td>XGrammar</td></tr><tr><td>1</td><td>0.5172</td><td>0.5531</td><td>0.2163</td><td>0.3030</td></tr><tr><td>4</td><td>0.6537</td><td>0.9327</td><td>0.2407</td><td>0.3310</td></tr></table>\n\nCycle-aware Deterministic Pushdown Automata Construction and Prefix-conditioned Edge Optimization. $\\mathrm{Pre}^3$ significantly outperforms existing SOTA baselines by up to $40\\%$ in throughput and exhibits greater advantages with large batch sizes.",
+      "rule_tier": "soft_skip",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.551::sections::limitation",
+      "paper_id": "2025.acl-long.551",
+      "section_number": "",
+      "section_title": "limitation",
+      "normalized_section_title": "limitation",
+      "window_text": "While our work demonstrates significant improvements in constrained LLM decoding efficiency, several limitations and potential areas for improvement remain. Firstly, our method is optimized for LR(1) grammars, which cover most structured generation needs, but faces challenges with more complex $\\mathrm{LR}(k)$ grammars $(k > 1)$ . These require intricate state transitions and lookahead mechanisms, increasing DPDA construction and processing complexity. Future work should explore hybrid parsing or adaptive mechanisms to handle such cases efficiently. Second, our Python-based research prototype lacks production-level optimizations. Although suitable for experimentation, the implementation could benefit from hardware acceleration (e.g., GPU parallelization for grammar processing)\n\nand system-level optimizations. A future $\\mathrm{C}++/\\mathrm{Rust}$ implementation with fine-tuned memory management could significantly improve performance and scalability. Although preprocessing complexity scales with grammar size (due to increased edges and cycles), current processing times remain practical for real-world deployment. Addressing these limitations could unlock additional performance improvements and broaden the applicability of our approach.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.551::sections::references",
+      "paper_id": "2025.acl-long.551",
+      "section_number": "",
+      "section_title": "references",
+      "normalized_section_title": "references",
+      "window_text": "AV ASU86, R Sethi Aho, and Ullman JD. 1986. Compilers: Principles, techniques, and tools.   \nAnthony Brohan, Noah Brown, Justice Carbajal, Yevgen Chebotar, Xi Chen, Krzysztof Choromanski, Tianli Ding, Danny Driess, Avinava Dubey, Chelsea Finn, et al. 2023. Rt-2: Vision-language-action models transfer web knowledge to robotic control. arXiv preprint arXiv:2307.15818.   \nTianle Cai, Xuezhi Wang, Tengyu Ma, Xinyun Chen, and Denny Zhou. 2023. Large language models as tool makers. arXiv preprint arXiv:2305.17126.   \nSukmin Cho, Soyeong Jeong, Jeong yeon Seo, and Jong Park. 2023. Discrete prompt optimization via constrained generation for zero-shot re-ranker. In Findings of the Association for Computational Linguistics: ACL 2023, pages 960-971, Toronto, Canada. Association for Computational Linguistics.   \nJoel E Denny. 2010. PSLR (1): Pseudo-scannerless minimal LR (1) for the deterministic parsing of composite languages. Ph.D. thesis, Clemson University.   \nJoel E Denny and Brian A Malloy. 2008. IeIr (1) practical Ir (1) parser tables for non-lr (1) grammars with conflict resolution. In Proceedings of the 2008 ACM symposium on Applied computing, pages 240-245.   \nFranklin Lewis DeRemer. 1969. Practical translators for LR (k) languages. Ph.D. thesis, Massachusetts Institute of Technology.   \nYihong Dong, Xue Jiang, Yuchen Liu, Ge Li, and Zhi Jin. 2022. Codepad: Sequence-based code generation with pushdown automaton. arXiv preprint arXiv:2211.00818.   \nYihong Dong, Ge Li, and Zhi Jin. 2023. Codep: grammatical seq2seq model for general-purpose code generation. In Proceedings of the 32nd ACM SIGSOFT International Symposium on Software Testing and Analysis, pages 188-198.   \nYixin Dong, Charlie F. Ruan, Yaxing Cai, Ruihang Lai, Ziyi Xu, Yilong Zhao, and Tianqi Chen. 2024. Xgrammar: Flexible and efficient structured generation engine for large language models. Preprint, arXiv:2411.15100.   \nJiafei Duan, Samson Yu, Hui Li Tan, Hongyuan Zhu, and Cheston Tan. 2022. A survey of embodied ai: From simulators to research tasks. IEEE Transactions on Emerging Topics in Computational Intelligence, 6(2):230-244.   \nAbhimanyu Dubey, Abhinav Jauhri, Abhinav Pandey, Abhishek Kadian, Ahmad Al-Dahle, Aiesha Letman, Akhil Mathur, Alan Schelten, Amy Yang, Angela Fan, et al. 2024. The llama 3 herd of models. arXiv preprint arXiv:2407.21783.\n\nJohn GF Francis. 1961. The qr transformation a unitary analogue to the Ir transformation—part 1. The Computer Journal, 4(3):265-271.   \nGeorgi Gerganov. 2023. llama.cpp. LLM inference in C/C++.   \nRuihao Gong, Shihao Bai, Siyu Wu, Yunqian Fan, Zai-jun Wang, Xiuhong Li, Hailong Yang, and Xianglong Liu. 2025. Past-future scheduler for llm serving under sla guarantees. In Proceedings of the 30th ACM International Conference on Architectural Support for Programming Languages and Operating Systems, Volume 2, ASPLOS '25, page 798-813, New York, NY, USA. Association for Computing Machinery.   \nDaya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Ruoyu Zhang, Runxin Xu, Qihao Zhu, Shirong Ma, Peiyi Wang, Xiao Bi, et al. 2025. Deepseek-r1: Incentivizing reasoning capability in llms via reinforcement learning. arXiv preprint arXiv:2501.12948.   \nJohn E Hopcroft, Rajeev Motwani, and Jeffrey D Ullman. 2001. Introduction to automata theory, languages, and computation. Acm Sigact News, 32(1):60-65.   \nJ. Edward Hu, Huda Khayrallah, Ryan Culkin, Patrick Xia, Tongfei Chen, Matt Post, and Benjamin Van Durme. 2019. Improved lexically constrained decoding for translation and monolingual rewriting. In Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers), pages 839-850, Minneapolis, Minnesota. Association for Computational Linguistics.   \nDonald E. Knuth. 1965a. On the translation of languages from left to right. Information and Control, 8(6):607-639.   \nDonald E Knuth. 1965b. On the translation of languages from left to right. Information and control, 8(6):607-639.   \nTerry Koo, Frederick Liu, and Luheng He. 2024. Automata-based constraints for language model decoding. arXiv preprint arXiv:2407.08103.   \nAJ Korenjak. 1969. A practical method for constructing lr (k) processors. Communications of the ACM, 12(11):613-623.   \nDaniel Lehmann. 1971. Lr (k) grammars and deterministic languages. *Israel Journal of Mathematics*, 10:526-530.   \nZekun Li, Zhiyu Zoey Chen, Mike Ross, Patrick Huber, Seungwhan Moon, Zhaojiang Lin, Xin Luna Dong, Adithya Sagar, Xifeng Yan, and Paul A Crook. 2024a. Large language models as zero-shot dialogue state tracker through function calling. arXiv preprint arXiv:2402.10466.\n\nZelong Li, Wenyue Hua, Hao Wang, He Zhu, and Yongfeng Zhang. 2024b. Formal-llm: Integrating formal language and natural language for controllable llm-based agents. arXiv preprint arXiv:2402.00798.   \nAixin Liu, Bei Feng, Bin Wang, Bingxuan Wang, Bo Liu, Chenggang Zhao, Chengqi Dengr, Chong Ruan, Damai Dai, Daya Guo, et al. 2024. Deepseek-v2: A strong, economical, and efficient mixture-of-experts language model. arXiv preprint arXiv:2405.04434.   \nMark-Jan Nederhof and Giorgio Satta. 1996. Efficient tabular lr parsing. arXiv preprint cmp-lg/9605018.   \nNousResearch. 2024. Nousresearch/json-mode-eval.   \nOpenAI. 2024. Learning to reason with llms.   \nKanghee Park, Timothy Zhou, and Loris D'Antoni. 2025a. Flexible and efficient grammar-constrained decoding. arXiv preprint arXiv:2502.05111.   \nKanghee Park, Timothy Zhou, and Loris D'Antoni. 2025b. Flexible and efficient grammar-constrained decoding. Preprint, arXiv:2502.05111.   \nThomas Ruckstieß, Alana Huang, and Robin Vujanic. 2024. Origami: A generative transformer architecture for predictions from semi-structured data. arXiv preprint arXiv:2412.17348.   \nTorsten Scholak, Nathan Schucher, and Dzmitry Bahdanau. 2021. Picard: Parsing incrementally for constrained auto-regressive decoding from language models. arXiv preprint arXiv:2109.05093.   \nMichael Sipser. 1996. Introduction to the theory of computation. ACM Sigact News, 27(1):27-29.   \nHugo Touvron, Louis Martin, Kevin Stone, Peter Albert, Amjad Almahairi, Yasmine Babaei, Nikolay Bashlykov, Soumya Batra, Prajjwal Bhargava, Shruti Bhosale, et al. 2023. Llama 2: Open foundation and fine-tuned chat models. arXiv preprint arXiv:2307.09288.   \nShubham Ugare, Tarun Suresh, Hangoo Kang, Sasa Misailovic, and Gagandeep Singh. 2024. Syncode: LIm generation with grammar augmentation. Preprint, arXiv:2403.01632.   \nLeslie Valiant. 1973. Decision procedures for families of deterministic pushdown automata. Ph.D. thesis, University of Warwick.   \nLeslie G Valiant. 1975. Regularity and related problems for deterministic pushdown automata. Journal of the ACM (JACM), 22(1):1-10.   \nXuezhi Wang, Jason Wei, Dale Schuurmans, Quoc Le, Ed Chi, Sharan Narang, Aakanksha Chowdhery, and Denny Zhou. 2022. Self-consistency improves chain of thought reasoning in language models. arXiv preprint arXiv:2203.11171.\n\nJason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Fei Xia, Ed Chi, Quoc V Le, Denny Zhou, et al. 2022. Chain-of-thought prompting elicits reasoning in large language models. Advances in neural information processing systems, 35:24824-24837.   \nBrandon T Willard and Rémi Louf. 2023a. Efficient guided generation for large language models. arXiv preprint arXiv:2307.09702.   \nBrandon T. Willard and Rémi Louf. 2023b. Efficient guided generation for large language models. Preprint, arXiv:2307.09702.   \nAn Yang, Baosong Yang, Beichen Zhang, Binyuan Hui, Bo Zheng, Bowen Yu, Chengyuan Li, Dayiheng Liu, Fei Huang, Haoran Wei, et al. 2024a. Qwen2.5 technical report. arXiv preprint arXiv:2412.15115.   \nYijun Yang, Tianyi Zhou, Kanxue Li, Dapeng Tao, Lusong Li, Li Shen, Xiaodong He, Jing Jiang, and Yuhui Shi. 2024b. Embodied multi-modal agent trained by an llm from a parallel textworld. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pages 26275-26285.   \nTerry Yue Zhuo, Minh Chien Vu, Jenny Chim, Han Hu, Wenhao Yu, Ratnadira Widyasari, Imam Nur Bani Yusuf, Haolan Zhan, Junda He, Indraneil Paul, et al. 2024. Bigcodebench: Benchmarking code generation with diverse function calls and complex instructions. arXiv preprint arXiv:2406.15877.",
+      "rule_tier": "hard_skip_override",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.551::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA H800",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Implementation: We implemented our approach in 2,000 lines of Python code and about 1,000 lines of $\\mathrm{C + + }$ code, and we seamlessly integrated with LightLLM (Gong et al., 2025), a popular LLM inference framework.\n\nHardware Setup: All the experiments are tested on a server with Intel(R) Xeon(R) Gold 6448Y CPU and 8 NVIDIA H800 GPUs. Depending on\n\n![](images/d87ae48bed5512de190722d8df92d53e65bdb8da41cb1573145b63c4a89b7c69.jpg)  \nFigure 6: Per-step decoding overhead across different grammars and models. Outlines incurs an overhead of up to several seconds per step. Experiments contain (1) Chain-of-Thought grammar, (2) JSON grammar. Models contain (a) Meta-Llama-3-8B on $1 \\times \\mathrm{H}800$ , (b) Meta-Llama-2-70B on $4 \\times \\mathrm{H}800$ .\n\nthe scale of the experiment, we use different numbers of GPUs.\n\nBaselines: We choose the following representative works on grammar constraint decoding.\n\n- XGrammar: An open-source library for structured generation in large-language models. It significantly enhances performance in tasks like JSON grammar generation with reduced latency and storage.   \n- Outlines: A text generation library, it offers a Python tool for grammar-guided generation, offering a fast generation method. We use vLLM integrated with Outlines for evaluation.   \n- Llama.cpp: A C/C++-based LLM inference tool, and also includes support for grammar constraint decoding.\n\nDatasets: In our experiments, we utilized the JSON-mode-eval (NousResearch, 2024) dataset from NousResearch as prompts. As there is a scarcity of datasets for structured output, we collected some private data additionally and incorporated it into the test dataset.",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup"
+    },
+    {
+      "window_id": "2025.acl-long.551::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "H800",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Implementation: We implemented our approach in 2,000 lines of Python code and about 1,000 lines of $\\mathrm{C + + }$ code, and we seamlessly integrated with LightLLM (Gong et al., 2025), a popular LLM inference framework.\n\nHardware Setup: All the experiments are tested on a server with Intel(R) Xeon(R) Gold 6448Y CPU and 8 NVIDIA H800 GPUs. Depending on\n\n![](images/d87ae48bed5512de190722d8df92d53e65bdb8da41cb1573145b63c4a89b7c69.jpg)  \nFigure 6: Per-step decoding overhead across different grammars and models. Outlines incurs an overhead of up to several seconds per step. Experiments contain (1) Chain-of-Thought grammar, (2) JSON grammar. Models contain (a) Meta-Llama-3-8B on $1 \\times \\mathrm{H}800$ , (b) Meta-Llama-2-70B on $4 \\times \\mathrm{H}800$ .\n\nthe scale of the experiment, we use different numbers of GPUs.\n\nBaselines: We choose the following representative works on grammar constraint decoding.\n\n- XGrammar: An open-source library for structured generation in large-language models. It significantly enhances performance in tasks like JSON grammar generation with reduced latency and storage.   \n- Outlines: A text generation library, it offers a Python tool for grammar-guided generation, offering a fast generation method. We use vLLM integrated with Outlines for evaluation.   \n- Llama.cpp: A C/C++-based LLM inference tool, and also includes support for grammar constraint decoding.\n\nDatasets: In our experiments, we utilized the JSON-mode-eval (NousResearch, 2024) dataset from NousResearch as prompts. As there is a scarcity of datasets for structured output, we collected some private data additionally and incorporated it into the test dataset.",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup"
+    },
+    {
+      "window_id": "2025.acl-long.551::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "H800",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "Implementation: We implemented our approach in 2,000 lines of Python code and about 1,000 lines of $\\mathrm{C + + }$ code, and we seamlessly integrated with LightLLM (Gong et al., 2025), a popular LLM inference framework.\n\nHardware Setup: All the experiments are tested on a server with Intel(R) Xeon(R) Gold 6448Y CPU and 8 NVIDIA H800 GPUs. Depending on\n\n![](images/d87ae48bed5512de190722d8df92d53e65bdb8da41cb1573145b63c4a89b7c69.jpg)  \nFigure 6: Per-step decoding overhead across different grammars and models. Outlines incurs an overhead of up to several seconds per step. Experiments contain (1) Chain-of-Thought grammar, (2) JSON grammar. Models contain (a) Meta-Llama-3-8B on $1 \\times \\mathrm{H}800$ , (b) Meta-Llama-2-70B on $4 \\times \\mathrm{H}800$ .\n\nthe scale of the experiment, we use different numbers of GPUs.\n\nBaselines: We choose the following representative works on grammar constraint decoding.\n\n- XGrammar: An open-source library for structured generation in large-language models. It significantly enhances performance in tasks like JSON grammar generation with reduced latency and storage.   \n- Outlines: A text generation library, it offers a Python tool for grammar-guided generation, offering a fast generation method. We use vLLM integrated with Outlines for evaluation.   \n- Llama.cpp: A C/C++-based LLM inference tool, and also includes support for grammar constraint decoding.\n\nDatasets: In our experiments, we utilized the JSON-mode-eval (NousResearch, 2024) dataset from NousResearch as prompts. As there is a scarcity of datasets for structured output, we collected some private data additionally and incorporated it into the test dataset.",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup"
+    },
+    {
+      "window_id": "2025.acl-long.551::sections::6",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "H800",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "This work addressed the limitations of existing structured generation approaches by proposing a DPDA-based methodology $(\\mathrm{Pre}^3)$ , which integrates\n\nTable 2: Decode batch inference time comparison between our method and XGrammar. The “-” marker stands for the batch size cannot be executed on the given hardware setup.   \n\n<table><tr><td>Evaluation Configuration</td><td>Method</td><td>16</td><td>32</td><td>64</td><td>128</td><td>256</td><td>512</td><td>1024</td></tr><tr><td rowspan=\"2\">Llama-3-8B (Dubey et al., 2024)</td><td>XGrammar (ms)</td><td>15.19</td><td>43.69</td><td>52.07</td><td>65.21</td><td>90.98</td><td>147.64</td><td>272.77</td></tr><tr><td>Pre3(ms)</td><td>11.77</td><td>31.12</td><td>35.88</td><td>45.32</td><td>64.42</td><td>104.46</td><td>201.16</td></tr><tr><td>2×H800</td><td>Reduction</td><td>↓22.49%</td><td>↓28.78%</td><td>↓30.09%</td><td>↓30.50%</td><td>↓29.20%</td><td>↓29.24%</td><td>↓26.25%</td></tr><tr><td rowspan=\"2\">DeepSeek-V2-Lite-Chat (Liu et al., 2024)</td><td>XGrammar (ms)</td><td>51.76</td><td>59.45</td><td>77.74</td><td>104.06</td><td>121.46</td><td>-</td><td>-</td></tr><tr><td>Pre3(ms)</td><td>49.91</td><td>53.71</td><td>54.41</td><td>61.63</td><td>75.47</td><td>-</td><td>-</td></tr><tr><td>15.7B 2×H800</td><td>Reduction</td><td>↓3.57%</td><td>↓9.65%</td><td>↓30.01%</td><td>↓40.78%</td><td>↓37.86%</td><td>-</td><td>-</td></tr><tr><td rowspan=\"2\">Qwen2-14B (Yang et al., 2024a)</td><td>XGrammar (ms)</td><td>16.77</td><td>47.94</td><td>57.05</td><td>74.54</td><td>98.64</td><td>162.47</td><td>285.42</td></tr><tr><td>Pre3(ms)</td><td>16.52</td><td>47.94</td><td>47.89</td><td>65.50</td><td>90.20</td><td>143.83</td><td>232.18</td></tr><tr><td>INT8 2×H800</td><td>Reduction</td><td>↓1.52%</td><td>↓0.12%</td><td>↓2.37%</td><td>↓12.14%</td><td>↓8.55%</td><td>↓11.47%</td><td>↓18.65%</td></tr><tr><td rowspan=\"2\">Llama-2-70B (Touvron et al., 2023)</td><td>XGrammar (ms)</td><td>28.75</td><td>55.12</td><td>56.94</td><td>68.79</td><td>85.92</td><td>-</td><td>-</td></tr><tr><td>Pre3(ms)</td><td>27.20</td><td>54.24</td><td>54.18</td><td>62.27</td><td>75.72</td><td>-</td><td>-</td></tr><tr><td>4×H800</td><td>Reduction</td><td>↓5.39%</td><td>↓1.60%</td><td>↓4.85%</td><td>↓9.48%</td><td>↓11.87%</td><td>-</td><td>-</td></tr></table>\n\n![](images/88953cd97caeaef78da7fc418e4f0d1083d103fec25c6ed0b18338d2a3007540.jpg)\n\n![](images/8138d51f0f772476ef011636ec82f9c622c632540664fca0da910b72c7101fa2.jpg)\n\n![](images/4d4c677d562da6c88cf2337f9a382a4bd0e41a2e92760f6af208cd915781d645.jpg)  \nFigure 7: System throughput based on different models and concurrency levels. Left: Llama3-8B, Middle: Llama2-70B, Right: DeepSeek-V2-Lite-Chat.\n\nTable 3: Per-step decode time comparison between our method and XGrammar.   \n\n<table><tr><td></td><td colspan=\"2\">Llama-3-8B</td><td colspan=\"2\">Llama-2-70B</td></tr><tr><td>Batchsize</td><td>Pre3</td><td>XGrammar</td><td>Pre3</td><td>XGrammar</td></tr><tr><td>1</td><td>0.5172</td><td>0.5531</td><td>0.2163</td><td>0.3030</td></tr><tr><td>4</td><td>0.6537</td><td>0.9327</td><td>0.2407</td><td>0.3310</td></tr></table>\n\nCycle-aware Deterministic Pushdown Automata Construction and Prefix-conditioned Edge Optimization. $\\mathrm{Pre}^3$ significantly outperforms existing SOTA baselines by up to $40\\%$ in throughput and exhibits greater advantages with large batch sizes.",
+      "section_number": "6",
+      "section_title": "conclusion",
+      "normalized_section_title": "conclusion"
+    },
+    {
+      "window_id": "2025.acl-long.551::sections::6",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "H800",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "This work addressed the limitations of existing structured generation approaches by proposing a DPDA-based methodology $(\\mathrm{Pre}^3)$ , which integrates\n\nTable 2: Decode batch inference time comparison between our method and XGrammar. The “-” marker stands for the batch size cannot be executed on the given hardware setup.   \n\n<table><tr><td>Evaluation Configuration</td><td>Method</td><td>16</td><td>32</td><td>64</td><td>128</td><td>256</td><td>512</td><td>1024</td></tr><tr><td rowspan=\"2\">Llama-3-8B (Dubey et al., 2024)</td><td>XGrammar (ms)</td><td>15.19</td><td>43.69</td><td>52.07</td><td>65.21</td><td>90.98</td><td>147.64</td><td>272.77</td></tr><tr><td>Pre3(ms)</td><td>11.77</td><td>31.12</td><td>35.88</td><td>45.32</td><td>64.42</td><td>104.46</td><td>201.16</td></tr><tr><td>2×H800</td><td>Reduction</td><td>↓22.49%</td><td>↓28.78%</td><td>↓30.09%</td><td>↓30.50%</td><td>↓29.20%</td><td>↓29.24%</td><td>↓26.25%</td></tr><tr><td rowspan=\"2\">DeepSeek-V2-Lite-Chat (Liu et al., 2024)</td><td>XGrammar (ms)</td><td>51.76</td><td>59.45</td><td>77.74</td><td>104.06</td><td>121.46</td><td>-</td><td>-</td></tr><tr><td>Pre3(ms)</td><td>49.91</td><td>53.71</td><td>54.41</td><td>61.63</td><td>75.47</td><td>-</td><td>-</td></tr><tr><td>15.7B 2×H800</td><td>Reduction</td><td>↓3.57%</td><td>↓9.65%</td><td>↓30.01%</td><td>↓40.78%</td><td>↓37.86%</td><td>-</td><td>-</td></tr><tr><td rowspan=\"2\">Qwen2-14B (Yang et al., 2024a)</td><td>XGrammar (ms)</td><td>16.77</td><td>47.94</td><td>57.05</td><td>74.54</td><td>98.64</td><td>162.47</td><td>285.42</td></tr><tr><td>Pre3(ms)</td><td>16.52</td><td>47.94</td><td>47.89</td><td>65.50</td><td>90.20</td><td>143.83</td><td>232.18</td></tr><tr><td>INT8 2×H800</td><td>Reduction</td><td>↓1.52%</td><td>↓0.12%</td><td>↓2.37%</td><td>↓12.14%</td><td>↓8.55%</td><td>↓11.47%</td><td>↓18.65%</td></tr><tr><td rowspan=\"2\">Llama-2-70B (Touvron et al., 2023)</td><td>XGrammar (ms)</td><td>28.75</td><td>55.12</td><td>56.94</td><td>68.79</td><td>85.92</td><td>-</td><td>-</td></tr><tr><td>Pre3(ms)</td><td>27.20</td><td>54.24</td><td>54.18</td><td>62.27</td><td>75.72</td><td>-</td><td>-</td></tr><tr><td>4×H800</td><td>Reduction</td><td>↓5.39%</td><td>↓1.60%</td><td>↓4.85%</td><td>↓9.48%</td><td>↓11.87%</td><td>-</td><td>-</td></tr></table>\n\n![](images/88953cd97caeaef78da7fc418e4f0d1083d103fec25c6ed0b18338d2a3007540.jpg)\n\n![](images/8138d51f0f772476ef011636ec82f9c622c632540664fca0da910b72c7101fa2.jpg)\n\n![](images/4d4c677d562da6c88cf2337f9a382a4bd0e41a2e92760f6af208cd915781d645.jpg)  \nFigure 7: System throughput based on different models and concurrency levels. Left: Llama3-8B, Middle: Llama2-70B, Right: DeepSeek-V2-Lite-Chat.\n\nTable 3: Per-step decode time comparison between our method and XGrammar.   \n\n<table><tr><td></td><td colspan=\"2\">Llama-3-8B</td><td colspan=\"2\">Llama-2-70B</td></tr><tr><td>Batchsize</td><td>Pre3</td><td>XGrammar</td><td>Pre3</td><td>XGrammar</td></tr><tr><td>1</td><td>0.5172</td><td>0.5531</td><td>0.2163</td><td>0.3030</td></tr><tr><td>4</td><td>0.6537</td><td>0.9327</td><td>0.2407</td><td>0.3310</td></tr></table>\n\nCycle-aware Deterministic Pushdown Automata Construction and Prefix-conditioned Edge Optimization. $\\mathrm{Pre}^3$ significantly outperforms existing SOTA baselines by up to $40\\%$ in throughput and exhibits greater advantages with large batch sizes.",
+      "section_number": "6",
+      "section_title": "conclusion",
+      "normalized_section_title": "conclusion"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.551::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA H800",
+      "cleaned_hardware_name": "nvidia h800",
+      "normalized_hardware_name": "NVIDIA H800 PCIe",
+      "benchmark_hardware_name": "NVIDIA H800 PCIe",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "evidence": "Implementation: We implemented our approach in 2,000 lines of Python code and about 1,000 lines of $\\mathrm{C + + }$ code, and we seamlessly integrated with LightLLM (Gong et al., 2025), a popular LLM inference framework.\n\nHardware Setup: All the experiments are tested on a server with Intel(R) Xeon(R) Gold 6448Y CPU and 8 NVIDIA H800 GPUs. Depending on\n\n![](images/d87ae48bed5512de190722d8df92d53e65bdb8da41cb1573145b63c4a89b7c69.jpg)  \nFigure 6: Per-step decoding overhead across different grammars and models. Outlines incurs an overhead of up to several seconds per step. Experiments contain (1) Chain-of-Thought grammar, (2) JSON grammar. Models contain (a) Meta-Llama-3-8B on $1 \\times \\mathrm{H}800$ , (b) Meta-Llama-2-70B on $4 \\times \\mathrm{H}800$ .\n\nthe scale of the experiment, we use different numbers of GPUs.\n\nBaselines: We choose the following representative works on grammar constraint decoding.\n\n- XGrammar: An open-source library for structured generation in large-language models. It significantly enhances performance in tasks like JSON grammar generation with reduced latency and storage.   \n- Outlines: A text generation library, it offers a Python tool for grammar-guided generation, offering a fast generation method. We use vLLM integrated with Outlines for evaluation.   \n- Llama.cpp: A C/C++-based LLM inference tool, and also includes support for grammar constraint decoding.\n\nDatasets: In our experiments, we utilized the JSON-mode-eval (NousResearch, 2024) dataset from NousResearch as prompts. As there is a scarcity of datasets for structured output, we collected some private data additionally and incorporated it into the test dataset.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.551::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "H800",
+      "cleaned_hardware_name": "h800",
+      "normalized_hardware_name": "NVIDIA H800 PCIe",
+      "benchmark_hardware_name": "NVIDIA H800 PCIe",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "evidence": "Implementation: We implemented our approach in 2,000 lines of Python code and about 1,000 lines of $\\mathrm{C + + }$ code, and we seamlessly integrated with LightLLM (Gong et al., 2025), a popular LLM inference framework.\n\nHardware Setup: All the experiments are tested on a server with Intel(R) Xeon(R) Gold 6448Y CPU and 8 NVIDIA H800 GPUs. Depending on\n\n![](images/d87ae48bed5512de190722d8df92d53e65bdb8da41cb1573145b63c4a89b7c69.jpg)  \nFigure 6: Per-step decoding overhead across different grammars and models. Outlines incurs an overhead of up to several seconds per step. Experiments contain (1) Chain-of-Thought grammar, (2) JSON grammar. Models contain (a) Meta-Llama-3-8B on $1 \\times \\mathrm{H}800$ , (b) Meta-Llama-2-70B on $4 \\times \\mathrm{H}800$ .\n\nthe scale of the experiment, we use different numbers of GPUs.\n\nBaselines: We choose the following representative works on grammar constraint decoding.\n\n- XGrammar: An open-source library for structured generation in large-language models. It significantly enhances performance in tasks like JSON grammar generation with reduced latency and storage.   \n- Outlines: A text generation library, it offers a Python tool for grammar-guided generation, offering a fast generation method. We use vLLM integrated with Outlines for evaluation.   \n- Llama.cpp: A C/C++-based LLM inference tool, and also includes support for grammar constraint decoding.\n\nDatasets: In our experiments, we utilized the JSON-mode-eval (NousResearch, 2024) dataset from NousResearch as prompts. As there is a scarcity of datasets for structured output, we collected some private data additionally and incorporated it into the test dataset.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.551::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "H800",
+      "cleaned_hardware_name": "h800",
+      "normalized_hardware_name": "NVIDIA H800 PCIe",
+      "benchmark_hardware_name": "NVIDIA H800 PCIe",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "evidence": "Implementation: We implemented our approach in 2,000 lines of Python code and about 1,000 lines of $\\mathrm{C + + }$ code, and we seamlessly integrated with LightLLM (Gong et al., 2025), a popular LLM inference framework.\n\nHardware Setup: All the experiments are tested on a server with Intel(R) Xeon(R) Gold 6448Y CPU and 8 NVIDIA H800 GPUs. Depending on\n\n![](images/d87ae48bed5512de190722d8df92d53e65bdb8da41cb1573145b63c4a89b7c69.jpg)  \nFigure 6: Per-step decoding overhead across different grammars and models. Outlines incurs an overhead of up to several seconds per step. Experiments contain (1) Chain-of-Thought grammar, (2) JSON grammar. Models contain (a) Meta-Llama-3-8B on $1 \\times \\mathrm{H}800$ , (b) Meta-Llama-2-70B on $4 \\times \\mathrm{H}800$ .\n\nthe scale of the experiment, we use different numbers of GPUs.\n\nBaselines: We choose the following representative works on grammar constraint decoding.\n\n- XGrammar: An open-source library for structured generation in large-language models. It significantly enhances performance in tasks like JSON grammar generation with reduced latency and storage.   \n- Outlines: A text generation library, it offers a Python tool for grammar-guided generation, offering a fast generation method. We use vLLM integrated with Outlines for evaluation.   \n- Llama.cpp: A C/C++-based LLM inference tool, and also includes support for grammar constraint decoding.\n\nDatasets: In our experiments, we utilized the JSON-mode-eval (NousResearch, 2024) dataset from NousResearch as prompts. As there is a scarcity of datasets for structured output, we collected some private data additionally and incorporated it into the test dataset.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.551::sections::6",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "H800",
+      "cleaned_hardware_name": "h800",
+      "normalized_hardware_name": "NVIDIA H800 PCIe",
+      "benchmark_hardware_name": "NVIDIA H800 PCIe",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "6",
+      "section_title": "conclusion",
+      "normalized_section_title": "conclusion",
+      "evidence": "This work addressed the limitations of existing structured generation approaches by proposing a DPDA-based methodology $(\\mathrm{Pre}^3)$ , which integrates\n\nTable 2: Decode batch inference time comparison between our method and XGrammar. The “-” marker stands for the batch size cannot be executed on the given hardware setup.   \n\n<table><tr><td>Evaluation Configuration</td><td>Method</td><td>16</td><td>32</td><td>64</td><td>128</td><td>256</td><td>512</td><td>1024</td></tr><tr><td rowspan=\"2\">Llama-3-8B (Dubey et al., 2024)</td><td>XGrammar (ms)</td><td>15.19</td><td>43.69</td><td>52.07</td><td>65.21</td><td>90.98</td><td>147.64</td><td>272.77</td></tr><tr><td>Pre3(ms)</td><td>11.77</td><td>31.12</td><td>35.88</td><td>45.32</td><td>64.42</td><td>104.46</td><td>201.16</td></tr><tr><td>2×H800</td><td>Reduction</td><td>↓22.49%</td><td>↓28.78%</td><td>↓30.09%</td><td>↓30.50%</td><td>↓29.20%</td><td>↓29.24%</td><td>↓26.25%</td></tr><tr><td rowspan=\"2\">DeepSeek-V2-Lite-Chat (Liu et al., 2024)</td><td>XGrammar (ms)</td><td>51.76</td><td>59.45</td><td>77.74</td><td>104.06</td><td>121.46</td><td>-</td><td>-</td></tr><tr><td>Pre3(ms)</td><td>49.91</td><td>53.71</td><td>54.41</td><td>61.63</td><td>75.47</td><td>-</td><td>-</td></tr><tr><td>15.7B 2×H800</td><td>Reduction</td><td>↓3.57%</td><td>↓9.65%</td><td>↓30.01%</td><td>↓40.78%</td><td>↓37.86%</td><td>-</td><td>-</td></tr><tr><td rowspan=\"2\">Qwen2-14B (Yang et al., 2024a)</td><td>XGrammar (ms)</td><td>16.77</td><td>47.94</td><td>57.05</td><td>74.54</td><td>98.64</td><td>162.47</td><td>285.42</td></tr><tr><td>Pre3(ms)</td><td>16.52</td><td>47.94</td><td>47.89</td><td>65.50</td><td>90.20</td><td>143.83</td><td>232.18</td></tr><tr><td>INT8 2×H800</td><td>Reduction</td><td>↓1.52%</td><td>↓0.12%</td><td>↓2.37%</td><td>↓12.14%</td><td>↓8.55%</td><td>↓11.47%</td><td>↓18.65%</td></tr><tr><td rowspan=\"2\">Llama-2-70B (Touvron et al., 2023)</td><td>XGrammar (ms)</td><td>28.75</td><td>55.12</td><td>56.94</td><td>68.79</td><td>85.92</td><td>-</td><td>-</td></tr><tr><td>Pre3(ms)</td><td>27.20</td><td>54.24</td><td>54.18</td><td>62.27</td><td>75.72</td><td>-</td><td>-</td></tr><tr><td>4×H800</td><td>Reduction</td><td>↓5.39%</td><td>↓1.60%</td><td>↓4.85%</td><td>↓9.48%</td><td>↓11.87%</td><td>-</td><td>-</td></tr></table>\n\n![](images/88953cd97caeaef78da7fc418e4f0d1083d103fec25c6ed0b18338d2a3007540.jpg)\n\n![](images/8138d51f0f772476ef011636ec82f9c622c632540664fca0da910b72c7101fa2.jpg)\n\n![](images/4d4c677d562da6c88cf2337f9a382a4bd0e41a2e92760f6af208cd915781d645.jpg)  \nFigure 7: System throughput based on different models and concurrency levels. Left: Llama3-8B, Middle: Llama2-70B, Right: DeepSeek-V2-Lite-Chat.\n\nTable 3: Per-step decode time comparison between our method and XGrammar.   \n\n<table><tr><td></td><td colspan=\"2\">Llama-3-8B</td><td colspan=\"2\">Llama-2-70B</td></tr><tr><td>Batchsize</td><td>Pre3</td><td>XGrammar</td><td>Pre3</td><td>XGrammar</td></tr><tr><td>1</td><td>0.5172</td><td>0.5531</td><td>0.2163</td><td>0.3030</td></tr><tr><td>4</td><td>0.6537</td><td>0.9327</td><td>0.2407</td><td>0.3310</td></tr></table>\n\nCycle-aware Deterministic Pushdown Automata Construction and Prefix-conditioned Edge Optimization. $\\mathrm{Pre}^3$ significantly outperforms existing SOTA baselines by up to $40\\%$ in throughput and exhibits greater advantages with large batch sizes.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.551::sections::6",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "H800",
+      "cleaned_hardware_name": "h800",
+      "normalized_hardware_name": "NVIDIA H800 PCIe",
+      "benchmark_hardware_name": "NVIDIA H800 PCIe",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "6",
+      "section_title": "conclusion",
+      "normalized_section_title": "conclusion",
+      "evidence": "This work addressed the limitations of existing structured generation approaches by proposing a DPDA-based methodology $(\\mathrm{Pre}^3)$ , which integrates\n\nTable 2: Decode batch inference time comparison between our method and XGrammar. The “-” marker stands for the batch size cannot be executed on the given hardware setup.   \n\n<table><tr><td>Evaluation Configuration</td><td>Method</td><td>16</td><td>32</td><td>64</td><td>128</td><td>256</td><td>512</td><td>1024</td></tr><tr><td rowspan=\"2\">Llama-3-8B (Dubey et al., 2024)</td><td>XGrammar (ms)</td><td>15.19</td><td>43.69</td><td>52.07</td><td>65.21</td><td>90.98</td><td>147.64</td><td>272.77</td></tr><tr><td>Pre3(ms)</td><td>11.77</td><td>31.12</td><td>35.88</td><td>45.32</td><td>64.42</td><td>104.46</td><td>201.16</td></tr><tr><td>2×H800</td><td>Reduction</td><td>↓22.49%</td><td>↓28.78%</td><td>↓30.09%</td><td>↓30.50%</td><td>↓29.20%</td><td>↓29.24%</td><td>↓26.25%</td></tr><tr><td rowspan=\"2\">DeepSeek-V2-Lite-Chat (Liu et al., 2024)</td><td>XGrammar (ms)</td><td>51.76</td><td>59.45</td><td>77.74</td><td>104.06</td><td>121.46</td><td>-</td><td>-</td></tr><tr><td>Pre3(ms)</td><td>49.91</td><td>53.71</td><td>54.41</td><td>61.63</td><td>75.47</td><td>-</td><td>-</td></tr><tr><td>15.7B 2×H800</td><td>Reduction</td><td>↓3.57%</td><td>↓9.65%</td><td>↓30.01%</td><td>↓40.78%</td><td>↓37.86%</td><td>-</td><td>-</td></tr><tr><td rowspan=\"2\">Qwen2-14B (Yang et al., 2024a)</td><td>XGrammar (ms)</td><td>16.77</td><td>47.94</td><td>57.05</td><td>74.54</td><td>98.64</td><td>162.47</td><td>285.42</td></tr><tr><td>Pre3(ms)</td><td>16.52</td><td>47.94</td><td>47.89</td><td>65.50</td><td>90.20</td><td>143.83</td><td>232.18</td></tr><tr><td>INT8 2×H800</td><td>Reduction</td><td>↓1.52%</td><td>↓0.12%</td><td>↓2.37%</td><td>↓12.14%</td><td>↓8.55%</td><td>↓11.47%</td><td>↓18.65%</td></tr><tr><td rowspan=\"2\">Llama-2-70B (Touvron et al., 2023)</td><td>XGrammar (ms)</td><td>28.75</td><td>55.12</td><td>56.94</td><td>68.79</td><td>85.92</td><td>-</td><td>-</td></tr><tr><td>Pre3(ms)</td><td>27.20</td><td>54.24</td><td>54.18</td><td>62.27</td><td>75.72</td><td>-</td><td>-</td></tr><tr><td>4×H800</td><td>Reduction</td><td>↓5.39%</td><td>↓1.60%</td><td>↓4.85%</td><td>↓9.48%</td><td>↓11.87%</td><td>-</td><td>-</td></tr></table>\n\n![](images/88953cd97caeaef78da7fc418e4f0d1083d103fec25c6ed0b18338d2a3007540.jpg)\n\n![](images/8138d51f0f772476ef011636ec82f9c622c632540664fca0da910b72c7101fa2.jpg)\n\n![](images/4d4c677d562da6c88cf2337f9a382a4bd0e41a2e92760f6af208cd915781d645.jpg)  \nFigure 7: System throughput based on different models and concurrency levels. Left: Llama3-8B, Middle: Llama2-70B, Right: DeepSeek-V2-Lite-Chat.\n\nTable 3: Per-step decode time comparison between our method and XGrammar.   \n\n<table><tr><td></td><td colspan=\"2\">Llama-3-8B</td><td colspan=\"2\">Llama-2-70B</td></tr><tr><td>Batchsize</td><td>Pre3</td><td>XGrammar</td><td>Pre3</td><td>XGrammar</td></tr><tr><td>1</td><td>0.5172</td><td>0.5531</td><td>0.2163</td><td>0.3030</td></tr><tr><td>4</td><td>0.6537</td><td>0.9327</td><td>0.2407</td><td>0.3310</td></tr></table>\n\nCycle-aware Deterministic Pushdown Automata Construction and Prefix-conditioned Edge Optimization. $\\mathrm{Pre}^3$ significantly outperforms existing SOTA baselines by up to $40\\%$ in throughput and exhibits greater advantages with large batch sizes.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.551::sections::2.1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "2.1",
+      "section_title": "llm constrained decoding",
+      "evidence": "Constrained decoding (Hu et al., 2019) enforces strict grammatical adherence by dynamically pruning invalid tokens during generation. While effective for structural compliance, existing methods face two key challenges: (1) handling diverse grammars, large vocabularies, and complex token-to-text mappings, and (2) computational inefficiency at scale, especially under large batch processing where dynamic validation creates sequential bottlenecks.\n\nOur empirical analysis reveals this critical limitation. When evaluating XGrammar on Meta-Llama-3-8B (2×H800 GPUs), constrained decoding exhibits up to 37.5% higher latency (147.64 ms vs. 92.23 ms) at batch size 512 compared to unconstrained decoding (Table 1). The performance gap grows with batch size due to non-parallelizable validation steps, which is a fundamental constraint in current approaches. These findings motivate the need for a new constrained decoding approach that maintains grammatical correctness while achieving better computational efficiency at scale."
+    },
+    {
+      "source_window_id": "2025.acl-long.551::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "evaluation",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.551::sections::4.4",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.4",
+      "section_title": "realworld deployment",
+      "evidence": "To evaluate the throughput in real-world service environments, we compare the performance of XGrammar and $\\mathrm{Pre}^3$ , under varying system concurrency levels. We conducted simulation experiments on Meta-Llama-3-8B (2×H800) and Meta-Llama-2-70B (4×H800), measuring the throughput in burst scenarios at different levels of concurrency.\n\nThe results are shown in Figure 7. Both $\\mathrm{Pre}^3$ and XGrammar have lower throughput than the Original system due to the added overhead introduced by constraint decoding, while $\\mathrm{Pre}^3$ demonstrated a significant improvement over XGrammar, achieving up to $20\\%$ higher throughput at higher concurrency levels, showing that $\\mathrm{Pre}^3$ provides higher throughput in end-to-end deployment."
+    },
+    {
+      "source_window_id": "2025.acl-long.551::sections::limitation",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "",
+      "section_title": "limitation",
+      "evidence": "While our work demonstrates significant improvements in constrained LLM decoding efficiency, several limitations and potential areas for improvement remain. Firstly, our method is optimized for LR(1) grammars, which cover most structured generation needs, but faces challenges with more complex $\\mathrm{LR}(k)$ grammars $(k > 1)$ . These require intricate state transitions and lookahead mechanisms, increasing DPDA construction and processing complexity. Future work should explore hybrid parsing or adaptive mechanisms to handle such cases efficiently. Second, our Python-based research prototype lacks production-level optimizations. Although suitable for experimentation, the implementation could benefit from hardware acceleration (e.g., GPU parallelization for grammar processing)\n\nand system-level optimizations. A future $\\mathrm{C}++/\\mathrm{Rust}$ implementation with fine-tuned memory management could significantly improve performance and scalability. Although preprocessing complexity scales with grammar size (due to increased edges and cycles), current processing times remain practical for real-world deployment. Addressing these limitations could unlock additional performance improvements and broaden the applicability of our approach."
+    },
+    {
+      "source_window_id": "2025.acl-long.551::sections::references",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "",
+      "section_title": "references",
+      "evidence": "AV ASU86, R Sethi Aho, and Ullman JD. 1986. Compilers: Principles, techniques, and tools.   \nAnthony Brohan, Noah Brown, Justice Carbajal, Yevgen Chebotar, Xi Chen, Krzysztof Choromanski, Tianli Ding, Danny Driess, Avinava Dubey, Chelsea Finn, et al. 2023. Rt-2: Vision-language-action models transfer web knowledge to robotic control. arXiv preprint arXiv:2307.15818.   \nTianle Cai, Xuezhi Wang, Tengyu Ma, Xinyun Chen, and Denny Zhou. 2023. Large language models as tool makers. arXiv preprint arXiv:2305.17126.   \nSukmin Cho, Soyeong Jeong, Jeong yeon Seo, and Jong Park. 2023. Discrete prompt optimization via constrained generation for zero-shot re-ranker. In Findings of the Association for Computational Linguistics: ACL 2023, pages 960-971, Toronto, Canada. Association for Computational Linguistics.   \nJoel E Denny. 2010. PSLR (1): Pseudo-scannerless minimal LR (1) for the deterministic parsing of composite languages. Ph.D. thesis, Clemson University.   \nJoel E Denny and Brian A Malloy. 2008. IeIr (1) practical Ir (1) parser tables for non-lr (1) grammars with conflict resolution. In Proceedings of the 2008 ACM symposium on Applied computing, pages 240-245.   \nFranklin Lewis DeRemer. 1969. Practical translators for LR (k) languages. Ph.D. thesis, Massachusetts Institute of Technology.   \nYihong Dong, Xue Jiang, Yuchen Liu, Ge Li, and Zhi Jin. 2022. Codepad: Sequence-based code generation with pushdown automaton. arXiv preprint arXiv:2211.00818.   \nYihong Dong, Ge Li, and Zhi Jin. 2023. Codep: grammatical seq2seq model for general-purpose code generation. In Proceedings of the 32nd ACM SIGSOFT International Symposium on Software Testing and Analysis, pages 188-198.   \nYixin Dong, Charlie F. Ruan, Yaxing Cai, Ruihang Lai, Ziyi Xu, Yilong Zhao, and Tianqi Chen. 2024. Xgrammar: Flexible and efficient structured generation engine for large language models. Preprint, arXiv:2411.15100.   \nJiafei Duan, Samson Yu, Hui Li Tan, Hongyuan Zhu, and Cheston Tan. 2022. A survey of embodied ai: From simulators to research tasks. IEEE Transactions on Emerging Topics in Computational Intelligence, 6(2):230-244.   \nAbhimanyu Dubey, Abhinav Jauhri, Abhinav Pandey, Abhishek Kadian, Ahmad Al-Dahle, Aiesha Letman, Akhil Mathur, Alan Schelten, Amy Yang, Angela Fan, et al. 2024. The llama 3 herd of models. arXiv preprint arXiv:2407.21783.\n\nJohn GF Francis. 1961. The qr transformation a unitary analogue to the Ir transformation—part 1. The Computer Journal, 4(3):265-271.   \nGeorgi Gerganov. 2023. llama.cpp. LLM inference in C/C++.   \nRuihao Gong, Shihao Bai, Siyu Wu, Yunqian Fan, Zai-jun Wang, Xiuhong Li, Hailong Yang, and Xianglong Liu. 2025. Past-future scheduler for llm serving under sla guarantees. In Proceedings of the 30th ACM International Conference on Architectural Support for Programming Languages and Operating Systems, Volume 2, ASPLOS '25, page 798-813, New York, NY, USA. Association for Computing Machinery.   \nDaya Guo, Dejian Yang, Haowei Zhang, Junxiao Song, Ruoyu Zhang, Runxin Xu, Qihao Zhu, Shirong Ma, Peiyi Wang, Xiao Bi, et al. 2025. Deepseek-r1: Incentivizing reasoning capability in llms via reinforcement learning. arXiv preprint arXiv:2501.12948.   \nJohn E Hopcroft, Rajeev Motwani, and Jeffrey D Ullman. 2001. Introduction to automata theory, languages, and computation. Acm Sigact News, 32(1):60-65.   \nJ. Edward Hu, Huda Khayrallah, Ryan Culkin, Patrick Xia, Tongfei Chen, Matt Post, and Benjamin Van Durme. 2019. Improved lexically constrained decoding for translation and monolingual rewriting. In Proceedings of the 2019 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long and Short Papers), pages 839-850, Minneapolis, Minnesota. Association for Computational Linguistics.   \nDonald E. Knuth. 1965a. On the translation of languages from left to right. Information and Control, 8(6):607-639.   \nDonald E Knuth. 1965b. On the translation of languages from left to right. Information and control, 8(6):607-639.   \nTerry Koo, Frederick Liu, and Luheng He. 2024. Automata-based constraints for language model decoding. arXiv preprint arXiv:2407.08103.   \nAJ Korenjak. 1969. A practical method for constructing lr (k) processors. Communications of the ACM, 12(11):613-623.   \nDaniel Lehmann. 1971. Lr (k) grammars and deterministic languages. *Israel Journal of Mathematics*, 10:526-530.   \nZekun Li, Zhiyu Zoey Chen, Mike Ross, Patrick Huber, Seungwhan Moon, Zhaojiang Lin, Xin Luna Dong, Adithya Sagar, Xifeng Yan, and Paul A Crook. 2024a. Large language models as zero-shot dialogue state tracker through function calling. arXiv preprint arXiv:2402.10466.\n\nZelong Li, Wenyue Hua, Hao Wang, He Zhu, and Yongfeng Zhang. 2024b. Formal-llm: Integrating formal language and natural language for controllable llm-based agents. arXiv preprint arXiv:2402.00798.   \nAixin Liu, Bei Feng, Bin Wang, Bingxuan Wang, Bo Liu, Chenggang Zhao, Chengqi Dengr, Chong Ruan, Damai Dai, Daya Guo, et al. 2024. Deepseek-v2: A strong, economical, and efficient mixture-of-experts language model. arXiv preprint arXiv:2405.04434.   \nMark-Jan Nederhof and Giorgio Satta. 1996. Efficient tabular lr parsing. arXiv preprint cmp-lg/9605018.   \nNousResearch. 2024. Nousresearch/json-mode-eval.   \nOpenAI. 2024. Learning to reason with llms.   \nKanghee Park, Timothy Zhou, and Loris D'Antoni. 2025a. Flexible and efficient grammar-constrained decoding. arXiv preprint arXiv:2502.05111.   \nKanghee Park, Timothy Zhou, and Loris D'Antoni. 2025b. Flexible and efficient grammar-constrained decoding. Preprint, arXiv:2502.05111.   \nThomas Ruckstieß, Alana Huang, and Robin Vujanic. 2024. Origami: A generative transformer architecture for predictions from semi-structured data. arXiv preprint arXiv:2412.17348.   \nTorsten Scholak, Nathan Schucher, and Dzmitry Bahdanau. 2021. Picard: Parsing incrementally for constrained auto-regressive decoding from language models. arXiv preprint arXiv:2109.05093.   \nMichael Sipser. 1996. Introduction to the theory of computation. ACM Sigact News, 27(1):27-29.   \nHugo Touvron, Louis Martin, Kevin Stone, Peter Albert, Amjad Almahairi, Yasmine Babaei, Nikolay Bashlykov, Soumya Batra, Prajjwal Bhargava, Shruti Bhosale, et al. 2023. Llama 2: Open foundation and fine-tuned chat models. arXiv preprint arXiv:2307.09288.   \nShubham Ugare, Tarun Suresh, Hangoo Kang, Sasa Misailovic, and Gagandeep Singh. 2024. Syncode: LIm generation with grammar augmentation. Preprint, arXiv:2403.01632.   \nLeslie Valiant. 1973. Decision procedures for families of deterministic pushdown automata. Ph.D. thesis, University of Warwick.   \nLeslie G Valiant. 1975. Regularity and related problems for deterministic pushdown automata. Journal of the ACM (JACM), 22(1):1-10.   \nXuezhi Wang, Jason Wei, Dale Schuurmans, Quoc Le, Ed Chi, Sharan Narang, Aakanksha Chowdhery, and Denny Zhou. 2022. Self-consistency improves chain of thought reasoning in language models. arXiv preprint arXiv:2203.11171.\n\nJason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Fei Xia, Ed Chi, Quoc V Le, Denny Zhou, et al. 2022. Chain-of-thought prompting elicits reasoning in large language models. Advances in neural information processing systems, 35:24824-24837.   \nBrandon T Willard and Rémi Louf. 2023a. Efficient guided generation for large language models. arXiv preprint arXiv:2307.09702.   \nBrandon T. Willard and Rémi Louf. 2023b. Efficient guided generation for large language models. Preprint, arXiv:2307.09702.   \nAn Yang, Baosong Yang, Beichen Zhang, Binyuan Hui, Bo Zheng, Bowen Yu, Chengyuan Li, Dayiheng Liu, Fei Huang, Haoran Wei, et al. 2024a. Qwen2.5 technical report. arXiv preprint arXiv:2412.15115.   \nYijun Yang, Tianyi Zhou, Kanxue Li, Dapeng Tao, Lusong Li, Li Shen, Xiaodong He, Jing Jiang, and Yuhui Shi. 2024b. Embodied multi-modal agent trained by an llm from a parallel textworld. In Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition, pages 26275-26285.   \nTerry Yue Zhuo, Minh Chien Vu, Jenny Chim, Han Hu, Wenhao Yu, Ratnadira Widyasari, Imam Nur Bani Yusuf, Haolan Zhan, Junda He, Indraneil Paul, et al. 2024. Bigcodebench: Benchmarking code generation with diverse function calls and complex instructions. arXiv preprint arXiv:2406.15877."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.1",
+      "6"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA H800 PCIe",
+        "num": 8
+      },
+      {
+        "name": "NVIDIA H800 PCIe",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA H800 PCIe",
+        "num": 4
+      },
+      {
+        "name": "NVIDIA H800 PCIe",
+        "num": 2
+      },
+      {
+        "name": "NVIDIA H800 PCIe",
+        "num": 4
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.551\\auto\\full.md",
+    "source_md_sha256": "9e0bcf61fc02c659daa0787ffe256c249dca602cd5df69c9ade05f3d3c57c444",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

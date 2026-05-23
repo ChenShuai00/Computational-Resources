@@ -1,0 +1,162 @@
+{
+  "paper_id": "2025.acl-long.1451",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.1451::sections::4",
+      "paper_id": "2025.acl-long.1451",
+      "section_number": "4",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "Neural machine translation (NMT) systems traditionally use millions of parallel sentences for effective training from scratch. Given our limited parallel data, we instead adopt a transfer learning approach, leveraging existing models pre-trained on related languages. Recent work has demonstrated the effectiveness of various transfer learning techniques for low-resource machine translation, including parameter-efficient model adaptation (Chronopoulou et al., 2023), fine-tuning on synthetic data (Sant et al., 2024), and large language models (LLMs) (Moslem et al., 2023). Building on these insights, we fine-tune the No Language Left Behind (NLLB) model (Team et al., 2024), a multilingual translation system supporting 203 languages, including languages related to our low-resource languages.\n\nFor evaluation, we employ BLEU (Papineni et al., 2002) which calculates $n$ -gram precision with a brevity penalty to account for translation length. We also use chrF (Popovic, 2015) for our baseline system which computes character-level $n$ -gram F-scores, offering sensitivity to both word-level accuracy and morphological variations in the translations. We use the SacreBLEU implementation (Post, 2018) for both metrics. While more recent metrics such as COMET (Rei et al., 2020) and its reference-free variant COMET-QE (Kocmi et al., 2022) have shown promise, the extreme data scarcity in our target languages precludes their use.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1451::sections::4.1",
+      "paper_id": "2025.acl-long.1451",
+      "section_number": "4.1",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "We evaluate NLLB's zero-shot performance using two model variants: 3.3B and its 600M distilled variant. Since NLLB's training data does not include language indicator tokens for our selected languages, we assess the model's performance by leveraging linguistically and geographically proximate languages supported in NLLB. These in\n\nTable 2: Initialization of our fine-tuned model for the selected languages by adding new tokens to NLLB.   \n\n<table><tr><td>Language</td><td>New Token</td><td>Initialization</td></tr><tr><td>Luri Bakhtiari (BQI)</td><td>bqi_Arab</td><td>Farsi</td></tr><tr><td>Gilaki (GLK)</td><td>glk_Arab</td><td>Farsi</td></tr><tr><td>Hawrami (HAC)</td><td>hac_Arab</td><td>C. Kurdish</td></tr><tr><td>Laki (LKII)</td><td>lki_Arab</td><td>C. Kurdish</td></tr><tr><td>Mazandarani (MZN)</td><td>mzn_Arab</td><td>Farsi</td></tr><tr><td>Southern Kurdish (SDH)</td><td>sdh_Arab</td><td>C. Kurdish</td></tr><tr><td>Talysh (TLY)</td><td>tly_Arab</td><td>Farsi</td></tr><tr><td>Zazaki (ZZA)</td><td>zza_Latn</td><td>N. Kurdish</td></tr></table>\n\nclude Arabic (ARA), Turkish (TUR), Central Kurdish (CKB), Northern Kurdish (KMR), Farsi (PES) and English (ENG).\n\nTransliteration To mitigate the impact of divergent writing systems (Perso-Arabic-based and Latin-based scripts), we experiment with a transliteration pipeline as well. For Southern Kurdish, Laki, Hawrami, and Zazaki varieties, we extend the rule-based transliteration system developed by Ahmadi (2019) with variety-specific character mappings, e.g., $\\langle \\dot{z} \\rangle$ to $\\langle \\ddot{o} \\rangle$ . For the remaining languages, we employ phonetic-based character mapping, converting each character to its closest phonological equivalent in the Latin script, e.g., $\\langle \\ddot{z} \\rangle$ to $\\langle \\dot{o} \\rangle$ .",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1451::sections::4.3",
+      "paper_id": "2025.acl-long.1451",
+      "section_number": "4.3",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Datasets We explore two experimental setups:\n\n- Base Setup $(\\mathcal{M}_{\\mathrm{base}})$ : We utilize the train sets, each containing sentences paired with English translations. For languages lacking dedicated training data, namely (BQI and TLY), we re-purpose their validation sets as training data due to resource constraints.   \n- Augmented Setup $(\\mathcal{M}_{\\mathrm{aug}})$ : Given that our parallel corpora include translations in languages besides English, we leverage these additional translations to expand our training data. Specifically, we use NLLB to translate sentences into English from Northern Kurdish for Zazaki and from Farsi for all other languages.\n\nFor fine-tuning NLLB, we merge all parallel sentences and convert to JSON Lines format. Each entry contains source sentences with our newly introduced tokens paired with their English translations, specified by eng_Latin. The distribution of data across both setups is illustrated in Figure C.3.\n\nImplementation Focused on $\\mathrm{X}\\rightarrow$ English translation direction, we implement our fine-tuning pipeline using the NLLB tokenizer from Huggingface Transformers. Our implementation builds upon the NLLB architecture, which is based on the M2M100 encoder-decoder architecture (Fan et al., 2021). Given the multilingual context, it is important to handle multilingual tokenization by explicitly setting the source language token while fixing English (eng_Latin) as the target language. Based on the language token provided in the train set, the source language is specified during preprocessing and tokenization ensuring proper handling of multiple source languages.\n\nHyper-parameters We explore three main configurations for fine-tuning:\n\n- CONFIG I: Initial setup with a batch size of 8, low learning rate of 3e-5, and 20 epochs   \n- CONFIG II: Enhanced setup with a batch size of 16, increased learning rate of 5e-4, and 50 epochs   \n- CONFIG III: maintaining CONFIG II's parameters but training for 100 epochs\n\nMore details on the hyper-parameters and training are provided in Appendix D.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1451::sections::5",
+      "paper_id": "2025.acl-long.1451",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1451::appendix::D.4",
+      "paper_id": "2025.acl-long.1451",
+      "section_number": "D.4",
+      "section_title": "training resources",
+      "normalized_section_title": "training resources",
+      "window_text": "All models are trained on NVIDIA RTX 3090 GPUs (24GB VRAM) with training times ranging from 5.2 to 77.1 hours. The base models trained on 25,315 samples while augmented variants used 50,380 samples. Training throughput remained between 18-27 samples/second, with com\n\npute requirements scaling from 1.37e17 to 1.37e18 FLOPs across configurations. Improved configuration's losses reduces substantially with longer training, reaching 0.01 for 100-epoch runs.\n\n<table><tr><td>CONFIG</td><td>Model</td><td>Time</td><td>Loss</td><td>S/s</td><td>FLOPs</td></tr><tr><td rowspan=\"2\">I</td><td>Mbase</td><td>5.2</td><td>3.07</td><td>27.0</td><td>1.4e17</td></tr><tr><td>Maug</td><td>10.4</td><td>2.56</td><td>27.0</td><td>2.7e17</td></tr><tr><td rowspan=\"2\">II</td><td>Mbase</td><td>14.7h</td><td>0.34</td><td>23.9</td><td>3.4e17</td></tr><tr><td>Maug</td><td>16.9</td><td>0.49</td><td>24.8</td><td>4.1e17</td></tr><tr><td rowspan=\"2\">III</td><td>Mbase</td><td>27.9h</td><td>0.22</td><td>25.2</td><td>6.9e17</td></tr><tr><td>Maug</td><td>77.1</td><td>0.28</td><td>18.2</td><td>1.4e18</td></tr><tr><td>+</td><td>Mbase</td><td>19.1</td><td>0.01</td><td>18.4</td><td>6.8e17</td></tr></table>\n\nTable D.1: Fine-tuning details for each model and configuration. Time is provided in hour and S/s refers to samples per second.\n\nThe results demonstrate the effectiveness of our improved configuration (CONFIG+), achieving the highest average BLEU score of 7.50 in just 19.1 hours of training compared to the more resource-intensive CONFIG III $\\mathcal{M}_{\\mathrm{aug}}$ which yields only 6.23 BLEU despite requiring four times longer (77.1 hours). Even our lightweight CONFIG I $\\mathcal{M}_{\\mathrm{base}}$ achieves a respectable 5.41 BLEU in just 5.2 hours. While Figure D.1 shows training loss consistently decreasing to 0.001 by epoch 50 with gradually increasing validation loss (typical in sequence-to-sequence tasks), BLEU scores remain robust throughout training (14.21 to 14.57), with consistent generation lengths (14.0-14.9 tokens), indicating the model learns effective translation patterns without suffering from performance-degrading overfitting.\n\n![](images/425ae93d8754d0ec3ecac32448e46bdc948bb4c3c6c8cdac20d48d989d9d2eb4.jpg)  \nFigure D.1: Fine-tuning progress according to training and validations losses along with the BLEU Score over epochs for $\\mathcal{M}_{\\mathrm{base}}$ in CONFIG II (up to epoch 50) and for $\\mathcal{M}_{\\mathrm{base}}$ in CONFIG + for the succeeding epochs.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.1451::appendix::D.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 3090 24GB",
+      "count": null,
+      "count_text": "",
+      "evidence": "All models are trained on NVIDIA RTX 3090 GPUs (24GB VRAM) with training times ranging from 5.2 to 77.1 hours. The base models trained on 25,315 samples while augmented variants used 50,380 samples. Training throughput remained between 18-27 samples/second, with com\n\npute requirements scaling from 1.37e17 to 1.37e18 FLOPs across configurations. Improved configuration's losses reduces substantially with longer training, reaching 0.01 for 100-epoch runs.\n\n<table><tr><td>CONFIG</td><td>Model</td><td>Time</td><td>Loss</td><td>S/s</td><td>FLOPs</td></tr><tr><td rowspan=\"2\">I</td><td>Mbase</td><td>5.2</td><td>3.07</td><td>27.0</td><td>1.4e17</td></tr><tr><td>Maug</td><td>10.4</td><td>2.56</td><td>27.0</td><td>2.7e17</td></tr><tr><td rowspan=\"2\">II</td><td>Mbase</td><td>14.7h</td><td>0.34</td><td>23.9</td><td>3.4e17</td></tr><tr><td>Maug</td><td>16.9</td><td>0.49</td><td>24.8</td><td>4.1e17</td></tr><tr><td rowspan=\"2\">III</td><td>Mbase</td><td>27.9h</td><td>0.22</td><td>25.2</td><td>6.9e17</td></tr><tr><td>Maug</td><td>77.1</td><td>0.28</td><td>18.2</td><td>1.4e18</td></tr><tr><td>+</td><td>Mbase</td><td>19.1</td><td>0.01</td><td>18.4</td><td>6.8e17</td></tr></table>\n\nTable D.1: Fine-tuning details for each model and configuration. Time is provided in hour and S/s refers to samples per second.\n\nThe results demonstrate the effectiveness of our improved configuration (CONFIG+), achieving the highest average BLEU score of 7.50 in just 19.1 hours of training compared to the more resource-intensive CONFIG III $\\mathcal{M}_{\\mathrm{aug}}$ which yields only 6.23 BLEU despite requiring four times longer (77.1 hours). Even our lightweight CONFIG I $\\mathcal{M}_{\\mathrm{base}}$ achieves a respectable 5.41 BLEU in just 5.2 hours. While Figure D.1 shows training loss consistently decreasing to 0.001 by epoch 50 with gradually increasing validation loss (typical in sequence-to-sequence tasks), BLEU scores remain robust throughout training (14.21 to 14.57), with consistent generation lengths (14.0-14.9 tokens), indicating the model learns effective translation patterns without suffering from performance-degrading overfitting.\n\n![](images/425ae93d8754d0ec3ecac32448e46bdc948bb4c3c6c8cdac20d48d989d9d2eb4.jpg)  \nFigure D.1: Fine-tuning progress according to training and validations losses along with the BLEU Score over epochs for $\\mathcal{M}_{\\mathrm{base}}$ in CONFIG II (up to epoch 50) and for $\\mathcal{M}_{\\mathrm{base}}$ in CONFIG + for the succeeding epochs.",
+      "section_number": "D.4",
+      "section_title": "training resources",
+      "normalized_section_title": "training resources"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.1451::appendix::D.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 3090 24GB",
+      "cleaned_hardware_name": "nvidia rtx 3090 24gb",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 3090",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 3090",
+      "count": null,
+      "count_text": "",
+      "section_number": "D.4",
+      "section_title": "training resources",
+      "normalized_section_title": "training resources",
+      "evidence": "All models are trained on NVIDIA RTX 3090 GPUs (24GB VRAM) with training times ranging from 5.2 to 77.1 hours. The base models trained on 25,315 samples while augmented variants used 50,380 samples. Training throughput remained between 18-27 samples/second, with com\n\npute requirements scaling from 1.37e17 to 1.37e18 FLOPs across configurations. Improved configuration's losses reduces substantially with longer training, reaching 0.01 for 100-epoch runs.\n\n<table><tr><td>CONFIG</td><td>Model</td><td>Time</td><td>Loss</td><td>S/s</td><td>FLOPs</td></tr><tr><td rowspan=\"2\">I</td><td>Mbase</td><td>5.2</td><td>3.07</td><td>27.0</td><td>1.4e17</td></tr><tr><td>Maug</td><td>10.4</td><td>2.56</td><td>27.0</td><td>2.7e17</td></tr><tr><td rowspan=\"2\">II</td><td>Mbase</td><td>14.7h</td><td>0.34</td><td>23.9</td><td>3.4e17</td></tr><tr><td>Maug</td><td>16.9</td><td>0.49</td><td>24.8</td><td>4.1e17</td></tr><tr><td rowspan=\"2\">III</td><td>Mbase</td><td>27.9h</td><td>0.22</td><td>25.2</td><td>6.9e17</td></tr><tr><td>Maug</td><td>77.1</td><td>0.28</td><td>18.2</td><td>1.4e18</td></tr><tr><td>+</td><td>Mbase</td><td>19.1</td><td>0.01</td><td>18.4</td><td>6.8e17</td></tr></table>\n\nTable D.1: Fine-tuning details for each model and configuration. Time is provided in hour and S/s refers to samples per second.\n\nThe results demonstrate the effectiveness of our improved configuration (CONFIG+), achieving the highest average BLEU score of 7.50 in just 19.1 hours of training compared to the more resource-intensive CONFIG III $\\mathcal{M}_{\\mathrm{aug}}$ which yields only 6.23 BLEU despite requiring four times longer (77.1 hours). Even our lightweight CONFIG I $\\mathcal{M}_{\\mathrm{base}}$ achieves a respectable 5.41 BLEU in just 5.2 hours. While Figure D.1 shows training loss consistently decreasing to 0.001 by epoch 50 with gradually increasing validation loss (typical in sequence-to-sequence tasks), BLEU scores remain robust throughout training (14.21 to 14.57), with consistent generation lengths (14.0-14.9 tokens), indicating the model learns effective translation patterns without suffering from performance-degrading overfitting.\n\n![](images/425ae93d8754d0ec3ecac32448e46bdc948bb4c3c6c8cdac20d48d989d9d2eb4.jpg)  \nFigure D.1: Fine-tuning progress according to training and validations losses along with the BLEU Score over epochs for $\\mathcal{M}_{\\mathrm{base}}$ in CONFIG II (up to epoch 50) and for $\\mathcal{M}_{\\mathrm{base}}$ in CONFIG + for the succeeding epochs.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized GeForce RTX shorthand rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.1451::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "methodology",
+      "evidence": "Neural machine translation (NMT) systems traditionally use millions of parallel sentences for effective training from scratch. Given our limited parallel data, we instead adopt a transfer learning approach, leveraging existing models pre-trained on related languages. Recent work has demonstrated the effectiveness of various transfer learning techniques for low-resource machine translation, including parameter-efficient model adaptation (Chronopoulou et al., 2023), fine-tuning on synthetic data (Sant et al., 2024), and large language models (LLMs) (Moslem et al., 2023). Building on these insights, we fine-tune the No Language Left Behind (NLLB) model (Team et al., 2024), a multilingual translation system supporting 203 languages, including languages related to our low-resource languages.\n\nFor evaluation, we employ BLEU (Papineni et al., 2002) which calculates $n$ -gram precision with a brevity penalty to account for translation length. We also use chrF (Popovic, 2015) for our baseline system which computes character-level $n$ -gram F-scores, offering sensitivity to both word-level accuracy and morphological variations in the translations. We use the SacreBLEU implementation (Post, 2018) for both metrics. While more recent metrics such as COMET (Rei et al., 2020) and its reference-free variant COMET-QE (Kocmi et al., 2022) have shown promise, the extreme data scarcity in our target languages precludes their use."
+    },
+    {
+      "source_window_id": "2025.acl-long.1451::sections::4.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "baselines",
+      "evidence": "We evaluate NLLB's zero-shot performance using two model variants: 3.3B and its 600M distilled variant. Since NLLB's training data does not include language indicator tokens for our selected languages, we assess the model's performance by leveraging linguistically and geographically proximate languages supported in NLLB. These in\n\nTable 2: Initialization of our fine-tuned model for the selected languages by adding new tokens to NLLB.   \n\n<table><tr><td>Language</td><td>New Token</td><td>Initialization</td></tr><tr><td>Luri Bakhtiari (BQI)</td><td>bqi_Arab</td><td>Farsi</td></tr><tr><td>Gilaki (GLK)</td><td>glk_Arab</td><td>Farsi</td></tr><tr><td>Hawrami (HAC)</td><td>hac_Arab</td><td>C. Kurdish</td></tr><tr><td>Laki (LKII)</td><td>lki_Arab</td><td>C. Kurdish</td></tr><tr><td>Mazandarani (MZN)</td><td>mzn_Arab</td><td>Farsi</td></tr><tr><td>Southern Kurdish (SDH)</td><td>sdh_Arab</td><td>C. Kurdish</td></tr><tr><td>Talysh (TLY)</td><td>tly_Arab</td><td>Farsi</td></tr><tr><td>Zazaki (ZZA)</td><td>zza_Latn</td><td>N. Kurdish</td></tr></table>\n\nclude Arabic (ARA), Turkish (TUR), Central Kurdish (CKB), Northern Kurdish (KMR), Farsi (PES) and English (ENG).\n\nTransliteration To mitigate the impact of divergent writing systems (Perso-Arabic-based and Latin-based scripts), we experiment with a transliteration pipeline as well. For Southern Kurdish, Laki, Hawrami, and Zazaki varieties, we extend the rule-based transliteration system developed by Ahmadi (2019) with variety-specific character mappings, e.g., $\\langle \\dot{z} \\rangle$ to $\\langle \\ddot{o} \\rangle$ . For the remaining languages, we employ phonetic-based character mapping, converting each character to its closest phonological equivalent in the Latin script, e.g., $\\langle \\ddot{z} \\rangle$ to $\\langle \\dot{o} \\rangle$ ."
+    },
+    {
+      "source_window_id": "2025.acl-long.1451::sections::4.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.3",
+      "section_title": "experimental setup",
+      "evidence": "Datasets We explore two experimental setups:\n\n- Base Setup $(\\mathcal{M}_{\\mathrm{base}})$ : We utilize the train sets, each containing sentences paired with English translations. For languages lacking dedicated training data, namely (BQI and TLY), we re-purpose their validation sets as training data due to resource constraints.   \n- Augmented Setup $(\\mathcal{M}_{\\mathrm{aug}})$ : Given that our parallel corpora include translations in languages besides English, we leverage these additional translations to expand our training data. Specifically, we use NLLB to translate sentences into English from Northern Kurdish for Zazaki and from Farsi for all other languages.\n\nFor fine-tuning NLLB, we merge all parallel sentences and convert to JSON Lines format. Each entry contains source sentences with our newly introduced tokens paired with their English translations, specified by eng_Latin. The distribution of data across both setups is illustrated in Figure C.3.\n\nImplementation Focused on $\\mathrm{X}\\rightarrow$ English translation direction, we implement our fine-tuning pipeline using the NLLB tokenizer from Huggingface Transformers. Our implementation builds upon the NLLB architecture, which is based on the M2M100 encoder-decoder architecture (Fan et al., 2021). Given the multilingual context, it is important to handle multilingual tokenization by explicitly setting the source language token while fixing English (eng_Latin) as the target language. Based on the language token provided in the train set, the source language is specified during preprocessing and tokenization ensuring proper handling of multiple source languages.\n\nHyper-parameters We explore three main configurations for fine-tuning:\n\n- CONFIG I: Initial setup with a batch size of 8, low learning rate of 3e-5, and 20 epochs   \n- CONFIG II: Enhanced setup with a batch size of 16, increased learning rate of 5e-4, and 50 epochs   \n- CONFIG III: maintaining CONFIG II's parameters but training for 100 epochs\n\nMore details on the hyper-parameters and training are provided in Appendix D."
+    },
+    {
+      "source_window_id": "2025.acl-long.1451::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiments",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "D.4"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce RTX 3090",
+        "num": null
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.1451\\auto\\full.md",
+    "source_md_sha256": "ae3b291cb43201af23fb5b991ce87f1f03c5ab5d784739477231e3e560a4de93",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

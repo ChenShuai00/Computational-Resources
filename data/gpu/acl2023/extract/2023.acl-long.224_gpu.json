@@ -1,0 +1,183 @@
+{
+  "paper_id": "2023.acl-long.224",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.224::sections::4",
+      "paper_id": "2023.acl-long.224",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.224::sections::4.1",
+      "paper_id": "2023.acl-long.224",
+      "section_number": "4.1",
+      "section_title": "settings",
+      "normalized_section_title": "settings",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.224::sections::4.1.1",
+      "paper_id": "2023.acl-long.224",
+      "section_number": "4.1.1",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "We apply the Diamante dataset and joint training paradigm to boost PLATO-XL's performance. In the generation-evaluation joint training, the input samples are formulated as quadruples $(c,r_{\\mathcal{H}},r_{\\mathcal{M}},r_{\\mathcal{R}})$ , where $c$ is the dialogue context, $r_{\\mathcal{H}}$ is the human annotator's selected or amended response, $r_{\\mathcal{M}}$ is one candidate response displayed during annotation, and $r_{\\mathcal{R}}$ is one randomly selected\n\nresponse from the dataset. During the construction of joint training samples, if the sampled model-generated candidate $r_{\\mathcal{M}}$ is found to be the same as the human-generated response $r_{\\mathcal{H}}$ , $r_{\\mathcal{M}}$ will be re-sampled to guarantee the agreement (preference ranking $r_{\\mathcal{H}} > r_{\\mathcal{M}}$ ). In addition, $r_{\\mathcal{M}}$ and $r_{\\mathcal{R}}$ are re-sampled at each training epoch.\n\nThe model is initialized with the 11B parameter PLATO-XL, with the transformer architecture of PrefixLM (Radford et al., 2018; Dong et al., 2019). (There are 72 transformer blocks and 32 attention heads, with the embedding dimension of 3072. The hidden dimension of the feedforward layer is set to 18432.) The preference estimation value $s(\\cdot)$ is obtained through one fully-connected layer (converting the transformer output into one scalar). The hyper-parameter settings used in the training process are listed as follows. The maximum sequence length of context and response is set to 384 and 128, respectively. We use Adam (Kingma and Ba, 2015) as the optimizer, with a learning rate scheduler including a linear warmup and an invsqrt decay (Vaswani et al., 2017). The peak learning rate is set to 2e-6, and the warmup step is set to 500. The model is trained for five epochs with a batch size of 168. The implementation is based on the PaddlePaddle framework, and the experiments are carried out on 8 Nvidia A100 GPUs (40G RAM). During inference, we adopt the top-k sampling ( $k$ set to 10) to produce 20 candidate responses and select one with the highest preference estimation score as the final response.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2023.acl-long.224::sections::4.2.1",
+      "paper_id": "2023.acl-long.224",
+      "section_number": "4.2.1",
+      "section_title": "static evaluation",
+      "normalized_section_title": "static evaluation",
+      "window_text": "In the static evaluation, we randomly select 100 samples from the test set and employ the models to generate the response given the multi-turn dialogue context. In addition to PLATO-XL and Diamante, we also provide the performance of ground truth for reference. The evaluation results are summarized in Table 2. Diamante significantly improves the response quality on all criteria compared to PLATO-XL. Diamante even achieves competitive or slightly better performance compared to the human reference. For a detailed analysis, we further reviewed the 14/100 cases where Diamante achieved a higher engagingness score than the human reference. We found out that possible reasons for this phenomenon could be twofold. Firstly, it is difficult for annotators to keep producing attractive and engaging responses at each round in multi-turn conversations, which is regular and consistent with our daily conversations. Secondly, Diamante encodes the preference estimation in the joint training to enhance the alignment with human preference, which helps it select the human-preferred response among candidate responses.\n\n<table><tr><td></td><td>Coherence</td><td>Informativeness</td><td>Safety</td><td>Engagingness</td></tr><tr><td>PLATO-XL</td><td>1.73</td><td>1.61</td><td>1.87</td><td>1.56</td></tr><tr><td>Human Reference</td><td>1.88</td><td>1.87</td><td>1.92</td><td>1.83</td></tr><tr><td>PLATO-XL (Diamante)</td><td>1.90</td><td>1.91</td><td>1.96</td><td>1.93</td></tr></table>\n\nTable 2: Static evaluation results, with statistically significant improvements over PLATO-XL (independent two-sample $t$ -test, $p < 0.005$ ) written in bold.   \n\n<table><tr><td></td><td>Coherence</td><td>Informativeness</td><td>Safety</td><td>Engagingness</td></tr><tr><td>CDial-GPT</td><td>0.484</td><td>0.400</td><td>0.660</td><td>0.140</td></tr><tr><td>EVA 2.0</td><td>1.508</td><td>1.352</td><td>1.764</td><td>0.960</td></tr><tr><td>PLATO-XL</td><td>1.788</td><td>1.624</td><td>1.788</td><td>1.240</td></tr><tr><td>PLATO-XL (Diamante)</td><td>1.948</td><td>1.920</td><td>1.988</td><td>1.860</td></tr></table>\n\nTable 3: Self-chat evaluation results, with statistically significant improvements over all other methods (independent two-sample $t$ -test, $p < 0.005$ ) written in bold.   \nTable 4: Human-bot chat evaluation results, with statistically significant improvements over all other methods (independent two-sample $t$ -test, $p < 0.005$ ) written in bold.   \n\n<table><tr><td></td><td>Coherence</td><td>Informativeness</td><td>Safety</td><td>Engagingness</td></tr><tr><td>XiaoIce</td><td>1.54</td><td>1.49</td><td>1.79</td><td>1.15</td></tr><tr><td>Xiao AI</td><td>1.57</td><td>1.54</td><td>1.88</td><td>1.20</td></tr><tr><td>Tmall Genie</td><td>1.58</td><td>1.51</td><td>1.78</td><td>1.25</td></tr><tr><td>Siri</td><td>1.17</td><td>1.13</td><td>1.42</td><td>0.75</td></tr><tr><td>PLATO-XL (Diamante)</td><td>1.92</td><td>1.91</td><td>1.98</td><td>1.90</td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.224::sections::4.3.1",
+      "paper_id": "2023.acl-long.224",
+      "section_number": "4.3.1",
+      "section_title": "ablation study on joint training",
+      "normalized_section_title": "ablation study on joint training",
+      "window_text": "As discussed in previous sections, the improvements of Diamante compared to PLATO-XL come from two aspects: the Diamante dataset bridges the distribution gap towards human-human conversations, and the joint training paradigm enhances the alignment with human preference. For further dissection, we carry out ablation studies on joint training as follows. Without joint training, PLATO-XL is trained with the Diamante dataset to minimize the NLL loss, and the final response\n\n<table><tr><td></td><td>Coherence</td><td>Informativeness</td><td>Safety</td><td>Engagingness</td></tr><tr><td>PLATO-XL (Diamante)</td><td>1.948</td><td>1.920</td><td>1.988</td><td>1.860</td></tr><tr><td>- Joint Training</td><td>1.912</td><td>1.820</td><td>1.908</td><td>1.600</td></tr><tr><td>- Joint Training &amp; Dataset</td><td>1.788</td><td>1.624</td><td>1.788</td><td>1.240</td></tr></table>\n\nTable 5: Self-chat evaluation results in the ablation of joint training, with statistically significant improvements over all other methods (independent two-sample $t$ -test, $p < 0.005$ ) written in bold.   \nTable 6: Exploration to apply Diamante on CDial-GPT, with statistically significant improvements (independent two-sample $t$ -test, $p < 0.005$ ) written in bold.   \n\n<table><tr><td></td><td>Coherence</td><td>Informativeness</td><td>Safety</td><td>Engagingness</td></tr><tr><td>CDial-GPT</td><td>0.484</td><td>0.400</td><td>0.660</td><td>0.140</td></tr><tr><td>CDial-GPT (Diamante)</td><td>0.968</td><td>0.960</td><td>1.368</td><td>0.480</td></tr></table>\n\nis selected based on generation probability during inference. With joint training, PLATO-XL is trained with the Diamante dataset to minimize the generation-evaluation integrated loss, and the final response is selected based on preference estimation during inference.\n\n![](images/45fb0d597d4400616cb4db80eb07305464bf20580766879c180feae8db729e5c.jpg)  \nFigure 3: Automatic evaluation in the ablation of joint training.\n\nFirstly, we conduct automatic evaluations of response selection on the test set to compare these two approaches. Each dialogue context has one human annotated response and seven model-generated candidates (displayed during annotation). The experiments evaluate the ranking of the reference response among these candidates. The results are reported in terms of mean average precision (MAP), mean reciprocal rank (MRR), and precision at position 1 $(\\mathrm{P}@\\mathrm{1})$ , as summarized in Figure 3. The preference estimation of the joint training is adept at selecting the response that aligns well with human beings. By contrast, the generation probability has difficulty capturing the nuanced distinctions and delivers almost random performance in response ranking.\n\nSecondly, we conduct human evaluations to compare these two approaches, with self-chat evaluation results summarized in Table 5. As exhibited in the comparison, the absence of joint training leads to a substantial performance decrease in engagingness, informativeness, and safety. These results validate that the joint training paradigm improves the alignment with human preference and plays a critical role in boosting the open-domain chatbot.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.224::appendix::B.1",
+      "paper_id": "2023.acl-long.224",
+      "section_number": "B.1",
+      "section_title": "more exploration on joint training",
+      "normalized_section_title": "more exploration on joint training",
+      "window_text": "As shown in Table 5, the Diamante dataset and joint training paradigm bring significant improvements. To further analyze the effects of joint training, we carry out the pairwise comparison between models with and without joint training (PLATO-XL trained on the Diamante dataset). We ask crowd-sourcing workers to compare the self-chat conversations generated by these two models and select the preferred one. The comparison in Figure 6 (upper bar) exhibits that the joint training paradigm is crucial in boosting the open-domain chatbot.\n\nIn Diamante, the joint training leverages the implicit human preference that appeared in the data collection $r_{\\mathcal{H}} > r_{\\mathcal{M}}$ . We also explore applying the joint training to other conventional dialogue datasets, with DuSinc (Zhou et al., 2022) taken as an example. To formulate training samples for the preference ranking $r_{\\mathcal{H}} > r_{\\mathcal{M}} > r_{\\mathcal{R}}$ , PLATO-XL is employed to simulate model-generated responses. Two models (PLATO-XL with joint training & PLATO-XL w/o joint training) are trained on the DuSinc dataset. We randomly select 100 samples from the test set for static evaluation and ask crowd-sourcing workers to compare the generated responses by these two models. The comparison in Figure 6 (bottom bar) verifies the effectiveness and generality of the joint training paradigm.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.224::sections::4.1.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A100 40G",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "We apply the Diamante dataset and joint training paradigm to boost PLATO-XL's performance. In the generation-evaluation joint training, the input samples are formulated as quadruples $(c,r_{\\mathcal{H}},r_{\\mathcal{M}},r_{\\mathcal{R}})$ , where $c$ is the dialogue context, $r_{\\mathcal{H}}$ is the human annotator's selected or amended response, $r_{\\mathcal{M}}$ is one candidate response displayed during annotation, and $r_{\\mathcal{R}}$ is one randomly selected\n\nresponse from the dataset. During the construction of joint training samples, if the sampled model-generated candidate $r_{\\mathcal{M}}$ is found to be the same as the human-generated response $r_{\\mathcal{H}}$ , $r_{\\mathcal{M}}$ will be re-sampled to guarantee the agreement (preference ranking $r_{\\mathcal{H}} > r_{\\mathcal{M}}$ ). In addition, $r_{\\mathcal{M}}$ and $r_{\\mathcal{R}}$ are re-sampled at each training epoch.\n\nThe model is initialized with the 11B parameter PLATO-XL, with the transformer architecture of PrefixLM (Radford et al., 2018; Dong et al., 2019). (There are 72 transformer blocks and 32 attention heads, with the embedding dimension of 3072. The hidden dimension of the feedforward layer is set to 18432.) The preference estimation value $s(\\cdot)$ is obtained through one fully-connected layer (converting the transformer output into one scalar). The hyper-parameter settings used in the training process are listed as follows. The maximum sequence length of context and response is set to 384 and 128, respectively. We use Adam (Kingma and Ba, 2015) as the optimizer, with a learning rate scheduler including a linear warmup and an invsqrt decay (Vaswani et al., 2017). The peak learning rate is set to 2e-6, and the warmup step is set to 500. The model is trained for five epochs with a batch size of 168. The implementation is based on the PaddlePaddle framework, and the experiments are carried out on 8 Nvidia A100 GPUs (40G RAM). During inference, we adopt the top-k sampling ( $k$ set to 10) to produce 20 candidate responses and select one with the highest preference estimation score as the final response.",
+      "section_number": "4.1.1",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.224::sections::4.1.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A100 40G",
+      "cleaned_hardware_name": "nvidia a100 40gb",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "4.1.1",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "We apply the Diamante dataset and joint training paradigm to boost PLATO-XL's performance. In the generation-evaluation joint training, the input samples are formulated as quadruples $(c,r_{\\mathcal{H}},r_{\\mathcal{M}},r_{\\mathcal{R}})$ , where $c$ is the dialogue context, $r_{\\mathcal{H}}$ is the human annotator's selected or amended response, $r_{\\mathcal{M}}$ is one candidate response displayed during annotation, and $r_{\\mathcal{R}}$ is one randomly selected\n\nresponse from the dataset. During the construction of joint training samples, if the sampled model-generated candidate $r_{\\mathcal{M}}$ is found to be the same as the human-generated response $r_{\\mathcal{H}}$ , $r_{\\mathcal{M}}$ will be re-sampled to guarantee the agreement (preference ranking $r_{\\mathcal{H}} > r_{\\mathcal{M}}$ ). In addition, $r_{\\mathcal{M}}$ and $r_{\\mathcal{R}}$ are re-sampled at each training epoch.\n\nThe model is initialized with the 11B parameter PLATO-XL, with the transformer architecture of PrefixLM (Radford et al., 2018; Dong et al., 2019). (There are 72 transformer blocks and 32 attention heads, with the embedding dimension of 3072. The hidden dimension of the feedforward layer is set to 18432.) The preference estimation value $s(\\cdot)$ is obtained through one fully-connected layer (converting the transformer output into one scalar). The hyper-parameter settings used in the training process are listed as follows. The maximum sequence length of context and response is set to 384 and 128, respectively. We use Adam (Kingma and Ba, 2015) as the optimizer, with a learning rate scheduler including a linear warmup and an invsqrt decay (Vaswani et al., 2017). The peak learning rate is set to 2e-6, and the warmup step is set to 500. The model is trained for five epochs with a batch size of 168. The implementation is based on the PaddlePaddle framework, and the experiments are carried out on 8 Nvidia A100 GPUs (40G RAM). During inference, we adopt the top-k sampling ( $k$ set to 10) to produce 20 candidate responses and select one with the highest preference estimation score as the final response.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.acl-long.224::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.224::sections::4.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "settings",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.224::sections::4.2.1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2.1",
+      "section_title": "static evaluation",
+      "evidence": "In the static evaluation, we randomly select 100 samples from the test set and employ the models to generate the response given the multi-turn dialogue context. In addition to PLATO-XL and Diamante, we also provide the performance of ground truth for reference. The evaluation results are summarized in Table 2. Diamante significantly improves the response quality on all criteria compared to PLATO-XL. Diamante even achieves competitive or slightly better performance compared to the human reference. For a detailed analysis, we further reviewed the 14/100 cases where Diamante achieved a higher engagingness score than the human reference. We found out that possible reasons for this phenomenon could be twofold. Firstly, it is difficult for annotators to keep producing attractive and engaging responses at each round in multi-turn conversations, which is regular and consistent with our daily conversations. Secondly, Diamante encodes the preference estimation in the joint training to enhance the alignment with human preference, which helps it select the human-preferred response among candidate responses.\n\n<table><tr><td></td><td>Coherence</td><td>Informativeness</td><td>Safety</td><td>Engagingness</td></tr><tr><td>PLATO-XL</td><td>1.73</td><td>1.61</td><td>1.87</td><td>1.56</td></tr><tr><td>Human Reference</td><td>1.88</td><td>1.87</td><td>1.92</td><td>1.83</td></tr><tr><td>PLATO-XL (Diamante)</td><td>1.90</td><td>1.91</td><td>1.96</td><td>1.93</td></tr></table>\n\nTable 2: Static evaluation results, with statistically significant improvements over PLATO-XL (independent two-sample $t$ -test, $p < 0.005$ ) written in bold.   \n\n<table><tr><td></td><td>Coherence</td><td>Informativeness</td><td>Safety</td><td>Engagingness</td></tr><tr><td>CDial-GPT</td><td>0.484</td><td>0.400</td><td>0.660</td><td>0.140</td></tr><tr><td>EVA 2.0</td><td>1.508</td><td>1.352</td><td>1.764</td><td>0.960</td></tr><tr><td>PLATO-XL</td><td>1.788</td><td>1.624</td><td>1.788</td><td>1.240</td></tr><tr><td>PLATO-XL (Diamante)</td><td>1.948</td><td>1.920</td><td>1.988</td><td>1.860</td></tr></table>\n\nTable 3: Self-chat evaluation results, with statistically significant improvements over all other methods (independent two-sample $t$ -test, $p < 0.005$ ) written in bold.   \nTable 4: Human-bot chat evaluation results, with statistically significant improvements over all other methods (independent two-sample $t$ -test, $p < 0.005$ ) written in bold.   \n\n<table><tr><td></td><td>Coherence</td><td>Informativeness</td><td>Safety</td><td>Engagingness</td></tr><tr><td>XiaoIce</td><td>1.54</td><td>1.49</td><td>1.79</td><td>1.15</td></tr><tr><td>Xiao AI</td><td>1.57</td><td>1.54</td><td>1.88</td><td>1.20</td></tr><tr><td>Tmall Genie</td><td>1.58</td><td>1.51</td><td>1.78</td><td>1.25</td></tr><tr><td>Siri</td><td>1.17</td><td>1.13</td><td>1.42</td><td>0.75</td></tr><tr><td>PLATO-XL (Diamante)</td><td>1.92</td><td>1.91</td><td>1.98</td><td>1.90</td></tr></table>"
+    },
+    {
+      "source_window_id": "2023.acl-long.224::sections::4.3.1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.3.1",
+      "section_title": "ablation study on joint training",
+      "evidence": "As discussed in previous sections, the improvements of Diamante compared to PLATO-XL come from two aspects: the Diamante dataset bridges the distribution gap towards human-human conversations, and the joint training paradigm enhances the alignment with human preference. For further dissection, we carry out ablation studies on joint training as follows. Without joint training, PLATO-XL is trained with the Diamante dataset to minimize the NLL loss, and the final response\n\n<table><tr><td></td><td>Coherence</td><td>Informativeness</td><td>Safety</td><td>Engagingness</td></tr><tr><td>PLATO-XL (Diamante)</td><td>1.948</td><td>1.920</td><td>1.988</td><td>1.860</td></tr><tr><td>- Joint Training</td><td>1.912</td><td>1.820</td><td>1.908</td><td>1.600</td></tr><tr><td>- Joint Training &amp; Dataset</td><td>1.788</td><td>1.624</td><td>1.788</td><td>1.240</td></tr></table>\n\nTable 5: Self-chat evaluation results in the ablation of joint training, with statistically significant improvements over all other methods (independent two-sample $t$ -test, $p < 0.005$ ) written in bold.   \nTable 6: Exploration to apply Diamante on CDial-GPT, with statistically significant improvements (independent two-sample $t$ -test, $p < 0.005$ ) written in bold.   \n\n<table><tr><td></td><td>Coherence</td><td>Informativeness</td><td>Safety</td><td>Engagingness</td></tr><tr><td>CDial-GPT</td><td>0.484</td><td>0.400</td><td>0.660</td><td>0.140</td></tr><tr><td>CDial-GPT (Diamante)</td><td>0.968</td><td>0.960</td><td>1.368</td><td>0.480</td></tr></table>\n\nis selected based on generation probability during inference. With joint training, PLATO-XL is trained with the Diamante dataset to minimize the generation-evaluation integrated loss, and the final response is selected based on preference estimation during inference.\n\n![](images/45fb0d597d4400616cb4db80eb07305464bf20580766879c180feae8db729e5c.jpg)  \nFigure 3: Automatic evaluation in the ablation of joint training.\n\nFirstly, we conduct automatic evaluations of response selection on the test set to compare these two approaches. Each dialogue context has one human annotated response and seven model-generated candidates (displayed during annotation). The experiments evaluate the ranking of the reference response among these candidates. The results are reported in terms of mean average precision (MAP), mean reciprocal rank (MRR), and precision at position 1 $(\\mathrm{P}@\\mathrm{1})$ , as summarized in Figure 3. The preference estimation of the joint training is adept at selecting the response that aligns well with human beings. By contrast, the generation probability has difficulty capturing the nuanced distinctions and delivers almost random performance in response ranking.\n\nSecondly, we conduct human evaluations to compare these two approaches, with self-chat evaluation results summarized in Table 5. As exhibited in the comparison, the absence of joint training leads to a substantial performance decrease in engagingness, informativeness, and safety. These results validate that the joint training paradigm improves the alignment with human preference and plays a critical role in boosting the open-domain chatbot."
+    },
+    {
+      "source_window_id": "2023.acl-long.224::appendix::B.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B.1",
+      "section_title": "more exploration on joint training",
+      "evidence": "As shown in Table 5, the Diamante dataset and joint training paradigm bring significant improvements. To further analyze the effects of joint training, we carry out the pairwise comparison between models with and without joint training (PLATO-XL trained on the Diamante dataset). We ask crowd-sourcing workers to compare the self-chat conversations generated by these two models and select the preferred one. The comparison in Figure 6 (upper bar) exhibits that the joint training paradigm is crucial in boosting the open-domain chatbot.\n\nIn Diamante, the joint training leverages the implicit human preference that appeared in the data collection $r_{\\mathcal{H}} > r_{\\mathcal{M}}$ . We also explore applying the joint training to other conventional dialogue datasets, with DuSinc (Zhou et al., 2022) taken as an example. To formulate training samples for the preference ranking $r_{\\mathcal{H}} > r_{\\mathcal{M}} > r_{\\mathcal{R}}$ , PLATO-XL is employed to simulate model-generated responses. Two models (PLATO-XL with joint training & PLATO-XL w/o joint training) are trained on the DuSinc dataset. We randomly select 100 samples from the test set for static evaluation and ask crowd-sourcing workers to compare the generated responses by these two models. The comparison in Figure 6 (bottom bar) verifies the effectiveness and generality of the joint training paradigm."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.1.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2023\\2023.acl-long.224\\auto\\full.md",
+    "source_md_sha256": "0d32c6efb92e320932ff682a764172f985ab5e569fbb8466c648eadd4ef2794c",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

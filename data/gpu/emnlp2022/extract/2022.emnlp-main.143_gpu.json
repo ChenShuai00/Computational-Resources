@@ -1,0 +1,83 @@
+{
+  "paper_id": "2022.emnlp-main.143",
+  "candidate_windows": [
+    {
+      "window_id": "2022.emnlp-main.143::appendix::C",
+      "paper_id": "2022.emnlp-main.143",
+      "section_number": "C",
+      "section_title": "task adaptation methods",
+      "normalized_section_title": "task adaptation methods",
+      "window_text": "We consider the following embeddings as potential inputs to our probes:\n\n- Pooled Outputs: The hidden state for the CLS token at the last layer of the model, further processed by a linear projection followed by a Tanh activation.   \n- CLS @ $l$ : The hidden state for the CLS token at layer $l$   \n- Mean @ $l$ : The vector produced by mean-pooling across all hidden states at layer $l$   \n- Max @ $l$ : The vector produced by max-pooling across all hidden states at layer $l$\n\nLet the function $E(I, T)$ be application of a given model to input image $I$ and caption $T$ , followed by extraction of the embedding being probed over. Our probes are then given a pair of concatenated embeddings for two candidate image-caption\n\npairs, and asked to output 0 if the first pair is a better match or 1 if the second pair is a better match. Specifically, we define the following task corresponding to Text Score for a probe $P(\\cdot)$ :\n\n$$\nP (E (I _ {0}, T _ {0}) \\| E (I _ {0}, T _ {1})) \\rightarrow 0\n$$\n\n$$\nP (E (I _ {0}, T _ {1}) \\| E (I _ {0}, T _ {0})) \\rightarrow 1\n$$\n\n$$\nP (E (I _ {1}, T _ {0}) \\| E (I _ {1}, T _ {1})) \\rightarrow 1\n$$\n\n$$\nP (E (I _ {1}, T _ {1}) \\| E (I _ {1}, T _ {0})) \\rightarrow 0\n$$\n\nAn equivalent probing task corresponding to Image Score is defined:\n\n$$\nP (E (I _ {0}, T _ {0}) \\| E (I _ {1}, T _ {0})) \\rightarrow 0\n$$\n\n$$\nP (E (I _ {1}, T _ {0}) \\| E (I _ {0}, T _ {0})) \\rightarrow 1\n$$\n\n$$\nP (E (I _ {0}, T _ {1}) \\| E (I _ {1}, T _ {1})) \\rightarrow 1\n$$\n\n$$\nP (E (I _ {1}, T _ {1}) \\| E (I _ {0}, T _ {1})) \\rightarrow 0\n$$\n\nOur control task is formulated nearly identically to the target task, except that a random $50\\%$ of the Winoground items in each split are chosen at the start of training, and the labels for these items are flipped. That is, if our target task has the label 0 and the given item is not flipped, the control task also has the label 0; if our target task has the label 0 and the given item is flipped, the control task has the label 1.\n\nSince the flipped items are selected before training, a probe which simply memorizes the data will perform well on this control task for items it has already seen. We therefore split the data into a training and a testing set, the latter of which is never seen during training. This means we are dividing the 400 Winoground items into four new splits: 150 training samples whose labels are not flipped in the control task, 150 training samples whose labels are flipped, 50 testing samples whose labels are not flipped, and 50 testing samples whose labels are. In order to ensure each split is representative of overall the Winoground benchmark, we perform stratified sampling, where are buckets are any combination of the \"Pragmatics\", \"Symbolic\", and \"Morpheme-Level\" visual tags and the \"Both\" linguistic tag. We subsequently confirm that the ratio of each visual and linguistic tag, as well as of each new tag introduced here, is similar across each split.\n\nWe test a variety of small Multi-Layer Perceptron (MLP) probes over these extracted embeddings, each of which maps from the input dimension of $2 \\times 768$ to a single output. ReLU activation\n\nis applied at intermediate layers, and Sigmoid activation is used at the final layer to ensure the output is in the range [0, 1]. We empirically select a hidden size of 1024, a learning rate of 0.0001, 4 MLP layers, and 200 epochs of training to use for every probe, after ablating each of these hyperparameters for all combinations of probe and embedding types.\n\nWe use a single NVIDIA RTX 8000 GPU for all our experiments. All probes took no more than 10 hours to run.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2022.emnlp-main.143::appendix::D.1",
+      "paper_id": "2022.emnlp-main.143",
+      "section_number": "D.1",
+      "section_title": "discriminable caption pair experiment",
+      "normalized_section_title": "discriminable caption pair experiment",
+      "window_text": "To assess whether the separable captions help on the main task, we develop a new test of the Winoground task, using our augmented captions. Using $n$ different variant-generation methods as defined in Section 5, we can obtain sets of captions $T_{0,0}, T_{0,1}, \\ldots, T_{0,n-1}$ and $T_{1,0}, T_{1,1}, \\ldots, T_{1,n-1}$ . Then, every multimodal model under consideration outputs a similarity score $S(I, T)$ given an image $I$ and text $T$ as input. We define augmentation-aware similarity scores between a given image $I$ and a set of $n$ caption variants of $T$ , $\\{T_0, T_1, \\ldots, T_{n-1}\\}$ as follows:\n\n$$\n\\mathrm {S} _ {\\text {a u g , m e a n}} (I, T) = (1 - \\lambda) \\mathrm {S} (I, T _ {0}) +\n$$\n\n$$\n\\lambda \\mathrm {m e a n} _ {i} [ \\mathrm {S} (I, T _ {i}) ]\n$$\n\n$$\n\\mathrm {S} _ {\\text {a u g}, \\max } (I, T) = (1 - \\lambda) \\mathrm {S} (I, T _ {0}) +\n$$\n\n$$\n\\lambda \\max  _ {i} [ \\mathrm {S} (I, T _ {i}) ]\n$$\n\nwhere the choice of using $S_{\\text{aug, mean}}$ vs. $S_{\\text{aug, max}}$ and the value of $\\lambda$ are hyperparameters. This similarity score interpolates, using $\\lambda$ , between the original similarity score and an aggregated (max/mean) score across all $n$ variants. We can use these scores to see if performance is improved on Winoground by using caption variants.\n\nWe conduct a hyperparameter search over the similarity function and the value for $\\lambda$ . We found that $S_{aug,mean}$ works best for LXMERT while $S_{aug,max}$ works best for UNITER and CLIP. We picked the best value for $\\lambda$ by testing every $\\lambda$ value between 0 and 1 in steps of 0.25 and picking the value that maximizes the group score. $\\lambda = 0.5$ works best for LXMERT, $\\lambda = 0.75$ for UNITER and CLIP.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.emnlp-main.143::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 8000",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We consider the following embeddings as potential inputs to our probes:\n\n- Pooled Outputs: The hidden state for the CLS token at the last layer of the model, further processed by a linear projection followed by a Tanh activation.   \n- CLS @ $l$ : The hidden state for the CLS token at layer $l$   \n- Mean @ $l$ : The vector produced by mean-pooling across all hidden states at layer $l$   \n- Max @ $l$ : The vector produced by max-pooling across all hidden states at layer $l$\n\nLet the function $E(I, T)$ be application of a given model to input image $I$ and caption $T$ , followed by extraction of the embedding being probed over. Our probes are then given a pair of concatenated embeddings for two candidate image-caption\n\npairs, and asked to output 0 if the first pair is a better match or 1 if the second pair is a better match. Specifically, we define the following task corresponding to Text Score for a probe $P(\\cdot)$ :\n\n$$\nP (E (I _ {0}, T _ {0}) \\| E (I _ {0}, T _ {1})) \\rightarrow 0\n$$\n\n$$\nP (E (I _ {0}, T _ {1}) \\| E (I _ {0}, T _ {0})) \\rightarrow 1\n$$\n\n$$\nP (E (I _ {1}, T _ {0}) \\| E (I _ {1}, T _ {1})) \\rightarrow 1\n$$\n\n$$\nP (E (I _ {1}, T _ {1}) \\| E (I _ {1}, T _ {0})) \\rightarrow 0\n$$\n\nAn equivalent probing task corresponding to Image Score is defined:\n\n$$\nP (E (I _ {0}, T _ {0}) \\| E (I _ {1}, T _ {0})) \\rightarrow 0\n$$\n\n$$\nP (E (I _ {1}, T _ {0}) \\| E (I _ {0}, T _ {0})) \\rightarrow 1\n$$\n\n$$\nP (E (I _ {0}, T _ {1}) \\| E (I _ {1}, T _ {1})) \\rightarrow 1\n$$\n\n$$\nP (E (I _ {1}, T _ {1}) \\| E (I _ {0}, T _ {1})) \\rightarrow 0\n$$\n\nOur control task is formulated nearly identically to the target task, except that a random $50\\%$ of the Winoground items in each split are chosen at the start of training, and the labels for these items are flipped. That is, if our target task has the label 0 and the given item is not flipped, the control task also has the label 0; if our target task has the label 0 and the given item is flipped, the control task has the label 1.\n\nSince the flipped items are selected before training, a probe which simply memorizes the data will perform well on this control task for items it has already seen. We therefore split the data into a training and a testing set, the latter of which is never seen during training. This means we are dividing the 400 Winoground items into four new splits: 150 training samples whose labels are not flipped in the control task, 150 training samples whose labels are flipped, 50 testing samples whose labels are not flipped, and 50 testing samples whose labels are. In order to ensure each split is representative of overall the Winoground benchmark, we perform stratified sampling, where are buckets are any combination of the \"Pragmatics\", \"Symbolic\", and \"Morpheme-Level\" visual tags and the \"Both\" linguistic tag. We subsequently confirm that the ratio of each visual and linguistic tag, as well as of each new tag introduced here, is similar across each split.\n\nWe test a variety of small Multi-Layer Perceptron (MLP) probes over these extracted embeddings, each of which maps from the input dimension of $2 \\times 768$ to a single output. ReLU activation\n\nis applied at intermediate layers, and Sigmoid activation is used at the final layer to ensure the output is in the range [0, 1]. We empirically select a hidden size of 1024, a learning rate of 0.0001, 4 MLP layers, and 200 epochs of training to use for every probe, after ablating each of these hyperparameters for all combinations of probe and embedding types.\n\nWe use a single NVIDIA RTX 8000 GPU for all our experiments. All probes took no more than 10 hours to run.",
+      "section_number": "C",
+      "section_title": "task adaptation methods",
+      "normalized_section_title": "task adaptation methods"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.emnlp-main.143::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 8000",
+      "cleaned_hardware_name": "nvidia rtx 8000",
+      "normalized_hardware_name": "NVIDIA RTX 8000",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "C",
+      "section_title": "task adaptation methods",
+      "normalized_section_title": "task adaptation methods",
+      "evidence": "We consider the following embeddings as potential inputs to our probes:\n\n- Pooled Outputs: The hidden state for the CLS token at the last layer of the model, further processed by a linear projection followed by a Tanh activation.   \n- CLS @ $l$ : The hidden state for the CLS token at layer $l$   \n- Mean @ $l$ : The vector produced by mean-pooling across all hidden states at layer $l$   \n- Max @ $l$ : The vector produced by max-pooling across all hidden states at layer $l$\n\nLet the function $E(I, T)$ be application of a given model to input image $I$ and caption $T$ , followed by extraction of the embedding being probed over. Our probes are then given a pair of concatenated embeddings for two candidate image-caption\n\npairs, and asked to output 0 if the first pair is a better match or 1 if the second pair is a better match. Specifically, we define the following task corresponding to Text Score for a probe $P(\\cdot)$ :\n\n$$\nP (E (I _ {0}, T _ {0}) \\| E (I _ {0}, T _ {1})) \\rightarrow 0\n$$\n\n$$\nP (E (I _ {0}, T _ {1}) \\| E (I _ {0}, T _ {0})) \\rightarrow 1\n$$\n\n$$\nP (E (I _ {1}, T _ {0}) \\| E (I _ {1}, T _ {1})) \\rightarrow 1\n$$\n\n$$\nP (E (I _ {1}, T _ {1}) \\| E (I _ {1}, T _ {0})) \\rightarrow 0\n$$\n\nAn equivalent probing task corresponding to Image Score is defined:\n\n$$\nP (E (I _ {0}, T _ {0}) \\| E (I _ {1}, T _ {0})) \\rightarrow 0\n$$\n\n$$\nP (E (I _ {1}, T _ {0}) \\| E (I _ {0}, T _ {0})) \\rightarrow 1\n$$\n\n$$\nP (E (I _ {0}, T _ {1}) \\| E (I _ {1}, T _ {1})) \\rightarrow 1\n$$\n\n$$\nP (E (I _ {1}, T _ {1}) \\| E (I _ {0}, T _ {1})) \\rightarrow 0\n$$\n\nOur control task is formulated nearly identically to the target task, except that a random $50\\%$ of the Winoground items in each split are chosen at the start of training, and the labels for these items are flipped. That is, if our target task has the label 0 and the given item is not flipped, the control task also has the label 0; if our target task has the label 0 and the given item is flipped, the control task has the label 1.\n\nSince the flipped items are selected before training, a probe which simply memorizes the data will perform well on this control task for items it has already seen. We therefore split the data into a training and a testing set, the latter of which is never seen during training. This means we are dividing the 400 Winoground items into four new splits: 150 training samples whose labels are not flipped in the control task, 150 training samples whose labels are flipped, 50 testing samples whose labels are not flipped, and 50 testing samples whose labels are. In order to ensure each split is representative of overall the Winoground benchmark, we perform stratified sampling, where are buckets are any combination of the \"Pragmatics\", \"Symbolic\", and \"Morpheme-Level\" visual tags and the \"Both\" linguistic tag. We subsequently confirm that the ratio of each visual and linguistic tag, as well as of each new tag introduced here, is similar across each split.\n\nWe test a variety of small Multi-Layer Perceptron (MLP) probes over these extracted embeddings, each of which maps from the input dimension of $2 \\times 768$ to a single output. ReLU activation\n\nis applied at intermediate layers, and Sigmoid activation is used at the final layer to ensure the output is in the range [0, 1]. We empirically select a hidden size of 1024, a learning rate of 0.0001, 4 MLP layers, and 200 epochs of training to use for every probe, after ablating each of these hyperparameters for all combinations of probe and embedding types.\n\nWe use a single NVIDIA RTX 8000 GPU for all our experiments. All probes took no more than 10 hours to run.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "C"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA RTX 8000",
+        "num": 1
+      }
+    ]
+  }
+}

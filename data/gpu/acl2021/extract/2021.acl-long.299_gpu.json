@@ -1,0 +1,162 @@
+{
+  "paper_id": "2021.acl-long.299",
+  "candidate_windows": [
+    {
+      "window_id": "2021.acl-long.299::sections::4",
+      "paper_id": "2021.acl-long.299",
+      "section_number": "4",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "In this section, we describe the details of our framework where we leverage the topic-word distribution to perform topic guided attention over tokens in a document. Given a collection $\\mathcal{C}$ with $|C|$ documents $\\{\\mathbf{x_1},\\mathbf{x_2},\\dots,\\mathbf{x}_{|\\mathbf{C}|}\\}$ , we process each document $\\mathbf{x}$ into BoW vector $\\mathbf{x}_{bow} \\in \\mathbb{R}^{|V|}$ and as a token sequence $\\mathbf{x}_{seq}$ , where $\\mathrm{V}$ represents the vocabulary. As shown in step A in figure 1, each word $w_{j} \\in \\mathbf{x}_{seq}$ is embedded as $\\mathbf{e}_j \\in \\mathbb{R}^E$ through an embedding layer $\\mathbf{E} \\in \\mathbb{R}^{|V| \\times E}$ ( $E =$ Embedding Dimension) initialised with GloVe (Pennington et al., 2014). The embedded sequence $\\{e_j\\}_{j=1}^{|\\mathbf{x}|}$\n\nwhere $|\\mathbf{x}|$ is the number of tokens in $\\mathbf{x}$ , is processed through a sequence encoder LSTM (Hochreiter and Schmidhuber, 1997) to obtain the corresponding hidden states $\\mathbf{h}_j \\in \\mathbb{R}^H$ and cell states $\\mathbf{s}_j \\in \\mathbb{R}^H$ (step B in figure 1):\n\n$$\n\\mathbf {h} _ {j}, \\mathbf {s} _ {j} = f _ {L S T M} (\\mathbf {e} _ {j}, (\\mathbf {h} _ {j - 1}, \\mathbf {s} _ {j - 1}))\n$$\n\nwhere $H$ is LSTM's hidden size. We construct a memory bank $\\mathbf{M} = \\langle \\mathbf{h}_1, \\mathbf{h}_2, \\dots, \\mathbf{h}_{|\\mathbf{x}|} \\rangle$ which is then used to perform topic-guided attention (step C in figure 1). The output vector of the attention module is used to derive prior distribution parameters $\\mathbf{z}_{\\mu}$ & $\\mathbf{z}_{\\log \\sigma^2}$ (as in VAE) through two linear layers. Using the re-parameterisation trick, we sample the latent document-topic vector $\\mathbf{z}$ , which is then given as input to BoW decoder linear layer $\\mathbf{D}$ that outputs the reconstructed BoW $\\mathbf{x}_{rec}$ (step D in figure 1). Objective function is same as in VAE setting, involving a reconstruction loss term between $\\mathbf{x}_{rec}$ & $\\mathbf{x}_{bow}$ and KL divergence between the prior (laplace approximation to Dirichlet prior as in ProdLDA) and posterior. We now discuss the details of our Topic Attention Network.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.299::sections::5",
+      "paper_id": "2021.acl-long.299",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.299::sections::5.2",
+      "paper_id": "2021.acl-long.299",
+      "section_number": "5.2",
+      "section_title": "implementation and training details",
+      "normalized_section_title": "implementation and training details",
+      "window_text": "Documents in AGNews are padded up to a maximum length of 50, while those in 20NG and YRP are padded up to 200 tokens. Documents with longer lengths are truncated. These values were chosen such that $\\sim 80 - 99\\%$ of all documents in each dataset were included without truncation. We\n\nuse batch size of 100, Adam Optimizer (Kingma and Ba, 2015) with $\\beta_{1} = 0.99$ , $\\beta_{2} = 0.999$ and $\\epsilon = 10^{-8}$ and train each model for 200 epochs. For all models except T-TAN, learning rate was fixed at 0.002 ([0.001, 0.003], 5) $^{5}$ . T-TAN converges relatively faster than other models, therefore for smooth training, we decay its learning rate every epoch using exponential staircase scheduler with initial learning rate $= 0.002$ and decay rate $= 0.96$ . The number of topics $K = 50$ , a value widely used in literature. We perform hyper-parameter tuning manually to determine the hidden dimension value of various layers: $E = 200$ ([100, 300], 5), $H = 450$ ([300, 900], 10) and $P = 350$ ([10, 400], 10). The weight matrices of all dense layers are Xavier initialized, while bias terms are initialized with zeros. All our proposed models and baselines are trained on a machine with 32 virtual CPUs, single NVIDIA Tesla V100 GPU and 240 GB RAM.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.299::sections::5.4",
+      "paper_id": "2021.acl-long.299",
+      "section_number": "5.4",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "window_text": "In this section, we compare the performance of different variants of our model namely, 1) only LSTM: final hidden state is used to derive sampling parameters $\\mathbf{z}_{\\mu}$ & $\\mathbf{z}_{\\log \\sigma^2}$ , 2) vanilla attn: final hidden state (w/o topic-word distribution) is used as query to perform attention (Bahdanau et al., 2014) on LSTM outputs such that context vector $\\mathbf{z}$ is used for VI, 3) W-TAN: Weighted Topic Attention Network, 4) T-TAN: Top Topic Attention Network and 5) T-TAN w/o (without) GloVe: embedding layer in T-TAN is randomly initialised.\n\nTable 4 compares the topic coherence scores of these different ablation methods on 20NG, AG-News and YRP. As can be seen, applying attention performs better than simple LSTM model. The weighted TAN performs better than vanilla attention model, however, T-TAN uniformly provides the best coherence scores across all the datasets compared to all other methods. This shows that performing attention corresponding to the most prominent topic in a document results in more coherent topics. Further, we perform an ablation to\n\nstudy the effect of using pre-trained embeddings for T-TAN where it can be seen using Glove for initialising word embeddings results in improved NPMI as compared to training T-TAN initialised with random uniform embeddings (T-TAN w/o GloVe) $^{12}$ .\n\nTable 4: Comparison of NPMI coherence between ablation variants of our method for $\\mathrm{K} = {50}$ topics.   \n\n<table><tr><td>Method</td><td>20NG</td><td>AGNews</td><td>YRP</td></tr><tr><td>only LSTM</td><td>0.247</td><td>0.202</td><td>0.092</td></tr><tr><td>vanilla attn</td><td>0.289</td><td>0.244</td><td>0.18</td></tr><tr><td>W-TAN</td><td>0.261</td><td>0.327</td><td>0.232</td></tr><tr><td>T-TAN</td><td>0.296</td><td>0.369</td><td>0.272</td></tr><tr><td>T-TAN w/o GloVe</td><td>0.274</td><td>0.344</td><td>0.248</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.299::appendix::A",
+      "paper_id": "2021.acl-long.299",
+      "section_number": "A",
+      "section_title": "further implementation details",
+      "normalized_section_title": "further implementation details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2021.acl-long.299::sections::5.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Documents in AGNews are padded up to a maximum length of 50, while those in 20NG and YRP are padded up to 200 tokens. Documents with longer lengths are truncated. These values were chosen such that $\\sim 80 - 99\\%$ of all documents in each dataset were included without truncation. We\n\nuse batch size of 100, Adam Optimizer (Kingma and Ba, 2015) with $\\beta_{1} = 0.99$ , $\\beta_{2} = 0.999$ and $\\epsilon = 10^{-8}$ and train each model for 200 epochs. For all models except T-TAN, learning rate was fixed at 0.002 ([0.001, 0.003], 5) $^{5}$ . T-TAN converges relatively faster than other models, therefore for smooth training, we decay its learning rate every epoch using exponential staircase scheduler with initial learning rate $= 0.002$ and decay rate $= 0.96$ . The number of topics $K = 50$ , a value widely used in literature. We perform hyper-parameter tuning manually to determine the hidden dimension value of various layers: $E = 200$ ([100, 300], 5), $H = 450$ ([300, 900], 10) and $P = 350$ ([10, 400], 10). The weight matrices of all dense layers are Xavier initialized, while bias terms are initialized with zeros. All our proposed models and baselines are trained on a machine with 32 virtual CPUs, single NVIDIA Tesla V100 GPU and 240 GB RAM.",
+      "section_number": "5.2",
+      "section_title": "implementation and training details",
+      "normalized_section_title": "implementation and training details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2021.acl-long.299::sections::5.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100",
+      "cleaned_hardware_name": "nvidia tesla v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "5.2",
+      "section_title": "implementation and training details",
+      "normalized_section_title": "implementation and training details",
+      "evidence": "Documents in AGNews are padded up to a maximum length of 50, while those in 20NG and YRP are padded up to 200 tokens. Documents with longer lengths are truncated. These values were chosen such that $\\sim 80 - 99\\%$ of all documents in each dataset were included without truncation. We\n\nuse batch size of 100, Adam Optimizer (Kingma and Ba, 2015) with $\\beta_{1} = 0.99$ , $\\beta_{2} = 0.999$ and $\\epsilon = 10^{-8}$ and train each model for 200 epochs. For all models except T-TAN, learning rate was fixed at 0.002 ([0.001, 0.003], 5) $^{5}$ . T-TAN converges relatively faster than other models, therefore for smooth training, we decay its learning rate every epoch using exponential staircase scheduler with initial learning rate $= 0.002$ and decay rate $= 0.96$ . The number of topics $K = 50$ , a value widely used in literature. We perform hyper-parameter tuning manually to determine the hidden dimension value of various layers: $E = 200$ ([100, 300], 5), $H = 450$ ([300, 900], 10) and $P = 350$ ([10, 400], 10). The weight matrices of all dense layers are Xavier initialized, while bias terms are initialized with zeros. All our proposed models and baselines are trained on a machine with 32 virtual CPUs, single NVIDIA Tesla V100 GPU and 240 GB RAM.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2021.acl-long.299::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "methodology",
+      "evidence": "In this section, we describe the details of our framework where we leverage the topic-word distribution to perform topic guided attention over tokens in a document. Given a collection $\\mathcal{C}$ with $|C|$ documents $\\{\\mathbf{x_1},\\mathbf{x_2},\\dots,\\mathbf{x}_{|\\mathbf{C}|}\\}$ , we process each document $\\mathbf{x}$ into BoW vector $\\mathbf{x}_{bow} \\in \\mathbb{R}^{|V|}$ and as a token sequence $\\mathbf{x}_{seq}$ , where $\\mathrm{V}$ represents the vocabulary. As shown in step A in figure 1, each word $w_{j} \\in \\mathbf{x}_{seq}$ is embedded as $\\mathbf{e}_j \\in \\mathbb{R}^E$ through an embedding layer $\\mathbf{E} \\in \\mathbb{R}^{|V| \\times E}$ ( $E =$ Embedding Dimension) initialised with GloVe (Pennington et al., 2014). The embedded sequence $\\{e_j\\}_{j=1}^{|\\mathbf{x}|}$\n\nwhere $|\\mathbf{x}|$ is the number of tokens in $\\mathbf{x}$ , is processed through a sequence encoder LSTM (Hochreiter and Schmidhuber, 1997) to obtain the corresponding hidden states $\\mathbf{h}_j \\in \\mathbb{R}^H$ and cell states $\\mathbf{s}_j \\in \\mathbb{R}^H$ (step B in figure 1):\n\n$$\n\\mathbf {h} _ {j}, \\mathbf {s} _ {j} = f _ {L S T M} (\\mathbf {e} _ {j}, (\\mathbf {h} _ {j - 1}, \\mathbf {s} _ {j - 1}))\n$$\n\nwhere $H$ is LSTM's hidden size. We construct a memory bank $\\mathbf{M} = \\langle \\mathbf{h}_1, \\mathbf{h}_2, \\dots, \\mathbf{h}_{|\\mathbf{x}|} \\rangle$ which is then used to perform topic-guided attention (step C in figure 1). The output vector of the attention module is used to derive prior distribution parameters $\\mathbf{z}_{\\mu}$ & $\\mathbf{z}_{\\log \\sigma^2}$ (as in VAE) through two linear layers. Using the re-parameterisation trick, we sample the latent document-topic vector $\\mathbf{z}$ , which is then given as input to BoW decoder linear layer $\\mathbf{D}$ that outputs the reconstructed BoW $\\mathbf{x}_{rec}$ (step D in figure 1). Objective function is same as in VAE setting, involving a reconstruction loss term between $\\mathbf{x}_{rec}$ & $\\mathbf{x}_{bow}$ and KL divergence between the prior (laplace approximation to Dirichlet prior as in ProdLDA) and posterior. We now discuss the details of our Topic Attention Network."
+    },
+    {
+      "source_window_id": "2021.acl-long.299::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2021.acl-long.299::sections::5.4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.4",
+      "section_title": "ablation studies",
+      "evidence": "In this section, we compare the performance of different variants of our model namely, 1) only LSTM: final hidden state is used to derive sampling parameters $\\mathbf{z}_{\\mu}$ & $\\mathbf{z}_{\\log \\sigma^2}$ , 2) vanilla attn: final hidden state (w/o topic-word distribution) is used as query to perform attention (Bahdanau et al., 2014) on LSTM outputs such that context vector $\\mathbf{z}$ is used for VI, 3) W-TAN: Weighted Topic Attention Network, 4) T-TAN: Top Topic Attention Network and 5) T-TAN w/o (without) GloVe: embedding layer in T-TAN is randomly initialised.\n\nTable 4 compares the topic coherence scores of these different ablation methods on 20NG, AG-News and YRP. As can be seen, applying attention performs better than simple LSTM model. The weighted TAN performs better than vanilla attention model, however, T-TAN uniformly provides the best coherence scores across all the datasets compared to all other methods. This shows that performing attention corresponding to the most prominent topic in a document results in more coherent topics. Further, we perform an ablation to\n\nstudy the effect of using pre-trained embeddings for T-TAN where it can be seen using Glove for initialising word embeddings results in improved NPMI as compared to training T-TAN initialised with random uniform embeddings (T-TAN w/o GloVe) $^{12}$ .\n\nTable 4: Comparison of NPMI coherence between ablation variants of our method for $\\mathrm{K} = {50}$ topics.   \n\n<table><tr><td>Method</td><td>20NG</td><td>AGNews</td><td>YRP</td></tr><tr><td>only LSTM</td><td>0.247</td><td>0.202</td><td>0.092</td></tr><tr><td>vanilla attn</td><td>0.289</td><td>0.244</td><td>0.18</td></tr><tr><td>W-TAN</td><td>0.261</td><td>0.327</td><td>0.232</td></tr><tr><td>T-TAN</td><td>0.296</td><td>0.369</td><td>0.272</td></tr><tr><td>T-TAN w/o GloVe</td><td>0.274</td><td>0.344</td><td>0.248</td></tr></table>"
+    },
+    {
+      "source_window_id": "2021.acl-long.299::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "further implementation details",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "5.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2021\\2021.acl-long.299\\auto\\full.md",
+    "source_md_sha256": "09f4ad7bcb7ed7ff31eac1faa1fac5a0f296246d08d2d9d2af51e0b32f273e86",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "a2f4e0f2222ac944a84b28fba08cc5ab0184a6c6ccb3a5a4deb8a7eefc1e4438"
+  }
+}

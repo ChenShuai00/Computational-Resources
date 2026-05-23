@@ -1,0 +1,213 @@
+{
+  "paper_id": "2024.naacl-long.382",
+  "candidate_windows": [
+    {
+      "window_id": "2024.naacl-long.382::sections::2.1",
+      "paper_id": "2024.naacl-long.382",
+      "section_number": "2.1",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "Some Notation. We define $\\overline{\\Sigma} \\stackrel{\\mathrm{def}}{=} \\Sigma \\cup \\{\\mathrm{EOS}\\}$ . To make it possible to always condition on exactly $n - 1$ symbols, whenever the history is shorter than $n - 1$ symbols, we prepend a string with the appropriate number of BOS symbols. Thus, we define $\\Sigma_{\\mathrm{BOS}}^{n - 1} \\stackrel{\\mathrm{def}}{=} \\bigcup_{\\ell = 1}^{n - 1} \\{\\mathrm{BOS}\\}^{\\ell} \\times \\Sigma^{n - 1 - \\ell}$ (the set of all possible histories) and $\\Sigma_{\\mathrm{BOS}}^{*} \\stackrel{\\mathrm{def}}{=} \\Sigma_{\\mathrm{BOS}}^{n - 1} \\cup \\bigcup_{\\ell = n}^{\\infty} \\Sigma^{\\ell}$ as the set of all strings that are either prefixed by BOS or contain more than $n - 1$ symbols.\n\nMaximum-likelihood Estimation. We now introduce maximum-likelihood estimation in the context of language modeling. Suppose we observe a collection of samples $\\mathcal{D} = \\{\\pmb{x}^{(m)}\\}_{m=1}^{M}$ where $\\pmb{x}^{(m)} \\sim p$ and $p$ is the distribution over strings that we are trying to model. Let $p_{\\mathcal{D}}$ be the empirical distribution induced by $\\mathcal{D}$ , i.e., the probability distribution defined as\n\n$$\np _ {\\mathcal {D}} (\\boldsymbol {x}) = \\frac {1}{M} \\sum_ {m = 1} ^ {M} \\mathbb {1} \\left\\{\\boldsymbol {x} = \\boldsymbol {x} ^ {(m)} \\right\\}. \\tag {4}\n$$\n\nChoosing a model $q_{\\theta}$ that minimizes the forward KL divergence $D_{\\mathrm{KL}}(p_{\\mathcal{D}}||q_{\\theta})$ is known as maximum-likelihood estimation. Under regularity conditions (Le Cam, 1952), MLE is consistent, i.e., in the limit of infinite data, we arrive at the true parameters of the data-generating distribution if the data-generating distribution indeed came from the model's parametric family.\n\nCounting Substrings in a Dataset. As discussed in §1, estimation of $n$ -gram language models relies on counting the occurrences of various substrings in a dataset. Given the dataset $\\mathcal{D} = \\{\\pmb{x}^{(m)}\\}_{m=1}^{M}$ , we define the counting function $\\#$ as\n\n$$\n\\begin{array}{l} \\# (\\boldsymbol {x}) \\stackrel {\\text {d e f}} {=} \\sum_ {m = 1} ^ {M} \\sum_ {t = 1} ^ {| \\boldsymbol {x} | + 1} \\sum_ {s = t + 1} ^ {| \\boldsymbol {x} | + 1} \\mathbb {1} \\left\\{\\boldsymbol {x} = \\boldsymbol {x} _ {t: s} ^ {(m)} \\right\\} \\quad (5 a) \\\\ \\# (\\boldsymbol {x} \\text {E O S}) \\stackrel {\\text {d e f}} {=} \\sum_ {m = 1} ^ {M} \\sum_ {t = 1} ^ {| \\boldsymbol {x} | + 1} \\mathbb {1} \\left\\{\\boldsymbol {x} = \\boldsymbol {x} _ {t:} ^ {(m)} \\right\\}, \\quad (5 b) \\\\ \\end{array}\n$$\n\nwhere $\\pmb{x}_{t:s} \\stackrel{\\mathrm{def}}{=} x_t \\cdots x_{s-1}$ and $\\pmb{x}_{t:} \\stackrel{\\mathrm{def}}{=} \\pmb{x}_{t:|x|+1}$ . As hinted at in §1, # counts the number of times the\n\nan operation on count-based data.\n\nstring $\\pmb{x}$ appears as a substring of a string in $\\mathcal{D}$ .<sup>9</sup> This is to be distinguished from simply counting the number of occurrences of $\\pmb{x}$ in $\\mathcal{D}$ .\n\nEmpirical Distributions. Using the counting functions defined in Eq. (5), we define two empirical probability distributions. The autoregressive empirical probability distribution is defined as\n\n$$\np _ {\\mathcal {D}} (y \\mid \\boldsymbol {x}) \\stackrel {\\text {d e f}} {=} \\frac {\\# (\\boldsymbol {x} y)}{\\# (\\boldsymbol {x})}, \\tag {6}\n$$\n\nwhere $x_{< t} \\in \\Sigma^{*}$ and $y \\in \\overline{\\Sigma}$ . Eq. (6) is the autoregressive decomposition of Eq. (4). Then, the autoregressive empirical $n$ -gram probability distribution is defined as follows\n\n$$\np _ {\\mathcal {D}} ^ {n} (y \\mid \\boldsymbol {x} ^ {n}) \\stackrel {\\text {d e f}} {=} \\frac {\\# (\\boldsymbol {x} ^ {n} y)}{\\# (\\boldsymbol {x} ^ {n})}, \\tag {7}\n$$\n\nwhere $\\pmb{x}^n\\in \\Sigma_{\\mathrm{BOS}}^{n - 1}$ and $y\\in \\overline{\\Sigma}$ . Note that the autoregressive empirical $n$ -gram probabilities are equivalent to the maximum-likelihood estimator of an $n$ -gram model $q_{\\mathrm{MLE}}^n$ , as seen in Eq. (2).\n\nPrefix Probabilities. Prefix probabilities (Cotterell et al., 2023, §2.4.2) are useful quantities in language modeling and are found both in the language model's autoregressive factorization as well as in maximum-likelihood estimation (Jelinek and Lafferty, 1991; Nowak and Cotterell, 2023). We give a formal definition below.\n\nDefinition 2.1. We define the prefix probability function $\\pi$ of a language model $p$ over $\\Sigma^{*}$ as\n\n$$\n\\pi (\\boldsymbol {x}) \\stackrel {\\text {d e f}} {=} \\sum_ {\\boldsymbol {y} \\in \\Sigma^ {*}} p (\\boldsymbol {y}) \\mathbb {1} \\left\\{\\boldsymbol {x} \\preceq \\boldsymbol {y} \\right\\} = \\sum_ {\\boldsymbol {y} \\in \\Sigma^ {*}} p (\\boldsymbol {x} \\boldsymbol {y}), \\tag {8}\n$$\n\nwhere $\\pmb{x} \\preceq \\pmb{y}$ indicates that $\\pmb{x}$ is a prefix of $\\pmb{y}$ .\n\nWe now relate the MLE of a language model to the matching of next-symbol conditional distributions. It will later allow us to reason about the relationship between smoothing and regularized maximum-likelihood estimation.\n\nTheorem 2.2. Let $p$ and $q$ be two language models over $\\Sigma$ and $\\pi$ the prefix probability function of $p$ . Furthermore, we assume that $\\mathrm{H}(p,q) < \\infty$ . Then, the following equality holds\n\n$$\n\\begin{array}{l} D _ {\\mathrm {K L}} (p \\mid | q) \\\\ = \\sum_ {\\boldsymbol {x} \\in \\Sigma^ {*}} \\pi (\\boldsymbol {x}) D _ {\\mathrm {K L}} (p (\\cdot | \\boldsymbol {x}) | | q (\\cdot | \\boldsymbol {x})). \\tag {9} \\\\ \\end{array}\n$$\n\nNote that, for complete generality, $\\#$ should also take the dataset $\\mathcal{D}$ as argument. For conciseness, we leave this parameter implicit.\n\nProof. App. A.1.2.\n\nWe also consider the following corollary for $p = p_{\\mathcal{D}}$ and an $n$ -gram language model $q$ .\n\nCorollary 2.3. Let $p_{\\mathcal{D}}$ be an empirical distribution induced by a dataset $\\mathcal{D}$ . Let $q$ be an $n$ -gram language model. Then, it holds that:\n\n$$\nD _ {\\mathrm {K L}} \\left(p _ {\\mathcal {D}} \\mid \\mid q\\right) \\tag {10}\n$$\n\n$$\n\\propto \\sum_ {\\boldsymbol {x} ^ {n} \\in \\Sigma_ {\\mathrm {B O S}} ^ {n - 1}} \\# (\\boldsymbol {x} ^ {n}) D _ {\\mathrm {K L}} \\left(p _ {\\mathcal {D}} (\\cdot | \\boldsymbol {x} ^ {n}) | | q (\\cdot | \\boldsymbol {x} ^ {n})\\right).\n$$\n\nProof. App. A.2.\n\nCrucially, the $n$ -gram assumption allows us to reduce the infinite sum over $\\Sigma^{*}$ in the definition of $D_{\\mathrm{KL}}(p_{\\mathcal{D}}||q_{\\mathrm{MLE}}^n)$ to one over $\\Sigma_{\\mathrm{BOS}}^{n - 1}$ due to the resulting conditional independence of $x_{t}$ and $x_{1}\\dots x_{t - n}$ given $\\boldsymbol{x}_t^n = x_{t - n + 1}\\dots x_{t - 1}$ . Further, it allows us to restrict the summation to the $n$ -grams that are present in the training corpus.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.naacl-long.382::sections::5",
+      "paper_id": "2024.naacl-long.382",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.naacl-long.382::sections::5.1",
+      "paper_id": "2024.naacl-long.382",
+      "section_number": "5.1",
+      "section_title": "setup",
+      "normalized_section_title": "setup",
+      "window_text": "We validate our proposed regularization framework on two tasks: language modeling and machine translation. We rely on the small-scale WikiText-2 (Merit et al., 2017) and IWSLT-14 (Cettolo et al., 2014) data sets, respectively, and compare the performance of standard MLE and label smoothing to the performance obtained by using regularizers based on the smoothing methods illustrated in §3. For both tasks, we perform our experiments via the fairseq library (Ott et al., 2019) on Transformer-based (Vaswani et al., 2017) language models.\n\nOur implementation of (Simple) Good-Turing smoothing in fairseq builds on an open-source implementation,12 while we leverage the efficient implementation of Kneser-Essen-Ney smoothing\n\n<table><tr><td>Smoothing Method</td><td>ppl ↓</td></tr><tr><td>None</td><td>147.12 ±0.34</td></tr><tr><td>add-λ (γ+ = 0.1, γ- = 0.05, γLS = 0.01)</td><td>142.10† ±0.65</td></tr><tr><td>GT (γ+ = 0.1, γ- = 0.05)</td><td>141.93† ±0.73</td></tr><tr><td>JM (γ+ = 0.1, γ- = 0.5, λ1 = 0.75)</td><td>137.41† ±0.40</td></tr><tr><td>Katz (γ+ = 0.1, γ- = 0.01, k = 5)</td><td>142.69† ±0.54</td></tr><tr><td>KEN (γ+ = 0.1, γ- = 0.1)</td><td>142.30† ±0.29</td></tr></table>\n\nTable 1: Perplexity on WikiText-2 test set. Included are performances of models trained with no regularization (None), and with various smoothing methods. Reported perplexities are mean values for 5 independently trained models, together with their standard errors. The best-performing method is in bold, while the second-best is underlined. $\\dagger$ indicates statistical significance with respect to the unregularized baseline with $p < 0.05$ .\n\navailable through the KenLM (Heafield, 2011; Heafield et al., 2013) library. $^{13}$ The remaining smoothing methods were implemented natively in fairseq. Note that, as all data sets are small in scale, we limit the maximum $n$ -gram order to 2 (i.e., bigrams) for all smoothing methods. We use dropout for all experiments fixing the dropout probability to 0.1 and 0.3 for language modeling and machine translation, respectively. For all smoothing techniques, we set $\\Gamma \\stackrel{\\mathrm{def}}{=} \\{0.005, 0.01, 0.05, 0.1, 0.5\\}$ and grid search regularization hyperparameter pairs $\\gamma_{+}, \\gamma_{-} \\in \\Gamma \\times \\Gamma$ . For smoothing methods that have additional hyperparameters, we extend the grid search described above to include them. We provide the complete list of method-specific hyperparameter values in Tab. 3. Additional dataset details are provided in Tab. 4.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.naacl-long.382::appendix::B",
+      "paper_id": "2024.naacl-long.382",
+      "section_number": "B",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "window_text": "Experiments on WikiText-2 and IWSLT-14 were run on a shared cluster on NVIDIA Quadro RTX 6000 GPUs. The Transformer models used for language modeling and machine translation have 58,145,792 and 39,469,056 parameters, respectively.\n\nTable 4: Dataset details   \n\n<table><tr><td>Dataset</td><td>Split</td><td>Language</td><td>Vocabulary size</td><td>Samples</td><td>Number of tokens</td></tr><tr><td>WikiText-2</td><td>Train</td><td>English</td><td>16,932</td><td>23,767</td><td>2,389,674</td></tr><tr><td>WikiText-2</td><td>Validation</td><td>English</td><td>16,932</td><td>2461</td><td>255,327</td></tr><tr><td>WikiText-2</td><td>Test</td><td>English</td><td>16,932</td><td>2891</td><td>292,710</td></tr><tr><td>IWSLT-14</td><td>Train</td><td>English</td><td>6628</td><td>160,239</td><td>3,788,875</td></tr><tr><td>IWSLT-14</td><td>Validation</td><td>English</td><td>6628</td><td>7283</td><td>171,339</td></tr><tr><td>IWSLT-14</td><td>Test</td><td>English</td><td>6628</td><td>6750</td><td>150,178</td></tr><tr><td>IWSLT-14</td><td>Train</td><td>German</td><td>8844</td><td>160,239</td><td>3,875,352</td></tr><tr><td>IWSLT-14</td><td>Validation</td><td>German</td><td>8844</td><td>7283</td><td>175,309</td></tr><tr><td>IWSLT-14</td><td>Test</td><td>German</td><td>8844</td><td>6750</td><td>155,088</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2024.naacl-long.382::appendix::C",
+      "paper_id": "2024.naacl-long.382",
+      "section_number": "C",
+      "section_title": "additional experimental results",
+      "normalized_section_title": "additional experimental results",
+      "window_text": "Tab. 5 and Tab. 6 show the performance of the best-performing seed for each model. JM smoothing remains the best-performing technique on both datasets. For language modeling, we test for statistical significance using a paired permutation test over sentence-level log-likelihoods, using the mean of the observation differences as the test statistic. For machine translation, we test for statistical significance using paired bootstrap resampling as implemented in sacreBLEU. Different tests are performed using either the unregularized results or the add- $\\lambda$ results as the baseline. In Tab. 5 and Tab. 6, the first symbol in $\\dagger/\\dagger$ refers to statistical significance with respect to the unregularized model, while the second refers to statistical significance over the add- $\\lambda$ results. $\\dagger$ indicates $p < 0.05$ ; $\\ddagger$ indicates $p < 0.01$ . In language modeling, all regularization methods perform significantly better than no regularization. However, only GT and JM smoothing perform better than add- $\\lambda$ smoothing. For machine translation, we see that all regularized methods except for Katz smoothing perform significantly better than the unregularized baseline model, while only JM smoothing performs significantly better than add- $\\lambda$ smoothing.\n\nTable 5: Perplexity on WikiText-2 test set. Included are performances of models trained with no regularization (None), and with various smoothing methods. We report the best perplexity over 5 independently trained models.   \n\n<table><tr><td>Smoothing Method</td><td>ppl ↓</td></tr><tr><td>None</td><td>144.67</td></tr><tr><td>add-λ (γ+ = 0.1, γ- = 0.05, γLS = 0.01)</td><td>138.72‡</td></tr><tr><td>GT (γ+ = 0.1, γ- = 0.05)</td><td>137.00‡/‡</td></tr><tr><td>JM (γ+ = 0.1, γ- = 0.5, λ1 = 0.75)</td><td>134.63‡/‡</td></tr><tr><td>Katz (γ+ = 0.1, γ- = 0.01, k = 5)</td><td>139.44‡</td></tr><tr><td>KEN (γ+ = 0.1, γ- = 0.1)</td><td>140.71‡</td></tr></table>\n\nTable 6: BLEU on test set of IWSLT-14 DE-EN. Different regularized methods are compared to no regularization (None). We report the best BLEU score over 5 independently trained models.   \n\n<table><tr><td>Smoothing Method</td><td>BLEU ↑</td></tr><tr><td>None</td><td>33.11</td></tr><tr><td>add-λ (γ+ = 0.1, γ- = 0.01, γLS = 0.01)</td><td>33.41†</td></tr><tr><td>GT (γ+ = 0.05, γ- = 0.5)</td><td>33.44†</td></tr><tr><td>JM (γ+ = 0.1, γ- = 0.5, λ1 = 0.5)</td><td>33.97‡/‡</td></tr><tr><td>Katz (γ+ = 0.1, γ- = 0.1, k = 5)</td><td>33.31</td></tr><tr><td>KEN (γ+ = 0.1, γ- = 0.1)</td><td>33.58‡</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.naacl-long.382::appendix::C.1",
+      "paper_id": "2024.naacl-long.382",
+      "section_number": "C.1",
+      "section_title": "wmt-14 results",
+      "normalized_section_title": "wmt-14 results",
+      "window_text": "To evaluate the performance of our regularizers on larger datasets, we perform a preliminary evaluation of our methods on the WMT-14 machine translation dataset. We download and preprocess the data following a script provided by fairseq.[22] Experiments on WMT were run on two NVIDIA Tesla V100 GPUs. Given our computational constraints, we limit our experiments to our best-performing smoothing method (Jelinek-Mercer), add- $\\lambda$ smoothing, and the unregularized baseline. We also use the same hyperparameter\n\nset as in the IWSLT-14 experiments for all methods. Tab. 7 shows the results of our experiments. JM smoothing obtains the best performance out of the three methods. Using paired bootstrap resampling, we assessed that the improvements of JM smoothing are statistically significant over the unregularized baseline, while they are not significant over the results obtained using add- $\\lambda$ smoothing $(p = 0.07)$ . A regularization hyperparameter search on the new dataset might yield larger performance improvements for all smoothing-based methods.\n\nTable 7: BLEU scores on the (EN-DE) WMT14/full test set. JM and add- $\\lambda$ smoothing are compared to no regularization.   \n\n<table><tr><td>Smoothing Method</td><td>BLEU ↑</td></tr><tr><td>None</td><td>26.75</td></tr><tr><td>add-λ (γ+ = 0.1, γ- = 0.01, γLS = 0.01)</td><td>27.07</td></tr><tr><td>JM (γ+ = 0.1, γ- = 0.5, λ1 = 0.5)</td><td>27.35‡</td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.naacl-long.382::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Quadro RTX 6000",
+      "count": null,
+      "count_text": "",
+      "evidence": "Experiments on WikiText-2 and IWSLT-14 were run on a shared cluster on NVIDIA Quadro RTX 6000 GPUs. The Transformer models used for language modeling and machine translation have 58,145,792 and 39,469,056 parameters, respectively.\n\nTable 4: Dataset details   \n\n<table><tr><td>Dataset</td><td>Split</td><td>Language</td><td>Vocabulary size</td><td>Samples</td><td>Number of tokens</td></tr><tr><td>WikiText-2</td><td>Train</td><td>English</td><td>16,932</td><td>23,767</td><td>2,389,674</td></tr><tr><td>WikiText-2</td><td>Validation</td><td>English</td><td>16,932</td><td>2461</td><td>255,327</td></tr><tr><td>WikiText-2</td><td>Test</td><td>English</td><td>16,932</td><td>2891</td><td>292,710</td></tr><tr><td>IWSLT-14</td><td>Train</td><td>English</td><td>6628</td><td>160,239</td><td>3,788,875</td></tr><tr><td>IWSLT-14</td><td>Validation</td><td>English</td><td>6628</td><td>7283</td><td>171,339</td></tr><tr><td>IWSLT-14</td><td>Test</td><td>English</td><td>6628</td><td>6750</td><td>150,178</td></tr><tr><td>IWSLT-14</td><td>Train</td><td>German</td><td>8844</td><td>160,239</td><td>3,875,352</td></tr><tr><td>IWSLT-14</td><td>Validation</td><td>German</td><td>8844</td><td>7283</td><td>175,309</td></tr><tr><td>IWSLT-14</td><td>Test</td><td>German</td><td>8844</td><td>6750</td><td>155,088</td></tr></table>",
+      "section_number": "B",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details"
+    },
+    {
+      "window_id": "2024.naacl-long.382::appendix::C.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "To evaluate the performance of our regularizers on larger datasets, we perform a preliminary evaluation of our methods on the WMT-14 machine translation dataset. We download and preprocess the data following a script provided by fairseq.[22] Experiments on WMT were run on two NVIDIA Tesla V100 GPUs. Given our computational constraints, we limit our experiments to our best-performing smoothing method (Jelinek-Mercer), add- $\\lambda$ smoothing, and the unregularized baseline. We also use the same hyperparameter\n\nset as in the IWSLT-14 experiments for all methods. Tab. 7 shows the results of our experiments. JM smoothing obtains the best performance out of the three methods. Using paired bootstrap resampling, we assessed that the improvements of JM smoothing are statistically significant over the unregularized baseline, while they are not significant over the results obtained using add- $\\lambda$ smoothing $(p = 0.07)$ . A regularization hyperparameter search on the new dataset might yield larger performance improvements for all smoothing-based methods.\n\nTable 7: BLEU scores on the (EN-DE) WMT14/full test set. JM and add- $\\lambda$ smoothing are compared to no regularization.   \n\n<table><tr><td>Smoothing Method</td><td>BLEU ↑</td></tr><tr><td>None</td><td>26.75</td></tr><tr><td>add-λ (γ+ = 0.1, γ- = 0.01, γLS = 0.01)</td><td>27.07</td></tr><tr><td>JM (γ+ = 0.1, γ- = 0.5, λ1 = 0.5)</td><td>27.35‡</td></tr></table>",
+      "section_number": "C.1",
+      "section_title": "wmt-14 results",
+      "normalized_section_title": "wmt-14 results"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.naacl-long.382::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Quadro RTX 6000",
+      "cleaned_hardware_name": "nvidia quadro rtx 6000",
+      "normalized_hardware_name": "NVIDIA Quadro RTX 6000",
+      "benchmark_hardware_name": "NVIDIA Quadro RTX 6000",
+      "count": null,
+      "count_text": "",
+      "section_number": "B",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "evidence": "Experiments on WikiText-2 and IWSLT-14 were run on a shared cluster on NVIDIA Quadro RTX 6000 GPUs. The Transformer models used for language modeling and machine translation have 58,145,792 and 39,469,056 parameters, respectively.\n\nTable 4: Dataset details   \n\n<table><tr><td>Dataset</td><td>Split</td><td>Language</td><td>Vocabulary size</td><td>Samples</td><td>Number of tokens</td></tr><tr><td>WikiText-2</td><td>Train</td><td>English</td><td>16,932</td><td>23,767</td><td>2,389,674</td></tr><tr><td>WikiText-2</td><td>Validation</td><td>English</td><td>16,932</td><td>2461</td><td>255,327</td></tr><tr><td>WikiText-2</td><td>Test</td><td>English</td><td>16,932</td><td>2891</td><td>292,710</td></tr><tr><td>IWSLT-14</td><td>Train</td><td>English</td><td>6628</td><td>160,239</td><td>3,788,875</td></tr><tr><td>IWSLT-14</td><td>Validation</td><td>English</td><td>6628</td><td>7283</td><td>171,339</td></tr><tr><td>IWSLT-14</td><td>Test</td><td>English</td><td>6628</td><td>6750</td><td>150,178</td></tr><tr><td>IWSLT-14</td><td>Train</td><td>German</td><td>8844</td><td>160,239</td><td>3,875,352</td></tr><tr><td>IWSLT-14</td><td>Validation</td><td>German</td><td>8844</td><td>7283</td><td>175,309</td></tr><tr><td>IWSLT-14</td><td>Test</td><td>German</td><td>8844</td><td>6750</td><td>155,088</td></tr></table>",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.naacl-long.382::appendix::C.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100",
+      "cleaned_hardware_name": "nvidia tesla v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "C.1",
+      "section_title": "wmt-14 results",
+      "normalized_section_title": "wmt-14 results",
+      "evidence": "To evaluate the performance of our regularizers on larger datasets, we perform a preliminary evaluation of our methods on the WMT-14 machine translation dataset. We download and preprocess the data following a script provided by fairseq.[22] Experiments on WMT were run on two NVIDIA Tesla V100 GPUs. Given our computational constraints, we limit our experiments to our best-performing smoothing method (Jelinek-Mercer), add- $\\lambda$ smoothing, and the unregularized baseline. We also use the same hyperparameter\n\nset as in the IWSLT-14 experiments for all methods. Tab. 7 shows the results of our experiments. JM smoothing obtains the best performance out of the three methods. Using paired bootstrap resampling, we assessed that the improvements of JM smoothing are statistically significant over the unregularized baseline, while they are not significant over the results obtained using add- $\\lambda$ smoothing $(p = 0.07)$ . A regularization hyperparameter search on the new dataset might yield larger performance improvements for all smoothing-based methods.\n\nTable 7: BLEU scores on the (EN-DE) WMT14/full test set. JM and add- $\\lambda$ smoothing are compared to no regularization.   \n\n<table><tr><td>Smoothing Method</td><td>BLEU ↑</td></tr><tr><td>None</td><td>26.75</td></tr><tr><td>add-λ (γ+ = 0.1, γ- = 0.01, γLS = 0.01)</td><td>27.07</td></tr><tr><td>JM (γ+ = 0.1, γ- = 0.5, λ1 = 0.5)</td><td>27.35‡</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.naacl-long.382::sections::2.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "2.1",
+      "section_title": "preliminaries",
+      "evidence": "Some Notation. We define $\\overline{\\Sigma} \\stackrel{\\mathrm{def}}{=} \\Sigma \\cup \\{\\mathrm{EOS}\\}$ . To make it possible to always condition on exactly $n - 1$ symbols, whenever the history is shorter than $n - 1$ symbols, we prepend a string with the appropriate number of BOS symbols. Thus, we define $\\Sigma_{\\mathrm{BOS}}^{n - 1} \\stackrel{\\mathrm{def}}{=} \\bigcup_{\\ell = 1}^{n - 1} \\{\\mathrm{BOS}\\}^{\\ell} \\times \\Sigma^{n - 1 - \\ell}$ (the set of all possible histories) and $\\Sigma_{\\mathrm{BOS}}^{*} \\stackrel{\\mathrm{def}}{=} \\Sigma_{\\mathrm{BOS}}^{n - 1} \\cup \\bigcup_{\\ell = n}^{\\infty} \\Sigma^{\\ell}$ as the set of all strings that are either prefixed by BOS or contain more than $n - 1$ symbols.\n\nMaximum-likelihood Estimation. We now introduce maximum-likelihood estimation in the context of language modeling. Suppose we observe a collection of samples $\\mathcal{D} = \\{\\pmb{x}^{(m)}\\}_{m=1}^{M}$ where $\\pmb{x}^{(m)} \\sim p$ and $p$ is the distribution over strings that we are trying to model. Let $p_{\\mathcal{D}}$ be the empirical distribution induced by $\\mathcal{D}$ , i.e., the probability distribution defined as\n\n$$\np _ {\\mathcal {D}} (\\boldsymbol {x}) = \\frac {1}{M} \\sum_ {m = 1} ^ {M} \\mathbb {1} \\left\\{\\boldsymbol {x} = \\boldsymbol {x} ^ {(m)} \\right\\}. \\tag {4}\n$$\n\nChoosing a model $q_{\\theta}$ that minimizes the forward KL divergence $D_{\\mathrm{KL}}(p_{\\mathcal{D}}||q_{\\theta})$ is known as maximum-likelihood estimation. Under regularity conditions (Le Cam, 1952), MLE is consistent, i.e., in the limit of infinite data, we arrive at the true parameters of the data-generating distribution if the data-generating distribution indeed came from the model's parametric family.\n\nCounting Substrings in a Dataset. As discussed in §1, estimation of $n$ -gram language models relies on counting the occurrences of various substrings in a dataset. Given the dataset $\\mathcal{D} = \\{\\pmb{x}^{(m)}\\}_{m=1}^{M}$ , we define the counting function $\\#$ as\n\n$$\n\\begin{array}{l} \\# (\\boldsymbol {x}) \\stackrel {\\text {d e f}} {=} \\sum_ {m = 1} ^ {M} \\sum_ {t = 1} ^ {| \\boldsymbol {x} | + 1} \\sum_ {s = t + 1} ^ {| \\boldsymbol {x} | + 1} \\mathbb {1} \\left\\{\\boldsymbol {x} = \\boldsymbol {x} _ {t: s} ^ {(m)} \\right\\} \\quad (5 a) \\\\ \\# (\\boldsymbol {x} \\text {E O S}) \\stackrel {\\text {d e f}} {=} \\sum_ {m = 1} ^ {M} \\sum_ {t = 1} ^ {| \\boldsymbol {x} | + 1} \\mathbb {1} \\left\\{\\boldsymbol {x} = \\boldsymbol {x} _ {t:} ^ {(m)} \\right\\}, \\quad (5 b) \\\\ \\end{array}\n$$\n\nwhere $\\pmb{x}_{t:s} \\stackrel{\\mathrm{def}}{=} x_t \\cdots x_{s-1}$ and $\\pmb{x}_{t:} \\stackrel{\\mathrm{def}}{=} \\pmb{x}_{t:|x|+1}$ . As hinted at in §1, # counts the number of times the\n\nan operation on count-based data.\n\nstring $\\pmb{x}$ appears as a substring of a string in $\\mathcal{D}$ .<sup>9</sup> This is to be distinguished from simply counting the number of occurrences of $\\pmb{x}$ in $\\mathcal{D}$ .\n\nEmpirical Distributions. Using the counting functions defined in Eq. (5), we define two empirical probability distributions. The autoregressive empirical probability distribution is defined as\n\n$$\np _ {\\mathcal {D}} (y \\mid \\boldsymbol {x}) \\stackrel {\\text {d e f}} {=} \\frac {\\# (\\boldsymbol {x} y)}{\\# (\\boldsymbol {x})}, \\tag {6}\n$$\n\nwhere $x_{< t} \\in \\Sigma^{*}$ and $y \\in \\overline{\\Sigma}$ . Eq. (6) is the autoregressive decomposition of Eq. (4). Then, the autoregressive empirical $n$ -gram probability distribution is defined as follows\n\n$$\np _ {\\mathcal {D}} ^ {n} (y \\mid \\boldsymbol {x} ^ {n}) \\stackrel {\\text {d e f}} {=} \\frac {\\# (\\boldsymbol {x} ^ {n} y)}{\\# (\\boldsymbol {x} ^ {n})}, \\tag {7}\n$$\n\nwhere $\\pmb{x}^n\\in \\Sigma_{\\mathrm{BOS}}^{n - 1}$ and $y\\in \\overline{\\Sigma}$ . Note that the autoregressive empirical $n$ -gram probabilities are equivalent to the maximum-likelihood estimator of an $n$ -gram model $q_{\\mathrm{MLE}}^n$ , as seen in Eq. (2).\n\nPrefix Probabilities. Prefix probabilities (Cotterell et al., 2023, §2.4.2) are useful quantities in language modeling and are found both in the language model's autoregressive factorization as well as in maximum-likelihood estimation (Jelinek and Lafferty, 1991; Nowak and Cotterell, 2023). We give a formal definition below.\n\nDefinition 2.1. We define the prefix probability function $\\pi$ of a language model $p$ over $\\Sigma^{*}$ as\n\n$$\n\\pi (\\boldsymbol {x}) \\stackrel {\\text {d e f}} {=} \\sum_ {\\boldsymbol {y} \\in \\Sigma^ {*}} p (\\boldsymbol {y}) \\mathbb {1} \\left\\{\\boldsymbol {x} \\preceq \\boldsymbol {y} \\right\\} = \\sum_ {\\boldsymbol {y} \\in \\Sigma^ {*}} p (\\boldsymbol {x} \\boldsymbol {y}), \\tag {8}\n$$\n\nwhere $\\pmb{x} \\preceq \\pmb{y}$ indicates that $\\pmb{x}$ is a prefix of $\\pmb{y}$ .\n\nWe now relate the MLE of a language model to the matching of next-symbol conditional distributions. It will later allow us to reason about the relationship between smoothing and regularized maximum-likelihood estimation.\n\nTheorem 2.2. Let $p$ and $q$ be two language models over $\\Sigma$ and $\\pi$ the prefix probability function of $p$ . Furthermore, we assume that $\\mathrm{H}(p,q) < \\infty$ . Then, the following equality holds\n\n$$\n\\begin{array}{l} D _ {\\mathrm {K L}} (p \\mid | q) \\\\ = \\sum_ {\\boldsymbol {x} \\in \\Sigma^ {*}} \\pi (\\boldsymbol {x}) D _ {\\mathrm {K L}} (p (\\cdot | \\boldsymbol {x}) | | q (\\cdot | \\boldsymbol {x})). \\tag {9} \\\\ \\end{array}\n$$\n\nNote that, for complete generality, $\\#$ should also take the dataset $\\mathcal{D}$ as argument. For conciseness, we leave this parameter implicit.\n\nProof. App. A.1.2.\n\nWe also consider the following corollary for $p = p_{\\mathcal{D}}$ and an $n$ -gram language model $q$ .\n\nCorollary 2.3. Let $p_{\\mathcal{D}}$ be an empirical distribution induced by a dataset $\\mathcal{D}$ . Let $q$ be an $n$ -gram language model. Then, it holds that:\n\n$$\nD _ {\\mathrm {K L}} \\left(p _ {\\mathcal {D}} \\mid \\mid q\\right) \\tag {10}\n$$\n\n$$\n\\propto \\sum_ {\\boldsymbol {x} ^ {n} \\in \\Sigma_ {\\mathrm {B O S}} ^ {n - 1}} \\# (\\boldsymbol {x} ^ {n}) D _ {\\mathrm {K L}} \\left(p _ {\\mathcal {D}} (\\cdot | \\boldsymbol {x} ^ {n}) | | q (\\cdot | \\boldsymbol {x} ^ {n})\\right).\n$$\n\nProof. App. A.2.\n\nCrucially, the $n$ -gram assumption allows us to reduce the infinite sum over $\\Sigma^{*}$ in the definition of $D_{\\mathrm{KL}}(p_{\\mathcal{D}}||q_{\\mathrm{MLE}}^n)$ to one over $\\Sigma_{\\mathrm{BOS}}^{n - 1}$ due to the resulting conditional independence of $x_{t}$ and $x_{1}\\dots x_{t - n}$ given $\\boldsymbol{x}_t^n = x_{t - n + 1}\\dots x_{t - 1}$ . Further, it allows us to restrict the summation to the $n$ -grams that are present in the training corpus."
+    },
+    {
+      "source_window_id": "2024.naacl-long.382::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.naacl-long.382::sections::5.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.1",
+      "section_title": "setup",
+      "evidence": "We validate our proposed regularization framework on two tasks: language modeling and machine translation. We rely on the small-scale WikiText-2 (Merit et al., 2017) and IWSLT-14 (Cettolo et al., 2014) data sets, respectively, and compare the performance of standard MLE and label smoothing to the performance obtained by using regularizers based on the smoothing methods illustrated in §3. For both tasks, we perform our experiments via the fairseq library (Ott et al., 2019) on Transformer-based (Vaswani et al., 2017) language models.\n\nOur implementation of (Simple) Good-Turing smoothing in fairseq builds on an open-source implementation,12 while we leverage the efficient implementation of Kneser-Essen-Ney smoothing\n\n<table><tr><td>Smoothing Method</td><td>ppl ↓</td></tr><tr><td>None</td><td>147.12 ±0.34</td></tr><tr><td>add-λ (γ+ = 0.1, γ- = 0.05, γLS = 0.01)</td><td>142.10† ±0.65</td></tr><tr><td>GT (γ+ = 0.1, γ- = 0.05)</td><td>141.93† ±0.73</td></tr><tr><td>JM (γ+ = 0.1, γ- = 0.5, λ1 = 0.75)</td><td>137.41† ±0.40</td></tr><tr><td>Katz (γ+ = 0.1, γ- = 0.01, k = 5)</td><td>142.69† ±0.54</td></tr><tr><td>KEN (γ+ = 0.1, γ- = 0.1)</td><td>142.30† ±0.29</td></tr></table>\n\nTable 1: Perplexity on WikiText-2 test set. Included are performances of models trained with no regularization (None), and with various smoothing methods. Reported perplexities are mean values for 5 independently trained models, together with their standard errors. The best-performing method is in bold, while the second-best is underlined. $\\dagger$ indicates statistical significance with respect to the unregularized baseline with $p < 0.05$ .\n\navailable through the KenLM (Heafield, 2011; Heafield et al., 2013) library. $^{13}$ The remaining smoothing methods were implemented natively in fairseq. Note that, as all data sets are small in scale, we limit the maximum $n$ -gram order to 2 (i.e., bigrams) for all smoothing methods. We use dropout for all experiments fixing the dropout probability to 0.1 and 0.3 for language modeling and machine translation, respectively. For all smoothing techniques, we set $\\Gamma \\stackrel{\\mathrm{def}}{=} \\{0.005, 0.01, 0.05, 0.1, 0.5\\}$ and grid search regularization hyperparameter pairs $\\gamma_{+}, \\gamma_{-} \\in \\Gamma \\times \\Gamma$ . For smoothing methods that have additional hyperparameters, we extend the grid search described above to include them. We provide the complete list of method-specific hyperparameter values in Tab. 3. Additional dataset details are provided in Tab. 4."
+    },
+    {
+      "source_window_id": "2024.naacl-long.382::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "additional experimental results",
+      "evidence": "Tab. 5 and Tab. 6 show the performance of the best-performing seed for each model. JM smoothing remains the best-performing technique on both datasets. For language modeling, we test for statistical significance using a paired permutation test over sentence-level log-likelihoods, using the mean of the observation differences as the test statistic. For machine translation, we test for statistical significance using paired bootstrap resampling as implemented in sacreBLEU. Different tests are performed using either the unregularized results or the add- $\\lambda$ results as the baseline. In Tab. 5 and Tab. 6, the first symbol in $\\dagger/\\dagger$ refers to statistical significance with respect to the unregularized model, while the second refers to statistical significance over the add- $\\lambda$ results. $\\dagger$ indicates $p < 0.05$ ; $\\ddagger$ indicates $p < 0.01$ . In language modeling, all regularization methods perform significantly better than no regularization. However, only GT and JM smoothing perform better than add- $\\lambda$ smoothing. For machine translation, we see that all regularized methods except for Katz smoothing perform significantly better than the unregularized baseline model, while only JM smoothing performs significantly better than add- $\\lambda$ smoothing.\n\nTable 5: Perplexity on WikiText-2 test set. Included are performances of models trained with no regularization (None), and with various smoothing methods. We report the best perplexity over 5 independently trained models.   \n\n<table><tr><td>Smoothing Method</td><td>ppl ↓</td></tr><tr><td>None</td><td>144.67</td></tr><tr><td>add-λ (γ+ = 0.1, γ- = 0.05, γLS = 0.01)</td><td>138.72‡</td></tr><tr><td>GT (γ+ = 0.1, γ- = 0.05)</td><td>137.00‡/‡</td></tr><tr><td>JM (γ+ = 0.1, γ- = 0.5, λ1 = 0.75)</td><td>134.63‡/‡</td></tr><tr><td>Katz (γ+ = 0.1, γ- = 0.01, k = 5)</td><td>139.44‡</td></tr><tr><td>KEN (γ+ = 0.1, γ- = 0.1)</td><td>140.71‡</td></tr></table>\n\nTable 6: BLEU on test set of IWSLT-14 DE-EN. Different regularized methods are compared to no regularization (None). We report the best BLEU score over 5 independently trained models.   \n\n<table><tr><td>Smoothing Method</td><td>BLEU ↑</td></tr><tr><td>None</td><td>33.11</td></tr><tr><td>add-λ (γ+ = 0.1, γ- = 0.01, γLS = 0.01)</td><td>33.41†</td></tr><tr><td>GT (γ+ = 0.05, γ- = 0.5)</td><td>33.44†</td></tr><tr><td>JM (γ+ = 0.1, γ- = 0.5, λ1 = 0.5)</td><td>33.97‡/‡</td></tr><tr><td>Katz (γ+ = 0.1, γ- = 0.1, k = 5)</td><td>33.31</td></tr><tr><td>KEN (γ+ = 0.1, γ- = 0.1)</td><td>33.58‡</td></tr></table>"
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B",
+      "C.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Quadro RTX 6000",
+        "num": null
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 2
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\naacl2024\\2024.naacl-long.382\\auto\\full.md",
+    "source_md_sha256": "b7347f572cce66c732c045bc5af5df7408728810d8622affd91a75e7d690e149",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "8a36e506af69db6224806495ee600ecb1cd88261dc8471c84d78ced3642dab27"
+  }
+}

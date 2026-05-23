@@ -1,0 +1,234 @@
+{
+  "paper_id": "2025.naacl-long.376",
+  "candidate_windows": [
+    {
+      "window_id": "2025.naacl-long.376::sections::6.2",
+      "paper_id": "2025.naacl-long.376",
+      "section_number": "6.2",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "We explore various baselines to internalize the prompt, ranging from distillation approaches (Snell et al., 2022; Choi et al., 2023) to compression approaches (Pan et al., 2024; Ge et al., 2024).\n\nFull Fine-tuning. Since previous typical prompt internalization methods are based on much smaller model (Choi et al., 2023) or are not publicly available (Snell et al., 2022), we adopt recent knowledge distillation approaches (Lin et al., 2020; Gu et al., 2024; Ko et al., 2024) for autoregressive large language models in our prompt internalization setup. (1) The basic distillation approach (Hinton et al., 2015) employs the Kullback-Leibler Divergence loss (KLD) between the logit distributions of the student and teacher model. (2) Sequence-level Knowledge Distillation (SeqKD) (Kim and Rush, 2016) enforces the student model to generate the teacher model's outputs on a fixed dataset. (3) As a strong baseline, we also employ a joint loss (SeqKD+KLD), inspired by recent knowledge distillation works (Song et al., 2020; Gu et al., 2024), which incorporates the language modeling loss during distillation. This approach can be interpreted as a hybrid distillation loss that combines the benefits of both soft labels and hard labels from the teacher model.\n\nPrompt Prepending. One straightforward approach to consider is prepending the prompt during finetuning. If the prompt is consistently prepended during training, we expect the model to indirectly contextualize the prompt. However, since the model needs to predict without the prompt during inference, there is a potential mismatch between the training and inference distributions. To address this concern, we compare two baseline approaches: (1) always prepending the prompt during training (100% probability), and (2) stochastically\n\nprepending the prompt during training (50% probability). This baseline utilizes QLoRA (Dettmers et al., 2023) with the same settings as our method. This approach can be viewed as an extension of the method that relies exclusively on SFT loss for training.\n\nText-based Prompt Compression. LLMLingua-2 (Pan et al., 2024) is a prompt-agnostic method for generating compressed texts. LLMLingua-2 explicitly compresses tokens using a smaller model, such as XLM-RoBERTa-large (Conneau et al., 2020). By performing with the compressed prompt, this baseline is expected to achieve efficient inference while maintaining comparable performance.\n\nEmbedding-based Prompt Compression. We utilize ICAE (Ge et al., 2024) to compress the prompt into cached prompt embeddings. Following Ge et al. (2024), we compress the prompt into 128 tokens and preprocess the tokens to the user input at each inference time. Since the official checkpoint of ICAE exhibits significantly low performance on AgentBench (Liu et al., 2023), we finetune the baseline specifically for Agent-Bench (Liu et al., 2023). Additional details regarding this baseline are described in Appendix C.3.\n\nUpper Bound. We utilize the teacher model as an upper bound that inputs the full prompt, consistent with previous studies (Snell et al., 2022; Choi et al., 2023). In our preliminary experiments (see Appendix C.2), we observe that the fine-tuned model performed worse than the original model in AgentBench (Liu et al., 2023). Consequently, we consider the original model with the full prompt as the teacher model following the setup of Liu et al. (2023). Since ICAE (Ge et al., 2024) is based on the Mistral-7B (Jiang et al., 2023a) model, we establish a separate upper bound specifically for ICAE (Ge et al., 2024) to ensure a fair comparison. For a detailed explanation of the upper bound, please refer to the Appendix C.2.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.376::sections::6.3",
+      "paper_id": "2025.naacl-long.376",
+      "section_number": "6.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "To internalize the agent-based prompt into the language model, we utilize the LLaMA-3-8B-Instruct (Dubey et al., 2024) as the target model. Following our scenario in Section 5, we fine-tune the model using the 1,000 pairs of pseudo dataset as our train dataset, and this is applied equally to all baselines. We utilize QLoRA (Dettmers et al., 2023) with rank $r = 16$ only requires $0.5\\%$ of pa\n\nTable 1: Performance evaluation results for AgentBench (Liu et al., 2023) dataset. SR denotes the Success Rate, and Norm. denotes the normalized score using Upper Bound following Choi et al. (2023). Since ICAE (Ge et al., 2024) is based on Mistral 7B (Jiang et al., 2023a), we report the normalized score using Mistral-7B-instruct-v0.2 as the upper bound score (Upper Bound*). The best results are in bold, while second-best ones are underlined.   \n\n<table><tr><td rowspan=\"2\">Methods</td><td rowspan=\"2\">w/o Prompt</td><td colspan=\"2\">OS Interaction</td><td colspan=\"2\">Web Browsing</td><td colspan=\"2\">Web Shopping</td></tr><tr><td>SR</td><td>Norm.</td><td>SR</td><td>Norm.</td><td>Rewards</td><td>Norm.</td></tr><tr><td>Upper Bound</td><td>✘</td><td>17.36</td><td>100.00</td><td>17</td><td>100.00</td><td>54.16</td><td>100.00</td></tr><tr><td colspan=\"8\">TEXT-BASED COMPRESSION</td></tr><tr><td>LLM Lingua-2 (x0.9)</td><td>✘</td><td>4.16</td><td>23.96</td><td>9</td><td>52.94</td><td>50.78</td><td>93.76</td></tr><tr><td>LLM Lingua-2 (x0.7)</td><td>✘</td><td>3.47</td><td>19.99</td><td>1</td><td>5.88</td><td>43.69</td><td>80.67</td></tr><tr><td>LLM Lingua-2 (x0.3)</td><td>✘</td><td>0</td><td>0.00</td><td>0</td><td>0.00</td><td>0</td><td>0.00</td></tr><tr><td colspan=\"8\">EMBEDDING-BASED COMPRESSION</td></tr><tr><td>Upper Bound*</td><td>✘</td><td>10.41</td><td>100.00</td><td>13</td><td>100.00</td><td>11</td><td>100.00</td></tr><tr><td>ICAE</td><td>✘</td><td>4.16</td><td>39.96</td><td>0</td><td>0.00</td><td>1.14</td><td>10.36</td></tr><tr><td colspan=\"8\">FULL FINETUNE</td></tr><tr><td>KLD</td><td>✓</td><td>0</td><td>0.00</td><td>0</td><td>0.00</td><td>0</td><td>0.00</td></tr><tr><td>SeqKD</td><td>✓</td><td>3.47</td><td>19.99</td><td>15</td><td>88.24</td><td>38.79</td><td>71.62</td></tr><tr><td>SeqKD + KLD</td><td>✓</td><td>4.86</td><td>28.00</td><td>15</td><td>88.24</td><td>40.26</td><td>74.34</td></tr><tr><td colspan=\"8\">PROMPT PREPENDING</td></tr><tr><td>100% probability</td><td>✓</td><td>0</td><td>0.00</td><td>0</td><td>0.00</td><td>0</td><td>0</td></tr><tr><td>50% probability</td><td>✓</td><td>13.19</td><td>75.98</td><td>12</td><td>70.59</td><td>31.09</td><td>57.40</td></tr><tr><td colspan=\"8\">OURS</td></tr><tr><td>only SFT loss</td><td>✓</td><td>15.97</td><td>91.99</td><td>12</td><td>70.59</td><td>35.64</td><td>65.81</td></tr><tr><td>Generative Prompt Internalization</td><td>✓</td><td>17.36</td><td>100.00</td><td>14</td><td>82.35</td><td>44.46</td><td>82.09</td></tr></table>\n\nrameters. Additional training details are described in Appendix C.4.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.376::sections::9",
+      "paper_id": "2025.naacl-long.376",
+      "section_number": "9",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "In this section, we discuss the strengths and limitations of two prompt internalization strategies: generalized prompt-agnostic compression and prompt-specific internalization approach.\n\nPrompt compression approaches, such as LLMLingua-2 (Pan et al., 2024) and ICAE (Ge et al., 2024), effectively compress short instruc\n\ntions without requiring additional training for new prompts (Mu et al., 2023; Chevalier et al., 2023; Ge et al., 2024). However, as shown in Table 1, these methods struggle with long, information-rich application prompts, where key details are often lost in the compression process.\n\nPrompt internalization approach, such as GenPI, overcome this limitation by explicitly internalizing prompts through targeted training. While GenPI requires training for each new prompt, this overhead is minimal in practical applications where only a limited set of prompts is needed. Once trained, switching between adapters incurs negligible computational cost, making the approach both flexible and scalable. Each adapter requires only 1,000 data samples for training. Even when generating the dataset with a 70B LLM, entire process can be completed in under an hour using four A6000 GPUs with vLLM (Kwon et al., 2023), while training takes approximately three hours on a single A6000 GPU.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.376::appendix::A.1",
+      "paper_id": "2025.naacl-long.376",
+      "section_number": "A.1",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "Pseudo User Input. We utilize LLaMA-3-70B-Instruct (Dubey et al., 2024) as a psuedo user input generator. Each samples are generated by nucleus sampling with threshold 0.9 and temperature 1.0. To ensure the quality of pseudo user input, we randomly select 5 demonstrations from the validation samples of each task. System prompt and user prompt for Pseudo Input generation are as below.\n\n```txt\nThe document below are the code of conduct for a specific agent performing the given problem. \n```\n\n```txt\nThis is the given Document: \n```\n\n```txt\n{context} \n```\n\n```txt``` ```txt\nBased on the given document, generate several problems for {taskname} task. Generate only problems with a numbered list. This is {num_gen_once} generated Problems. \n```\n\n$\\{\\mathrm{N - }$ shot demonstrations}\n\nPseudo Conversational Outputs. We provide an additional system prompt for the environment persona model in the Self Role-Playing Conversation (Figure 2). In the N-shot examples within the given prompt $p$ , we swap the roles of the agent and environment and collected the teacher's conversational behavior patterns with a temperature of 0. In this paper, we use LLaMA-3-8B-Instruct (Dubey et al., 2024) as the target model $\\theta$ .\n\nReason. As same as the pseudo input generator, we utilize LLaMA-3-70B-Instruct (Dubey et al., 2024) with nucleus sampling threshold 0.9 and temperature 0.7. We prompt the model to generate a reason of approximately 5 sentences to mitigate excessive hallucination. This is based on the statistics from the CoT Collection (Kim et al., 2023), which includes 1.84M rationales across 1,060 tasks, with an average length of about 3 sentences. System prompt and user prompt for reason generation are as below.\n\n```txt\nYou are a commentator comparing the answers of two models to a question. I will give you four components: context, input, bad output, good output. Bad Output is a response provided without any context, only based on the input given. Good Output is a response provided with both context and input. Explain the reason for the change in response, referring to the context, in about five sentences. \n```\n\n```txt\n>>> Context:\n>>> \n{context} \n```\n\n```txt\n>>> Input:\n{input}\n>>> Bad Output:\n{student_output}\n>>> Good Output:\n{teacher_output}\n>>> Reason: \n```",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.376::appendix::C.4",
+      "paper_id": "2025.naacl-long.376",
+      "section_number": "C.4",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "We utilize a single NVIDIA A6000 GPU to train our method and baselines. For Generative Prompt Internalization, we apply QLoRA (Dettmers et al., 2023) with rank $r = 16$ , 32 batch size, 1e-4 learning rate, 10 epochs. The joint loss hyperparameter $\\lambda = 0.7$ (as defined in Equation 4) is selected through hyperparameter tuning over [0.3, 0.5, 0.7]. For full finetining baselines, we use 4 NVIDIA A100 80G GPUs with 64 batch size, 1e-5 learning rate, 10 epochs, following the setting from Gu et al. (2024). Prompt Prepending, a variation of our approach, uses the same hyperparameters as GenPI. For ICAE (Ge et al., 2024), we follow the original settings with a LoRA rank of $r = 512$ and 128 compression tokens.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.naacl-long.376::sections::9",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A6000",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "In this section, we discuss the strengths and limitations of two prompt internalization strategies: generalized prompt-agnostic compression and prompt-specific internalization approach.\n\nPrompt compression approaches, such as LLMLingua-2 (Pan et al., 2024) and ICAE (Ge et al., 2024), effectively compress short instruc\n\ntions without requiring additional training for new prompts (Mu et al., 2023; Chevalier et al., 2023; Ge et al., 2024). However, as shown in Table 1, these methods struggle with long, information-rich application prompts, where key details are often lost in the compression process.\n\nPrompt internalization approach, such as GenPI, overcome this limitation by explicitly internalizing prompts through targeted training. While GenPI requires training for each new prompt, this overhead is minimal in practical applications where only a limited set of prompts is needed. Once trained, switching between adapters incurs negligible computational cost, making the approach both flexible and scalable. Each adapter requires only 1,000 data samples for training. Even when generating the dataset with a 70B LLM, entire process can be completed in under an hour using four A6000 GPUs with vLLM (Kwon et al., 2023), while training takes approximately three hours on a single A6000 GPU.",
+      "section_number": "9",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion"
+    },
+    {
+      "window_id": "2025.naacl-long.376::sections::9",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A6000",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "In this section, we discuss the strengths and limitations of two prompt internalization strategies: generalized prompt-agnostic compression and prompt-specific internalization approach.\n\nPrompt compression approaches, such as LLMLingua-2 (Pan et al., 2024) and ICAE (Ge et al., 2024), effectively compress short instruc\n\ntions without requiring additional training for new prompts (Mu et al., 2023; Chevalier et al., 2023; Ge et al., 2024). However, as shown in Table 1, these methods struggle with long, information-rich application prompts, where key details are often lost in the compression process.\n\nPrompt internalization approach, such as GenPI, overcome this limitation by explicitly internalizing prompts through targeted training. While GenPI requires training for each new prompt, this overhead is minimal in practical applications where only a limited set of prompts is needed. Once trained, switching between adapters incurs negligible computational cost, making the approach both flexible and scalable. Each adapter requires only 1,000 data samples for training. Even when generating the dataset with a 70B LLM, entire process can be completed in under an hour using four A6000 GPUs with vLLM (Kwon et al., 2023), while training takes approximately three hours on a single A6000 GPU.",
+      "section_number": "9",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion"
+    },
+    {
+      "window_id": "2025.naacl-long.376::appendix::C.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A6000",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We utilize a single NVIDIA A6000 GPU to train our method and baselines. For Generative Prompt Internalization, we apply QLoRA (Dettmers et al., 2023) with rank $r = 16$ , 32 batch size, 1e-4 learning rate, 10 epochs. The joint loss hyperparameter $\\lambda = 0.7$ (as defined in Equation 4) is selected through hyperparameter tuning over [0.3, 0.5, 0.7]. For full finetining baselines, we use 4 NVIDIA A100 80G GPUs with 64 batch size, 1e-5 learning rate, 10 epochs, following the setting from Gu et al. (2024). Prompt Prepending, a variation of our approach, uses the same hyperparameters as GenPI. For ICAE (Ge et al., 2024), we follow the original settings with a LoRA rank of $r = 512$ and 128 compression tokens.",
+      "section_number": "C.4",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    },
+    {
+      "window_id": "2025.naacl-long.376::appendix::C.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80G",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "We utilize a single NVIDIA A6000 GPU to train our method and baselines. For Generative Prompt Internalization, we apply QLoRA (Dettmers et al., 2023) with rank $r = 16$ , 32 batch size, 1e-4 learning rate, 10 epochs. The joint loss hyperparameter $\\lambda = 0.7$ (as defined in Equation 4) is selected through hyperparameter tuning over [0.3, 0.5, 0.7]. For full finetining baselines, we use 4 NVIDIA A100 80G GPUs with 64 batch size, 1e-5 learning rate, 10 epochs, following the setting from Gu et al. (2024). Prompt Prepending, a variation of our approach, uses the same hyperparameters as GenPI. For ICAE (Ge et al., 2024), we follow the original settings with a LoRA rank of $r = 512$ and 128 compression tokens.",
+      "section_number": "C.4",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.naacl-long.376::sections::9",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A6000",
+      "cleaned_hardware_name": "a6000",
+      "normalized_hardware_name": "NVIDIA RTX A6000",
+      "benchmark_hardware_name": "NVIDIA RTX A6000",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "9",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "evidence": "In this section, we discuss the strengths and limitations of two prompt internalization strategies: generalized prompt-agnostic compression and prompt-specific internalization approach.\n\nPrompt compression approaches, such as LLMLingua-2 (Pan et al., 2024) and ICAE (Ge et al., 2024), effectively compress short instruc\n\ntions without requiring additional training for new prompts (Mu et al., 2023; Chevalier et al., 2023; Ge et al., 2024). However, as shown in Table 1, these methods struggle with long, information-rich application prompts, where key details are often lost in the compression process.\n\nPrompt internalization approach, such as GenPI, overcome this limitation by explicitly internalizing prompts through targeted training. While GenPI requires training for each new prompt, this overhead is minimal in practical applications where only a limited set of prompts is needed. Once trained, switching between adapters incurs negligible computational cost, making the approach both flexible and scalable. Each adapter requires only 1,000 data samples for training. Even when generating the dataset with a 70B LLM, entire process can be completed in under an hour using four A6000 GPUs with vLLM (Kwon et al., 2023), while training takes approximately three hours on a single A6000 GPU.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.naacl-long.376::sections::9",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A6000",
+      "cleaned_hardware_name": "a6000",
+      "normalized_hardware_name": "NVIDIA RTX A6000",
+      "benchmark_hardware_name": "NVIDIA RTX A6000",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "9",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "evidence": "In this section, we discuss the strengths and limitations of two prompt internalization strategies: generalized prompt-agnostic compression and prompt-specific internalization approach.\n\nPrompt compression approaches, such as LLMLingua-2 (Pan et al., 2024) and ICAE (Ge et al., 2024), effectively compress short instruc\n\ntions without requiring additional training for new prompts (Mu et al., 2023; Chevalier et al., 2023; Ge et al., 2024). However, as shown in Table 1, these methods struggle with long, information-rich application prompts, where key details are often lost in the compression process.\n\nPrompt internalization approach, such as GenPI, overcome this limitation by explicitly internalizing prompts through targeted training. While GenPI requires training for each new prompt, this overhead is minimal in practical applications where only a limited set of prompts is needed. Once trained, switching between adapters incurs negligible computational cost, making the approach both flexible and scalable. Each adapter requires only 1,000 data samples for training. Even when generating the dataset with a 70B LLM, entire process can be completed in under an hour using four A6000 GPUs with vLLM (Kwon et al., 2023), while training takes approximately three hours on a single A6000 GPU.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.naacl-long.376::appendix::C.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A6000",
+      "cleaned_hardware_name": "nvidia a6000",
+      "normalized_hardware_name": "NVIDIA RTX A6000",
+      "benchmark_hardware_name": "NVIDIA RTX A6000",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "C.4",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "We utilize a single NVIDIA A6000 GPU to train our method and baselines. For Generative Prompt Internalization, we apply QLoRA (Dettmers et al., 2023) with rank $r = 16$ , 32 batch size, 1e-4 learning rate, 10 epochs. The joint loss hyperparameter $\\lambda = 0.7$ (as defined in Equation 4) is selected through hyperparameter tuning over [0.3, 0.5, 0.7]. For full finetining baselines, we use 4 NVIDIA A100 80G GPUs with 64 batch size, 1e-5 learning rate, 10 epochs, following the setting from Gu et al. (2024). Prompt Prepending, a variation of our approach, uses the same hyperparameters as GenPI. For ICAE (Ge et al., 2024), we follow the original settings with a LoRA rank of $r = 512$ and 128 compression tokens.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.naacl-long.376::appendix::C.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80G",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "C.4",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "We utilize a single NVIDIA A6000 GPU to train our method and baselines. For Generative Prompt Internalization, we apply QLoRA (Dettmers et al., 2023) with rank $r = 16$ , 32 batch size, 1e-4 learning rate, 10 epochs. The joint loss hyperparameter $\\lambda = 0.7$ (as defined in Equation 4) is selected through hyperparameter tuning over [0.3, 0.5, 0.7]. For full finetining baselines, we use 4 NVIDIA A100 80G GPUs with 64 batch size, 1e-5 learning rate, 10 epochs, following the setting from Gu et al. (2024). Prompt Prepending, a variation of our approach, uses the same hyperparameters as GenPI. For ICAE (Ge et al., 2024), we follow the original settings with a LoRA rank of $r = 512$ and 128 compression tokens.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "9",
+      "C.4"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA RTX A6000",
+        "num": 4
+      },
+      {
+        "name": "NVIDIA RTX A6000",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA RTX A6000",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 4
+      }
+    ]
+  }
+}

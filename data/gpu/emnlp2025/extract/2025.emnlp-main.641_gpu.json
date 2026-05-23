@@ -1,0 +1,146 @@
+{
+  "paper_id": "2025.emnlp-main.641",
+  "candidate_windows": [
+    {
+      "window_id": "2025.emnlp-main.641::sections::3.1",
+      "paper_id": "2025.emnlp-main.641",
+      "section_number": "3.1",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "Sparse Autoencoders: Let $\\textbf { x } \\in \\ \\mathbb { R } ^ { d }$ be the activations of the model (in our case, the residual stream). Then, the sparse autoencoders we use have pre-trained encoder $\\mathbf { W _ { e n c } } \\in \\mathbb { R } ^ { N \\times d }$ and decoder $\\mathbf { W } _ { \\mathrm { d e c } } \\in \\mathbb { R } ^ { d \\times N }$ matrices where $N \\gg d$ is the size of the hidden layer of the SAE and $\\{ \\mathbf { b } _ { \\mathrm { e n c } } , \\mathbf { b } _ { \\mathrm { d e c } } \\}$ are bias terms such that:\n\n$$\n\\begin{array} { r } { \\mathbf { h } ( \\mathbf { x } ) = \\sigma ( \\mathbf { W } _ { \\mathrm { e n c } } \\mathbf { x } + \\mathbf { b } _ { \\mathrm { e n c } } ) } \\\\ { \\hat { \\mathbf { x } } ( \\mathbf { h } ( \\mathbf { x } ) ) = \\mathbf { W } _ { \\mathrm { d e c } } \\mathbf { h } ( \\mathbf { x } ) + \\mathbf { b } _ { \\mathrm { d e c } } } \\end{array}\n$$\n\nwhere $\\sigma$ is the activation function (for e.g., ReLU or JumpReLU). The hidden layer ${ \\bf h } ( { \\bf x } ) \\in \\mathbb { R } _ { \\geq 0 } ^ { N }$ determines the appropriate combination of the $N$ columns of the decoder matrix $\\mathbf { W } _ { \\mathrm { d e c } }$ to recover the original activations $\\mathbf { X }$ .We refer to each dimension of $\\mathbf { h } ( \\mathbf { x } )$ as an SAE‘feature',and the columns of $\\mathbf { W } _ { \\mathrm { d e c } }$ matrix represent a‘dictionary' of directions into which the SAE decomposes $\\mathbf { X }$\n\nIdentification of Relevant Features:To identify the features relevant for encoding toxicity within the model,we use the ParaDetox dataset (Logacheva et al.， 2O22） containing pairwise “nontoxic\" and “toxic” sentences generated using paraphrasing,while the same preserving meaning. We sample $\\approx 5 0 \\%$ of the original dataset to obtain 10k toxic/non-toxic sentence pairs.We then pass these sentences through the model with the pre-trained SAEs attached, storing the average activations of all SAE features for each subset.\n\nFor each layer $\\ell$ of the model, we then identify the top-3 features that have the highest average absolute difference in activations across the two subsets,to obtain layer-wise feature sets $\\mathcal { F } _ { \\ell }$\n\nOur choice of a “pairwise” dataset for this task was deliberate to ensure that the effects of activation changes can be isolated to a great degree to the paraphrasing from“toxic” to “non-toxic\",ensuring greater monosemanticity of the chosen features.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.641::appendix::D",
+      "paper_id": "2025.emnlp-main.641",
+      "section_number": "D",
+      "section_title": "hyperparameters and prompting details for baselines",
+      "normalized_section_title": "hyperparameters and prompting details for baselines",
+      "window_text": "In this section we present the hyperparameters we used for running baselines for comparison.\n\nPrompting:For our prompting procedure, we prepended the following safety prefix to each prompt: “Only generate non-toxic content. Do not output any toxic, harmful, offensive, or inappropriatematerial.\"\n\nFinetuning:For GPT2, we used a batch size of 8,weight decay of O.O1,and fine-tuned the model for a total of 3 epochs. For Gemma,we used LoRA (Low-Rank Adaptation） fine-tuning (Hu et al., 2O22) using Unsloth (Daniel Han and team, 2023), with a batch size of 2, gradient accumulation steps of 4, warmup steps of 5,and learning rate as 2e-4, fine-tuning the model for 1 epoch. We used a linear learning rate scheduler along with a weight decay of O.O1,and the AdamW8bit optimizer. The finetuning dataset we used was the toxicity dataset curated by Lee et al. (2024) containing toxic and non-toxic pairs generated using PPLM (Dathathri et al., 2020).\n\nDPO:We used the codebase of Lee et al. (2024) with default hyperparameters to run DPO on both models until convergence, using the same dataset as before to provide preferences for policy optimization.\n\nLM-Steer: We used the codebase of Han et al. (2024a) with the default hyperparameters the authors used in their work to run LM-Steer for detoxification on both models. We use the same Jigsaw unintended bias in toxicity classification dataset as the authors.\n\nProFS: We used the codebase of Uppaal et al. (2024) with default hyperparameters to run ProFS. In terms of the range of layers where edits were applied, for GPT2 we tried configurations of L3-12, L6-12,and L9-12 and found the maximum toxicity reduction at configuration L6-12. Similarly, for Gemma-2-2B we tried configurations L6-25, L9- 25,and L12-25,and found the maximum toxicity reduction at configuration L12-25.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.641::appendix::F",
+      "paper_id": "2025.emnlp-main.641",
+      "section_number": "F",
+      "section_title": "experiments on gemma-2-2b-it",
+      "normalized_section_title": "experiments on gemma-2-2b-it",
+      "window_text": "In this section,we report results on using the sparse autoencoder trained on the residual stream of the base Gemma model to perform interventions for detoxification on the instruction-tuned variant Gemma-IT. We find that in a constant steering setting,SAEs from the base Gemma are effective detoxification tools even for Gemma-IT.\n\nAcross steering strengths 0.5,1,1.5,2,2.5, we observe a toxicity reduction compared to normal model generations (Toxicity $= 0 . 3 1 \\dot { }$ ）ofbetween 0.03 to 0.13 points for Layer 10,and O.06 to 0.19 for Layer 2O, indicating strong detoxification.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.641::appendix::I",
+      "paper_id": "2025.emnlp-main.641",
+      "section_number": "I",
+      "section_title": "compute resources",
+      "normalized_section_title": "compute resources",
+      "window_text": "All experiments were run on internal GPU servers equipped with 4xNVIDIA A100 and 3xNVIDIA A40. The fluency evaluation experiments with the OpenAI models cost about 25 USD.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.emnlp-main.641::appendix::I",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "All experiments were run on internal GPU servers equipped with 4xNVIDIA A100 and 3xNVIDIA A40. The fluency evaluation experiments with the OpenAI models cost about 25 USD.",
+      "section_number": "I",
+      "section_title": "compute resources",
+      "normalized_section_title": "compute resources"
+    },
+    {
+      "window_id": "2025.emnlp-main.641::appendix::I",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A40",
+      "count": 3,
+      "count_text": "3",
+      "evidence": "All experiments were run on internal GPU servers equipped with 4xNVIDIA A100 and 3xNVIDIA A40. The fluency evaluation experiments with the OpenAI models cost about 25 USD.",
+      "section_number": "I",
+      "section_title": "compute resources",
+      "normalized_section_title": "compute resources"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.emnlp-main.641::appendix::I",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "I",
+      "section_title": "compute resources",
+      "normalized_section_title": "compute resources",
+      "evidence": "All experiments were run on internal GPU servers equipped with 4xNVIDIA A100 and 3xNVIDIA A40. The fluency evaluation experiments with the OpenAI models cost about 25 USD.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.emnlp-main.641::appendix::I",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A40",
+      "cleaned_hardware_name": "nvidia a40",
+      "normalized_hardware_name": "NVIDIA A40 PCIe",
+      "benchmark_hardware_name": "NVIDIA A40 PCIe",
+      "count": 3,
+      "count_text": "3",
+      "section_number": "I",
+      "section_title": "compute resources",
+      "normalized_section_title": "compute resources",
+      "evidence": "All experiments were run on internal GPU servers equipped with 4xNVIDIA A100 and 3xNVIDIA A40. The fluency evaluation experiments with the OpenAI models cost about 25 USD.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "I"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 4
+      },
+      {
+        "name": "NVIDIA A40 PCIe",
+        "num": 3
+      }
+    ]
+  }
+}

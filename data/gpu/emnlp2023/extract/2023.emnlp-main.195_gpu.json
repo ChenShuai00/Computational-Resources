@@ -1,0 +1,67 @@
+{
+  "paper_id": "2023.emnlp-main.195",
+  "candidate_windows": [
+    {
+      "window_id": "2023.emnlp-main.195::sections::3.4",
+      "paper_id": "2023.emnlp-main.195",
+      "section_number": "3.4",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "FLOPs and memory overhead. Consider query and key matrices $Q \\in \\mathbb{R}^{n_d \\times d}$ , $K \\in \\mathbb{R}^{n_s \\times d}$ where $n_d$ and $n_s$ refer to destination (hidden states attending) and source (hidden states being attended to). Let $S \\in \\mathbb{R}^{n_d \\times n_s}$ be the (lower-triangular) matrix denoting pre-computed stack tape values for every prefix. For each Pushdown Layer, we use $S$ to index into depth embeddings to obtain $D \\in \\mathbb{R}^{n_d \\times n_s \\times d}$ , which is added to $K$ to obtain $K_D \\in \\mathbb{R}^{n_d \\times n_s \\times d}$ . Unlike standard self-attention which multiplies $Q$ and $K$ directly, Pushdown Layers multiply $Q$ (a 2D tensor) with $K_D$ (a 3D tensor). This is done by casting $Q$ into a 3D tensor in $\\mathbb{R}^{n_d \\times 1 \\times d}$ and performing a batched matrix multiplication with $K_D$ , leading to the same number of operations as standard self-attention. However, since Pushdown Layers require storing 3D tensors for keys, this increases memory requirements from $O(n_d \\cdot n_s + n_s \\cdot d + n_d \\cdot d)$ to $O(n_d \\cdot n_s + n_s \\cdot n_d \\cdot d + n_d \\cdot d)$ . We provide standalone code for implementing a Pushdown Layer block in Appendix D.\n\nAttending to hidden states with old memory. Pushdown Transformers build parse trees incrementally from left-to-right, and so, depth values of prefix tokens change as new tokens are predicted.\n\nThus, a token at position $i$ builds its representation based on attending to $x_{\\leq i}$ with a stack tape that may soon become \"stale\" due to future transition operations that reduce tokens in $x_{\\leq i}$ with new tokens. As an example, suppose we have the incremental parse [[The dog] [in [the park]]]. Here, the representation for in attends to representations of The, dog and in with depths [1, 1, 0] while the representation for park attends to these representations with updated depths [2, 2, 2].",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.195::appendix::A",
+      "paper_id": "2023.emnlp-main.195",
+      "section_number": "A",
+      "section_title": "model hyperparameters",
+      "normalized_section_title": "model hyperparameters",
+      "window_text": "BLLIP. All our hyperparameters for BLLIP are borrowed from the 16-layer Transformer LM used in Sartran et al. (2022). This includes model hyperparameters (hidden state dimension, number of attention heads, number of layers), dropout (input dropout, output dropout, attention dropout), and learning rate schedulers. We train for 300k steps, evaluating every 3k steps and early stop based on validation set perplexity.\n\nWikiTrees. For experiments on WikiTrees, we use the same model hyperparameters as GPT2-small, and a context window of 512. We train with a batch size of 480, and train till validation loss stops decreasing, with a learning rate that linearly warms up from 0 to 6e-4 over 200 iterations, followed by a cosine learning rate scheduler. For sample efficiency experiments, we add dropout of 0.2 to prevent overfitting.\n\nGPT2-medium finetuning. We use a batch size of 256, and a constant learning rate of 3e-5. We early stop based on validation set performance, and report average of 3 runs. To convert text classification tasks into language modeling, we use the following prompts:\n\n- RTE: Premise: $\\{p\\}$ . Hypothesis: $\\{h\\}$ . Label: $\\{l\\}$ , given a premise, hypothesis pair $(p,h)$ with label $l$ mapped into $\\{\\mathrm{Yes},\\mathrm{No}\\}$ .   \n- MRPC: Given the sentence pair $(s_1, s_2)$ , we create a prompt Sentence1: $\\{s_1\\}$ . Sentence2: $\\{s_2\\}$ . Label: $\\{l\\}$ . where $l \\in \\{0, 1\\}$ .   \n- SST5: Sentence: $\\{s\\}$ . Sentiment: $\\{l\\}$ for an input sentence $s$ with label $l$ .   \n- STS-B: Given the sentence pair $(s_1, s_2)$ , we create a prompt Sentence1: $\\{s_1\\}$ . Sentence2: $\\{s_2\\}$ , and use the final hidden state to featurize a linear regressor, trained jointly with the LM.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.195::appendix::B",
+      "paper_id": "2023.emnlp-main.195",
+      "section_number": "B",
+      "section_title": "training pushdown-lm with context-windows",
+      "normalized_section_title": "training pushdown-lm with context-windows",
+      "window_text": "In standard LMs, context windows for training are arbitrary offsets into the entire corpora—a window might start in the middle of some sentence. Because Pushdown-LMs always start with the stack state initialized as all 0s and make attachments only to stack tape contents, a Pushdown-LM cannot start in the middle of a sentence without the stack tape\n\nappropriately initialized. We get around this by simply sampling these context windows to always start at sentence boundaries. We alsoptides a special token ROOT before the start of every sentence such that the attachment decision of the final word is made to this ROOT token.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.195::appendix::D",
+      "paper_id": "2023.emnlp-main.195",
+      "section_number": "D",
+      "section_title": "implementation details: pseudocode for implementing pushdown layers",
+      "normalized_section_title": "implementation details: pseudocode for implementing pushdown layers",
+      "window_text": "See Fig. 7 and Fig. 8 for reference implementations of Pushdown Layers and the attachment head.\n\nclass PushdownSelfAttention(nnModule):   \n...   \ndef forward(self, x, stack_tape): B,T,C = x.size() q,k,v = self.c_attn(x).split(self.n_embd,dim=2)(B,nh,T(dest),hs) q = q.view(B,T,self.n_head,C//self.n_head).transpose(1,2) # (B,nh,T(src),hs) k = k.view(B,T,self.n_head,C//self.n_head).transpose(1,2) # (B,nh,T,hs) v = v.view(B,T,self.n_head,C//self.n_head).transpose(1,2) augmented_keys = k unsqueeze(2) + self.beta stack_tape.int().unsqueeze(1) augmented_keys /= math.sqrt(k.size(-1)) # BxnhxT(dest)xT(src) augmented_att = (q. unsqueeze(3) @ augmented_keys.transpose(-2,-1)).squeeze $\\rightarrow$ (3)   \natt = augmented_attmasked_fill(self.bias[:,::T,:T] == 0,float(-inf\"))   \natt = F softmax(att,dim=-1) att = self.attn_dropout(att) # (B,nh,T,T)x(B,nh,T,hs)-> (B,nh,T,hs) y = att @ v # re-assemble all head outputs side by side y = y.transpose(1,2).contiguous().view(B,T,C) # output projection y = self.resid_dropout(self.c_proj(y)) return y\n\nFigure 7: Python implementation of a Pushdown Layer attention block.\n\nFigure 8: Python implementation of the Attachment head in Pushdown Transformers.   \nclass AttachmentHead(nnModule):   \ndef forward(self, x, stack_tape, next_word): B, T, C = x.size() q, k = self.data_to_qk(x).split(self.embd_dim, dim=2) # (B, T (dest), hs) next_word_q = self.q_next_word_mlp(torch.cat([q, next_word], dim=-1)) # (B, T (dest), hs) next_word_k = self.k_next_word_mlp(torch.cat([q, next_word], dim=-1)) # (B, T (dest), T (src), hs) k = k unsqueeze(1).repeat(1, T, 1, 1) # B x T (dest) x T (src) x hs depth_embds = self.beta(layer(int)) k_with_write_info = self.key_and_stack_mlp(torch.cat([k, depth_embds], dim $\\leftrightarrow$ -1)) # first, calculate attention score between query and keys k_with_write_info /= math.sqrt(k.size(-1)) attach_logits = (next_word_q.unsqueeze(2) @ k_with_write_info.transpose(-2, $\\leftrightarrow$ -1)).squeeze(2) # if no reduce, then we compute score with itself next_word_k /= math.sqrt(k.size(-1)) logits_self = (next_word_q.unsqueeze(2) @ next_word_k.unsqueeze(3)).squeeze $\\leftrightarrow$ (2) # now insert logits_self into the k+1th position of attach_logits for each k pad_tensor = torch.zeros(attach_logits.shape[0], attach_logits.shape[1], 1, $\\leftrightarrow$ device=attach_logits_device) attach_logits_1 = torch.cat([attach_logits, pad_tensor], dim=-1) logits = attach_logits_1scatter( 2, (1 + torch.arange(T)) .unsqueeze(0) .unsqueeze(-1) .repeat(B, 1, 1) .to(attach_logits_1device), logits_self,)",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [],
+  "normalized_extractions": [],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [],
+    "pred": []
+  }
+}

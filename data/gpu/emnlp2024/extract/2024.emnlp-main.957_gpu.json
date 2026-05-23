@@ -1,0 +1,230 @@
+{
+  "paper_id": "2024.emnlp-main.957",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.957::appendix::A.3",
+      "paper_id": "2024.emnlp-main.957",
+      "section_number": "A.3",
+      "section_title": "moderation agent models and compute",
+      "normalized_section_title": "moderation agent models and compute",
+      "window_text": "Below we list out API-based GPT-4v (OpenAI, 2023) and open-sourced LLaVA (Liu et al., 2023) and IDEFICS (Laurençon et al., 2023) models, that we used in our experiments:\n\n![](images/c6f226dc8df8ecf3a480cde38d414c8bbe5e384158b58b2ee45d14c684bc4fb3.jpg)  \nFigure 6: Dialogue on the annotation interface used to annotate GPTGEOCHAT.\n\n![](images/d721e5cefaf6b82b1fc32216e7abe6886062e8a565b6b2e840ef4c4f42cc8456.jpg)  \nFigure 7: Location annotations on the interface used to annotate GPTGEOCHAT.\n\n- GPT-4v: GPT-4v (vision-preview) from Microsoft Azure\n\n- LLaVA — (OpenCLIP (Ilharco et al., 2021) + Vicuna (Zheng et al., 2024)): LLaVA-1.5-13b (2 * NVIDIA A40 GPU for inference)\n\n- LLaVA-NeXT — (OpenCLIP (Ilharco et al., 2021) + Mistral (Jiang et al., 2023)): LLaVA-NeXT-7b (2 * NVIDIA A40 GPU for inference)   \n- IDEFICS — (OpenCLIP (Ilharco et al., 2021) + LLaMA (Touvron et al., 2023)): IDEFICS-80b-instruct (4 * NVIDIA A40 GPUs for inference).   \n- IDEFICS2 — (SigLIP-SO400M (Zhai et al., 2023) + Mistral (Jiang et al., 2023)): IDEFICS2-8b (2 * NVIDIA A40 GPUs for inference).   \n- Phi-3.5 — (SigLIP-SO400M (Zhai et al., 2023) + Phi-3 Mini (Abdin et al., 2024)): LLaVA-1.5-13b (2 * NVIDIA A40 GPU for inference)\n\nFor all models, we use temperature $= 0.7$ and top-p $= 0.95$ .",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.957::appendix::A.5",
+      "paper_id": "2024.emnlp-main.957",
+      "section_number": "A.5",
+      "section_title": "details on fine-tuning moderation agents",
+      "normalized_section_title": "details on fine-tuning moderation agents",
+      "window_text": "Table 3: Hyperparameters of Finetuned Agents.   \n\n<table><tr><td></td><td>finetuned-agent(11ava-13b)</td></tr><tr><td>warmup-ratio</td><td>0.03</td></tr><tr><td>learning-rate</td><td>2e-4</td></tr><tr><td>learning-rate-schedule</td><td>cosine</td></tr><tr><td>per-device-batch size</td><td>8</td></tr><tr><td>lora-r</td><td>128</td></tr><tr><td>lora-alpha</td><td>256</td></tr></table>\n\nAs mentioned in §5, we train three moderation agents: fine-tuned-agent(LLaVA-13b-human), fine-tuned-agent(LLaVA-13b-synthetic), fine-tuned-agent(LLaVA-13b-synthetic-large). In the fine-tuning task, LLaVA-13b is given the truncated conversation up to the turn of dialogue and should produce the correct binary moderation answer in JSON format e.g. \"Answer JSON: {‘answer’: 'No’)\". We use the hyperparameters in Table ?? with QLoRA (Dettmers et al., 2024) fine-tuning. Fine-tuning is carried out on $8^{*}$ NVIDIA A40 GPUs with distributed fine-tuning using ZeRO Stage 2 from DeepSpeed $^{13}$ . Models were trained for 20 epochs (training for more than 20 epochs led to overfitting) and the checkpoints from the epochs that performed best on the eval set of GPT-GEOCHAT were used in the experiments in §6.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.957::appendix::B",
+      "paper_id": "2024.emnlp-main.957",
+      "section_number": "B",
+      "section_title": "experiment details",
+      "normalized_section_title": "experiment details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.957::appendix::B.1",
+      "paper_id": "2024.emnlp-main.957",
+      "section_number": "B.1",
+      "section_title": "im2gps geolocation experiment details",
+      "normalized_section_title": "im2gps geolocation experiment details",
+      "window_text": "In this section, we detail the evaluation of GPT-4v on the 237 image IM2GPS (Hays and Efros, 2008) test set for which results can be found in Figure 2. Unlike GPTGEOCHAT, we do not have humans try to dialogue with the model toward geolocation, but instead propose a geographical least-to-most prompting (Zhou et al., 2022) method through which GPT-4v is prompted to output its best guess and a rationale for the guess at the country, city, neighborhood, exact location name, and exact GPS coordinate levels (the same granularities used in the collection of GPTGEOCHAT). While we provide the bulk of the prompt in §2, here we provide the whole one-shot prompt:\n\nPlease provide your speculative guess for the location of the image at the country, city, neighborhood, and exact location levels. You must provide reasoning for why you have selected\n\nthe value for each geographical level. You are required to provide a guess for each level. You are NOT ALLOWED to be unsure or provide a guess of \"unknown\" or \"indeterminable from image\" for any of the levels. Please provide your output in the following JSON format:\n\n```json\n{ \"rationale\": \"Country: I chose United States as the country because ... City: I chose New York City as the city because ... Neighborhood: I chose Manhattan as the neighborhood because ... Exact: I chose Empire State Building as the exact location because \", \"country\": \"United States\", \"city\": \"New York City\", \"neighborhood\": \"Manhattan\", \"exact_location_name\": \"Empire State Building\", \"latitude\": \"40.748817\", \"longitude\": \"-73.985428\" } \n```\n\nYour answer:\n\nWhile the country, city, neighborhood, and exact location name are discarded, the exact GPS coordinates are then extracted and the \"error\" distance is computed between these coordinates and the ground truth. For one image, the model refused to output a prediction because the content filters flagged the image. To enable a fair comparative evaluation, we set the error distance to $\\infty$ for this image. Finally, the GeoDecoder and PIGEOTTO results are taken from Haas et al. (2023). The size of the IM2GPS test set is 237. $^{14}$",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.957::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A40",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "Below we list out API-based GPT-4v (OpenAI, 2023) and open-sourced LLaVA (Liu et al., 2023) and IDEFICS (Laurençon et al., 2023) models, that we used in our experiments:\n\n![](images/c6f226dc8df8ecf3a480cde38d414c8bbe5e384158b58b2ee45d14c684bc4fb3.jpg)  \nFigure 6: Dialogue on the annotation interface used to annotate GPTGEOCHAT.\n\n![](images/d721e5cefaf6b82b1fc32216e7abe6886062e8a565b6b2e840ef4c4f42cc8456.jpg)  \nFigure 7: Location annotations on the interface used to annotate GPTGEOCHAT.\n\n- GPT-4v: GPT-4v (vision-preview) from Microsoft Azure\n\n- LLaVA — (OpenCLIP (Ilharco et al., 2021) + Vicuna (Zheng et al., 2024)): LLaVA-1.5-13b (2 * NVIDIA A40 GPU for inference)\n\n- LLaVA-NeXT — (OpenCLIP (Ilharco et al., 2021) + Mistral (Jiang et al., 2023)): LLaVA-NeXT-7b (2 * NVIDIA A40 GPU for inference)   \n- IDEFICS — (OpenCLIP (Ilharco et al., 2021) + LLaMA (Touvron et al., 2023)): IDEFICS-80b-instruct (4 * NVIDIA A40 GPUs for inference).   \n- IDEFICS2 — (SigLIP-SO400M (Zhai et al., 2023) + Mistral (Jiang et al., 2023)): IDEFICS2-8b (2 * NVIDIA A40 GPUs for inference).   \n- Phi-3.5 — (SigLIP-SO400M (Zhai et al., 2023) + Phi-3 Mini (Abdin et al., 2024)): LLaVA-1.5-13b (2 * NVIDIA A40 GPU for inference)\n\nFor all models, we use temperature $= 0.7$ and top-p $= 0.95$ .",
+      "section_number": "A.3",
+      "section_title": "moderation agent models and compute",
+      "normalized_section_title": "moderation agent models and compute"
+    },
+    {
+      "window_id": "2024.emnlp-main.957::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A40",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "Below we list out API-based GPT-4v (OpenAI, 2023) and open-sourced LLaVA (Liu et al., 2023) and IDEFICS (Laurençon et al., 2023) models, that we used in our experiments:\n\n![](images/c6f226dc8df8ecf3a480cde38d414c8bbe5e384158b58b2ee45d14c684bc4fb3.jpg)  \nFigure 6: Dialogue on the annotation interface used to annotate GPTGEOCHAT.\n\n![](images/d721e5cefaf6b82b1fc32216e7abe6886062e8a565b6b2e840ef4c4f42cc8456.jpg)  \nFigure 7: Location annotations on the interface used to annotate GPTGEOCHAT.\n\n- GPT-4v: GPT-4v (vision-preview) from Microsoft Azure\n\n- LLaVA — (OpenCLIP (Ilharco et al., 2021) + Vicuna (Zheng et al., 2024)): LLaVA-1.5-13b (2 * NVIDIA A40 GPU for inference)\n\n- LLaVA-NeXT — (OpenCLIP (Ilharco et al., 2021) + Mistral (Jiang et al., 2023)): LLaVA-NeXT-7b (2 * NVIDIA A40 GPU for inference)   \n- IDEFICS — (OpenCLIP (Ilharco et al., 2021) + LLaMA (Touvron et al., 2023)): IDEFICS-80b-instruct (4 * NVIDIA A40 GPUs for inference).   \n- IDEFICS2 — (SigLIP-SO400M (Zhai et al., 2023) + Mistral (Jiang et al., 2023)): IDEFICS2-8b (2 * NVIDIA A40 GPUs for inference).   \n- Phi-3.5 — (SigLIP-SO400M (Zhai et al., 2023) + Phi-3 Mini (Abdin et al., 2024)): LLaVA-1.5-13b (2 * NVIDIA A40 GPU for inference)\n\nFor all models, we use temperature $= 0.7$ and top-p $= 0.95$ .",
+      "section_number": "A.3",
+      "section_title": "moderation agent models and compute",
+      "normalized_section_title": "moderation agent models and compute"
+    },
+    {
+      "window_id": "2024.emnlp-main.957::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A40",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "Below we list out API-based GPT-4v (OpenAI, 2023) and open-sourced LLaVA (Liu et al., 2023) and IDEFICS (Laurençon et al., 2023) models, that we used in our experiments:\n\n![](images/c6f226dc8df8ecf3a480cde38d414c8bbe5e384158b58b2ee45d14c684bc4fb3.jpg)  \nFigure 6: Dialogue on the annotation interface used to annotate GPTGEOCHAT.\n\n![](images/d721e5cefaf6b82b1fc32216e7abe6886062e8a565b6b2e840ef4c4f42cc8456.jpg)  \nFigure 7: Location annotations on the interface used to annotate GPTGEOCHAT.\n\n- GPT-4v: GPT-4v (vision-preview) from Microsoft Azure\n\n- LLaVA — (OpenCLIP (Ilharco et al., 2021) + Vicuna (Zheng et al., 2024)): LLaVA-1.5-13b (2 * NVIDIA A40 GPU for inference)\n\n- LLaVA-NeXT — (OpenCLIP (Ilharco et al., 2021) + Mistral (Jiang et al., 2023)): LLaVA-NeXT-7b (2 * NVIDIA A40 GPU for inference)   \n- IDEFICS — (OpenCLIP (Ilharco et al., 2021) + LLaMA (Touvron et al., 2023)): IDEFICS-80b-instruct (4 * NVIDIA A40 GPUs for inference).   \n- IDEFICS2 — (SigLIP-SO400M (Zhai et al., 2023) + Mistral (Jiang et al., 2023)): IDEFICS2-8b (2 * NVIDIA A40 GPUs for inference).   \n- Phi-3.5 — (SigLIP-SO400M (Zhai et al., 2023) + Phi-3 Mini (Abdin et al., 2024)): LLaVA-1.5-13b (2 * NVIDIA A40 GPU for inference)\n\nFor all models, we use temperature $= 0.7$ and top-p $= 0.95$ .",
+      "section_number": "A.3",
+      "section_title": "moderation agent models and compute",
+      "normalized_section_title": "moderation agent models and compute"
+    },
+    {
+      "window_id": "2024.emnlp-main.957::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A40",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "Below we list out API-based GPT-4v (OpenAI, 2023) and open-sourced LLaVA (Liu et al., 2023) and IDEFICS (Laurençon et al., 2023) models, that we used in our experiments:\n\n![](images/c6f226dc8df8ecf3a480cde38d414c8bbe5e384158b58b2ee45d14c684bc4fb3.jpg)  \nFigure 6: Dialogue on the annotation interface used to annotate GPTGEOCHAT.\n\n![](images/d721e5cefaf6b82b1fc32216e7abe6886062e8a565b6b2e840ef4c4f42cc8456.jpg)  \nFigure 7: Location annotations on the interface used to annotate GPTGEOCHAT.\n\n- GPT-4v: GPT-4v (vision-preview) from Microsoft Azure\n\n- LLaVA — (OpenCLIP (Ilharco et al., 2021) + Vicuna (Zheng et al., 2024)): LLaVA-1.5-13b (2 * NVIDIA A40 GPU for inference)\n\n- LLaVA-NeXT — (OpenCLIP (Ilharco et al., 2021) + Mistral (Jiang et al., 2023)): LLaVA-NeXT-7b (2 * NVIDIA A40 GPU for inference)   \n- IDEFICS — (OpenCLIP (Ilharco et al., 2021) + LLaMA (Touvron et al., 2023)): IDEFICS-80b-instruct (4 * NVIDIA A40 GPUs for inference).   \n- IDEFICS2 — (SigLIP-SO400M (Zhai et al., 2023) + Mistral (Jiang et al., 2023)): IDEFICS2-8b (2 * NVIDIA A40 GPUs for inference).   \n- Phi-3.5 — (SigLIP-SO400M (Zhai et al., 2023) + Phi-3 Mini (Abdin et al., 2024)): LLaVA-1.5-13b (2 * NVIDIA A40 GPU for inference)\n\nFor all models, we use temperature $= 0.7$ and top-p $= 0.95$ .",
+      "section_number": "A.3",
+      "section_title": "moderation agent models and compute",
+      "normalized_section_title": "moderation agent models and compute"
+    },
+    {
+      "window_id": "2024.emnlp-main.957::appendix::A.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A40",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Table 3: Hyperparameters of Finetuned Agents.   \n\n<table><tr><td></td><td>finetuned-agent(11ava-13b)</td></tr><tr><td>warmup-ratio</td><td>0.03</td></tr><tr><td>learning-rate</td><td>2e-4</td></tr><tr><td>learning-rate-schedule</td><td>cosine</td></tr><tr><td>per-device-batch size</td><td>8</td></tr><tr><td>lora-r</td><td>128</td></tr><tr><td>lora-alpha</td><td>256</td></tr></table>\n\nAs mentioned in §5, we train three moderation agents: fine-tuned-agent(LLaVA-13b-human), fine-tuned-agent(LLaVA-13b-synthetic), fine-tuned-agent(LLaVA-13b-synthetic-large). In the fine-tuning task, LLaVA-13b is given the truncated conversation up to the turn of dialogue and should produce the correct binary moderation answer in JSON format e.g. \"Answer JSON: {‘answer’: 'No’)\". We use the hyperparameters in Table ?? with QLoRA (Dettmers et al., 2024) fine-tuning. Fine-tuning is carried out on $8^{*}$ NVIDIA A40 GPUs with distributed fine-tuning using ZeRO Stage 2 from DeepSpeed $^{13}$ . Models were trained for 20 epochs (training for more than 20 epochs led to overfitting) and the checkpoints from the epochs that performed best on the eval set of GPT-GEOCHAT were used in the experiments in §6.",
+      "section_number": "A.5",
+      "section_title": "details on fine-tuning moderation agents",
+      "normalized_section_title": "details on fine-tuning moderation agents"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.957::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A40",
+      "cleaned_hardware_name": "nvidia a40",
+      "normalized_hardware_name": "NVIDIA A40 PCIe",
+      "benchmark_hardware_name": "NVIDIA A40 PCIe",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "A.3",
+      "section_title": "moderation agent models and compute",
+      "normalized_section_title": "moderation agent models and compute",
+      "evidence": "Below we list out API-based GPT-4v (OpenAI, 2023) and open-sourced LLaVA (Liu et al., 2023) and IDEFICS (Laurençon et al., 2023) models, that we used in our experiments:\n\n![](images/c6f226dc8df8ecf3a480cde38d414c8bbe5e384158b58b2ee45d14c684bc4fb3.jpg)  \nFigure 6: Dialogue on the annotation interface used to annotate GPTGEOCHAT.\n\n![](images/d721e5cefaf6b82b1fc32216e7abe6886062e8a565b6b2e840ef4c4f42cc8456.jpg)  \nFigure 7: Location annotations on the interface used to annotate GPTGEOCHAT.\n\n- GPT-4v: GPT-4v (vision-preview) from Microsoft Azure\n\n- LLaVA — (OpenCLIP (Ilharco et al., 2021) + Vicuna (Zheng et al., 2024)): LLaVA-1.5-13b (2 * NVIDIA A40 GPU for inference)\n\n- LLaVA-NeXT — (OpenCLIP (Ilharco et al., 2021) + Mistral (Jiang et al., 2023)): LLaVA-NeXT-7b (2 * NVIDIA A40 GPU for inference)   \n- IDEFICS — (OpenCLIP (Ilharco et al., 2021) + LLaMA (Touvron et al., 2023)): IDEFICS-80b-instruct (4 * NVIDIA A40 GPUs for inference).   \n- IDEFICS2 — (SigLIP-SO400M (Zhai et al., 2023) + Mistral (Jiang et al., 2023)): IDEFICS2-8b (2 * NVIDIA A40 GPUs for inference).   \n- Phi-3.5 — (SigLIP-SO400M (Zhai et al., 2023) + Phi-3 Mini (Abdin et al., 2024)): LLaVA-1.5-13b (2 * NVIDIA A40 GPU for inference)\n\nFor all models, we use temperature $= 0.7$ and top-p $= 0.95$ .",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.emnlp-main.957::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A40",
+      "cleaned_hardware_name": "nvidia a40",
+      "normalized_hardware_name": "NVIDIA A40 PCIe",
+      "benchmark_hardware_name": "NVIDIA A40 PCIe",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "A.3",
+      "section_title": "moderation agent models and compute",
+      "normalized_section_title": "moderation agent models and compute",
+      "evidence": "Below we list out API-based GPT-4v (OpenAI, 2023) and open-sourced LLaVA (Liu et al., 2023) and IDEFICS (Laurençon et al., 2023) models, that we used in our experiments:\n\n![](images/c6f226dc8df8ecf3a480cde38d414c8bbe5e384158b58b2ee45d14c684bc4fb3.jpg)  \nFigure 6: Dialogue on the annotation interface used to annotate GPTGEOCHAT.\n\n![](images/d721e5cefaf6b82b1fc32216e7abe6886062e8a565b6b2e840ef4c4f42cc8456.jpg)  \nFigure 7: Location annotations on the interface used to annotate GPTGEOCHAT.\n\n- GPT-4v: GPT-4v (vision-preview) from Microsoft Azure\n\n- LLaVA — (OpenCLIP (Ilharco et al., 2021) + Vicuna (Zheng et al., 2024)): LLaVA-1.5-13b (2 * NVIDIA A40 GPU for inference)\n\n- LLaVA-NeXT — (OpenCLIP (Ilharco et al., 2021) + Mistral (Jiang et al., 2023)): LLaVA-NeXT-7b (2 * NVIDIA A40 GPU for inference)   \n- IDEFICS — (OpenCLIP (Ilharco et al., 2021) + LLaMA (Touvron et al., 2023)): IDEFICS-80b-instruct (4 * NVIDIA A40 GPUs for inference).   \n- IDEFICS2 — (SigLIP-SO400M (Zhai et al., 2023) + Mistral (Jiang et al., 2023)): IDEFICS2-8b (2 * NVIDIA A40 GPUs for inference).   \n- Phi-3.5 — (SigLIP-SO400M (Zhai et al., 2023) + Phi-3 Mini (Abdin et al., 2024)): LLaVA-1.5-13b (2 * NVIDIA A40 GPU for inference)\n\nFor all models, we use temperature $= 0.7$ and top-p $= 0.95$ .",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.emnlp-main.957::appendix::A.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A40",
+      "cleaned_hardware_name": "nvidia a40",
+      "normalized_hardware_name": "NVIDIA A40 PCIe",
+      "benchmark_hardware_name": "NVIDIA A40 PCIe",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "A.5",
+      "section_title": "details on fine-tuning moderation agents",
+      "normalized_section_title": "details on fine-tuning moderation agents",
+      "evidence": "Table 3: Hyperparameters of Finetuned Agents.   \n\n<table><tr><td></td><td>finetuned-agent(11ava-13b)</td></tr><tr><td>warmup-ratio</td><td>0.03</td></tr><tr><td>learning-rate</td><td>2e-4</td></tr><tr><td>learning-rate-schedule</td><td>cosine</td></tr><tr><td>per-device-batch size</td><td>8</td></tr><tr><td>lora-r</td><td>128</td></tr><tr><td>lora-alpha</td><td>256</td></tr></table>\n\nAs mentioned in §5, we train three moderation agents: fine-tuned-agent(LLaVA-13b-human), fine-tuned-agent(LLaVA-13b-synthetic), fine-tuned-agent(LLaVA-13b-synthetic-large). In the fine-tuning task, LLaVA-13b is given the truncated conversation up to the turn of dialogue and should produce the correct binary moderation answer in JSON format e.g. \"Answer JSON: {‘answer’: 'No’)\". We use the hyperparameters in Table ?? with QLoRA (Dettmers et al., 2024) fine-tuning. Fine-tuning is carried out on $8^{*}$ NVIDIA A40 GPUs with distributed fine-tuning using ZeRO Stage 2 from DeepSpeed $^{13}$ . Models were trained for 20 epochs (training for more than 20 epochs led to overfitting) and the checkpoints from the epochs that performed best on the eval set of GPT-GEOCHAT were used in the experiments in §6.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.emnlp-main.957::appendix::B",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B",
+      "section_title": "experiment details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.957::appendix::B.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B.1",
+      "section_title": "im2gps geolocation experiment details",
+      "evidence": "In this section, we detail the evaluation of GPT-4v on the 237 image IM2GPS (Hays and Efros, 2008) test set for which results can be found in Figure 2. Unlike GPTGEOCHAT, we do not have humans try to dialogue with the model toward geolocation, but instead propose a geographical least-to-most prompting (Zhou et al., 2022) method through which GPT-4v is prompted to output its best guess and a rationale for the guess at the country, city, neighborhood, exact location name, and exact GPS coordinate levels (the same granularities used in the collection of GPTGEOCHAT). While we provide the bulk of the prompt in §2, here we provide the whole one-shot prompt:\n\nPlease provide your speculative guess for the location of the image at the country, city, neighborhood, and exact location levels. You must provide reasoning for why you have selected\n\nthe value for each geographical level. You are required to provide a guess for each level. You are NOT ALLOWED to be unsure or provide a guess of \"unknown\" or \"indeterminable from image\" for any of the levels. Please provide your output in the following JSON format:\n\n```json\n{ \"rationale\": \"Country: I chose United States as the country because ... City: I chose New York City as the city because ... Neighborhood: I chose Manhattan as the neighborhood because ... Exact: I chose Empire State Building as the exact location because \", \"country\": \"United States\", \"city\": \"New York City\", \"neighborhood\": \"Manhattan\", \"exact_location_name\": \"Empire State Building\", \"latitude\": \"40.748817\", \"longitude\": \"-73.985428\" } \n```\n\nYour answer:\n\nWhile the country, city, neighborhood, and exact location name are discarded, the exact GPS coordinates are then extracted and the \"error\" distance is computed between these coordinates and the ground truth. For one image, the model refused to output a prediction because the content filters flagged the image. To enable a fair comparative evaluation, we set the error distance to $\\infty$ for this image. Finally, the GeoDecoder and PIGEOTTO results are taken from Haas et al. (2023). The size of the IM2GPS test set is 237. $^{14}$"
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.3",
+      "A.5"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A40 PCIe",
+        "num": 2
+      },
+      {
+        "name": "NVIDIA A40 PCIe",
+        "num": 4
+      },
+      {
+        "name": "NVIDIA A40 PCIe",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2024\\2024.emnlp-main.957\\auto\\full.md",
+    "source_md_sha256": "26a8519c9575c724698e625ab19078de8e75dce6080f03bf54b759a6a30221f9",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "749fdb433714bfa003499fb1c90f58c9bb6de4daf647bf52f54e32986186b91c"
+  }
+}

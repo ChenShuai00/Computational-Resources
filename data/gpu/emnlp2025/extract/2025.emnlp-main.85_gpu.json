@@ -1,0 +1,109 @@
+{
+  "paper_id": "2025.emnlp-main.85",
+  "candidate_windows": [
+    {
+      "window_id": "2025.emnlp-main.85::sections::4",
+      "paper_id": "2025.emnlp-main.85",
+      "section_number": "4",
+      "section_title": "experiment",
+      "normalized_section_title": "experiment",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.85::sections::4.4",
+      "paper_id": "2025.emnlp-main.85",
+      "section_number": "4.4",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "We employ Llama3.2 1B,3B and Llama 3.1 8B models (Dubey et al., 2O24) as our distillation targets,using LoRA-based supervised fine-tuning (Hu et al., 2021) for both stages of instruction. We reserve 6OO synthetic dialogues as a development set to adjust hyperparameters. For a fair comparison with smaller PLMs, we also evaluate a T5-Large model (Raffel et al., 2O2O) by fully fine-tuning it on the same dataset. All experiments are conducted on a single RTX 4090 GPU.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.emnlp-main.85::appendix::A",
+      "paper_id": "2025.emnlp-main.85",
+      "section_number": "A",
+      "section_title": "additional explanation on experiment setting",
+      "normalized_section_title": "additional explanation on experiment setting",
+      "window_text": "For single run/ Multi-run settingsIn our eXperiment, we do multiple runs (fine tuning in our case) for optimal hyper-parameters.We do not use MultiWOZ data in this stage but evaluation only on synthetic data. But with the fine tuned model, we do a single run with the MultiWOZ test set to get the result. As we fixed the seed and with temperate O.1, we found we got stable results in single/multiple runs.\n\nFor synthetic datasets explanationWe utilized synthetic datasets from various sources for our research. Below are the details:\n\n· NeuralWOZ, EDZ-DA, DOT, and LUAS: We employed the synthetic data directly provided by the respective authors of these models. · Simulated Chats: For this dataset, we generated synthetic data ourselves using the code and pre-trained models shared by the original authors.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.85::appendix::E",
+      "paper_id": "2025.emnlp-main.85",
+      "section_number": "E",
+      "section_title": "training details",
+      "normalized_section_title": "training details",
+      "window_text": "We employ llama_factory (Zheng et al., 2024)4 with the Liger Kernel (Hsu et al., 2024)5 for efficient supervised fine-tuning and use vLLM for inference on the test set. For our synthetic dataset, we train the model for two epochs using a learning rate of $1 e - 4$ ，The LoRA rank is set to 16 for the 3B and 8B versions and to 8 for the 1B model. Under these settings, the 1B,3B,and 8B models complete training in approximately 8, 14, and 31 hours, respectively.\n\nIn the few-shot setting,no chain-of-thought (CoT) annotations are available.We therefore first use an LLM(GPT-4o) to extract the CoT in two steps，then perform supervised fine-tuning. To avoid overfiting,we train for two epochs with a learning rate of $5 e - 5$ for the 3B and 8B models and $2 e - 5$ for the 1B model.\n\nTable 6: Dynamic Generated Complexity Prompt   \n\n<table><tr><td>Category</td><td>Prompts</td></tr><tr><td>Slot Usage</td><td>Uterance - IndirectAt Turn 7 and Turn 12,refer back to a previously stated slot by using an indirect phrase or pronoun (e.g., that place&#x27;,&#x27;it&#x27;,&#x27;the same hotel&#x27;), rather than repeating the exact slot name.</td></tr><tr><td>Flow</td><td>Utterance - Natu- Use mild slang (e.g.,&#x27;gonna,’&#x27;wanna&#x27;) in some turns,and let a few user/system ral Conversationalturns expand into 2-3 sentences. E.g.,I&#x27;m really hoping we can find something affordable. I heard your deals are great.</td></tr><tr><td>(for Naturalness)</td><td>Utterance - ErrorInsert a few small spelling or grammar mistakes in user utterances for restaurant Injection or Typosname, making sure the conversation remains understandable overall.</td></tr><tr><td>Dialogue Multi-Domainlater returns to the original domain. 1 Jumps</td><td>FlowEnsure the user abruptly introduces a another domain mid-conversation, then</td></tr><tr><td>Dialogue Variation</td><td>FlowInclude at least ONE instance where the user deals with TWO or more domains Multi-Domainin a single turn. Keep the plan coherent, ensuring the user returns to or finalizes all relevant domains.</td></tr><tr><td>Slot Contradictionsand hotel name.</td><td>Dialogue Flow-At Turn 16,the user provide contradictory or overlapping slot info for hotel type</td></tr></table>\n\nTable 7: Instruction template for Stage 1 Knowledge Distillation   \n\n<table><tr><td>Category</td><td>Prompts</td></tr><tr><td>Instruction</td><td>You are given a task-oriented dialogue between the &quot;user&quot; and the &quot;system&quot;. Please analyze the conversation, especially the last two turns, and produce a concise chain-of-thought analysis including the following: · Intentions of each of the last two turns.</td></tr><tr><td></td><td>· Related slot names of the last two turns, enclosed in [slot][/slot] tokens.</td></tr><tr><td>Input</td><td>· Formalized representation of the last two turns. The task-oriented dialogue is as follows: {dialogue_history} Now, generate</td></tr><tr><td></td><td>your chain-of-thought based on the above context.</td></tr><tr><td> Output</td><td>Analyzing the last two turns,I found that: [Turn {turn_id} {turn.speaker.upper()}]: {turn.representation}</td></tr></table>\n\nTable 8: Instruction template for Stage 2 Knowledge Distillation   \n\n<table><tr><td>Category</td><td>Prompts</td></tr><tr><td rowspan=\"4\">Instruction</td><td>You are a dialogue state tracker for a task-oriented dialogue system. You will be given:</td></tr><tr><td>· A dialogue between the &quot;user&quot; and the &quot;system&quot;.</td></tr><tr><td>· Formalized representation of the dialogue.</td></tr><tr><td>Your task is to analyse and predict the **dialogue states** for the given slot name. If the slot is not mentioned in the dialogue, please predict the slot value as NONE. Output your reasoning progress and the predict value start with [state] and end with [/state].</td></tr><tr><td>Input</td><td>The task-oriented dialogue is as following: {dialogue_history} The formalized representation of the dialogue: {form_cot} Now, please analyse and predict the value for slot *{slot}*, which refers to {slot_description}. Output your reasoning progress and the predict value start with [state] and end with [/state].</td></tr><tr><td>Output</td><td>After read the context, I found slot *{slot} * is related to Turn {turn_id_list}. In detail, In turn {turn_id}, {form_cot} .. In conclusion, the dialogue state for slot *{slot}* is &lt;state&gt;{ds}&lt;/state&gt;</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.emnlp-main.85::sections::4.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 4090",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We employ Llama3.2 1B,3B and Llama 3.1 8B models (Dubey et al., 2O24) as our distillation targets,using LoRA-based supervised fine-tuning (Hu et al., 2021) for both stages of instruction. We reserve 6OO synthetic dialogues as a development set to adjust hyperparameters. For a fair comparison with smaller PLMs, we also evaluate a T5-Large model (Raffel et al., 2O2O) by fully fine-tuning it on the same dataset. All experiments are conducted on a single RTX 4090 GPU.",
+      "section_number": "4.4",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.emnlp-main.85::sections::4.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 4090",
+      "cleaned_hardware_name": "rtx 4090",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 4090",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 4090",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "4.4",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "We employ Llama3.2 1B,3B and Llama 3.1 8B models (Dubey et al., 2O24) as our distillation targets,using LoRA-based supervised fine-tuning (Hu et al., 2021) for both stages of instruction. We reserve 6OO synthetic dialogues as a development set to adjust hyperparameters. For a fair comparison with smaller PLMs, we also evaluate a T5-Large model (Raffel et al., 2O2O) by fully fine-tuning it on the same dataset. All experiments are conducted on a single RTX 4090 GPU.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.4"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce RTX 4090",
+        "num": 1
+      }
+    ]
+  }
+}

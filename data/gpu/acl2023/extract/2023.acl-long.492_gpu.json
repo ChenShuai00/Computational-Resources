@@ -1,0 +1,159 @@
+{
+  "paper_id": "2023.acl-long.492",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.492::sections::4",
+      "paper_id": "2023.acl-long.492",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "We evaluate the impact of the proposed training objectives in the domain adaptation experiments in machine translation, where the distributional robustness in adaptation may bring well-measurable benefits. We compare our results with the adaptation using the commonly-used MLE objective (§2), and selected parameter-efficient methods shown to mitigate forgetting. We use the novel objectives as the weighted complements of the MLE objective (Eq. (2)), thus optimising both the objectives in parallel:\n\n$$\n\\mathcal {L} _ {\\text {A l i g n}} (\\Theta) = \\mathcal {L} _ {M L E} (\\Theta) + \\alpha \\cdot \\mathcal {L} _ {\\text {N e w O b j}} (\\Theta) \\tag {8}\n$$",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.492::sections::4.2",
+      "paper_id": "2023.acl-long.492",
+      "section_number": "4.2",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Data configuration As the OPUS sources do not contain standard splits, we split the data into train-validation-test. We first de-duplicate the samples and draw 500 validation and 1,000 test samples from each domain.\n\nTraining We perform the adaptations from the bilingual Transformer-base models of Vaswani et al. (2017) using the checkpoints of Tiedemann and Thottingal (2020) pre-trained for a translation of the corresponding language pair on a mixture of OPUS sources.\n\nWe perform a hyperparameter search over the parameters of learning rate, objectives weights $\\alpha$ , and objective-specific batch size. We detail the values and ranges of this search in Appendix A.\n\nAfter fixing the objectives' parameters, we set up the experiments to closely resemble the traditional training process; We run each experiment until early-stopping by in-domain validation BLEU, with the patience of 20 evaluations, i.e., 10,000 updates and evaluate the model with the best validation score for testing. If the model does not improve over\n\nthe first 10,000 updates, we evaluate the resulting model after the 10,000 updates.\n\nWe implement our experiments using Adaptor library (Štefánik et al., 2022), allowing the release of all our experiments in a transparent and self-containing form.\n\nEvaluation To discourage the effect of the random variance in the performance of the trained model, we report all test scores as the average of the performance in the interval of 5 preceding and 5 succeeding checkpoints, resulting in a single, average test evaluation for each domain.\n\nWe collect evaluations of BLEU in the default settings of SacreBLEU (Post, 2018), obtaining a single (average) evaluation of in-domain (ID) BLEU and a set of corresponding evaluations for all listed domains other than the in-domain (OOD). Given the availability of the sources, this results in four OOD evaluations for all pairs except $(\\mathrm{en}\\rightarrow \\mathrm{ukr})$ and $(\\mathrm{en}\\rightarrow \\mathrm{zh})$ with the datasets for two OOD evaluations.\n\nTo enable mutual comparability, we finally normalize both ID and OOD results by the performance of the initial checkpoint and report the change of performance in percentage. We report a single scalar value, or an interval in a form $\\langle \\text{mean} \\pm \\text{range} \\text{covering all results} \\rangle$ .\n\nBaselines In addition to MLE, we compare the proposed methods to four existing methods reported to enhance LLMs' robustness. (i) Label smoothing (Szegedy et al., 2016) with $\\alpha = 0.1$ used widely also for training MT models distributes a constant portion of expected probability among all possible predictions. (ii) Adapters (Houlsby et al., 2019) freezes pre-trained model parameters and fine-tunes a small set of newly-initialized bottleneck parameters. Instead, (iii) LoRA avoids Adapters' issue of breaking the model in the initial training phase by initializing the new parameters that are trained as an addition to the model's original, frozen parameters. (iv) We also implement and evaluate the Ensemble approach of (Freitag and Al-Onaizan, 2016), but find this approach unable to bring adaptation gains in either of our relatively low-resource adaptation cases. We detail the settings of our baselines in Appendix A.\n\nTable 1: Evaluation of adaptation quality and robustness: A change of BLEU score relative to the original model, when adapting pre-trained Transformer on the titled domain, as measured on a held-out set of the training domain (in-domain, ID) and other listed domains available for the same language pair (out-of-domain, OOD). Bold denotes the best Average ID and OOD results, and per-domain results, where adaptation brings ID improvements. The results are evaluated using SacreBLEU (Post, 2018) and BERTScore (Zhang et al., 2020b).   \n\n<table><tr><td></td><td>Δ BLEU</td><td>Bible (de→en) 62,000 pairs</td><td>TEDTalks (en→zh) 155,000 pairs</td><td>Opensubs (en→ukr) 877,000 pairs</td><td>Wiki (en→cze) 1,003,000 pairs</td><td>Medical/EMEA (est→en) 1,021,000 pairs</td><td>Law/DGT (en→de) 5,105,000 pairs</td><td>Average (BLEU)</td><td>Average (BERTScr)</td></tr><tr><td colspan=\"2\">Orig. BLEU</td><td>21.89</td><td>29.01</td><td>26.12</td><td>34.04</td><td>54.85</td><td>33.56</td><td></td><td></td></tr><tr><td rowspan=\"2\">MLE (Bahdanau et al., 2015)</td><td>ID</td><td>-8%</td><td>+7%</td><td>+4%</td><td>+9%</td><td>+38%</td><td>-1%</td><td>+8.31%</td><td>+9.19‰</td></tr><tr><td>OOD</td><td>-53%±36%</td><td>-23%±23%</td><td>-15%±9%</td><td>-15%±5%</td><td>-35%±10%</td><td>-19%±11%</td><td>-26.87%</td><td>-37.34‰</td></tr><tr><td rowspan=\"2\">MLE + Smoothing (Szegedy et al., 2016)</td><td>ID</td><td>-6%</td><td>+30%</td><td>-6%</td><td>+9%</td><td>+17%</td><td>+0%</td><td>+7.43%</td><td>+3.77‰</td></tr><tr><td>OOD</td><td>-85%±31%</td><td>-39%±26%</td><td>-25%±9%</td><td>-13%±22%</td><td>-49%±16%</td><td>-27%±26%</td><td>-41.86%</td><td>-54.13‰</td></tr><tr><td rowspan=\"2\">Adapters (Houlsby et al., 2019)</td><td>ID</td><td>-5%</td><td>-27%</td><td>-14%</td><td>+1%</td><td>+13%</td><td>-0%</td><td>-5.41%</td><td>-15.23‰</td></tr><tr><td>OOD</td><td>-91%±20%</td><td>-80%±2%</td><td>-53%±9%</td><td>-46%±25%</td><td>-77%±19%</td><td>-45%±43%</td><td>-65.39%</td><td>-94.97‰</td></tr><tr><td rowspan=\"2\">LoRA (Hu et al., 2022)</td><td>ID</td><td>-8%</td><td>+2%</td><td>+2%</td><td>+14%</td><td>+8%</td><td>+6%</td><td>+3.98%</td><td>+5.85‰</td></tr><tr><td>OOD</td><td>-7%±7%</td><td>-21%±20%</td><td>-1%±1%</td><td>-7%±5%</td><td>-4%±11%</td><td>+2%±14%</td><td>-5.15%</td><td>-3.78‰</td></tr><tr><td rowspan=\"2\">TokenAlign (ours)</td><td>ID</td><td>-21%</td><td>+2%</td><td>+8%</td><td>+12%</td><td>+45%</td><td>+1%</td><td>+8.17%</td><td>+6.83‰</td></tr><tr><td>OOD</td><td>-2%±1%</td><td>-10%±12%</td><td>-1%±1%</td><td>-6%±6%</td><td>-6%±7%</td><td>+6%±20%</td><td>-3.25%</td><td>-0.98‰</td></tr><tr><td rowspan=\"2\">SeqAlign (ours)</td><td>ID</td><td>-23%</td><td>+7%</td><td>-8%</td><td>+8%</td><td>+31%</td><td>+7%</td><td>+3.67%</td><td>+15.46‰</td></tr><tr><td>OOD</td><td>-1%±1%</td><td>-20%±22%</td><td>-2%±3%</td><td>-12%±5%</td><td>-1%±2%</td><td>+3%±13%</td><td>-1.44%</td><td>-1.53‰</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.492::appendix::A",
+      "paper_id": "2023.acl-long.492",
+      "section_number": "A",
+      "section_title": "hyperparameters",
+      "normalized_section_title": "hyperparameters",
+      "window_text": "For each of the evaluated objectives, we perform a hyperparameter search independently over the selected parameters in the denoted range, based on the best in-domain validation BLEU reached in the adaptation to Wikipedia domain.\n\n(1) learning rate: ranging from $2 \\cdot 10^{-7}$ to $2 \\cdot 10^{-4}$ , with step 10. (2) objectives ratio $\\alpha$ (Eq. (8)): we manually set the weight of the additional\n\nobjective such that the loss values for both components of the final loss are approximately balanced, based the first 10 valuations. We do not perform further tuning and use the same weights over all experiments. (3) Batch size: For ML experiments, we fix the effective batch size to 60, we pick the optimal batch size for TokenAlign and SeqAlign objectives over [1, 5, 10, 20].\n\nOther parameters that we adjust and remain fixed over the experiments are the following: warmup steps $= 1,000$ , LR schedule as constant decay. Distance-based objectives including SeqAlign introduce two new parameters: (i) $K$ : a number of the sampled hypotheses and (ii) $n$ : a number of most-likely tokens to align. To keep the computation time feasible, we do not perform further tuning and set these parameters to $K = 10$ and $n = 3$ over all the experiments. All other parameters can be retrieved from the defaults of TrainingArguments of Transformers (Wolf et al., 2020), version 4.10.2.\n\nWe treat the optimized hyperparameters as independent; hence we optimize each variable separately. Our configuration results in experimenting with 9 hyperparameter search runs for each objective, including MLE baseline.\n\nWe also tune selected parameters of Adapters and LoRA implementations based on their original papers: (i) A compressed representation size ratio $\\frac{t}{h}$ to model hidden state size $h$ is chosen from $t \\in [2,4,16,32]$ , (ii) a learning rate is chosen from $\\mathrm{LR} \\in [2 \\cdot 10^{-3}, 2 \\cdot 10^{-4}, 2 \\cdot 10^{-5}]$ . We pick as optimal $h = 32$ , $h = 16$ and $\\mathrm{LR} = 2 \\cdot 10^{-4}$ , $\\mathrm{LR} = 2 \\cdot 10^{-5}$ for Adapters and LoRA, respectively.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.492::appendix::B",
+      "paper_id": "2023.acl-long.492",
+      "section_number": "B",
+      "section_title": "computational requirements",
+      "normalized_section_title": "computational requirements",
+      "window_text": "We performed the adaptation of each of the proposed objectives on a server with a single NVidia Tesla A100, 80 GB of graphic memory, 512 GB of RAM and 64-core processor (AMD EPYC 7702P). We also tested to train all our experiments using lower configuration using a single NVidia Tesla T4, 16 GB of graphic memory, 20 GB of RAM, and a single core of Intel(R) Xeon(R) processor.\n\nWe benchmark the running times of the time-demanding parts of the adaptation process in the first-mentioned configuration. We find that the proposed decontextualization process required by TokenAlign, SeqAlign-CE and SeqAlign-dec takes in these settings between 50 minutes on the smallest domain to 25 hours on the largest domain. Table 3\n\nTable 3: Adaptation speed: Average number of updates per hour and average number of updates to converge that we measure over objectives in our experiments.   \n\n<table><tr><td>Objective</td><td>Updates / hour</td><td>Updates to converge</td></tr><tr><td>MLE</td><td>451</td><td>15,500</td></tr><tr><td>TokenAlign</td><td>404</td><td>24,000</td></tr><tr><td>SeqAlign</td><td>287</td><td>11,875</td></tr><tr><td>SRand</td><td>152</td><td>10,100</td></tr><tr><td>SeqAlign-dec</td><td>295</td><td>7,500</td></tr><tr><td>SeqAlign-CE</td><td>585</td><td>23,740</td></tr></table>\n\nshows the average speed of updates and the number of steps that each of the designed objectives requires to converge. Further details on our methodology are described in Section 4.2.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.492::appendix::E",
+      "paper_id": "2023.acl-long.492",
+      "section_number": "E",
+      "section_title": "training validation reports",
+      "normalized_section_title": "training validation reports",
+      "window_text": "We report and compare the change of validation BLEU of our two main objectives, relative to the MLE objective over the course of our experiments and overview the results in Figures 6 and 7 for SeqAlign and TokenAlign objective, respectively. A comparison of all three objectives is in Figure 5.\n\nTable 4: Evaluation of adaptation quality and robustness over all designed objectives: A change of BLEU score relative to the original model, when adapting pre-trained Transformer-base on a selected domain, as measured on a test set of the training domain (in-domain, ID) and out-of-domain (OOD). The aggregates over all domains are listed in Table 2.   \n\n<table><tr><td></td><td>Δ BLEU</td><td>Bible (de→en)</td><td>Opensubs (en→ukr)</td><td>Wiki (en→cze)</td><td>Medical/EMEA (est→en)</td><td>Law/DGT (en→de)</td></tr><tr><td></td><td></td><td>50,000 pairs</td><td>80,000 pairs</td><td>100,000 pairs</td><td>300,000 pairs</td><td>5,100,000 pairs</td></tr><tr><td>Orig. BLEU</td><td></td><td>21.89</td><td>26.12</td><td>34.04</td><td>54.85</td><td>33.56</td></tr><tr><td rowspan=\"2\">MLE</td><td>ID</td><td>-8%</td><td>+4%</td><td>+9%</td><td>+38%</td><td>-1%</td></tr><tr><td>OOD</td><td>-53%±36%</td><td>-15%±9%</td><td>-15%±5%</td><td>-35%±10%</td><td>-19%±11%</td></tr><tr><td rowspan=\"2\">TokenAlign</td><td>ID</td><td>-21%</td><td>+8%</td><td>+12%</td><td>+45%</td><td>+1%</td></tr><tr><td>OOD</td><td>-2%±1%</td><td>-1%±1%</td><td>-6%±6%</td><td>-6%±7%</td><td>+6%±20%</td></tr><tr><td rowspan=\"2\">SeqAlign</td><td>ID</td><td>-23%</td><td>-8%</td><td>+8%</td><td>+31%</td><td>+7%</td></tr><tr><td>OOD</td><td>-1%±1%</td><td>-2%±3%</td><td>-12%±5%</td><td>-1%±2%</td><td>+3%±13%</td></tr><tr><td rowspan=\"2\">SRand</td><td>ID</td><td>-14%</td><td>-7%</td><td>+8%</td><td>+34%</td><td>-7%</td></tr><tr><td>OOD</td><td>-8%±2%</td><td>-3%±3%</td><td>-9%±3%</td><td>-7%±5%</td><td>-7%±5%</td></tr><tr><td rowspan=\"2\">SeqAlign-dec</td><td>ID</td><td>-26%</td><td>+11%</td><td>+5%</td><td>+35%</td><td>+2%</td></tr><tr><td>OOD</td><td>-13%±8%</td><td>-1%±1%</td><td>-11%±19%</td><td>-12%±7%</td><td>+4%±17%</td></tr><tr><td rowspan=\"2\">SeqAlign-CE</td><td>ID</td><td>+8%</td><td>+9%</td><td>+11%</td><td>+1%</td><td>-11%</td></tr><tr><td>OOD</td><td>-78%±9%</td><td>-32%±1%</td><td>-12%±5%</td><td>-1%±2%</td><td>-14%±13%</td></tr></table>\n\n![](images/66961d661bbc71ff3d80b729d5e011dacc32406f11572bbe55efba530e641e0e.jpg)  \nFigure 6: Comparison of validation BLEU of MLE and SeqAlign objective reported over the training on 5 different domains and 20 corresponding out-of-distribution domains until the in-domain early-stopping. For easier comparison, both MLE logs are averaged, and reported intervals correspond to the $50\\%$ -quantile of difference to the MLE run on the corresponding evaluation domain. While the training with MLE objective consistently magnifies the forgetting of adaptation, the soft objectives report a higher OOD score over all experiments while reaching comparable adaptation gains on the in-domain. Note that the two major gains of SeqAlign before steps 12,000 and 14,000 are attributed to the early stopping of specific runs at these points and hence, should be excluded from the conclusions. See Appendix E for further description.\n\n![](images/f0b6591344bbed1c55b5515dcb81222f5c85ff3fea90320d1b4a138ad1d6bc77.jpg)  \nFigure 7: Comparison of validation BLEU of MLE and TokenAlign objective as reported over the training on 5 different domains and 20 corresponding out-of-distribution domains until in-domain early-stopping. See Figure 6 and Appendix E for further description.\n\nThe plots aggregate 5 training logs and their corresponding out-of-domain logs into the in-domain and out-of-domain reports, for easy comparability with MLE, both in-domain and out-of-domain BLEUs of MLE are averaged and paired with the corresponding BLEUs of the inspected objective over the shared evaluation domain. Finally, the plots of the inspected objective consist of $50\\%$ quantile intervals and the average of BLEU relative to both the MLE BLEU and initial model performance. Note that while the relative distances of MLE to the corresponding plots of the other objective always correspond, some training runs are terminated in the course of the plotted steps, explaining some sudden performance gains in the plot.\n\nWhile the performance decay of MLE by the time of early-stopping by in-domain BLEU is close to linear, TokenAlign on average maintains none, or minimal decays of the out-of-domain performance, although the variance of the initial decay\n\nsignificantly varies over domains. This trend implies that the early-stopping strategy based on indomain performance does not significantly decay the robustness results and favors the deployment of TokenAlign in situations where no validation out-of-domain data is present.\n\nThe robustness of the model trained using SeqAlign behaves differently and the initial robustness decay is more significant. However, the decay soon diverges from MLE and noticeably, after the 5,000-th step all the robustness evaluations of SeqAlign report robustness gains over MLE.\n\nAlthough we restrain from drawing conclusions based exclusively on these plots, the comparisons suggest that while the decay of robustness of MLE training is continuous, in the case of soft objectives, the decay gradually slows, while the model incrementally reaches potential in-domain gains similar to MLE.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.492::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVidia Tesla A100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We performed the adaptation of each of the proposed objectives on a server with a single NVidia Tesla A100, 80 GB of graphic memory, 512 GB of RAM and 64-core processor (AMD EPYC 7702P). We also tested to train all our experiments using lower configuration using a single NVidia Tesla T4, 16 GB of graphic memory, 20 GB of RAM, and a single core of Intel(R) Xeon(R) processor.\n\nWe benchmark the running times of the time-demanding parts of the adaptation process in the first-mentioned configuration. We find that the proposed decontextualization process required by TokenAlign, SeqAlign-CE and SeqAlign-dec takes in these settings between 50 minutes on the smallest domain to 25 hours on the largest domain. Table 3\n\nTable 3: Adaptation speed: Average number of updates per hour and average number of updates to converge that we measure over objectives in our experiments.   \n\n<table><tr><td>Objective</td><td>Updates / hour</td><td>Updates to converge</td></tr><tr><td>MLE</td><td>451</td><td>15,500</td></tr><tr><td>TokenAlign</td><td>404</td><td>24,000</td></tr><tr><td>SeqAlign</td><td>287</td><td>11,875</td></tr><tr><td>SRand</td><td>152</td><td>10,100</td></tr><tr><td>SeqAlign-dec</td><td>295</td><td>7,500</td></tr><tr><td>SeqAlign-CE</td><td>585</td><td>23,740</td></tr></table>\n\nshows the average speed of updates and the number of steps that each of the designed objectives requires to converge. Further details on our methodology are described in Section 4.2.",
+      "section_number": "B",
+      "section_title": "computational requirements",
+      "normalized_section_title": "computational requirements"
+    },
+    {
+      "window_id": "2023.acl-long.492::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVidia Tesla T4 16GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We performed the adaptation of each of the proposed objectives on a server with a single NVidia Tesla A100, 80 GB of graphic memory, 512 GB of RAM and 64-core processor (AMD EPYC 7702P). We also tested to train all our experiments using lower configuration using a single NVidia Tesla T4, 16 GB of graphic memory, 20 GB of RAM, and a single core of Intel(R) Xeon(R) processor.\n\nWe benchmark the running times of the time-demanding parts of the adaptation process in the first-mentioned configuration. We find that the proposed decontextualization process required by TokenAlign, SeqAlign-CE and SeqAlign-dec takes in these settings between 50 minutes on the smallest domain to 25 hours on the largest domain. Table 3\n\nTable 3: Adaptation speed: Average number of updates per hour and average number of updates to converge that we measure over objectives in our experiments.   \n\n<table><tr><td>Objective</td><td>Updates / hour</td><td>Updates to converge</td></tr><tr><td>MLE</td><td>451</td><td>15,500</td></tr><tr><td>TokenAlign</td><td>404</td><td>24,000</td></tr><tr><td>SeqAlign</td><td>287</td><td>11,875</td></tr><tr><td>SRand</td><td>152</td><td>10,100</td></tr><tr><td>SeqAlign-dec</td><td>295</td><td>7,500</td></tr><tr><td>SeqAlign-CE</td><td>585</td><td>23,740</td></tr></table>\n\nshows the average speed of updates and the number of steps that each of the designed objectives requires to converge. Further details on our methodology are described in Section 4.2.",
+      "section_number": "B",
+      "section_title": "computational requirements",
+      "normalized_section_title": "computational requirements"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.492::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVidia Tesla A100 80GB",
+      "cleaned_hardware_name": "nvidia tesla a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "B",
+      "section_title": "computational requirements",
+      "normalized_section_title": "computational requirements",
+      "evidence": "We performed the adaptation of each of the proposed objectives on a server with a single NVidia Tesla A100, 80 GB of graphic memory, 512 GB of RAM and 64-core processor (AMD EPYC 7702P). We also tested to train all our experiments using lower configuration using a single NVidia Tesla T4, 16 GB of graphic memory, 20 GB of RAM, and a single core of Intel(R) Xeon(R) processor.\n\nWe benchmark the running times of the time-demanding parts of the adaptation process in the first-mentioned configuration. We find that the proposed decontextualization process required by TokenAlign, SeqAlign-CE and SeqAlign-dec takes in these settings between 50 minutes on the smallest domain to 25 hours on the largest domain. Table 3\n\nTable 3: Adaptation speed: Average number of updates per hour and average number of updates to converge that we measure over objectives in our experiments.   \n\n<table><tr><td>Objective</td><td>Updates / hour</td><td>Updates to converge</td></tr><tr><td>MLE</td><td>451</td><td>15,500</td></tr><tr><td>TokenAlign</td><td>404</td><td>24,000</td></tr><tr><td>SeqAlign</td><td>287</td><td>11,875</td></tr><tr><td>SRand</td><td>152</td><td>10,100</td></tr><tr><td>SeqAlign-dec</td><td>295</td><td>7,500</td></tr><tr><td>SeqAlign-CE</td><td>585</td><td>23,740</td></tr></table>\n\nshows the average speed of updates and the number of steps that each of the designed objectives requires to converge. Further details on our methodology are described in Section 4.2.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.acl-long.492::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVidia Tesla T4 16GB",
+      "cleaned_hardware_name": "nvidia tesla t4 16gb",
+      "normalized_hardware_name": "NVIDIA Tesla T4",
+      "benchmark_hardware_name": "NVIDIA Tesla T4",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "B",
+      "section_title": "computational requirements",
+      "normalized_section_title": "computational requirements",
+      "evidence": "We performed the adaptation of each of the proposed objectives on a server with a single NVidia Tesla A100, 80 GB of graphic memory, 512 GB of RAM and 64-core processor (AMD EPYC 7702P). We also tested to train all our experiments using lower configuration using a single NVidia Tesla T4, 16 GB of graphic memory, 20 GB of RAM, and a single core of Intel(R) Xeon(R) processor.\n\nWe benchmark the running times of the time-demanding parts of the adaptation process in the first-mentioned configuration. We find that the proposed decontextualization process required by TokenAlign, SeqAlign-CE and SeqAlign-dec takes in these settings between 50 minutes on the smallest domain to 25 hours on the largest domain. Table 3\n\nTable 3: Adaptation speed: Average number of updates per hour and average number of updates to converge that we measure over objectives in our experiments.   \n\n<table><tr><td>Objective</td><td>Updates / hour</td><td>Updates to converge</td></tr><tr><td>MLE</td><td>451</td><td>15,500</td></tr><tr><td>TokenAlign</td><td>404</td><td>24,000</td></tr><tr><td>SeqAlign</td><td>287</td><td>11,875</td></tr><tr><td>SRand</td><td>152</td><td>10,100</td></tr><tr><td>SeqAlign-dec</td><td>295</td><td>7,500</td></tr><tr><td>SeqAlign-CE</td><td>585</td><td>23,740</td></tr></table>\n\nshows the average speed of updates and the number of steps that each of the designed objectives requires to converge. Further details on our methodology are described in Section 4.2.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA Tesla T4",
+        "num": 1
+      }
+    ]
+  }
+}

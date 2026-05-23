@@ -1,0 +1,92 @@
+{
+  "paper_id": "2024.emnlp-main.344",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.344::sections::4.3",
+      "paper_id": "2024.emnlp-main.344",
+      "section_number": "4.3",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Our experiments focus on smaller language models and datasets due to computational constraints and the particular challenges of generalizing to uncommon instances under resource-constrained training conditions (Warstadt et al., 2023; Diehl Martinez et al., 2023).\n\nData We use the dataset published as training data for the BabyLM challenge at the 2023 CoNLL workshop (Warstadt et al., 2023). It contains roughly 10 million tokens sampled from pre-existing datasets, covering a wide range of domains including transcribed speech (both adult-directed and child-directed), movie subtitles, Wikipedia articles, and books. The dataset was constructed to be similar to the input received by children — $56\\%$ comes from transcribed speech and $40\\%$ comes from sources intended for children.\n\nModel We use a small 8-layer encoder-style RoBERTa model with pre-layer normalization (Huebner et al., 2021). We report the hyperparameter settings we use throughout all experiments in table 3 (appendix A) and computational requirements in appendix B. We use a BPE tokenizer (Sennrich et al., 2016) with a vocabulary size of 8192 as recommended in previous work (Diehl Martinez et al., 2023).\n\nEvaluation We evaluate the BLiMP frequency bias of our models, as defined in section 3, on the evaluation set of BLiMP. To compute anisotropy we use the formulation defined in eq. (2); We sample 1,000 pairs of random word tokens with their surrounding context from the training set, and compute the cosine similarity of their hidden representation at each of the 8 layers of the RoBERTa model. To obtain a model's final anisotropy value, we average the anisotropy scores across the 8 layers. Additionally, we finetune and evaluate each model on two downstream sentence-level tasks, COLA (Warstadt et al., 2019) and SST-2 (Socher et al., 2013), as well as two language inference tasks, MNLI (Williams et al., 2018) and QNLI (Rajpurkar et al., 2016; Wang et al., 2018).\n\nBaselines We introduce three types of baselines:\n\n1. Popular open-source transformer models: OPT-125M (Zhang et al., 2022), RoBERTa-base (Liu et al., 2019), and T5-base (Raffel et al., 2020), pre-trained from scratch on the same dataset we describe in section 4.3. We use the default configuration for each model resulting in a varied number of parameters.   \n2. Base Model: The small RoBERTa model described above without Syntactic Smoothing.   \n3. Label Smoothing: The base model trained with label smoothing (Szegedy et al., 2016).\n\nWe train a baseline with a low-level of smoothing $(\\alpha = 0.2)$ and a mid-level of smoothing $(\\alpha = 0.5)$ . Note that Syntactic Smoothing can be seen as a linguistically-guided version of the standard label smoothing approach, in which the learning signal is distributed to all tokens uniformly.\n\nOur Models We train our models with Syntactic Smoothing using the same two $\\alpha$ values as the label smoothing baselines to facilitate comparison. We also run variants using the linear pacing function presented in section 4.2 which linearly decreases the smoothing from an initial value of $\\alpha$ to zero across training. For these variants, we use the same two values of smoothing, as well as an additional high value of $\\alpha = 0.8$ giving a total of five Syntactic Smoothing variants. $^3$",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.344::appendix::A",
+      "paper_id": "2024.emnlp-main.344",
+      "section_number": "A",
+      "section_title": "experimental hyperparameters",
+      "normalized_section_title": "experimental hyperparameters",
+      "window_text": "Table 3: Hyperparameter settings which are constant across all experiments   \n\n<table><tr><td>Parameter</td><td>Value</td></tr><tr><td>Layer Norm EPS</td><td>1e-5</td></tr><tr><td>Learning Rate</td><td>0.001</td></tr><tr><td>Optimizer</td><td>AdamW</td></tr><tr><td>Scheduler Type</td><td>Linear</td></tr><tr><td>Max Steps</td><td>200,000</td></tr><tr><td>Warm-up Steps</td><td>50,000</td></tr><tr><td>Total Batch Size</td><td>512</td></tr><tr><td>Vocab Size</td><td>8192</td></tr><tr><td>Hidden Dimension Size</td><td>256</td></tr><tr><td>Max. Sequence Length</td><td>128</td></tr><tr><td>Num. Attention Layers</td><td>8</td></tr><tr><td>Num. Attention Heads</td><td>8</td></tr><tr><td>Model Architecture</td><td>RoBERTa (Pre-LN)</td></tr></table>\n\nThese hyperparameters are taken from Diehl Martinez et al. (2023) who tuned the RoBERTa model for the 10M-word BabyLM dataset.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.344::appendix::B",
+      "paper_id": "2024.emnlp-main.344",
+      "section_number": "B",
+      "section_title": "computational requirements",
+      "normalized_section_title": "computational requirements",
+      "window_text": "We purposefully train a small-scale LM for our experiments. The total amount of the trainable parameters in our model is 12,750,336. Each of our experiments trains for approximately 14-20 GPU hours, using a server with one NVIDIA A100 80GB PCIe GPU, 32 CPUs, and 32 GB of RAM for all experiments. Below, we report a subset of the output of the lscpu command:\n\n<table><tr><td>Architecture:</td><td>x86_64</td></tr><tr><td>CPU op-mode(s):</td><td>32-bit, 64-bit</td></tr><tr><td>Address sizes:</td><td>46 bits physical, \n48 bits virtual</td></tr><tr><td>Byte Order:</td><td>Little Endian</td></tr><tr><td>CPU(s):</td><td>32</td></tr><tr><td>On-line CPU(s) list:</td><td>0-31</td></tr><tr><td>Vendor ID:</td><td>GenuineIntel</td></tr><tr><td>Model name:</td><td>Intel(R) Xeon(R) \nSilver 4210R CPU @ 2.40GHz</td></tr><tr><td>CPU family:</td><td>6</td></tr><tr><td>Model:</td><td>85</td></tr><tr><td>Thread(s) per core:</td><td>1</td></tr><tr><td>Core(s) per socket:</td><td>1</td></tr><tr><td>Socket(s):</td><td>8</td></tr><tr><td>Stepping:</td><td>7</td></tr><tr><td>BogoMIPS:</td><td>4800.11</td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.344::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We purposefully train a small-scale LM for our experiments. The total amount of the trainable parameters in our model is 12,750,336. Each of our experiments trains for approximately 14-20 GPU hours, using a server with one NVIDIA A100 80GB PCIe GPU, 32 CPUs, and 32 GB of RAM for all experiments. Below, we report a subset of the output of the lscpu command:\n\n<table><tr><td>Architecture:</td><td>x86_64</td></tr><tr><td>CPU op-mode(s):</td><td>32-bit, 64-bit</td></tr><tr><td>Address sizes:</td><td>46 bits physical, \n48 bits virtual</td></tr><tr><td>Byte Order:</td><td>Little Endian</td></tr><tr><td>CPU(s):</td><td>32</td></tr><tr><td>On-line CPU(s) list:</td><td>0-31</td></tr><tr><td>Vendor ID:</td><td>GenuineIntel</td></tr><tr><td>Model name:</td><td>Intel(R) Xeon(R) \nSilver 4210R CPU @ 2.40GHz</td></tr><tr><td>CPU family:</td><td>6</td></tr><tr><td>Model:</td><td>85</td></tr><tr><td>Thread(s) per core:</td><td>1</td></tr><tr><td>Core(s) per socket:</td><td>1</td></tr><tr><td>Socket(s):</td><td>8</td></tr><tr><td>Stepping:</td><td>7</td></tr><tr><td>BogoMIPS:</td><td>4800.11</td></tr></table>",
+      "section_number": "B",
+      "section_title": "computational requirements",
+      "normalized_section_title": "computational requirements"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.344::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "B",
+      "section_title": "computational requirements",
+      "normalized_section_title": "computational requirements",
+      "evidence": "We purposefully train a small-scale LM for our experiments. The total amount of the trainable parameters in our model is 12,750,336. Each of our experiments trains for approximately 14-20 GPU hours, using a server with one NVIDIA A100 80GB PCIe GPU, 32 CPUs, and 32 GB of RAM for all experiments. Below, we report a subset of the output of the lscpu command:\n\n<table><tr><td>Architecture:</td><td>x86_64</td></tr><tr><td>CPU op-mode(s):</td><td>32-bit, 64-bit</td></tr><tr><td>Address sizes:</td><td>46 bits physical, \n48 bits virtual</td></tr><tr><td>Byte Order:</td><td>Little Endian</td></tr><tr><td>CPU(s):</td><td>32</td></tr><tr><td>On-line CPU(s) list:</td><td>0-31</td></tr><tr><td>Vendor ID:</td><td>GenuineIntel</td></tr><tr><td>Model name:</td><td>Intel(R) Xeon(R) \nSilver 4210R CPU @ 2.40GHz</td></tr><tr><td>CPU family:</td><td>6</td></tr><tr><td>Model:</td><td>85</td></tr><tr><td>Thread(s) per core:</td><td>1</td></tr><tr><td>Core(s) per socket:</td><td>1</td></tr><tr><td>Socket(s):</td><td>8</td></tr><tr><td>Stepping:</td><td>7</td></tr><tr><td>BogoMIPS:</td><td>4800.11</td></tr></table>",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": ""
+    }
+  ],
+  "review_flags": [],
+  "pred_result": {
+    "sec": [
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 1
+      }
+    ]
+  }
+}

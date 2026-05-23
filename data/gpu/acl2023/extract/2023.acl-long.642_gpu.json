@@ -1,0 +1,146 @@
+{
+  "paper_id": "2023.acl-long.642",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.642::sections::2",
+      "paper_id": "2023.acl-long.642",
+      "section_number": "2",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "Problem Setup: In a multi-hop QA task, each QA pair in a labeled dataset $\\mathcal{D}$ is given along with a set of $N$ passages, $\\mathcal{P}_q = \\{p_1, p_2, \\dots, p_N\\}$ , i.e., $(q, a, \\mathcal{P}_q) \\in \\mathcal{D}$ , where a passage has its title and content $p_i = (t_i, c_i)$ . The task is to learn a model parameterized $\\theta$ to generate an answer string $a$ for the given question $q$ and $\\mathcal{P}_q$ . In this paper, we focus on the distractor setting, where $\\mathcal{P}_q$ is given for each question and contains $m$ distractors that are not useful to the answer prediction. Thus, this task requires a model to reason over multiple hops of the remaining $N - m$ relevant passages. In addition to predicting the final answer $a$ , we also aim to train a model to predict a reasoning path $R$ of important elements (e.g., relevant passage titles, supporting facts in a passage) that lead to the final answer.\n\nMulti-hop QA as Single Sequence Generation: Recent generative question answering (QA) approaches (e.g., F1D (Izacard and Grave, 2021), PATH-F1D (Yavuz et al., 2022)) utilize an encoder-decoder model as the backbone to generate answers in a single text sequence. In particular, F1D is one of the popular formulations. Specifically, for each passage $p_i = (t_i, c_i) \\in \\mathcal{P}_q$ of a question $q$ , F1D encodes a combined sequence of the question, the passage title and contents into an embedding. These embeddings for all passages are concatenated as inputs to the decoder for generating the final answer.\n\nPATH-FID builds upon this by explicitly modeling a reasoning path as part of the generation output in addition to the answer. Specifically, special index tokens $[f_i]$ are added to demarcate all sentences in each passage context. The sentences supporting the prediction of a final answer are considered facts. The decoder is then trained to generate the reasoning path $R$ as a linearized sequence consisting of the passage titles and the index tokens of facts used within those passages to obtain the final answer. Figure 1 shows an example of a reasoning path.\n\nDiscounted Reasoning in PATH-FID: Since the model predictions now include the reasoning path, we can analyze which facts in the passage are utilized by the model to determine the next passage to hop to and arrive at the final answer. For a perfectly faithful model, all predictions with correct answers should have correctly identified passages and facts. However, due to the presence\n\nof shortcuts in the datasets as well as the model's predicted reasoning path not being faithful, we observe model predictions containing correct final answers but incorrect identification of passage titles or facts. This unfaithful prediction issue is referred to as disconnected reasoning (Trivedi et al., 2020). Different from PATH-FID, we use the presence of a local graph structure between different passages in the context to bias the representations of the model and help alleviate this problem.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.642::sections::4",
+      "paper_id": "2023.acl-long.642",
+      "section_number": "4",
+      "section_title": "experimental setting",
+      "normalized_section_title": "experimental setting",
+      "window_text": "In this section, we elaborate on the datasets, the baseline models and the variants of SEQGRAPH we consider for our experiment settings. We consider two multi-hop QA datasets, HOTPOT-QA and MUSIQUE. Since SEQGRAPH is primarily focused only on improving the efficacy of encoding, we consider only the distractor setting for both datasets. Table 4 shows the standard train/dev/test statistics.\n\nHOTPOT-QA: The final answer to each question in the distractor setting is extracted from 10 passages. The dataset includes two main types of questions: bridge (80%) and comparison (20%). Bridge questions often require identifying a bridge entity in the first passage to correctly hop to the second passage that contains the answer, while comparison questions do not have this requirement. Each question is also provided with annotations of 2 supporting passages (2-hop) and up to 5 corresponding relevant sentences as their supporting facts.\n\nMUSIQUE: MUSIQUE has questions that range in difficulty from 2 to 4-hops and six types of reasoning chains. MUSIQUE uses a stringent filtering process as well as a bottom-up technique to iteratively combine single-hop questions from several datasets into a $k$ -hop benchmark that is more difficult than each individual dataset and significantly less susceptible to the disconnected-reasoning problem. Unlike HOTPOT-QA, MUSIQUE does not provide annotations of relevant sentences but provides supporting passage titles, question decomposition(decomposition of a multi-hop question into simpler 1-hop sub-questions) and also intermediate answers to the decomposed questions. Given this variety, we use the following reasoning path variants to train the model to generate:\n\n- DA: Question decomposition and final answer   \nSA: Supporting titles and final answer   \n- SIA: Supporting titles, intermediate answers and final answer   \n- DSIA: Question decomposition, supporting titles, intermediate answers and final answer\n\nTable 6 shows an example of different reasoning paths. While the last variant (predicting every decomposition/intermediate answer or support title) is more interpretable, it encounters the challenge of producing a long sequence. SIA is our best-performing reasoning path variant which is used for all of our results and analysis.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.642::sections::4.3",
+      "paper_id": "2023.acl-long.642",
+      "section_number": "4.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "We train all models using an effective batch size of 64. We use an initial learning rate of 1e-4, a linear rate scheduler, a warmup of 2,000 steps (1,000 steps for MUSIQUE), and finetune the models for 10 epochs. For SEQGRAPH, we use GAT (Velicković et al., 2017) for our GNN layers. A maximum sequence length of 256 tokens is used for constructing the input. All experiments have been conducted on a machine with either $4 \\times 40\\mathrm{G}$ A100 GPUs or $4 \\times 80\\mathrm{G}$ A100 GPUs. A detailed list of hyperparameters can be found in Appendix E.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.642::appendix::E",
+      "paper_id": "2023.acl-long.642",
+      "section_number": "E",
+      "section_title": "hyperparameter settings",
+      "normalized_section_title": "hyperparameter settings",
+      "window_text": "Tables 9, 10, 11 detail the hyperparameters we use for FID, PATH-FID and SEQGRAPH for HOTPOT-QA and MUSIQUE.\n\nThe 2-layer GNN module is $17\\mathrm{M}$ parameters for the large model and $9.5\\mathrm{M}$ for the base, accounting for only up to $4\\%$ increase in model parameters.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.642::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 40G",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "We train all models using an effective batch size of 64. We use an initial learning rate of 1e-4, a linear rate scheduler, a warmup of 2,000 steps (1,000 steps for MUSIQUE), and finetune the models for 10 epochs. For SEQGRAPH, we use GAT (Velicković et al., 2017) for our GNN layers. A maximum sequence length of 256 tokens is used for constructing the input. All experiments have been conducted on a machine with either $4 \\times 40\\mathrm{G}$ A100 GPUs or $4 \\times 80\\mathrm{G}$ A100 GPUs. A detailed list of hyperparameters can be found in Appendix E.",
+      "section_number": "4.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    },
+    {
+      "window_id": "2023.acl-long.642::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80G",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "We train all models using an effective batch size of 64. We use an initial learning rate of 1e-4, a linear rate scheduler, a warmup of 2,000 steps (1,000 steps for MUSIQUE), and finetune the models for 10 epochs. For SEQGRAPH, we use GAT (Velicković et al., 2017) for our GNN layers. A maximum sequence length of 256 tokens is used for constructing the input. All experiments have been conducted on a machine with either $4 \\times 40\\mathrm{G}$ A100 GPUs or $4 \\times 80\\mathrm{G}$ A100 GPUs. A detailed list of hyperparameters can be found in Appendix E.",
+      "section_number": "4.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.642::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 40G",
+      "cleaned_hardware_name": "a100 40gb",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "4.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "We train all models using an effective batch size of 64. We use an initial learning rate of 1e-4, a linear rate scheduler, a warmup of 2,000 steps (1,000 steps for MUSIQUE), and finetune the models for 10 epochs. For SEQGRAPH, we use GAT (Velicković et al., 2017) for our GNN layers. A maximum sequence length of 256 tokens is used for constructing the input. All experiments have been conducted on a machine with either $4 \\times 40\\mathrm{G}$ A100 GPUs or $4 \\times 80\\mathrm{G}$ A100 GPUs. A detailed list of hyperparameters can be found in Appendix E.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.acl-long.642::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80G",
+      "cleaned_hardware_name": "a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "4.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "We train all models using an effective batch size of 64. We use an initial learning rate of 1e-4, a linear rate scheduler, a warmup of 2,000 steps (1,000 steps for MUSIQUE), and finetune the models for 10 epochs. For SEQGRAPH, we use GAT (Velicković et al., 2017) for our GNN layers. A maximum sequence length of 256 tokens is used for constructing the input. All experiments have been conducted on a machine with either $4 \\times 40\\mathrm{G}$ A100 GPUs or $4 \\times 80\\mathrm{G}$ A100 GPUs. A detailed list of hyperparameters can be found in Appendix E.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.3"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 4
+      },
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 4
+      }
+    ]
+  }
+}

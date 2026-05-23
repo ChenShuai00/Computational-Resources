@@ -1,0 +1,79 @@
+{
+  "paper_id": "2024.emnlp-main.856",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.856::sections::4.1",
+      "paper_id": "2024.emnlp-main.856",
+      "section_number": "4.1",
+      "section_title": "setup",
+      "normalized_section_title": "setup",
+      "window_text": "Models. We choose several LLMs from both open- and closed-source models, aiming to provide\n\na comprehensive evaluation, following (Huang et al., 2024a; Zhuang et al., 2023). Specifically, we choose Mistral-7B (Mistral-7B-v0.2) (Jiang et al., 2023), the LLaMa3 series (AI@Meta, 2024) (Meta-Llama-3-8B/70B-Instruct), and the Qwen series (Bai et al., 2023) (Qwen1.5-7B/14B/72B-Chat) from open-source LLMs. Besides that, we also select GPT3.5 (gpt-3.5-turbo) and GPT4 (gpt-4o) from closed-source LLMs. We also tried other models such as LLaMA2-7B or Vicuna but we find it difficult for them to output in the required format.\n\nImplementation Details. We set the temperature and top p as 0.1 to reduce randomness. The experiments of open-source models are run on NVIDIA A100 GPUs and those of closed-source models are fulfilled by APIs of OpenAI. To address the limitations imposed by the varying context windows of different LLMs, we adopt a hierarchical prompting approach. First, we prompt the LLMs to identify the relevant APP. Once the appropriate APP is determined, we then provide the LLMs with only the API descriptions of these specific APPs.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.856::appendix::B",
+      "paper_id": "2024.emnlp-main.856",
+      "section_number": "B",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "window_text": "Table 9: Prompts to select APP first.   \n\n<table><tr><td>App</td><td>APIs</td></tr><tr><td>Rents</td><td>getcarsavailable, reservecar, getride</td></tr><tr><td>Hotels</td><td>searchhouse, bookhouse</td></tr><tr><td>Services</td><td>book_stylist Appointment, find_stylist Provider, book_therapist Appointment, find_therapist Appointment</td></tr><tr><td>Restaurant</td><td>reserverestaurant, findrestaurants</td></tr><tr><td>Movies</td><td>buymovietickets, findmovies, gettimesformmovie, reviewmovies</td></tr><tr><td>Trains</td><td>gettrain tickets, findtrains</td></tr><tr><td>Events</td><td>findevents, buyevent tickets</td></tr><tr><td>Travel</td><td>findattractions</td></tr><tr><td>Buses</td><td>findbus, buybusticket</td></tr><tr><td>Flights</td><td>searchonewayflight, searchroundtripflights</td></tr><tr><td>Payment</td><td>requestpayment, makepayment</td></tr><tr><td>Music</td><td>playmedia, lookupmusic</td></tr><tr><td>Weather</td><td>getweather</td></tr></table>\n\nTable 8: List of All Apps and their corresponding APIs in the MetaBench.\n\nYour task is to determine the required App list according the description of each App and user requirements.\n\nHere is the information about all accessible Apps: {app_desc}\n\nMake your response short and concise. Your ONLY need to return needed app names and your output MUST follow this format: [app1, app2, ...]\n\nUser Instruction: {userInstruction}\n\nYour task is to generate App name and corresponding API calls to complete the user requirements according to given descriptions of all Apps and APIs.\n\nHere is the information about all accessible Apps and corresponding APIs. {app_api_list}\n\nYour output should follow the format as follows:  \napp1: [returned_argument1, returned Argument2, ... =  \napp1_api1(#argument1=value1, #argument2=value2, ...) ]  \napp1: [returned_argument1, returned Argument2, ... =  \napp1_api2(#argument1=value1, #argument2=value2, ...) ]  \napp2: [returned_argument1, returned Argument2, ... =  \napp2_api1(#argument1=value1, #argument2=value2, ...) ]Here are explanations: 1. API Naming Convention\n\n- The API call format is [returned_argument1, returned_argument2, ... = app1_api1(#argument1=value1, #argument2=value2,...)].\n\n- app1 signifies the name of app1, and app1_api1 signifies the name of api1 in the app1.2. Arguments - argument1 is the first input arguments for the corresponding api, and so on.\n\n- returned Argument1 is the first output arguments from the corresponding api, and so on.\n\n- Input arguments include both required and optional arguments as described in the corresponding API description of App.\n\n- The order and names of input and returned arguments must exactly match the given description.3. Values of Input Arguments - If specified by the user, replace the placeholder with the actual value.\n\n- If not specified by the user, omit the optional arguments from the API call.\n\n- If an argument value is dependent on another API's output, use the name of the returned argument as the value.\n\n- There are no default values for any arguments. All required arguments must be provided by the user or through dependencies on other APIs' outputs.\n\n- You should be careful about the date value, you need to infer it based on current date \"2019-03-01\".4. Order of Execution: - Execute APIs in a sequence that respects their dependencies. For example, if api2 requires an output from api1, ensure api1 is executed before api2.\n\n- Handle cases where multiple APIs' outputs are required for a single API's input by waiting for all dependent APIs to execute before calling the dependent API.Example: If api2 in app1 depends on the output of api1 in app1 and an optional argument is not provided by the user:  \napp1: [output1 = api1_api1(#argument1=value1)]  \napp1: [output2 = api1_api2(#argument2=value1)]\n\nIf api3 in app2 requires outputs from both api1 in app1 and api2 in app1:\n\napp1: [output1 = app1_api1(#argument1=value1)]  \napp1: [output2 = app1_api2(#argument2=value1)]  \napp2: [output3 = app2_api3(#argument3=value1, #argument4=value2)]\n\nUser Instruction: {userInstruction}\n\nTable 11: The Exact Match (EM) results of different LLMs on MetaBench. Bold highlights the best score among all models, and underline underscores the best score under the same model scale   \n\n<table><tr><td rowspan=\"2\">Models</td><td colspan=\"2\">SS</td><td colspan=\"2\">SM</td><td colspan=\"2\">MS</td><td colspan=\"2\">MM</td></tr><tr><td>APP</td><td>API</td><td>APP</td><td>API</td><td>APP</td><td>API</td><td>APP</td><td>API</td></tr><tr><td>Mistral-7B</td><td>27.27</td><td>14.14</td><td>19.50</td><td>4.50</td><td>1.50</td><td>1.00</td><td>2.00</td><td>0.00</td></tr><tr><td>Vicuna-13B</td><td>31.82</td><td>21.21</td><td>7.00</td><td>3.00</td><td>1.50</td><td>0.50</td><td>0.00</td><td>0.00</td></tr><tr><td>LLaMA3-8B</td><td>47.98</td><td>47.47</td><td>19.00</td><td>17.50</td><td>12.50</td><td>9.50</td><td>4.50</td><td>5.50</td></tr><tr><td>LLaMA3-70B</td><td>60.94</td><td>58.33</td><td>51.00</td><td>49.00</td><td>12.00</td><td>6.50</td><td>16.00</td><td>8.50</td></tr><tr><td>QWen1.5-7B</td><td>28.28</td><td>12.63</td><td>11.50</td><td>4.00</td><td>2.50</td><td>0.50</td><td>4.00</td><td>1.50</td></tr><tr><td>QWen1.5-14B</td><td>56.57</td><td>41.92</td><td>10.50</td><td>10.00</td><td>5.60</td><td>4.00</td><td>1.50</td><td>1.50</td></tr><tr><td>QWen1.5-72B</td><td>71.88</td><td>32.29</td><td>38.50</td><td>9.50</td><td>2.47</td><td>1.85</td><td>4.50</td><td>3.50</td></tr><tr><td>GPT-3.5</td><td>44.44</td><td>52.02</td><td>30.50</td><td>31.00</td><td>31.00</td><td>19.00</td><td>18.50</td><td>19.50</td></tr><tr><td>GPT-4o</td><td>79.59</td><td>78.06</td><td>55.50</td><td>51.50</td><td>35.50</td><td>26.50</td><td>29.50</td><td>24.00</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.856::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": null,
+      "count_text": "",
+      "evidence": "Models. We choose several LLMs from both open- and closed-source models, aiming to provide\n\na comprehensive evaluation, following (Huang et al., 2024a; Zhuang et al., 2023). Specifically, we choose Mistral-7B (Mistral-7B-v0.2) (Jiang et al., 2023), the LLaMa3 series (AI@Meta, 2024) (Meta-Llama-3-8B/70B-Instruct), and the Qwen series (Bai et al., 2023) (Qwen1.5-7B/14B/72B-Chat) from open-source LLMs. Besides that, we also select GPT3.5 (gpt-3.5-turbo) and GPT4 (gpt-4o) from closed-source LLMs. We also tried other models such as LLaMA2-7B or Vicuna but we find it difficult for them to output in the required format.\n\nImplementation Details. We set the temperature and top p as 0.1 to reduce randomness. The experiments of open-source models are run on NVIDIA A100 GPUs and those of closed-source models are fulfilled by APIs of OpenAI. To address the limitations imposed by the varying context windows of different LLMs, we adopt a hierarchical prompting approach. First, we prompt the LLMs to identify the relevant APP. Once the appropriate APP is determined, we then provide the LLMs with only the API descriptions of these specific APPs.",
+      "section_number": "4.1",
+      "section_title": "setup",
+      "normalized_section_title": "setup"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.856::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100",
+      "benchmark_hardware_name": null,
+      "count": null,
+      "count_text": "",
+      "section_number": "4.1",
+      "section_title": "setup",
+      "normalized_section_title": "setup",
+      "evidence": "Models. We choose several LLMs from both open- and closed-source models, aiming to provide\n\na comprehensive evaluation, following (Huang et al., 2024a; Zhuang et al., 2023). Specifically, we choose Mistral-7B (Mistral-7B-v0.2) (Jiang et al., 2023), the LLaMa3 series (AI@Meta, 2024) (Meta-Llama-3-8B/70B-Instruct), and the Qwen series (Bai et al., 2023) (Qwen1.5-7B/14B/72B-Chat) from open-source LLMs. Besides that, we also select GPT3.5 (gpt-3.5-turbo) and GPT4 (gpt-4o) from closed-source LLMs. We also tried other models such as LLaMA2-7B or Vicuna but we find it difficult for them to output in the required format.\n\nImplementation Details. We set the temperature and top p as 0.1 to reduce randomness. The experiments of open-source models are run on NVIDIA A100 GPUs and those of closed-source models are fulfilled by APIs of OpenAI. To address the limitations imposed by the varying context windows of different LLMs, we adopt a hierarchical prompting approach. First, we prompt the LLMs to identify the relevant APP. Once the appropriate APP is determined, we then provide the LLMs with only the API descriptions of these specific APPs.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "a100_shorthand_rule",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "count_missing"
+    }
+  ],
+  "review_flags": [],
+  "pred_result": {
+    "sec": [
+      "4.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100",
+        "num": null
+      }
+    ]
+  }
+}

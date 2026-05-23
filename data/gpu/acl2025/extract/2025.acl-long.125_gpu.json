@@ -1,0 +1,183 @@
+{
+  "paper_id": "2025.acl-long.125",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.125::sections::3.1",
+      "paper_id": "2025.acl-long.125",
+      "section_number": "3.1",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "Notation: For fine-tuning a large language model (LLM) $f_{\\theta}$ , parameterized by $\\theta$ , we consider a dataset $\\mathcal{D} = \\{\\pmb{x}_1, \\pmb{x}_2, \\dots, \\pmb{x}_N\\}$ , where each $\\pmb{x}_i$ is a sequence of tokens $x_1, x_2, \\dots, x_M$ , with $x_i \\in \\mathbb{N}$ . Each sample $\\pmb{x}_i$ serves as an anchor and is associated with auxiliary data $\\mathcal{A}_i$ , which contain two sets related to a target attribute $\\mathcal{T}$ (e.g., toxicity): a positive set $\\mathcal{P}_i (\\mathbb{1}_{\\mathcal{T}}(\\pmb{x}) = 1)$ and a negative set $\\mathcal{N}_i (\\mathbb{1}_{\\mathcal{T}}(\\pmb{y}) = 0)$ , where the negatives are semantically similar to $\\pmb{x}_i$ . We require $\\mathcal{A}_i = \\mathcal{P}_i \\cup \\mathcal{N}_i$ and $\\mathcal{P}_i \\cap \\mathcal{N}_i = \\emptyset$ .\n\nPerplexity Definition: Given an autoregressive LLM, let $p(x_{i} | x_{< i})$ be the conditional likelihood of token $x_{i}$ given previous tokens. Standardizing w.r.t. sequence length $M$ , the perplexity of a sentence $x$ is defined as:\n\n$$\n\\phi (\\boldsymbol {x}) = \\exp \\left\\{- \\frac {1}{M} \\sum_ {i = 1} ^ {M} \\log p \\left(x _ {i} \\mid x _ {<   i}\\right) \\right\\} \\tag {1}\n$$\n\nObjective: The training objective encourages the model to decrease the perplexity of positive (nontoxic) samples and increase the perplexity of negative (toxic) samples—enabling robust discrimination even when negatives are closely matched to positives in semantics and form. Formally,\n\n$$\n\\arg \\min  _ {\\theta} - \\sum_ {i = 1} ^ {N} \\log J \\left(\\boldsymbol {x} _ {i}; \\mathcal {A} _ {i}, \\theta\\right), \\tag {2}\n$$\n\nwhere $J(\\pmb{x}_i; \\mathcal{A}_i, \\theta)$ is a prototype-based contrastive score (see below) that reflects how well the model\n\n![](images/258eebce1f63f5af63e6c5e6cd114f4842d880de74056b79877072c7a43be300.jpg)  \nFIGURE 2. Schematic illustration of the proposed approach, from data generation to training. Left: Data generation pipeline: similar (blue) and toxic (orange) samples are created in a self-supervised manner via LLM prompting. Right: Fine-tuning: the model contracts the perplexity of positive samples toward their prototype mean and pushes toxic samples away. Dark circles indicate randomly selected samples for a training step.\n\nclusters positives and separates negatives in perplexity space. As illustrated in Fig. 2, the model is trained so that positive samples are pulled toward a prototype mean (i.e., average perplexity), while negatives are pushed away in perplexity space. Each training step samples a subset of positives and negatives for computational efficiency.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.125::sections::4",
+      "paper_id": "2025.acl-long.125",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.125::sections::4.1",
+      "paper_id": "2025.acl-long.125",
+      "section_number": "4.1",
+      "section_title": "setup",
+      "normalized_section_title": "setup",
+      "window_text": "The proposed framework is evaluated in a toxicity removal setup. To this end, the target attribute $\\mathcal{T}$ is the toxicity of content. Specifically, we create the synthetic dataset $\\mathcal{A}$ by prompting an instruction-tuned LLM, here Vicuna-13B (uncensored) (Chiang et al., 2023) is chosen. In general, any instruction-tuned LLM can be taken. However, to create adversarial examples, using an LLM trained on an uncensored corpus containing toxic content is necessary.\n\nFor creating the data, we leverage the open source SafeNLPdataset (Hosseini et al., 2023). Specifically, we leverage the \"positive\" samples to create the hard negatives and more positives (paraphrases). To this end, we prompt a proxy LLM to create paraphrases and adversarial samples. For creating the paraphrased samples in $\\mathcal{P}$ , we use the prompt Paraphrase the following sentences: <sentence>. For creating the adversarial samples in $\\mathcal{N}$ , we use the prompt Paraphrase the following sentence in a very toxic way. Make sure each sentence is toxic: <sentence>. It should be noted for testing on\n\nSafeNLP, only the \"negative\" samples are used (not to be confused with the adversarial samples created for training). Fine-tuning is conducted on several non-censored language models with and without instruction-tuning. Fine-tuning is repeated 5 times with different random seeds.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.125::sections::4.2",
+      "paper_id": "2025.acl-long.125",
+      "section_number": "4.2",
+      "section_title": "contrastive fine-tuning",
+      "normalized_section_title": "contrastive fine-tuning",
+      "window_text": "Training is started from a pre-trained transformer autoregressive decoder LM. Specifically, we employ the Hugging Face (Wolf et al., 2020) library for all transformer architectures. Fine-tuning of the models is conducted with a learning rate of $2.2e - 5$ , $\\tau \\in \\{0.1,0.2\\}$ , $\\alpha \\in \\{1.0,1.1\\}$ for 1 epoch with a batch size of 2 in combination with 3 gradient accumulation steps using low-rank approximation (LoRA) (Hu et al., 2022) and 4-bit quantization - see Tab. 9 in the appendix for details. To determine the hyperparameters, an initial grid search was conducted to assess the magnitude for $|\\mathcal{P}| = |\\mathcal{N}| = \\{1,..,9\\}$ and for $\\tau = \\{0.1,0.15,0.25,0.5,1.0,1.5\\}$ . Final set sizes for positives is $|\\mathcal{P}| = \\{1,2,3,5\\}$ and $|\\mathcal{N}| = \\{5,7,8\\}$ . Depending on the LLM, good configurations are either $|\\mathcal{P}| = |\\mathcal{N}| = 5$ , $|\\mathcal{P}| = \\{2,3\\}$ and $|\\mathcal{N}| = \\{7,8\\}$ . The training was conducted using an NVIDIA A10G with a training time of around $1.5h$ for a Mistral-7b-v01. The overall GPU budget for experimentation and hyperparameter optimization is estimated at $2.5k$ hours.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.125::sections::4.3",
+      "paper_id": "2025.acl-long.125",
+      "section_number": "4.3",
+      "section_title": "evaluation",
+      "normalized_section_title": "evaluation",
+      "window_text": "Evaluation is conducted on the open source SafeNLP dataset (Hosseini et al., 2023), which is a variant of the ToxiGen (Hartvigsen et al., 2022) benchmark, whereby we largely follow the existing test protocol. Given a sentence comprising toxic and racist statements, the LLM is prompted to continue the sequence. Subsequently, the generated output is assessed with an encoder-only LLM (HateBERT (Caselli et al., 2021)). For text generation, we used top-p sampling (Nucleus Sampling) (Holtzman et al., 2020) with parameter $p = 0.9$ and temperature of 0.1. We restrict generation to 128 tokens. Furthermore, we expand the protocol by measuring the semantic similarity of the input context and the output sequence using the cosine similarity of the embeddings. To this end, we leverage another encoder-only LLM (SentenceBERT (Reimers and Gurevych, 2019) to produce sentence embeddings. Specifically, we select mean-pooling for embedding generation. The semantic\n\nsimilarity assessment is integrated to determine the nature of the reply. We deem the semantic similarity assessment necessary to observe model output that is trivial, non-toxic, or unrelated answers, e.g., by generating random words – featuring a very low similarity score w.r.t. input context. For evaluation, we use the open source open-instruct toolkit (Wang et al., 2023; Ivison et al., 2023). We evaluate integration of CP into several LLMs: Falcon-7b (Al-mazrouei et al., 2023), Llama-2-7b (Touvron et al., 2023), Mistral-7b (Jiang et al., 2023a). The following two distinct LLM setups are considered:\n\nWhite-box: This corresponds to the conventional LLM use. The evaluation test data $\\pmb{x}$ is directly fed to the trained LLM $f_{\\theta}(\\pmb{x}) = \\pmb{o}$ , and the output $\\pmb{o}$ is assessed in terms of toxicity. As the task is known as apriori and model parameters are optimized w.r.t. the task, this setup is referred to as white-box.\n\nBlack-box: In this mode, the trained LLM $f_{\\theta}$ can act as a detoxification paraphraseer for the output of another primary decoder LLM (instruction-tuned model) or conditional generator $g$ , given the input model $\\pmb{x}$ . The output of $f_{\\theta}(g(\\pmb{x})) = \\pmb{o}$ is assessed regarding toxicity. Since only the model parameters responsible for the generation of detoxifying paraphrases are known, whereas the input model can be replaced in an arbitrary plug-and-play fashion, we refer to this setup as black-box.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.125::appendix::A",
+      "paper_id": "2025.acl-long.125",
+      "section_number": "A",
+      "section_title": "appendix",
+      "normalized_section_title": "appendix",
+      "window_text": "System: You are an AI assistant who has to rate the quality of sentence continuation. You are given a $\\hookrightarrow$ prefix sentence that contains toxic contents and different continuations indicated by \"Query:\"   \nDifferent continuations of the start sentence are indicated by a number in brackets e.g., [1]   \n$\\leftrightarrow$ First continuation. [2] Second continuation. Your job is to judge which of the continuations   \n$\\leftrightarrow$ is the best in terms of being non-toxic and semantically meaningful. If sentence n-th sentence   \n$\\hookrightarrow$ is the best in terms of semantic and non-toxicity wrt to the input then return [n]. If none of   \n$\\leftrightarrow$ the options are none toxic, choose the least conflicting option. An empty answer is not a   \n$\\hookrightarrow$ valid option. You have to pick one option.User: Query: <Input Sentence>   \n[1.]<Option 1>   \n[2.] <Option 2>   \n[N.] <Option N>\n\nFIGURE 5. LLM-as-judge Prompt",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.125::sections::4.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A10G",
+      "count": null,
+      "count_text": "",
+      "evidence": "Training is started from a pre-trained transformer autoregressive decoder LM. Specifically, we employ the Hugging Face (Wolf et al., 2020) library for all transformer architectures. Fine-tuning of the models is conducted with a learning rate of $2.2e - 5$ , $\\tau \\in \\{0.1,0.2\\}$ , $\\alpha \\in \\{1.0,1.1\\}$ for 1 epoch with a batch size of 2 in combination with 3 gradient accumulation steps using low-rank approximation (LoRA) (Hu et al., 2022) and 4-bit quantization - see Tab. 9 in the appendix for details. To determine the hyperparameters, an initial grid search was conducted to assess the magnitude for $|\\mathcal{P}| = |\\mathcal{N}| = \\{1,..,9\\}$ and for $\\tau = \\{0.1,0.15,0.25,0.5,1.0,1.5\\}$ . Final set sizes for positives is $|\\mathcal{P}| = \\{1,2,3,5\\}$ and $|\\mathcal{N}| = \\{5,7,8\\}$ . Depending on the LLM, good configurations are either $|\\mathcal{P}| = |\\mathcal{N}| = 5$ , $|\\mathcal{P}| = \\{2,3\\}$ and $|\\mathcal{N}| = \\{7,8\\}$ . The training was conducted using an NVIDIA A10G with a training time of around $1.5h$ for a Mistral-7b-v01. The overall GPU budget for experimentation and hyperparameter optimization is estimated at $2.5k$ hours.",
+      "section_number": "4.2",
+      "section_title": "contrastive fine-tuning",
+      "normalized_section_title": "contrastive fine-tuning"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.125::sections::4.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A10G",
+      "cleaned_hardware_name": "nvidia a10g",
+      "normalized_hardware_name": "NVIDIA A10G",
+      "benchmark_hardware_name": "NVIDIA A10G",
+      "count": null,
+      "count_text": "",
+      "section_number": "4.2",
+      "section_title": "contrastive fine-tuning",
+      "normalized_section_title": "contrastive fine-tuning",
+      "evidence": "Training is started from a pre-trained transformer autoregressive decoder LM. Specifically, we employ the Hugging Face (Wolf et al., 2020) library for all transformer architectures. Fine-tuning of the models is conducted with a learning rate of $2.2e - 5$ , $\\tau \\in \\{0.1,0.2\\}$ , $\\alpha \\in \\{1.0,1.1\\}$ for 1 epoch with a batch size of 2 in combination with 3 gradient accumulation steps using low-rank approximation (LoRA) (Hu et al., 2022) and 4-bit quantization - see Tab. 9 in the appendix for details. To determine the hyperparameters, an initial grid search was conducted to assess the magnitude for $|\\mathcal{P}| = |\\mathcal{N}| = \\{1,..,9\\}$ and for $\\tau = \\{0.1,0.15,0.25,0.5,1.0,1.5\\}$ . Final set sizes for positives is $|\\mathcal{P}| = \\{1,2,3,5\\}$ and $|\\mathcal{N}| = \\{5,7,8\\}$ . Depending on the LLM, good configurations are either $|\\mathcal{P}| = |\\mathcal{N}| = 5$ , $|\\mathcal{P}| = \\{2,3\\}$ and $|\\mathcal{N}| = \\{7,8\\}$ . The training was conducted using an NVIDIA A10G with a training time of around $1.5h$ for a Mistral-7b-v01. The overall GPU budget for experimentation and hyperparameter optimization is estimated at $2.5k$ hours.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.125::sections::3.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3.1",
+      "section_title": "preliminaries",
+      "evidence": "Notation: For fine-tuning a large language model (LLM) $f_{\\theta}$ , parameterized by $\\theta$ , we consider a dataset $\\mathcal{D} = \\{\\pmb{x}_1, \\pmb{x}_2, \\dots, \\pmb{x}_N\\}$ , where each $\\pmb{x}_i$ is a sequence of tokens $x_1, x_2, \\dots, x_M$ , with $x_i \\in \\mathbb{N}$ . Each sample $\\pmb{x}_i$ serves as an anchor and is associated with auxiliary data $\\mathcal{A}_i$ , which contain two sets related to a target attribute $\\mathcal{T}$ (e.g., toxicity): a positive set $\\mathcal{P}_i (\\mathbb{1}_{\\mathcal{T}}(\\pmb{x}) = 1)$ and a negative set $\\mathcal{N}_i (\\mathbb{1}_{\\mathcal{T}}(\\pmb{y}) = 0)$ , where the negatives are semantically similar to $\\pmb{x}_i$ . We require $\\mathcal{A}_i = \\mathcal{P}_i \\cup \\mathcal{N}_i$ and $\\mathcal{P}_i \\cap \\mathcal{N}_i = \\emptyset$ .\n\nPerplexity Definition: Given an autoregressive LLM, let $p(x_{i} | x_{< i})$ be the conditional likelihood of token $x_{i}$ given previous tokens. Standardizing w.r.t. sequence length $M$ , the perplexity of a sentence $x$ is defined as:\n\n$$\n\\phi (\\boldsymbol {x}) = \\exp \\left\\{- \\frac {1}{M} \\sum_ {i = 1} ^ {M} \\log p \\left(x _ {i} \\mid x _ {<   i}\\right) \\right\\} \\tag {1}\n$$\n\nObjective: The training objective encourages the model to decrease the perplexity of positive (nontoxic) samples and increase the perplexity of negative (toxic) samples—enabling robust discrimination even when negatives are closely matched to positives in semantics and form. Formally,\n\n$$\n\\arg \\min  _ {\\theta} - \\sum_ {i = 1} ^ {N} \\log J \\left(\\boldsymbol {x} _ {i}; \\mathcal {A} _ {i}, \\theta\\right), \\tag {2}\n$$\n\nwhere $J(\\pmb{x}_i; \\mathcal{A}_i, \\theta)$ is a prototype-based contrastive score (see below) that reflects how well the model\n\n![](images/258eebce1f63f5af63e6c5e6cd114f4842d880de74056b79877072c7a43be300.jpg)  \nFIGURE 2. Schematic illustration of the proposed approach, from data generation to training. Left: Data generation pipeline: similar (blue) and toxic (orange) samples are created in a self-supervised manner via LLM prompting. Right: Fine-tuning: the model contracts the perplexity of positive samples toward their prototype mean and pushes toxic samples away. Dark circles indicate randomly selected samples for a training step.\n\nclusters positives and separates negatives in perplexity space. As illustrated in Fig. 2, the model is trained so that positive samples are pulled toward a prototype mean (i.e., average perplexity), while negatives are pushed away in perplexity space. Each training step samples a subset of positives and negatives for computational efficiency."
+    },
+    {
+      "source_window_id": "2025.acl-long.125::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.125::sections::4.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "setup",
+      "evidence": "The proposed framework is evaluated in a toxicity removal setup. To this end, the target attribute $\\mathcal{T}$ is the toxicity of content. Specifically, we create the synthetic dataset $\\mathcal{A}$ by prompting an instruction-tuned LLM, here Vicuna-13B (uncensored) (Chiang et al., 2023) is chosen. In general, any instruction-tuned LLM can be taken. However, to create adversarial examples, using an LLM trained on an uncensored corpus containing toxic content is necessary.\n\nFor creating the data, we leverage the open source SafeNLPdataset (Hosseini et al., 2023). Specifically, we leverage the \"positive\" samples to create the hard negatives and more positives (paraphrases). To this end, we prompt a proxy LLM to create paraphrases and adversarial samples. For creating the paraphrased samples in $\\mathcal{P}$ , we use the prompt Paraphrase the following sentences: <sentence>. For creating the adversarial samples in $\\mathcal{N}$ , we use the prompt Paraphrase the following sentence in a very toxic way. Make sure each sentence is toxic: <sentence>. It should be noted for testing on\n\nSafeNLP, only the \"negative\" samples are used (not to be confused with the adversarial samples created for training). Fine-tuning is conducted on several non-censored language models with and without instruction-tuning. Fine-tuning is repeated 5 times with different random seeds."
+    },
+    {
+      "source_window_id": "2025.acl-long.125::sections::4.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.3",
+      "section_title": "evaluation",
+      "evidence": "Evaluation is conducted on the open source SafeNLP dataset (Hosseini et al., 2023), which is a variant of the ToxiGen (Hartvigsen et al., 2022) benchmark, whereby we largely follow the existing test protocol. Given a sentence comprising toxic and racist statements, the LLM is prompted to continue the sequence. Subsequently, the generated output is assessed with an encoder-only LLM (HateBERT (Caselli et al., 2021)). For text generation, we used top-p sampling (Nucleus Sampling) (Holtzman et al., 2020) with parameter $p = 0.9$ and temperature of 0.1. We restrict generation to 128 tokens. Furthermore, we expand the protocol by measuring the semantic similarity of the input context and the output sequence using the cosine similarity of the embeddings. To this end, we leverage another encoder-only LLM (SentenceBERT (Reimers and Gurevych, 2019) to produce sentence embeddings. Specifically, we select mean-pooling for embedding generation. The semantic\n\nsimilarity assessment is integrated to determine the nature of the reply. We deem the semantic similarity assessment necessary to observe model output that is trivial, non-toxic, or unrelated answers, e.g., by generating random words – featuring a very low similarity score w.r.t. input context. For evaluation, we use the open source open-instruct toolkit (Wang et al., 2023; Ivison et al., 2023). We evaluate integration of CP into several LLMs: Falcon-7b (Al-mazrouei et al., 2023), Llama-2-7b (Touvron et al., 2023), Mistral-7b (Jiang et al., 2023a). The following two distinct LLM setups are considered:\n\nWhite-box: This corresponds to the conventional LLM use. The evaluation test data $\\pmb{x}$ is directly fed to the trained LLM $f_{\\theta}(\\pmb{x}) = \\pmb{o}$ , and the output $\\pmb{o}$ is assessed in terms of toxicity. As the task is known as apriori and model parameters are optimized w.r.t. the task, this setup is referred to as white-box.\n\nBlack-box: In this mode, the trained LLM $f_{\\theta}$ can act as a detoxification paraphraseer for the output of another primary decoder LLM (instruction-tuned model) or conditional generator $g$ , given the input model $\\pmb{x}$ . The output of $f_{\\theta}(g(\\pmb{x})) = \\pmb{o}$ is assessed regarding toxicity. Since only the model parameters responsible for the generation of detoxifying paraphrases are known, whereas the input model can be replaced in an arbitrary plug-and-play fashion, we refer to this setup as black-box."
+    },
+    {
+      "source_window_id": "2025.acl-long.125::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "appendix",
+      "evidence": "System: You are an AI assistant who has to rate the quality of sentence continuation. You are given a $\\hookrightarrow$ prefix sentence that contains toxic contents and different continuations indicated by \"Query:\"   \nDifferent continuations of the start sentence are indicated by a number in brackets e.g., [1]   \n$\\leftrightarrow$ First continuation. [2] Second continuation. Your job is to judge which of the continuations   \n$\\leftrightarrow$ is the best in terms of being non-toxic and semantically meaningful. If sentence n-th sentence   \n$\\hookrightarrow$ is the best in terms of semantic and non-toxicity wrt to the input then return [n]. If none of   \n$\\leftrightarrow$ the options are none toxic, choose the least conflicting option. An empty answer is not a   \n$\\hookrightarrow$ valid option. You have to pick one option.User: Query: <Input Sentence>   \n[1.]<Option 1>   \n[2.] <Option 2>   \n[N.] <Option N>\n\nFIGURE 5. LLM-as-judge Prompt"
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A10G",
+        "num": null
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.125\\auto\\full.md",
+    "source_md_sha256": "e97c99cb4cf8214757737bd7ed51373cc89b3b74e4b9a3ce87d0b682f6b87faa",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "ad96f3b6ca003898756db958dd17467668c845886fa3f1f835d26a866c8af3f0"
+  }
+}

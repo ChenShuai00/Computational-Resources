@@ -1,0 +1,141 @@
+{
+  "paper_id": "2023.acl-long.896",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.896::sections::4.2",
+      "paper_id": "2023.acl-long.896",
+      "section_number": "4.2",
+      "section_title": "pre-training strategies",
+      "normalized_section_title": "pre-training strategies",
+      "window_text": "In addition to the analysis on the size and the sources of data, we also seek to evaluate three training strategies of PLMs for the medical domain:\n\n- Training a full model from scratch, including the subword tokenizer.   \n- Continuing the pre-training of the state-of-the-art language model for French, called CamembERT, on our medical-specific data while keeping the initial tokenizer.   \n- Continuing the pre-training of a state-of-the-art domain specific language model for medical but here in English, called PubMedBERT, on our French data while keeping the initial tokenizer.\n\nRegarding the last strategy, our objective is to compare the performance of an English medical model further pre-trained on our French medical data, against another one based on a generic French model. Indeed, the medical domains share many terms across languages that make relevant the mixture of resources from two languages.\n\nTable 4 summarizes all the configurations evaluated in this paper, integrating both the study of data size and pre-training strategies.\n\nTable 4: List of studied pre-trained model configurations.   \n\n<table><tr><td>Model name</td><td>Strategy</td><td>Corpus</td></tr><tr><td>DrBERT</td><td>From scratch</td><td>NACHOSlarge</td></tr><tr><td>DrBERT</td><td>From scratch</td><td>NACHOSsmall</td></tr><tr><td>ChuBERT</td><td>From scratch</td><td>NBDWsmall</td></tr><tr><td>ChuBERT</td><td>From scratch</td><td>NBDWmixed</td></tr><tr><td>CamemBERT</td><td>continual pre-training</td><td>NACHOSsmall</td></tr><tr><td>PubMedBERT</td><td>continual pre-training</td><td>NACHOSsmall</td></tr><tr><td>CamemBERT</td><td>continual pre-training</td><td>NBDWsmall</td></tr></table>\n\nModel architecture All models pre-trained from scratch use the CamemBERT<sub>base</sub> configuration, which is the same as RoBERTa<sub>base</sub> architecture (12 layers, 768 hidden dimensions, 12 attention heads, 110M parameters). We did not train the large version of our models due to resources limitations.\n\nLanguage modeling We train the models on the Masked Language Modeling (MLM) task using HuggingFace library (Wolf et al., 2019). It consists of randomly replacing a subset of tokens from the sequence by a special token, and asking the model to predict them using cross-entropy loss. In BERT and RoBERTa models (including CamemBERT), $15\\%$ of the tokens are randomly selected. Of those selected tokens, $80\\%$ are replaced with the <mask> token, $10\\%$ remain unchanged and $10\\%$ are randomly replaced by a token from the vocabulary. We keep this masking probability of $15\\%$ for the training of our models.\n\nOptimization & Pre-training We optimize the models for 80k steps with batch sizes of 4,096 sequences, each sequence filled with 512 tokens, allowing to process 2.1M tokens per step. The learning rate is warmed up linearly for 10k steps, going up from zero to the initial $5 \\times 10^{-5}$ learning rate. Models are trained on 128 Nvidia V100 32 GB GPUs for 20 hours on Jean Zay supercomputer. We use mixed precision training (FP16) (Micikevicius et al., 2017) to reduce the memory footprint, allowing us to enlarge the batch size to 32 sequences on each GPU.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2023.acl-long.896::sections::5.1",
+      "paper_id": "2023.acl-long.896",
+      "section_number": "5.1",
+      "section_title": "publicly-available tasks",
+      "normalized_section_title": "publicly-available tasks",
+      "window_text": "ESSAIS / CAS: French Corpus with Clinical Cases The ESSAIS (Dalloux et al., 2021) and CAS (Grabar et al., 2018) corpora respectively contain 13,848 and 7,580 clinical cases in French. Some clinical cases are associated with discussions. A subset of the whole set of cases is enriched with morpho-syntactic (part-of-speech (POS) tagging, lemmatization) and semantic (UMLS concepts, negation, uncertainty) annotations. In our case, we focus only on the POS tagging task.\n\nFrenchMedMCQA The FrenchMedMCQA corpus (Labrak et al., 2022) is a publicly available Multiple-Choice Question Answering (MCQA) dataset in French for medical domain. It contains 3,105 questions coming from real exams of the French medical specialization diploma in pharmacy, integrating single and multiple answers.\n\nQUAERO French Medical Corpus The  \nQUAERO French Medical Corpus (Néveol et al.,\n\nTable 5: Corpus, tasks and metrics synthesis for evaluating medical-specific models.   \n\n<table><tr><td>Thematic / Corpus name</td><td>Task</td><td>Metric</td><td>Train</td><td>Dev</td><td>Test</td></tr><tr><td colspan=\"6\">Public Corpus</td></tr><tr><td>ESSAIS (Dalloux et al., 2021)</td><td>POS Tagging</td><td>Macro F1</td><td>9,693</td><td>2,077</td><td>2,078</td></tr><tr><td>CAS: French Corpus with Clinical Cases (Grabar et al., 2018)</td><td>POS Tagging</td><td>Macro F1</td><td>5,306</td><td>1,137</td><td>1,137</td></tr><tr><td>MUSCA-DET - Social Determinants of Health extraction (Task 1)</td><td>Nested NER</td><td>Macro F1</td><td>19,861</td><td>2,207</td><td>5,518</td></tr><tr><td>MUSCA-DET - Social Determinants of Health extraction (Task 2)</td><td>Multi-label Classification</td><td>Macro F1</td><td>19,861</td><td>2,207</td><td>5,518</td></tr><tr><td>QUAERO French Medical Corpus - EMEA (Névél et al., 2014)</td><td>Nested NER</td><td>Weighted F1</td><td>11</td><td>12</td><td>15</td></tr><tr><td>QUAERO French Medical Corpus - MEDLINE (Névél et al., 2014)</td><td>Nested NER</td><td>Weighted F1</td><td>833</td><td>832</td><td>833</td></tr><tr><td>FrenchMedMCQA (Labrak et al., 2022)</td><td>MCQA</td><td>EMR / Hamming Score</td><td>2,171</td><td>312</td><td>622</td></tr><tr><td colspan=\"6\">Private Corpus</td></tr><tr><td>Medical report acute heart failure structuration</td><td>Named Entity Recognition</td><td>Macro F1</td><td>2,527</td><td>281</td><td>703</td></tr><tr><td>Acute heart failure (aHF) classification</td><td>Binary Classification</td><td>Macro F1</td><td>1,179</td><td>132</td><td>328</td></tr><tr><td>Technical Specialties Sorting</td><td>Classification Multi-class</td><td>Macro F1</td><td>4,413</td><td>1,470</td><td>1,473</td></tr><tr><td>Medical report structuration prescriptions</td><td>Named Entity Recognition</td><td>Macro F1</td><td>61</td><td>15</td><td>26</td></tr></table>\n\n2014) introduces an extensive corpus of biomedical documents annotated at the entity and concept levels to provide NER and classification tasks. Three text genres are covered, comprising a total of 103,056 words obtained either from EMEA or MEDLINE. Ten entity categories corresponding to UMLS (Bodenreider, 2004) Semantic Groups were annotated, using automatic pre-annotations validated by trained human annotators. Overall, a total of 26,409 entity annotations were mapped to 5,797 unique UMLS concepts. To simplify the evaluation process, we sort the nested labels by alphabetical order and concatenate them together into a single one to transform the task to a usable format for token classification with BERT based architectures.\n\nMUSCA-DET MUSCA-DET is a French corpus of sentences extracted from the \"Lifestyle\" section in clinical notes from Nantes University Hospital biomedical data warehouse. The corpus contains 27,000 pseudonymized sentences annotated with 26 entities related to Social Determinants of Health (living, marital status, housing, descendants, employment, alcohol, smoking, drug abuse, physical activity). The corpus includes two tasks: nested name entity recognition (NER) and multi-label classification.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.896::sections::9",
+      "paper_id": "2023.acl-long.896",
+      "section_number": "9",
+      "section_title": "limitations",
+      "normalized_section_title": "limitations",
+      "window_text": "It is important to mention some limitations of our work. Firstly, it would be wise to evaluate the impact of the tokenizer on the performance of the models to ensure that this is not the main reason for the observed performance gains.\n\nFurthermore, we can not affirm in this study whether the medical domain transfer observed from English to French using continual pre-training on PubMedBERT can be generalized to other languages or other domains.\n\nFinally, it is possible that training a ChuBERT model with more diverse private clinical data and in a larger quantity could have brought notable performance gains on private tasks.\n\nA considerable amount of computational resources was used to conduct this study, since approximately 18,000 hours of GPU computation were used to create the 7 models presented here, as well as about 7,500 hours of GPU for debugging due to technical issues related to model configurations and poor performance, for a total of 25,500 hours. The total environmental cost, according to the Jean Zay supercomputer documentation $^{4}$ is equivalent to 6,604,500 Wh or $376.45 \\mathrm{~kg} \\mathrm{CO}2$ eq based on the carbon intensity of the energy grid mention by BLOOM environmental cost study also made on Jean Zay (Luccioni et al., 2022). This makes the present study difficult to reproduce and to transpose to other languages when limited material resources are available.",
+      "rule_tier": "hard_skip_override",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.896::appendix::A",
+      "paper_id": "2023.acl-long.896",
+      "section_number": "A",
+      "section_title": "appendix",
+      "normalized_section_title": "appendix",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.896::sections::4.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia V100 32GB",
+      "count": 128,
+      "count_text": "128",
+      "evidence": "In addition to the analysis on the size and the sources of data, we also seek to evaluate three training strategies of PLMs for the medical domain:\n\n- Training a full model from scratch, including the subword tokenizer.   \n- Continuing the pre-training of the state-of-the-art language model for French, called CamembERT, on our medical-specific data while keeping the initial tokenizer.   \n- Continuing the pre-training of a state-of-the-art domain specific language model for medical but here in English, called PubMedBERT, on our French data while keeping the initial tokenizer.\n\nRegarding the last strategy, our objective is to compare the performance of an English medical model further pre-trained on our French medical data, against another one based on a generic French model. Indeed, the medical domains share many terms across languages that make relevant the mixture of resources from two languages.\n\nTable 4 summarizes all the configurations evaluated in this paper, integrating both the study of data size and pre-training strategies.\n\nTable 4: List of studied pre-trained model configurations.   \n\n<table><tr><td>Model name</td><td>Strategy</td><td>Corpus</td></tr><tr><td>DrBERT</td><td>From scratch</td><td>NACHOSlarge</td></tr><tr><td>DrBERT</td><td>From scratch</td><td>NACHOSsmall</td></tr><tr><td>ChuBERT</td><td>From scratch</td><td>NBDWsmall</td></tr><tr><td>ChuBERT</td><td>From scratch</td><td>NBDWmixed</td></tr><tr><td>CamemBERT</td><td>continual pre-training</td><td>NACHOSsmall</td></tr><tr><td>PubMedBERT</td><td>continual pre-training</td><td>NACHOSsmall</td></tr><tr><td>CamemBERT</td><td>continual pre-training</td><td>NBDWsmall</td></tr></table>\n\nModel architecture All models pre-trained from scratch use the CamemBERT<sub>base</sub> configuration, which is the same as RoBERTa<sub>base</sub> architecture (12 layers, 768 hidden dimensions, 12 attention heads, 110M parameters). We did not train the large version of our models due to resources limitations.\n\nLanguage modeling We train the models on the Masked Language Modeling (MLM) task using HuggingFace library (Wolf et al., 2019). It consists of randomly replacing a subset of tokens from the sequence by a special token, and asking the model to predict them using cross-entropy loss. In BERT and RoBERTa models (including CamemBERT), $15\\%$ of the tokens are randomly selected. Of those selected tokens, $80\\%$ are replaced with the <mask> token, $10\\%$ remain unchanged and $10\\%$ are randomly replaced by a token from the vocabulary. We keep this masking probability of $15\\%$ for the training of our models.\n\nOptimization & Pre-training We optimize the models for 80k steps with batch sizes of 4,096 sequences, each sequence filled with 512 tokens, allowing to process 2.1M tokens per step. The learning rate is warmed up linearly for 10k steps, going up from zero to the initial $5 \\times 10^{-5}$ learning rate. Models are trained on 128 Nvidia V100 32 GB GPUs for 20 hours on Jean Zay supercomputer. We use mixed precision training (FP16) (Micikevicius et al., 2017) to reduce the memory footprint, allowing us to enlarge the batch size to 32 sequences on each GPU.",
+      "section_number": "4.2",
+      "section_title": "pre-training strategies",
+      "normalized_section_title": "pre-training strategies"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.896::sections::4.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia V100 32GB",
+      "cleaned_hardware_name": "nvidia v100 32gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "count": 128,
+      "count_text": "128",
+      "section_number": "4.2",
+      "section_title": "pre-training strategies",
+      "normalized_section_title": "pre-training strategies",
+      "evidence": "In addition to the analysis on the size and the sources of data, we also seek to evaluate three training strategies of PLMs for the medical domain:\n\n- Training a full model from scratch, including the subword tokenizer.   \n- Continuing the pre-training of the state-of-the-art language model for French, called CamembERT, on our medical-specific data while keeping the initial tokenizer.   \n- Continuing the pre-training of a state-of-the-art domain specific language model for medical but here in English, called PubMedBERT, on our French data while keeping the initial tokenizer.\n\nRegarding the last strategy, our objective is to compare the performance of an English medical model further pre-trained on our French medical data, against another one based on a generic French model. Indeed, the medical domains share many terms across languages that make relevant the mixture of resources from two languages.\n\nTable 4 summarizes all the configurations evaluated in this paper, integrating both the study of data size and pre-training strategies.\n\nTable 4: List of studied pre-trained model configurations.   \n\n<table><tr><td>Model name</td><td>Strategy</td><td>Corpus</td></tr><tr><td>DrBERT</td><td>From scratch</td><td>NACHOSlarge</td></tr><tr><td>DrBERT</td><td>From scratch</td><td>NACHOSsmall</td></tr><tr><td>ChuBERT</td><td>From scratch</td><td>NBDWsmall</td></tr><tr><td>ChuBERT</td><td>From scratch</td><td>NBDWmixed</td></tr><tr><td>CamemBERT</td><td>continual pre-training</td><td>NACHOSsmall</td></tr><tr><td>PubMedBERT</td><td>continual pre-training</td><td>NACHOSsmall</td></tr><tr><td>CamemBERT</td><td>continual pre-training</td><td>NBDWsmall</td></tr></table>\n\nModel architecture All models pre-trained from scratch use the CamemBERT<sub>base</sub> configuration, which is the same as RoBERTa<sub>base</sub> architecture (12 layers, 768 hidden dimensions, 12 attention heads, 110M parameters). We did not train the large version of our models due to resources limitations.\n\nLanguage modeling We train the models on the Masked Language Modeling (MLM) task using HuggingFace library (Wolf et al., 2019). It consists of randomly replacing a subset of tokens from the sequence by a special token, and asking the model to predict them using cross-entropy loss. In BERT and RoBERTa models (including CamemBERT), $15\\%$ of the tokens are randomly selected. Of those selected tokens, $80\\%$ are replaced with the <mask> token, $10\\%$ remain unchanged and $10\\%$ are randomly replaced by a token from the vocabulary. We keep this masking probability of $15\\%$ for the training of our models.\n\nOptimization & Pre-training We optimize the models for 80k steps with batch sizes of 4,096 sequences, each sequence filled with 512 tokens, allowing to process 2.1M tokens per step. The learning rate is warmed up linearly for 10k steps, going up from zero to the initial $5 \\times 10^{-5}$ learning rate. Models are trained on 128 Nvidia V100 32 GB GPUs for 20 hours on Jean Zay supercomputer. We use mixed precision training (FP16) (Micikevicius et al., 2017) to reduce the memory footprint, allowing us to enlarge the batch size to 32 sequences on each GPU.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.acl-long.896::sections::5.1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.1",
+      "section_title": "publicly-available tasks",
+      "evidence": "ESSAIS / CAS: French Corpus with Clinical Cases The ESSAIS (Dalloux et al., 2021) and CAS (Grabar et al., 2018) corpora respectively contain 13,848 and 7,580 clinical cases in French. Some clinical cases are associated with discussions. A subset of the whole set of cases is enriched with morpho-syntactic (part-of-speech (POS) tagging, lemmatization) and semantic (UMLS concepts, negation, uncertainty) annotations. In our case, we focus only on the POS tagging task.\n\nFrenchMedMCQA The FrenchMedMCQA corpus (Labrak et al., 2022) is a publicly available Multiple-Choice Question Answering (MCQA) dataset in French for medical domain. It contains 3,105 questions coming from real exams of the French medical specialization diploma in pharmacy, integrating single and multiple answers.\n\nQUAERO French Medical Corpus The  \nQUAERO French Medical Corpus (Néveol et al.,\n\nTable 5: Corpus, tasks and metrics synthesis for evaluating medical-specific models.   \n\n<table><tr><td>Thematic / Corpus name</td><td>Task</td><td>Metric</td><td>Train</td><td>Dev</td><td>Test</td></tr><tr><td colspan=\"6\">Public Corpus</td></tr><tr><td>ESSAIS (Dalloux et al., 2021)</td><td>POS Tagging</td><td>Macro F1</td><td>9,693</td><td>2,077</td><td>2,078</td></tr><tr><td>CAS: French Corpus with Clinical Cases (Grabar et al., 2018)</td><td>POS Tagging</td><td>Macro F1</td><td>5,306</td><td>1,137</td><td>1,137</td></tr><tr><td>MUSCA-DET - Social Determinants of Health extraction (Task 1)</td><td>Nested NER</td><td>Macro F1</td><td>19,861</td><td>2,207</td><td>5,518</td></tr><tr><td>MUSCA-DET - Social Determinants of Health extraction (Task 2)</td><td>Multi-label Classification</td><td>Macro F1</td><td>19,861</td><td>2,207</td><td>5,518</td></tr><tr><td>QUAERO French Medical Corpus - EMEA (Névél et al., 2014)</td><td>Nested NER</td><td>Weighted F1</td><td>11</td><td>12</td><td>15</td></tr><tr><td>QUAERO French Medical Corpus - MEDLINE (Névél et al., 2014)</td><td>Nested NER</td><td>Weighted F1</td><td>833</td><td>832</td><td>833</td></tr><tr><td>FrenchMedMCQA (Labrak et al., 2022)</td><td>MCQA</td><td>EMR / Hamming Score</td><td>2,171</td><td>312</td><td>622</td></tr><tr><td colspan=\"6\">Private Corpus</td></tr><tr><td>Medical report acute heart failure structuration</td><td>Named Entity Recognition</td><td>Macro F1</td><td>2,527</td><td>281</td><td>703</td></tr><tr><td>Acute heart failure (aHF) classification</td><td>Binary Classification</td><td>Macro F1</td><td>1,179</td><td>132</td><td>328</td></tr><tr><td>Technical Specialties Sorting</td><td>Classification Multi-class</td><td>Macro F1</td><td>4,413</td><td>1,470</td><td>1,473</td></tr><tr><td>Medical report structuration prescriptions</td><td>Named Entity Recognition</td><td>Macro F1</td><td>61</td><td>15</td><td>26</td></tr></table>\n\n2014) introduces an extensive corpus of biomedical documents annotated at the entity and concept levels to provide NER and classification tasks. Three text genres are covered, comprising a total of 103,056 words obtained either from EMEA or MEDLINE. Ten entity categories corresponding to UMLS (Bodenreider, 2004) Semantic Groups were annotated, using automatic pre-annotations validated by trained human annotators. Overall, a total of 26,409 entity annotations were mapped to 5,797 unique UMLS concepts. To simplify the evaluation process, we sort the nested labels by alphabetical order and concatenate them together into a single one to transform the task to a usable format for token classification with BERT based architectures.\n\nMUSCA-DET MUSCA-DET is a French corpus of sentences extracted from the \"Lifestyle\" section in clinical notes from Nantes University Hospital biomedical data warehouse. The corpus contains 27,000 pseudonymized sentences annotated with 26 entities related to Social Determinants of Health (living, marital status, housing, descendants, employment, alcohol, smoking, drug abuse, physical activity). The corpus includes two tasks: nested name entity recognition (NER) and multi-label classification."
+    },
+    {
+      "source_window_id": "2023.acl-long.896::sections::9",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "9",
+      "section_title": "limitations",
+      "evidence": "It is important to mention some limitations of our work. Firstly, it would be wise to evaluate the impact of the tokenizer on the performance of the models to ensure that this is not the main reason for the observed performance gains.\n\nFurthermore, we can not affirm in this study whether the medical domain transfer observed from English to French using continual pre-training on PubMedBERT can be generalized to other languages or other domains.\n\nFinally, it is possible that training a ChuBERT model with more diverse private clinical data and in a larger quantity could have brought notable performance gains on private tasks.\n\nA considerable amount of computational resources was used to conduct this study, since approximately 18,000 hours of GPU computation were used to create the 7 models presented here, as well as about 7,500 hours of GPU for debugging due to technical issues related to model configurations and poor performance, for a total of 25,500 hours. The total environmental cost, according to the Jean Zay supercomputer documentation $^{4}$ is equivalent to 6,604,500 Wh or $376.45 \\mathrm{~kg} \\mathrm{CO}2$ eq based on the carbon intensity of the energy grid mention by BLOOM environmental cost study also made on Jean Zay (Luccioni et al., 2022). This makes the present study difficult to reproduce and to transpose to other languages when limited material resources are available."
+    },
+    {
+      "source_window_id": "2023.acl-long.896::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "appendix",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 32 GB",
+        "num": 128
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2023\\2023.acl-long.896\\auto\\full.md",
+    "source_md_sha256": "e2e32623de970eafbb0fad050387d632c8929859e7d9df3b275737c8c7069b61",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

@@ -1,0 +1,133 @@
+{
+  "paper_id": "2025.acl-long.1123",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.1123::sections::3.3.1",
+      "paper_id": "2025.acl-long.1123",
+      "section_number": "3.3.1",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "Components of RoPE According to Eq.2, we can see that the dot product in attention can be broken down into an inner product process of $\\mathrm{d} / 2$ components, each with a distinct angle $\\theta_{i}$ , followed by a summation. This can be expressed by the following formula, which allows us to explore the individual effect of each positional component $C_i$ .\n\n$$\n\\begin{array}{l} q _ {m} \\cdot k _ {n} = q ^ {T} R _ {\\Theta , m - n} k = \\sum_ {i = 0} ^ {d / 2 - 1} \\underbrace {q _ {i} ^ {T} R _ {\\theta_ {i} , m - n} k _ {i}} _ {C _ {i}} \\\\ = \\sum_ {i = 0} ^ {d / 2 - 1} \\left(\\left(q _ {i, 0} k _ {i, 0} + q _ {i, 1} k _ {i, 1}\\right) \\cdot \\cos \\left(\\left(m - n\\right) \\theta_ {i}\\right)\\right) \\\\ + \\left(q _ {i, 0} k _ {i, 1} - q _ {i, 1} k _ {i, 0}\\right) \\cdot \\sin \\left(\\left(m - n\\right) \\theta_ {i})\\right) \\tag {4} \\\\ \\end{array}\n$$\n\nVariance Accounted For (VAF) VAF (Yoon et al., 2021; Qiu et al., 2021) is primarily used to measure the explanatory power of components for the total variability. It serves as a crucial criterion for identifying effective principal components. A larger value indicates that the component holds greater importance. The formula is as follows:\n\n$$\nV A F _ {\\hat {y}, y} (\\%) = \\left[ 1 - \\frac {\\sum_ {i = 1} ^ {n} \\left(y _ {i} - \\hat {y} _ {i}\\right)}{\\sum_ {i = 1} ^ {n} y _ {i}} \\right] \\times 100 \\tag{5}\n$$\n\nwhere $\\hat{y}$ is a component of $y$ .",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1123::sections::4.2.1",
+      "paper_id": "2025.acl-long.1123",
+      "section_number": "4.2.1",
+      "section_title": "evaluation",
+      "normalized_section_title": "evaluation",
+      "window_text": "Traditional methods for testing extrapolation usually use perplexity (PPL) as a metric. However, previous studies (Press et al., 2021) indicate that perplexity (PPL) does not effectively reflect a model's ability to fully leverage the context. In fact, a model can achieve lower PPL by primarily focusing on nearby tokens within the training length. Therefore, to more comprehensively assess the model's extrapolation, along with its contextual awareness and instruction-following potential, we additionally design two simple tasks: copying and few-shot learning.\n\nPerplexity Perplexity (PPL) is a commonly used metric for evaluating a model's extrapolation capability. We conduct our evaluation on a subset of the C4 dataset (Raffel et al., 2019) with 1,000 samples by comparing the zero-shot perplexity of the last 256 tokens across different input lengths.\n\nIn-Context Copying The copying capability is one of the most fundamental abilities of language models and is closely related to token order. Many previous works (Liu et al., 2023; Golovneva et al., 2024; Lv et al., 2024) on model structure optimization have designed similar tasks to evaluate\n\n![](images/56c5be616c0f5e79dcbf320550ede1159ce1f65d82edf9dea4cfd03f2e7e6658.jpg)  \nFigure 4: Specific input example of copying task.\n\nthe models' effectiveness. Based on these studies, We designed our copying task. Specifically, we constructed a test set containing 500 samples, with each sample consisting of multiple sequences. Each sequence has an average length of 12 tokens, with a unique 8-gram prefix and 4-gram suffix. During testing, we concatenate a specific number of sequences with the prefix of a certain $i$ -th sequence (queried sequence) to serve as the model's input. The model's objective is to output the suffix of the queried prefix, with the middle sequence selected as the queried one. Figure 4 illustrates a specific example input case.\n\nFew-shot Following Few-shot learning is another core ability of the model and serves as the foundation for instruction following. We created a test set with 600 samples selected from three tasks (SST-2, QNLI and RTE) in the GLUE (Wang et al., 2018) benchmark. For each input, we concatenate few-shot examples, a set of meaningless sentences, and the queried input. Specific examples can be found in Figure 9. As for the evaluation metric, instead of focusing on actual accuracy, we emphasize whether the model's output falls into the label sets from the few-shot examples. For instance, if the label set in the contextual examples is 0, 1, the model's output, whether 0 or 1, will be counted. And we define this as a measure of follow ability (FA). We present the average performance across the three tasks in the main text, and detailed results for each task please refer to Appendix C.2.\n\nWe set the rotary base $b = 10,000$ in HoPE. Other settings are consistent with those in Section 3.1. We evaluate the proposed HoPE against a range of established baselines, including RoPE (Su et al., 2021), ALiBi (Press et al., 2021), KERPLE (Chi et al., 2022a), and FIRE (Li et al., 2024), as well as two typical RoPE-based extrapolation methods: PI (Chen et al., 2023) and YaRN (Peng et al., 2023).\n\n![](images/8fac815af6c9dd7a6700d75be858d801b98cce2c8ac2f014037c07d6cd43693b.jpg)  \nFigure 5: Perplexity Comparison on C4 dataset.\n\nTable 1: Results of the copy task. We highlight the leading results with bold fonts. The input length is under the training length of 512 when the sequence number is below 60.   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"7\">Sequence Number</td></tr><tr><td>30</td><td>40</td><td>50</td><td>60</td><td>70</td><td>80</td><td>Avg.</td></tr><tr><td>ALiBi</td><td>78.00</td><td>64.00</td><td>25.90</td><td>8.30</td><td>2.30</td><td>1.20</td><td>29.95</td></tr><tr><td>KERPLE</td><td>80.20</td><td>74.00</td><td>64.60</td><td>56.80</td><td>25.60</td><td>21.70</td><td>53.82</td></tr><tr><td>FIRE</td><td>70.00</td><td>43.20</td><td>28.20</td><td>6.40</td><td>2.80</td><td>0.20</td><td>25.13</td></tr><tr><td>RoPE</td><td>77.60</td><td>55.80</td><td>9.40</td><td>0.00</td><td>0.00</td><td>0.00</td><td>23.80</td></tr><tr><td>+PI</td><td>76.40</td><td>61.40</td><td>20.20</td><td>4.60</td><td>0.00</td><td>0.00</td><td>27.10</td></tr><tr><td>+YaRN</td><td>65.20</td><td>49.80</td><td>64.40</td><td>50.80</td><td>48.60</td><td>39.40</td><td>54.20</td></tr><tr><td>Our HoPE</td><td>84.00</td><td>77.00</td><td>77.00</td><td>60.40</td><td>32.40</td><td>30.60</td><td>60.23</td></tr><tr><td>+PI</td><td>80.20</td><td>74.20</td><td>73.60</td><td>60.60</td><td>36.80</td><td>39.40</td><td>60.80</td></tr><tr><td>+YaRN</td><td>78.60</td><td>73.20</td><td>76.00</td><td>69.00</td><td>68.40</td><td>46.60</td><td>68.63</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1123::appendix::A",
+      "paper_id": "2025.acl-long.1123",
+      "section_number": "A",
+      "section_title": "model configuration",
+      "normalized_section_title": "model configuration",
+      "window_text": "Detail settings across model sizes are depicted in Table 6. All experiments use Llama tokenizer with a vocabulary of 32,000 tokens. Other hyperparameters are as follows: the AdamW optimizer is used with $(\\beta_{1},\\beta_{2}) = (0.9,0.999)$ , a learning rate of $3e^{-4}$ , 2,000 warm-up steps, and a gradient clipping value of 1. Experiments for the 125M models are conducted on 8 A100 GPUs, while those for the 3B models use 256 A100 GPUs.\n\nTable 6: Model configurations.   \n\n<table><tr><td>Hyperparameters</td><td>125M</td><td>3B</td></tr><tr><td>Training sequence length</td><td>512</td><td>8192</td></tr><tr><td>Batch size</td><td>64 × 8</td><td>2 × 256</td></tr><tr><td>Number of Iterations</td><td>50k</td><td>120K</td></tr><tr><td>Dropout Prob.</td><td>0.0</td><td>0.0</td></tr><tr><td>Number of Layers</td><td>12</td><td>34</td></tr><tr><td>Attention Head</td><td>12</td><td>16</td></tr><tr><td>Feature Dimension</td><td>768</td><td>2048</td></tr><tr><td>Intermediate Dimension</td><td>2688</td><td>8704</td></tr><tr><td>Precision</td><td>BFloat16</td><td>BFloat16</td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.1123::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Detail settings across model sizes are depicted in Table 6. All experiments use Llama tokenizer with a vocabulary of 32,000 tokens. Other hyperparameters are as follows: the AdamW optimizer is used with $(\\beta_{1},\\beta_{2}) = (0.9,0.999)$ , a learning rate of $3e^{-4}$ , 2,000 warm-up steps, and a gradient clipping value of 1. Experiments for the 125M models are conducted on 8 A100 GPUs, while those for the 3B models use 256 A100 GPUs.\n\nTable 6: Model configurations.   \n\n<table><tr><td>Hyperparameters</td><td>125M</td><td>3B</td></tr><tr><td>Training sequence length</td><td>512</td><td>8192</td></tr><tr><td>Batch size</td><td>64 × 8</td><td>2 × 256</td></tr><tr><td>Number of Iterations</td><td>50k</td><td>120K</td></tr><tr><td>Dropout Prob.</td><td>0.0</td><td>0.0</td></tr><tr><td>Number of Layers</td><td>12</td><td>34</td></tr><tr><td>Attention Head</td><td>12</td><td>16</td></tr><tr><td>Feature Dimension</td><td>768</td><td>2048</td></tr><tr><td>Intermediate Dimension</td><td>2688</td><td>8704</td></tr><tr><td>Precision</td><td>BFloat16</td><td>BFloat16</td></tr></table>",
+      "section_number": "A",
+      "section_title": "model configuration",
+      "normalized_section_title": "model configuration"
+    },
+    {
+      "window_id": "2025.acl-long.1123::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "count": 256,
+      "count_text": "256",
+      "evidence": "Detail settings across model sizes are depicted in Table 6. All experiments use Llama tokenizer with a vocabulary of 32,000 tokens. Other hyperparameters are as follows: the AdamW optimizer is used with $(\\beta_{1},\\beta_{2}) = (0.9,0.999)$ , a learning rate of $3e^{-4}$ , 2,000 warm-up steps, and a gradient clipping value of 1. Experiments for the 125M models are conducted on 8 A100 GPUs, while those for the 3B models use 256 A100 GPUs.\n\nTable 6: Model configurations.   \n\n<table><tr><td>Hyperparameters</td><td>125M</td><td>3B</td></tr><tr><td>Training sequence length</td><td>512</td><td>8192</td></tr><tr><td>Batch size</td><td>64 × 8</td><td>2 × 256</td></tr><tr><td>Number of Iterations</td><td>50k</td><td>120K</td></tr><tr><td>Dropout Prob.</td><td>0.0</td><td>0.0</td></tr><tr><td>Number of Layers</td><td>12</td><td>34</td></tr><tr><td>Attention Head</td><td>12</td><td>16</td></tr><tr><td>Feature Dimension</td><td>768</td><td>2048</td></tr><tr><td>Intermediate Dimension</td><td>2688</td><td>8704</td></tr><tr><td>Precision</td><td>BFloat16</td><td>BFloat16</td></tr></table>",
+      "section_number": "A",
+      "section_title": "model configuration",
+      "normalized_section_title": "model configuration"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.1123::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "cleaned_hardware_name": "a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "A",
+      "section_title": "model configuration",
+      "normalized_section_title": "model configuration",
+      "evidence": "Detail settings across model sizes are depicted in Table 6. All experiments use Llama tokenizer with a vocabulary of 32,000 tokens. Other hyperparameters are as follows: the AdamW optimizer is used with $(\\beta_{1},\\beta_{2}) = (0.9,0.999)$ , a learning rate of $3e^{-4}$ , 2,000 warm-up steps, and a gradient clipping value of 1. Experiments for the 125M models are conducted on 8 A100 GPUs, while those for the 3B models use 256 A100 GPUs.\n\nTable 6: Model configurations.   \n\n<table><tr><td>Hyperparameters</td><td>125M</td><td>3B</td></tr><tr><td>Training sequence length</td><td>512</td><td>8192</td></tr><tr><td>Batch size</td><td>64 × 8</td><td>2 × 256</td></tr><tr><td>Number of Iterations</td><td>50k</td><td>120K</td></tr><tr><td>Dropout Prob.</td><td>0.0</td><td>0.0</td></tr><tr><td>Number of Layers</td><td>12</td><td>34</td></tr><tr><td>Attention Head</td><td>12</td><td>16</td></tr><tr><td>Feature Dimension</td><td>768</td><td>2048</td></tr><tr><td>Intermediate Dimension</td><td>2688</td><td>8704</td></tr><tr><td>Precision</td><td>BFloat16</td><td>BFloat16</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.1123::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "cleaned_hardware_name": "a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 256,
+      "count_text": "256",
+      "section_number": "A",
+      "section_title": "model configuration",
+      "normalized_section_title": "model configuration",
+      "evidence": "Detail settings across model sizes are depicted in Table 6. All experiments use Llama tokenizer with a vocabulary of 32,000 tokens. Other hyperparameters are as follows: the AdamW optimizer is used with $(\\beta_{1},\\beta_{2}) = (0.9,0.999)$ , a learning rate of $3e^{-4}$ , 2,000 warm-up steps, and a gradient clipping value of 1. Experiments for the 125M models are conducted on 8 A100 GPUs, while those for the 3B models use 256 A100 GPUs.\n\nTable 6: Model configurations.   \n\n<table><tr><td>Hyperparameters</td><td>125M</td><td>3B</td></tr><tr><td>Training sequence length</td><td>512</td><td>8192</td></tr><tr><td>Batch size</td><td>64 × 8</td><td>2 × 256</td></tr><tr><td>Number of Iterations</td><td>50k</td><td>120K</td></tr><tr><td>Dropout Prob.</td><td>0.0</td><td>0.0</td></tr><tr><td>Number of Layers</td><td>12</td><td>34</td></tr><tr><td>Attention Head</td><td>12</td><td>16</td></tr><tr><td>Feature Dimension</td><td>768</td><td>2048</td></tr><tr><td>Intermediate Dimension</td><td>2688</td><td>8704</td></tr><tr><td>Precision</td><td>BFloat16</td><td>BFloat16</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 8
+      },
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 256
+      }
+    ]
+  }
+}

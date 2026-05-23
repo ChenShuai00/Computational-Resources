@@ -1,0 +1,141 @@
+{
+  "paper_id": "2020.emnlp-main.73",
+  "candidate_windows": [
+    {
+      "window_id": "2020.emnlp-main.73::sections::3.3",
+      "paper_id": "2020.emnlp-main.73",
+      "section_number": "3.3",
+      "section_title": "inference",
+      "normalized_section_title": "inference",
+      "window_text": "At inference time, we initialize the latent variable (e.g. using either a sample from the prior or its mean) and iteratively update the latent variable using the estimated gradients (see Alg. 1). As our inference procedure only involves optimization in the continuous space each step, we avoid having to search over a large vocabulary. We can either perform iterative refinement for a fixed number of steps, or until some convergence condition is satisfied.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.emnlp-main.73::sections::4",
+      "paper_id": "2020.emnlp-main.73",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.emnlp-main.73::sections::4.2",
+      "paper_id": "2020.emnlp-main.73",
+      "section_number": "4.2",
+      "section_title": "models and baselines",
+      "normalized_section_title": "models and baselines",
+      "window_text": "Autoregressive baselines We use Transformers (Vaswani et al., 2017) with the following hyperparameters. For WMT'16 Ro $\\rightarrow$ En and WMT'14 En $\\rightarrow$ De, we use Transformer-base. For IWSLT'16 De $\\rightarrow$ En, we use a smaller model with $d_{\\mathrm{model}}$ , $d_{\\mathrm{filter}}$ , $n_{\\mathrm{layers}}$ , $n_{\\mathrm{heads}} = (256, 1024, 5, 2)$ .\n\nNon-autoregressive latent variable models We closely follow the implementation details from (Shu et al., 2020). The prior and the approximate posterior distributions are spherical Gaussian distributions with learned mean and variance, and the decoder is factorized over time. The only difference is at inference time, the target sentence length is predicted once and fixed throughout the refinement procedure. Therefore, the latent variable dimensionality $\\mathbb{R}^{T\\times D}$ does not change.\n\nThe decoder, prior and approximate posterior distributions are all parameterized using $n_{\\mathrm{layers}}$ Transformer decoder layers (the last two also have a final linear layer that outputs mean and variance). For IWSLT'16 De→En, we use $(d_{\\mathrm{model}}, d_{\\mathrm{filter}}, n_{\\mathrm{layers}}, n_{\\mathrm{heads}}) = (256, 1024, 3, 4)$ . For WMT'14 En→De and WMT'16 Ro→En, we use (512, 2048, 6, 8). The latent dimensionality $d_{\\mathrm{latent}}$ is set to 8 across all datasets. The source sentence encoder is implemented with a standard Transformer encoder. Given the hidden states of the source sentence, the length predictor (a 2-layer MLP) predicts the length difference between the source and target sentences as a categorical distribution in $[-50, 50]$ .\n\nEnergy function $E_{\\psi}(\\mathbf{z}; \\mathbf{x})$ is parameterized with $n_{\\mathrm{layers}}$ Transformer decoder layers and a final linear layer with the output dimensionality of 1. We average the last Transformer hidden states across time and feed it to a linear layer to yield a scalar energy value.\n\nScore function When directly estimating the gradient of the log probability with respect to $\\mathbf{z}$ , $S_{\\psi}(\\mathbf{z};\\mathbf{x})$ is parameterized with $n_{\\mathrm{layers}}$ Transformer decoder layers and a final linear layer with the output dimensionality of $d_{\\mathrm{latent}}$ .\n\nTable 1: Translation quality and inference speed of autoregressive baseline (AR) and several inference procedures for non-autoregressive latent variable model (NAR LVM): Delta inference (Delta) (Shu et al., 2020), the proposed inference procedure with estimated energy (Energy) or score (Score). Speed: inference speedup compared to the autoregressive model with beam width 4. Time: Average wall clock time per example in milliseconds on a Tesla V100 GPU (with standard deviations). $b$ : beam width, $L$ : the number of refinement steps. Search: parallel decoding with 5 length candidates and 5 samples from the prior, with 1 refinement step. Results above Search are obtained by initializing the latent variable as the mean of the prior. We boldface the highest BLEU among the latent variable models.   \n\n<table><tr><td rowspan=\"2\" colspan=\"2\"></td><td colspan=\"3\">WMT&#x27;14 EN→DE</td><td colspan=\"3\">WMT&#x27;16 RO→EN</td><td colspan=\"3\">IWSLT&#x27;16 DE→EN</td></tr><tr><td>BLEU</td><td>SPEED</td><td>TIME</td><td>BLEU</td><td>SPEED</td><td>TIME</td><td>BLEU</td><td>SPEED</td><td>TIME</td></tr><tr><td rowspan=\"2\">AR</td><td>b = 1</td><td>27.5</td><td>1.1×</td><td>251 ±175</td><td>30.9</td><td>1.1×</td><td>511 ±560</td><td>31.1</td><td>1.1×</td><td>178 ±139</td></tr><tr><td>b = 4</td><td>28.3</td><td>1×</td><td>291 ±194</td><td>31.5</td><td>1×</td><td>610 ±630</td><td>31.5</td><td>1×</td><td>210 ±161</td></tr><tr><td rowspan=\"15\">NAR LVM</td><td rowspan=\"5\">DELTA</td><td>L = 0</td><td>25.7</td><td>15×</td><td>19 ±1</td><td>28.4</td><td>34×</td><td>18 ±5</td><td>27.0</td><td>19×</td></tr><tr><td>L = 1</td><td>26.1</td><td>6.3×</td><td>46 ±5</td><td>29.0</td><td>19×</td><td>32 ±5</td><td>28.3</td><td>11×</td></tr><tr><td>L = 2</td><td>26.2</td><td>4.0×</td><td>72 ±3</td><td>29.1</td><td>14×</td><td>45 ±7</td><td>28.5</td><td>8.0×</td></tr><tr><td>L = 4</td><td>26.1</td><td>2.8×</td><td>103 ±5</td><td>29.1</td><td>8.5×</td><td>72 ±5</td><td>28.6</td><td>5.2×</td></tr><tr><td>SEARCH</td><td>26.9</td><td>5.5×</td><td>63 ±8</td><td>30.3</td><td>13×</td><td>48 ±7</td><td>29.7</td><td>6.0×</td></tr><tr><td rowspan=\"5\">ENERGY</td><td>L = 0</td><td>25.7</td><td>15×</td><td>19 ±1</td><td>28.4</td><td>34×</td><td>18 ±5</td><td>27.0</td><td>19×</td></tr><tr><td>L = 1</td><td>26.1</td><td>5.8×</td><td>50 ±3</td><td>28.8</td><td>17×</td><td>36 ±5</td><td>28.6</td><td>9.5×</td></tr><tr><td>L = 2</td><td>26.1</td><td>4.2×</td><td>69 ±4</td><td>28.9</td><td>11×</td><td>55 ±9</td><td>28.7</td><td>7.0×</td></tr><tr><td>L = 4</td><td>26.0</td><td>2.5×</td><td>117 ±6</td><td>28.8</td><td>7.1×</td><td>85 ±5</td><td>28.8</td><td>4.5×</td></tr><tr><td>SEARCH</td><td>27.1</td><td>4.4×</td><td>66 ±9</td><td>30.4</td><td>12×</td><td>53 ±7</td><td>29.9</td><td>5.0×</td></tr><tr><td rowspan=\"5\">SCORE</td><td>L = 0</td><td>25.7</td><td>15×</td><td>19 ±1</td><td>28.4</td><td>34×</td><td>18 ±5</td><td>27.0</td><td>19×</td></tr><tr><td>L = 1</td><td>26.3</td><td>10×</td><td>29 ±2</td><td>29.1</td><td>24×</td><td>25 ±5</td><td>28.8</td><td>13×</td></tr><tr><td>L = 2</td><td>26.3</td><td>7.6×</td><td>38 ±2</td><td>29.1</td><td>19×</td><td>32 ±6</td><td>29.0</td><td>10×</td></tr><tr><td>L = 4</td><td>26.3</td><td>5.7×</td><td>51 ±4</td><td>29.1</td><td>14×</td><td>44 ±5</td><td>29.1</td><td>7.5×</td></tr><tr><td>SEARCH</td><td>27.4</td><td>6.2×</td><td>47 ±8</td><td>30.4</td><td>15×</td><td>41 ±6</td><td>30.2</td><td>6.3×</td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.emnlp-main.73::sections::4.4",
+      "paper_id": "2020.emnlp-main.73",
+      "section_number": "4.4",
+      "section_title": "inference",
+      "normalized_section_title": "inference",
+      "window_text": "Step size For the proposed inference procedure, we use the step size $\\alpha = 1.0$ as it performed well on the development set.\n\nLength prediction Given a distribution of target sentence length, we can either (1) take the argmax, or (2) select the top $l$ candidates and decode them in parallel (Ghazvininejad et al., 2019). In the second case, we select the output candidate with the highest log probability under an autoregressive model, normalized by its length.\n\nLatent search In Alg. 1, we can either initialize the latent variable with a sample from the prior, or its mean. We use $n_w$ samples from the prior and perform iterative refinement (e.g. delta inference or the proposed inference procedures) in parallel. Similarly to length prediction, we select the output with the highest log probability. To avoid stochasticity, we fix the random seed during sampling.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2020.emnlp-main.73::sections::4.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100",
+      "count": null,
+      "count_text": "",
+      "evidence": "Autoregressive baselines We use Transformers (Vaswani et al., 2017) with the following hyperparameters. For WMT'16 Ro $\\rightarrow$ En and WMT'14 En $\\rightarrow$ De, we use Transformer-base. For IWSLT'16 De $\\rightarrow$ En, we use a smaller model with $d_{\\mathrm{model}}$ , $d_{\\mathrm{filter}}$ , $n_{\\mathrm{layers}}$ , $n_{\\mathrm{heads}} = (256, 1024, 5, 2)$ .\n\nNon-autoregressive latent variable models We closely follow the implementation details from (Shu et al., 2020). The prior and the approximate posterior distributions are spherical Gaussian distributions with learned mean and variance, and the decoder is factorized over time. The only difference is at inference time, the target sentence length is predicted once and fixed throughout the refinement procedure. Therefore, the latent variable dimensionality $\\mathbb{R}^{T\\times D}$ does not change.\n\nThe decoder, prior and approximate posterior distributions are all parameterized using $n_{\\mathrm{layers}}$ Transformer decoder layers (the last two also have a final linear layer that outputs mean and variance). For IWSLT'16 De→En, we use $(d_{\\mathrm{model}}, d_{\\mathrm{filter}}, n_{\\mathrm{layers}}, n_{\\mathrm{heads}}) = (256, 1024, 3, 4)$ . For WMT'14 En→De and WMT'16 Ro→En, we use (512, 2048, 6, 8). The latent dimensionality $d_{\\mathrm{latent}}$ is set to 8 across all datasets. The source sentence encoder is implemented with a standard Transformer encoder. Given the hidden states of the source sentence, the length predictor (a 2-layer MLP) predicts the length difference between the source and target sentences as a categorical distribution in $[-50, 50]$ .\n\nEnergy function $E_{\\psi}(\\mathbf{z}; \\mathbf{x})$ is parameterized with $n_{\\mathrm{layers}}$ Transformer decoder layers and a final linear layer with the output dimensionality of 1. We average the last Transformer hidden states across time and feed it to a linear layer to yield a scalar energy value.\n\nScore function When directly estimating the gradient of the log probability with respect to $\\mathbf{z}$ , $S_{\\psi}(\\mathbf{z};\\mathbf{x})$ is parameterized with $n_{\\mathrm{layers}}$ Transformer decoder layers and a final linear layer with the output dimensionality of $d_{\\mathrm{latent}}$ .\n\nTable 1: Translation quality and inference speed of autoregressive baseline (AR) and several inference procedures for non-autoregressive latent variable model (NAR LVM): Delta inference (Delta) (Shu et al., 2020), the proposed inference procedure with estimated energy (Energy) or score (Score). Speed: inference speedup compared to the autoregressive model with beam width 4. Time: Average wall clock time per example in milliseconds on a Tesla V100 GPU (with standard deviations). $b$ : beam width, $L$ : the number of refinement steps. Search: parallel decoding with 5 length candidates and 5 samples from the prior, with 1 refinement step. Results above Search are obtained by initializing the latent variable as the mean of the prior. We boldface the highest BLEU among the latent variable models.   \n\n<table><tr><td rowspan=\"2\" colspan=\"2\"></td><td colspan=\"3\">WMT&#x27;14 EN→DE</td><td colspan=\"3\">WMT&#x27;16 RO→EN</td><td colspan=\"3\">IWSLT&#x27;16 DE→EN</td></tr><tr><td>BLEU</td><td>SPEED</td><td>TIME</td><td>BLEU</td><td>SPEED</td><td>TIME</td><td>BLEU</td><td>SPEED</td><td>TIME</td></tr><tr><td rowspan=\"2\">AR</td><td>b = 1</td><td>27.5</td><td>1.1×</td><td>251 ±175</td><td>30.9</td><td>1.1×</td><td>511 ±560</td><td>31.1</td><td>1.1×</td><td>178 ±139</td></tr><tr><td>b = 4</td><td>28.3</td><td>1×</td><td>291 ±194</td><td>31.5</td><td>1×</td><td>610 ±630</td><td>31.5</td><td>1×</td><td>210 ±161</td></tr><tr><td rowspan=\"15\">NAR LVM</td><td rowspan=\"5\">DELTA</td><td>L = 0</td><td>25.7</td><td>15×</td><td>19 ±1</td><td>28.4</td><td>34×</td><td>18 ±5</td><td>27.0</td><td>19×</td></tr><tr><td>L = 1</td><td>26.1</td><td>6.3×</td><td>46 ±5</td><td>29.0</td><td>19×</td><td>32 ±5</td><td>28.3</td><td>11×</td></tr><tr><td>L = 2</td><td>26.2</td><td>4.0×</td><td>72 ±3</td><td>29.1</td><td>14×</td><td>45 ±7</td><td>28.5</td><td>8.0×</td></tr><tr><td>L = 4</td><td>26.1</td><td>2.8×</td><td>103 ±5</td><td>29.1</td><td>8.5×</td><td>72 ±5</td><td>28.6</td><td>5.2×</td></tr><tr><td>SEARCH</td><td>26.9</td><td>5.5×</td><td>63 ±8</td><td>30.3</td><td>13×</td><td>48 ±7</td><td>29.7</td><td>6.0×</td></tr><tr><td rowspan=\"5\">ENERGY</td><td>L = 0</td><td>25.7</td><td>15×</td><td>19 ±1</td><td>28.4</td><td>34×</td><td>18 ±5</td><td>27.0</td><td>19×</td></tr><tr><td>L = 1</td><td>26.1</td><td>5.8×</td><td>50 ±3</td><td>28.8</td><td>17×</td><td>36 ±5</td><td>28.6</td><td>9.5×</td></tr><tr><td>L = 2</td><td>26.1</td><td>4.2×</td><td>69 ±4</td><td>28.9</td><td>11×</td><td>55 ±9</td><td>28.7</td><td>7.0×</td></tr><tr><td>L = 4</td><td>26.0</td><td>2.5×</td><td>117 ±6</td><td>28.8</td><td>7.1×</td><td>85 ±5</td><td>28.8</td><td>4.5×</td></tr><tr><td>SEARCH</td><td>27.1</td><td>4.4×</td><td>66 ±9</td><td>30.4</td><td>12×</td><td>53 ±7</td><td>29.9</td><td>5.0×</td></tr><tr><td rowspan=\"5\">SCORE</td><td>L = 0</td><td>25.7</td><td>15×</td><td>19 ±1</td><td>28.4</td><td>34×</td><td>18 ±5</td><td>27.0</td><td>19×</td></tr><tr><td>L = 1</td><td>26.3</td><td>10×</td><td>29 ±2</td><td>29.1</td><td>24×</td><td>25 ±5</td><td>28.8</td><td>13×</td></tr><tr><td>L = 2</td><td>26.3</td><td>7.6×</td><td>38 ±2</td><td>29.1</td><td>19×</td><td>32 ±6</td><td>29.0</td><td>10×</td></tr><tr><td>L = 4</td><td>26.3</td><td>5.7×</td><td>51 ±4</td><td>29.1</td><td>14×</td><td>44 ±5</td><td>29.1</td><td>7.5×</td></tr><tr><td>SEARCH</td><td>27.4</td><td>6.2×</td><td>47 ±8</td><td>30.4</td><td>15×</td><td>41 ±6</td><td>30.2</td><td>6.3×</td></tr></table>",
+      "section_number": "4.2",
+      "section_title": "models and baselines",
+      "normalized_section_title": "models and baselines"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2020.emnlp-main.73::sections::4.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100",
+      "cleaned_hardware_name": "tesla v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": null,
+      "count_text": "",
+      "section_number": "4.2",
+      "section_title": "models and baselines",
+      "normalized_section_title": "models and baselines",
+      "evidence": "Autoregressive baselines We use Transformers (Vaswani et al., 2017) with the following hyperparameters. For WMT'16 Ro $\\rightarrow$ En and WMT'14 En $\\rightarrow$ De, we use Transformer-base. For IWSLT'16 De $\\rightarrow$ En, we use a smaller model with $d_{\\mathrm{model}}$ , $d_{\\mathrm{filter}}$ , $n_{\\mathrm{layers}}$ , $n_{\\mathrm{heads}} = (256, 1024, 5, 2)$ .\n\nNon-autoregressive latent variable models We closely follow the implementation details from (Shu et al., 2020). The prior and the approximate posterior distributions are spherical Gaussian distributions with learned mean and variance, and the decoder is factorized over time. The only difference is at inference time, the target sentence length is predicted once and fixed throughout the refinement procedure. Therefore, the latent variable dimensionality $\\mathbb{R}^{T\\times D}$ does not change.\n\nThe decoder, prior and approximate posterior distributions are all parameterized using $n_{\\mathrm{layers}}$ Transformer decoder layers (the last two also have a final linear layer that outputs mean and variance). For IWSLT'16 De→En, we use $(d_{\\mathrm{model}}, d_{\\mathrm{filter}}, n_{\\mathrm{layers}}, n_{\\mathrm{heads}}) = (256, 1024, 3, 4)$ . For WMT'14 En→De and WMT'16 Ro→En, we use (512, 2048, 6, 8). The latent dimensionality $d_{\\mathrm{latent}}$ is set to 8 across all datasets. The source sentence encoder is implemented with a standard Transformer encoder. Given the hidden states of the source sentence, the length predictor (a 2-layer MLP) predicts the length difference between the source and target sentences as a categorical distribution in $[-50, 50]$ .\n\nEnergy function $E_{\\psi}(\\mathbf{z}; \\mathbf{x})$ is parameterized with $n_{\\mathrm{layers}}$ Transformer decoder layers and a final linear layer with the output dimensionality of 1. We average the last Transformer hidden states across time and feed it to a linear layer to yield a scalar energy value.\n\nScore function When directly estimating the gradient of the log probability with respect to $\\mathbf{z}$ , $S_{\\psi}(\\mathbf{z};\\mathbf{x})$ is parameterized with $n_{\\mathrm{layers}}$ Transformer decoder layers and a final linear layer with the output dimensionality of $d_{\\mathrm{latent}}$ .\n\nTable 1: Translation quality and inference speed of autoregressive baseline (AR) and several inference procedures for non-autoregressive latent variable model (NAR LVM): Delta inference (Delta) (Shu et al., 2020), the proposed inference procedure with estimated energy (Energy) or score (Score). Speed: inference speedup compared to the autoregressive model with beam width 4. Time: Average wall clock time per example in milliseconds on a Tesla V100 GPU (with standard deviations). $b$ : beam width, $L$ : the number of refinement steps. Search: parallel decoding with 5 length candidates and 5 samples from the prior, with 1 refinement step. Results above Search are obtained by initializing the latent variable as the mean of the prior. We boldface the highest BLEU among the latent variable models.   \n\n<table><tr><td rowspan=\"2\" colspan=\"2\"></td><td colspan=\"3\">WMT&#x27;14 EN→DE</td><td colspan=\"3\">WMT&#x27;16 RO→EN</td><td colspan=\"3\">IWSLT&#x27;16 DE→EN</td></tr><tr><td>BLEU</td><td>SPEED</td><td>TIME</td><td>BLEU</td><td>SPEED</td><td>TIME</td><td>BLEU</td><td>SPEED</td><td>TIME</td></tr><tr><td rowspan=\"2\">AR</td><td>b = 1</td><td>27.5</td><td>1.1×</td><td>251 ±175</td><td>30.9</td><td>1.1×</td><td>511 ±560</td><td>31.1</td><td>1.1×</td><td>178 ±139</td></tr><tr><td>b = 4</td><td>28.3</td><td>1×</td><td>291 ±194</td><td>31.5</td><td>1×</td><td>610 ±630</td><td>31.5</td><td>1×</td><td>210 ±161</td></tr><tr><td rowspan=\"15\">NAR LVM</td><td rowspan=\"5\">DELTA</td><td>L = 0</td><td>25.7</td><td>15×</td><td>19 ±1</td><td>28.4</td><td>34×</td><td>18 ±5</td><td>27.0</td><td>19×</td></tr><tr><td>L = 1</td><td>26.1</td><td>6.3×</td><td>46 ±5</td><td>29.0</td><td>19×</td><td>32 ±5</td><td>28.3</td><td>11×</td></tr><tr><td>L = 2</td><td>26.2</td><td>4.0×</td><td>72 ±3</td><td>29.1</td><td>14×</td><td>45 ±7</td><td>28.5</td><td>8.0×</td></tr><tr><td>L = 4</td><td>26.1</td><td>2.8×</td><td>103 ±5</td><td>29.1</td><td>8.5×</td><td>72 ±5</td><td>28.6</td><td>5.2×</td></tr><tr><td>SEARCH</td><td>26.9</td><td>5.5×</td><td>63 ±8</td><td>30.3</td><td>13×</td><td>48 ±7</td><td>29.7</td><td>6.0×</td></tr><tr><td rowspan=\"5\">ENERGY</td><td>L = 0</td><td>25.7</td><td>15×</td><td>19 ±1</td><td>28.4</td><td>34×</td><td>18 ±5</td><td>27.0</td><td>19×</td></tr><tr><td>L = 1</td><td>26.1</td><td>5.8×</td><td>50 ±3</td><td>28.8</td><td>17×</td><td>36 ±5</td><td>28.6</td><td>9.5×</td></tr><tr><td>L = 2</td><td>26.1</td><td>4.2×</td><td>69 ±4</td><td>28.9</td><td>11×</td><td>55 ±9</td><td>28.7</td><td>7.0×</td></tr><tr><td>L = 4</td><td>26.0</td><td>2.5×</td><td>117 ±6</td><td>28.8</td><td>7.1×</td><td>85 ±5</td><td>28.8</td><td>4.5×</td></tr><tr><td>SEARCH</td><td>27.1</td><td>4.4×</td><td>66 ±9</td><td>30.4</td><td>12×</td><td>53 ±7</td><td>29.9</td><td>5.0×</td></tr><tr><td rowspan=\"5\">SCORE</td><td>L = 0</td><td>25.7</td><td>15×</td><td>19 ±1</td><td>28.4</td><td>34×</td><td>18 ±5</td><td>27.0</td><td>19×</td></tr><tr><td>L = 1</td><td>26.3</td><td>10×</td><td>29 ±2</td><td>29.1</td><td>24×</td><td>25 ±5</td><td>28.8</td><td>13×</td></tr><tr><td>L = 2</td><td>26.3</td><td>7.6×</td><td>38 ±2</td><td>29.1</td><td>19×</td><td>32 ±6</td><td>29.0</td><td>10×</td></tr><tr><td>L = 4</td><td>26.3</td><td>5.7×</td><td>51 ±4</td><td>29.1</td><td>14×</td><td>44 ±5</td><td>29.1</td><td>7.5×</td></tr><tr><td>SEARCH</td><td>27.4</td><td>6.2×</td><td>47 ±8</td><td>30.4</td><td>15×</td><td>41 ±6</td><td>30.2</td><td>6.3×</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2020.emnlp-main.73::sections::3.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3.3",
+      "section_title": "inference",
+      "evidence": "At inference time, we initialize the latent variable (e.g. using either a sample from the prior or its mean) and iteratively update the latent variable using the estimated gradients (see Alg. 1). As our inference procedure only involves optimization in the continuous space each step, we avoid having to search over a large vocabulary. We can either perform iterative refinement for a fixed number of steps, or until some convergence condition is satisfied."
+    },
+    {
+      "source_window_id": "2020.emnlp-main.73::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2020.emnlp-main.73::sections::4.4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.4",
+      "section_title": "inference",
+      "evidence": "Step size For the proposed inference procedure, we use the step size $\\alpha = 1.0$ as it performed well on the development set.\n\nLength prediction Given a distribution of target sentence length, we can either (1) take the argmax, or (2) select the top $l$ candidates and decode them in parallel (Ghazvininejad et al., 2019). In the second case, we select the output candidate with the highest log probability under an autoregressive model, normalized by its length.\n\nLatent search In Alg. 1, we can either initialize the latent variable with a sample from the prior, or its mean. We use $n_w$ samples from the prior and perform iterative refinement (e.g. delta inference or the proposed inference procedures) in parallel. Similarly to length prediction, we select the output with the highest log probability. To avoid stochasticity, we fix the random seed during sampling."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": null
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2020\\2020.emnlp-main.73\\auto\\full.md",
+    "source_md_sha256": "fd505172e09a7bc241a18ee5c9014d658d388c0d4f9cb12fb5f3f2c6248ed403",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "eea9740fb55f6bcfee0ac43ef150f8c7282577b729733d31ca0788dd36b4abba"
+  }
+}

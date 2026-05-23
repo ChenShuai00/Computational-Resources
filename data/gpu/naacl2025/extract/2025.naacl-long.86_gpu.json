@@ -1,0 +1,134 @@
+{
+  "paper_id": "2025.naacl-long.86",
+  "candidate_windows": [
+    {
+      "window_id": "2025.naacl-long.86::sections::2",
+      "paper_id": "2025.naacl-long.86",
+      "section_number": "2",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "Contextual Integrity, norms and applications. Contextual Integrity (Nissenbaum, 2010) posits that privacy is related to information flows and information flows must adhere to the established norms of the context to protect privacy. Each norm can typically be viewed as an atomic unit of information transmission involving three key actors: the sender, the receiver, and the data subject. Depending on the social context of these actors, such as their roles and the disclosed attributes of the data subject, we can determine whether the norm is positive or negative, which means the norm is either permitted or prohibited by existing privacy regulations. Previous works on CI (Barth et al., 2006; Benthall et al., 2017; Shvartzshnaider et al., 2016) aimed to transform the context into explicit formal languages, such as first-order logic, to determine privacy violations with rule-based frameworks. However, as shown in Figure 2 (a), it costs heavily for experts to annotate such a knowledge base of norms. Experts must meticulously define a set of predicates and annotate the entire body of regulations, subpart by subpart. Consequently, these works on formal languages fail to scale up their norms due to the inherent complexity of legal documents. On the other hand, existing legal LLMs, including LawGPT (Zhou et al., 2024), Lawyer LLaMA (Huang et al., 2023) and ChatLaw (Cui et al., 2023) are proposed on the general legal domain and underperform on the legal domain due to data scarcity. GoldCoin (Fan et al., 2024) proposed instruction tuning grounded on CI to en\n\nhance LLMs' judgment ability. Instead, our work reveals the flaws of synthetic data and shows that the proper RAG pipelines without further tuning can yield comparable or even better performance.\n\nIn addition, for discussions about current privacy attacks and defenses, please refer to Appendix C.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.86::sections::5",
+      "paper_id": "2025.naacl-long.86",
+      "section_number": "5",
+      "section_title": "experimental setups",
+      "normalized_section_title": "experimental setups",
+      "window_text": "Data. We use collected real and synthetic court cases for evaluation to demonstrate the usefulness of our Privacy Checklist. Following Fan et al. (2024), we use their collected real and synthetic court cases about HIPAA. The real cases are collected from the Caselaw Access Project $(\\mathrm{CAP})^2$ and the synthetic cases are LLM-augmented data based on real cases and HIPAA sub-rules. For both datasets, we directly prompt existing LLMs to perform three-way classification by determining if the given case is permitted by, prohibited by or not applicable to HIPAA. The dataset statistics are summarized in Table 1.\n\nEvaluated LLMs. We evaluate both open-source and close-source LLMs. In terms of open-source LLMs, we download their model weights of instruction or chat versions and generate responses on two NVIDIA Tesla A100 40GB graphic cards. Our evaluated open-source models include Llama3 (AI@Meta, 2024), Qwen1.5, Qwen2 (Yang et al., 2024), ChatGLM4 (GLM et al., 2024), and Mistral-v0.3 (Jiang et al., 2023). For close-source LLM, we evaluate the GPT-4-turbo-04-09's performance with API accesses.\n\nEvaluated methods. We evaluate LLMs' performance over the following methods. The first three methods rely on prompting tricks while the last three methods reason over our Privacy Checklist with different retrieval methods.\n\n- Direct prompt (DP). We prompt LLMs with the case context and directly ask them to determine if the given context is permitted, prohibited, or unrelated to HIPAA.   \n- CoT prompt with automatic planning (CoTauto). We prompt LLMs to automatically generate step-by-step planning to analyze the given case\n\nand then execute the steps to determine privacy violations.\n\n- CoT Prompt with manual guidelines (CoT-manual). Instead of using LLMs to generate plans, we prompt LLMs with pre-defined guidelines for each step. Our guidelines follow the CI theory to instruct LLMs to analyze the CI characteristics step by step to assess privacy violations.   \n- CoT prompt with regulation IDs from agent-based retrieval (Agent-ID). We first ask LLMs with the case to generate applicable regulation IDs. Then, we verify their existence with our checklist to filter out misinformation. Finally, we prompt LLMs similarly to the CoT-manual approach, but with the addition of regulation IDs for in-context reasoning.   \n- CoT prompt with LLM explanation and regulations retrieved via BM25 (BM25-content). We apply the LLM explanation to clarify the case context with legal terms to facilitate the retrieval process. Then, we use BM25 to search for relevant sub-rules. Finally, we incorporate both content and IDs of these sub-rules into the CoT-manual prompt to improve in-context reasoning.   \n- CoT prompt with CI characteristics extraction and regulations retrieved via embedding similarity (CI-ES-content). We first perform CI characteristics extraction to extract necessary information about information flow. Then, we consider stakeholders' roles as keywords and use pre-trained embedding models to match their roles with roles in our Privacy Checklist by calculating the embedding similarities. We use the matched roles as keywords to search for applicable rules. Finally, we add the regulations to the CoT-manual prompt for in-context reasoning.\n\nEvaluation metrics. For the three-way classification, we report the accuracy of correct LLM judgments in a single run. In addition, for each class, we also calculate its precision, recall, and F1. To verify the correctness, we implement multiple parsers based on regular expressions to capture the desired predictions. All parsing failures are regarded as incorrect predictions.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.86::appendix::B",
+      "paper_id": "2025.naacl-long.86",
+      "section_number": "B",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "window_text": "Computational resources. During our experiment, we use 2 NVIDIA RTX 6000 to run our codes, and it takes GPU hours around 2 weeks to complete all experiments.\n\nGeneration details. For open-source models, we generate the models' responses with the recommended configurations in their model cards. For close-source models, we use their official APIs to obtain the responses with temperature $= 0$ and top_p = 0.95 to ensure reproducibility.\n\nPrompt templates for evaluation. In this paragraph, we list all prompt templates used to evaluate LLMs' performance. The full prompts for the first three non-RAG methods including DP, CoT-auto and CoT-manual are shown in Table 7. The remaining three RAG-based methods, generally follow the retrieval, filter, and decision-making pipeline. For the retrieval stage, different retrieval methods are used to get relevant sub-rules. For the filter stage, the same prompt can be applied to all methods to verify the retrieved sub-rule is relevant to the given event. Finally, the decision-making stage follows previous chain-of-thought reasoning prompts by incorporating the selected reference regulations after the filter stage. Prompts used for Agent-ID are presented in Table 8. Those for BM25-content can be found in Table 9, while Table 10 displays the prompts used for CI-ES-content.\n\nLicenses. For our evaluation data, we use data provided by GoldCoin's official GitHub implementation under the Apache-2.0 license. In terms of used models, we follow all the licenses to use their models for the research propose. For example, we follow Llama 3 Community License Agreement to use the Llama3-8b model for experiments.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.naacl-long.86::sections::5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla A100 40GB",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "Data. We use collected real and synthetic court cases for evaluation to demonstrate the usefulness of our Privacy Checklist. Following Fan et al. (2024), we use their collected real and synthetic court cases about HIPAA. The real cases are collected from the Caselaw Access Project $(\\mathrm{CAP})^2$ and the synthetic cases are LLM-augmented data based on real cases and HIPAA sub-rules. For both datasets, we directly prompt existing LLMs to perform three-way classification by determining if the given case is permitted by, prohibited by or not applicable to HIPAA. The dataset statistics are summarized in Table 1.\n\nEvaluated LLMs. We evaluate both open-source and close-source LLMs. In terms of open-source LLMs, we download their model weights of instruction or chat versions and generate responses on two NVIDIA Tesla A100 40GB graphic cards. Our evaluated open-source models include Llama3 (AI@Meta, 2024), Qwen1.5, Qwen2 (Yang et al., 2024), ChatGLM4 (GLM et al., 2024), and Mistral-v0.3 (Jiang et al., 2023). For close-source LLM, we evaluate the GPT-4-turbo-04-09's performance with API accesses.\n\nEvaluated methods. We evaluate LLMs' performance over the following methods. The first three methods rely on prompting tricks while the last three methods reason over our Privacy Checklist with different retrieval methods.\n\n- Direct prompt (DP). We prompt LLMs with the case context and directly ask them to determine if the given context is permitted, prohibited, or unrelated to HIPAA.   \n- CoT prompt with automatic planning (CoTauto). We prompt LLMs to automatically generate step-by-step planning to analyze the given case\n\nand then execute the steps to determine privacy violations.\n\n- CoT Prompt with manual guidelines (CoT-manual). Instead of using LLMs to generate plans, we prompt LLMs with pre-defined guidelines for each step. Our guidelines follow the CI theory to instruct LLMs to analyze the CI characteristics step by step to assess privacy violations.   \n- CoT prompt with regulation IDs from agent-based retrieval (Agent-ID). We first ask LLMs with the case to generate applicable regulation IDs. Then, we verify their existence with our checklist to filter out misinformation. Finally, we prompt LLMs similarly to the CoT-manual approach, but with the addition of regulation IDs for in-context reasoning.   \n- CoT prompt with LLM explanation and regulations retrieved via BM25 (BM25-content). We apply the LLM explanation to clarify the case context with legal terms to facilitate the retrieval process. Then, we use BM25 to search for relevant sub-rules. Finally, we incorporate both content and IDs of these sub-rules into the CoT-manual prompt to improve in-context reasoning.   \n- CoT prompt with CI characteristics extraction and regulations retrieved via embedding similarity (CI-ES-content). We first perform CI characteristics extraction to extract necessary information about information flow. Then, we consider stakeholders' roles as keywords and use pre-trained embedding models to match their roles with roles in our Privacy Checklist by calculating the embedding similarities. We use the matched roles as keywords to search for applicable rules. Finally, we add the regulations to the CoT-manual prompt for in-context reasoning.\n\nEvaluation metrics. For the three-way classification, we report the accuracy of correct LLM judgments in a single run. In addition, for each class, we also calculate its precision, recall, and F1. To verify the correctness, we implement multiple parsers based on regular expressions to capture the desired predictions. All parsing failures are regarded as incorrect predictions.",
+      "section_number": "5",
+      "section_title": "experimental setups",
+      "normalized_section_title": "experimental setups"
+    },
+    {
+      "window_id": "2025.naacl-long.86::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 6000",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "Computational resources. During our experiment, we use 2 NVIDIA RTX 6000 to run our codes, and it takes GPU hours around 2 weeks to complete all experiments.\n\nGeneration details. For open-source models, we generate the models' responses with the recommended configurations in their model cards. For close-source models, we use their official APIs to obtain the responses with temperature $= 0$ and top_p = 0.95 to ensure reproducibility.\n\nPrompt templates for evaluation. In this paragraph, we list all prompt templates used to evaluate LLMs' performance. The full prompts for the first three non-RAG methods including DP, CoT-auto and CoT-manual are shown in Table 7. The remaining three RAG-based methods, generally follow the retrieval, filter, and decision-making pipeline. For the retrieval stage, different retrieval methods are used to get relevant sub-rules. For the filter stage, the same prompt can be applied to all methods to verify the retrieved sub-rule is relevant to the given event. Finally, the decision-making stage follows previous chain-of-thought reasoning prompts by incorporating the selected reference regulations after the filter stage. Prompts used for Agent-ID are presented in Table 8. Those for BM25-content can be found in Table 9, while Table 10 displays the prompts used for CI-ES-content.\n\nLicenses. For our evaluation data, we use data provided by GoldCoin's official GitHub implementation under the Apache-2.0 license. In terms of used models, we follow all the licenses to use their models for the research propose. For example, we follow Llama 3 Community License Agreement to use the Llama3-8b model for experiments.",
+      "section_number": "B",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.naacl-long.86::sections::5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla A100 40GB",
+      "cleaned_hardware_name": "nvidia tesla a100 40gb",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "5",
+      "section_title": "experimental setups",
+      "normalized_section_title": "experimental setups",
+      "evidence": "Data. We use collected real and synthetic court cases for evaluation to demonstrate the usefulness of our Privacy Checklist. Following Fan et al. (2024), we use their collected real and synthetic court cases about HIPAA. The real cases are collected from the Caselaw Access Project $(\\mathrm{CAP})^2$ and the synthetic cases are LLM-augmented data based on real cases and HIPAA sub-rules. For both datasets, we directly prompt existing LLMs to perform three-way classification by determining if the given case is permitted by, prohibited by or not applicable to HIPAA. The dataset statistics are summarized in Table 1.\n\nEvaluated LLMs. We evaluate both open-source and close-source LLMs. In terms of open-source LLMs, we download their model weights of instruction or chat versions and generate responses on two NVIDIA Tesla A100 40GB graphic cards. Our evaluated open-source models include Llama3 (AI@Meta, 2024), Qwen1.5, Qwen2 (Yang et al., 2024), ChatGLM4 (GLM et al., 2024), and Mistral-v0.3 (Jiang et al., 2023). For close-source LLM, we evaluate the GPT-4-turbo-04-09's performance with API accesses.\n\nEvaluated methods. We evaluate LLMs' performance over the following methods. The first three methods rely on prompting tricks while the last three methods reason over our Privacy Checklist with different retrieval methods.\n\n- Direct prompt (DP). We prompt LLMs with the case context and directly ask them to determine if the given context is permitted, prohibited, or unrelated to HIPAA.   \n- CoT prompt with automatic planning (CoTauto). We prompt LLMs to automatically generate step-by-step planning to analyze the given case\n\nand then execute the steps to determine privacy violations.\n\n- CoT Prompt with manual guidelines (CoT-manual). Instead of using LLMs to generate plans, we prompt LLMs with pre-defined guidelines for each step. Our guidelines follow the CI theory to instruct LLMs to analyze the CI characteristics step by step to assess privacy violations.   \n- CoT prompt with regulation IDs from agent-based retrieval (Agent-ID). We first ask LLMs with the case to generate applicable regulation IDs. Then, we verify their existence with our checklist to filter out misinformation. Finally, we prompt LLMs similarly to the CoT-manual approach, but with the addition of regulation IDs for in-context reasoning.   \n- CoT prompt with LLM explanation and regulations retrieved via BM25 (BM25-content). We apply the LLM explanation to clarify the case context with legal terms to facilitate the retrieval process. Then, we use BM25 to search for relevant sub-rules. Finally, we incorporate both content and IDs of these sub-rules into the CoT-manual prompt to improve in-context reasoning.   \n- CoT prompt with CI characteristics extraction and regulations retrieved via embedding similarity (CI-ES-content). We first perform CI characteristics extraction to extract necessary information about information flow. Then, we consider stakeholders' roles as keywords and use pre-trained embedding models to match their roles with roles in our Privacy Checklist by calculating the embedding similarities. We use the matched roles as keywords to search for applicable rules. Finally, we add the regulations to the CoT-manual prompt for in-context reasoning.\n\nEvaluation metrics. For the three-way classification, we report the accuracy of correct LLM judgments in a single run. In addition, for each class, we also calculate its precision, recall, and F1. To verify the correctness, we implement multiple parsers based on regular expressions to capture the desired predictions. All parsing failures are regarded as incorrect predictions.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.naacl-long.86::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 6000",
+      "cleaned_hardware_name": "nvidia rtx 6000",
+      "normalized_hardware_name": "NVIDIA Quadro RTX 6000",
+      "benchmark_hardware_name": "NVIDIA Quadro RTX 6000",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "B",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "evidence": "Computational resources. During our experiment, we use 2 NVIDIA RTX 6000 to run our codes, and it takes GPU hours around 2 weeks to complete all experiments.\n\nGeneration details. For open-source models, we generate the models' responses with the recommended configurations in their model cards. For close-source models, we use their official APIs to obtain the responses with temperature $= 0$ and top_p = 0.95 to ensure reproducibility.\n\nPrompt templates for evaluation. In this paragraph, we list all prompt templates used to evaluate LLMs' performance. The full prompts for the first three non-RAG methods including DP, CoT-auto and CoT-manual are shown in Table 7. The remaining three RAG-based methods, generally follow the retrieval, filter, and decision-making pipeline. For the retrieval stage, different retrieval methods are used to get relevant sub-rules. For the filter stage, the same prompt can be applied to all methods to verify the retrieved sub-rule is relevant to the given event. Finally, the decision-making stage follows previous chain-of-thought reasoning prompts by incorporating the selected reference regulations after the filter stage. Prompts used for Agent-ID are presented in Table 8. Those for BM25-content can be found in Table 9, while Table 10 displays the prompts used for CI-ES-content.\n\nLicenses. For our evaluation data, we use data provided by GoldCoin's official GitHub implementation under the Apache-2.0 license. In terms of used models, we follow all the licenses to use their models for the research propose. For example, we follow Llama 3 Community License Agreement to use the Llama3-8b model for experiments.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized RTX professional special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "5",
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 2
+      },
+      {
+        "name": "NVIDIA Quadro RTX 6000",
+        "num": 2
+      }
+    ]
+  }
+}

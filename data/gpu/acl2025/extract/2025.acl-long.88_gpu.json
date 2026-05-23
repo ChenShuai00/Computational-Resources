@@ -1,0 +1,171 @@
+{
+  "paper_id": "2025.acl-long.88",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.88::sections::3",
+      "paper_id": "2025.acl-long.88",
+      "section_number": "3",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "We present LANGSAMP, an approach that incorporates both language and script embeddings to facilitate learning more language-neutral representations in multilingual pretraining. LANGSAMP preserves the same architecture as the most recent multilingual encoder-only models, except for requiring auxiliary language and script IDs/embeddings in pretraining. In the fine-tuning stage, these auxiliary IDs and embeddings are not required. We introduce the key components in the following.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.88::sections::4",
+      "paper_id": "2025.acl-long.88",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.88::sections::4.1",
+      "paper_id": "2025.acl-long.88",
+      "section_number": "4.1",
+      "section_title": "setups",
+      "normalized_section_title": "setups",
+      "window_text": "Training Corpora and Tokenizer We use Glot500-c (ImaniGooghari et al., 2023), a corpus that has monolingual data from more than 500 languages written in 30 different scripts. We treat each language-script as a separate entity and refer to those covered by XLM-R (Conneau et al., 2020) as head languages, whereas the remaining are tail languages (also low-resource languages). We use the tokenizer of Glot500-m (ImaniGooghari et al., 2023), which is a SentencePiece Unigram tokenizer (Kudo and Richardson, 2018; Kudo, 2018) whose vocabulary is merged from the subwords in XLM-R and new subwords learned from Glot500-c.\n\nContinued pretraining We use the weights from XLM-R to initialize our LANGSAMP model for MLM pretraining. Language and script embeddings are randomly initialized with dimensions $\\mathbb{R}^{610\\times 768}$ and $\\mathbb{R}^{30\\times 768}$ respectively. We continually train our model on Glot500-c, where we sample data from a multinomial distribution with a temperature of 0.3, to increase the amount of training instances of low- and medium-resource languages. We use AdamW optimizer (Kingma and Ba, 2015; Loshchilov and Hutter, 2019) with $(\\beta_{1},\\beta_{2}) = (0.9,0.999)$ and $\\epsilon = 1\\mathrm{e - }6$ . The initial learning rate is set to 5e-5. The effective batch size is 1,024 in each training step, where the gradient accumulation is 8 and the per-GPU batch size is 32. We train the model on 4 NVIDIA RTX6000 GPUs. Each training instance in a batch contains\n\n<table><tr><td rowspan=\"2\"></td><td colspan=\"2\">tail</td><td colspan=\"2\">head</td><td colspan=\"2\">Latn</td><td colspan=\"2\">non-Latn</td><td colspan=\"2\">all</td></tr><tr><td>Baseline</td><td>LANGSAMP</td><td>Baseline</td><td>LANGSAMP</td><td>Baseline</td><td>LANGSAMP</td><td>Baseline</td><td>LANGSAMP</td><td>Baseline</td><td>LANGSAMP</td></tr><tr><td>SR-B</td><td>36.9 (0.0)</td><td>39.5 (0.0)</td><td>60.6 (0.0)</td><td>61.3 (0.0)</td><td>40.7 (0.0)</td><td>42.8 (0.0)</td><td>51.2 (0.0)</td><td>53.5 (0.0)</td><td>42.9 (0.0)</td><td>45.1 (0.0)</td></tr><tr><td>SR-T</td><td>56.9 (0.0)</td><td>58.6 (0.0)</td><td>74.8 (0.0)</td><td>76.1 (0.0)</td><td>67.5 (0.0)</td><td>68.7 (0.0)</td><td>73.7 (0.0)</td><td>75.6 (0.0)</td><td>69.7 (0.0)</td><td>71.1 (0.0)</td></tr><tr><td>Taxi1500</td><td>47.1 (4.8)</td><td>50.8 (2.4)</td><td>59.9 (2.9)</td><td>61.2 (1.2)</td><td>48.2 (4.6)</td><td>51.7 (2.1)</td><td>58.8 (3.1)</td><td>60.1 (1.7)</td><td>50.3 (4.2)</td><td>53.4 (2.0)</td></tr><tr><td>SIB200</td><td>69.0 (1.4)</td><td>70.2 (1.9)</td><td>82.2 (1.4)</td><td>82.6 (1.2)</td><td>72.1 (1.3)</td><td>73.1 (1.8)</td><td>81.1 (1.5)</td><td>81.7 (1.2)</td><td>75.0 (1.3)</td><td>75.9 (1.6)</td></tr><tr><td>NER</td><td>60.1 (0.6)</td><td>60.8 (0.8)</td><td>64.0 (0.6)</td><td>64.1 (0.6)</td><td>67.0 (0.5)</td><td>67.6 (0.6)</td><td>53.9 (0.7)</td><td>53.9 (0.5)</td><td>62.2 (0.5)</td><td>62.6 (0.6)</td></tr><tr><td>POS</td><td>61.3 (1.0)</td><td>61.4 (0.9)</td><td>76.0 (0.4)</td><td>76.2 (0.4)</td><td>74.6 (0.5)</td><td>74.5 (0.4)</td><td>66.2 (1.0)</td><td>66.8 (0.8)</td><td>71.5 (0.6)</td><td>71.6 (0.5)</td></tr></table>\n\nTable 1: Performance of LANGSAMP and baseline on six downstream tasks across five random seeds. We report the performance by grouping languages according to two characteristics: (1) whether it is a head or a tail language, and (2) whether it is written in Latin script or non-Latin script. The average performance within each group and the standard deviation (in parentheses) are computed. LANGSAMP consistently achieves on-par performance or outperforms the baseline across all groups and downstream tasks. Bold: best result for each group in each task.\n\nsentences from the same language-script which are concatenated to a chunk of 512 tokens. Each batch contains instances from different language-scripts. We store checkpoints every 5K steps and apply early stopping with the best average performance on downstream tasks. We set the maximum steps to 150K. The training takes about 4 weeks.\n\nBaseline To validate LANGSAMP, we create a baseline where language and script embeddings are not used. This baseline can be regarded as a reproduction of Glot500-m (ImaniGooghari et al., 2023). For a fair comparison, the training hyperparameters and training data (100% data of Glot500-c) are the same as LANGSAMP. However, in our ablation study §5.1, due to a constrained computing budget, we cannot continually pretrain model variants on full Glot500-c for validating each component individually (with/without language or script embeddings). Instead, we create such variants and pretrain them using a small portion (5%) of Glot500-c. As a result, the baseline model in Table 1 is different from the vanilla model in Table 2.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.88::appendix::A",
+      "paper_id": "2025.acl-long.88",
+      "section_number": "A",
+      "section_title": "settings and hyperparameters",
+      "normalized_section_title": "settings and hyperparameters",
+      "window_text": "We show the information of the evaluation datasets and used measures in Table 5 and introduce the detailed settings and hyperparameters as follows.\n\nSentence Retrieval We use English-aligned sentences (up to 500 and 1000 for SR-B and SR-T, respectively) from languages covered by Glot500-c (ImaniGooghari et al., 2023). No fine-tuning is needed for this evaluation type: we directly use each model as a text encoder and generate the sentence-level representation by averaging the contextual token embeddings at the 8th layer, similar to previous work (Jalili Sabet et al., 2020; Imani-Googhari et al., 2023; Liu et al., 2024a). We perform retrieval by sorting the pairwise similarities.\n\nText Classification We add a 6-class or 7-class (for Taxi1500 and SIB200, respectively) sequence-level classification head onto the backbone model (no language or script IDs are required as input since the language modeling head is not needed in this sequence-level classification model). By default, we train the model on the English train set and store the best checkpoint on the English validation set. We train all models using AdamW optimizer (Kingma and Ba, 2015; Loshchilov and Hutter, 2019) for a maximum of 40 epochs, with a learning rate of 1e-5 and an effective batch size of 16 (batch size of 8, gradient accumulation of 2). We use a single GTX 1080 Ti GPU for training. The evaluation is done in zero-shot transfer: we directly apply the best checkpoint to the test sets of all other languages.\n\nSequence Labeling We add a 7-class or 18-class (for NER and POS, respectively) token-level classification head onto the backbone model (no language or script IDs are required as input since the language modeling head is not needed in this token-level classification model). Similarly, we train the model on the English train set and store the best checkpoint on the English validation set by default. We train all models using the AdamW optimizer (Kingma and Ba, 2015; Loshchilov and Hutter, 2019) for a maximum of 10 epochs. The learning rate is set to 2e-5, and the effective batch size is\n\n<table><tr><td></td><td colspan=\"5\">|head| |tail| |Latnl |non-Latnl #class measure (%)</td></tr><tr><td>SR-B</td><td>94</td><td>275</td><td>290</td><td>79</td><td>- top-10 Acc.</td></tr><tr><td>SR-T</td><td>70</td><td>28</td><td>64</td><td>34</td><td>- top-10 Acc.</td></tr><tr><td>Taxi1500</td><td>89</td><td>262</td><td>281</td><td>70</td><td>6 F1 score</td></tr><tr><td>SIB200</td><td>78</td><td>94</td><td>117</td><td>55</td><td>7 F1 score</td></tr><tr><td>NER</td><td>89</td><td>75</td><td>104</td><td>60</td><td>7 F1 score</td></tr><tr><td>POS</td><td>63</td><td>28</td><td>57</td><td>34</td><td>18 F1 score</td></tr></table>\n\nTable 5: Information of the evaluation datasets and used measures. |head| (resp. |tail|): number of head (resp. tail) language-scripts. |Latnl| (resp. |non-Latnl|): number of languages written in Latin script (resp. non-Latin scripts). #class: the number of the categories if it belongs to a text classification or sequence labeling task.\n\nset to 32 (batch size of 8, gradient accumulation of 4). The training is done on a single GTX 1080 Ti GPU. The evaluation is done in zero-shot transfer: we directly apply the best checkpoint to the test sets of all other languages.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.88::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX6000",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "Training Corpora and Tokenizer We use Glot500-c (ImaniGooghari et al., 2023), a corpus that has monolingual data from more than 500 languages written in 30 different scripts. We treat each language-script as a separate entity and refer to those covered by XLM-R (Conneau et al., 2020) as head languages, whereas the remaining are tail languages (also low-resource languages). We use the tokenizer of Glot500-m (ImaniGooghari et al., 2023), which is a SentencePiece Unigram tokenizer (Kudo and Richardson, 2018; Kudo, 2018) whose vocabulary is merged from the subwords in XLM-R and new subwords learned from Glot500-c.\n\nContinued pretraining We use the weights from XLM-R to initialize our LANGSAMP model for MLM pretraining. Language and script embeddings are randomly initialized with dimensions $\\mathbb{R}^{610\\times 768}$ and $\\mathbb{R}^{30\\times 768}$ respectively. We continually train our model on Glot500-c, where we sample data from a multinomial distribution with a temperature of 0.3, to increase the amount of training instances of low- and medium-resource languages. We use AdamW optimizer (Kingma and Ba, 2015; Loshchilov and Hutter, 2019) with $(\\beta_{1},\\beta_{2}) = (0.9,0.999)$ and $\\epsilon = 1\\mathrm{e - }6$ . The initial learning rate is set to 5e-5. The effective batch size is 1,024 in each training step, where the gradient accumulation is 8 and the per-GPU batch size is 32. We train the model on 4 NVIDIA RTX6000 GPUs. Each training instance in a batch contains\n\n<table><tr><td rowspan=\"2\"></td><td colspan=\"2\">tail</td><td colspan=\"2\">head</td><td colspan=\"2\">Latn</td><td colspan=\"2\">non-Latn</td><td colspan=\"2\">all</td></tr><tr><td>Baseline</td><td>LANGSAMP</td><td>Baseline</td><td>LANGSAMP</td><td>Baseline</td><td>LANGSAMP</td><td>Baseline</td><td>LANGSAMP</td><td>Baseline</td><td>LANGSAMP</td></tr><tr><td>SR-B</td><td>36.9 (0.0)</td><td>39.5 (0.0)</td><td>60.6 (0.0)</td><td>61.3 (0.0)</td><td>40.7 (0.0)</td><td>42.8 (0.0)</td><td>51.2 (0.0)</td><td>53.5 (0.0)</td><td>42.9 (0.0)</td><td>45.1 (0.0)</td></tr><tr><td>SR-T</td><td>56.9 (0.0)</td><td>58.6 (0.0)</td><td>74.8 (0.0)</td><td>76.1 (0.0)</td><td>67.5 (0.0)</td><td>68.7 (0.0)</td><td>73.7 (0.0)</td><td>75.6 (0.0)</td><td>69.7 (0.0)</td><td>71.1 (0.0)</td></tr><tr><td>Taxi1500</td><td>47.1 (4.8)</td><td>50.8 (2.4)</td><td>59.9 (2.9)</td><td>61.2 (1.2)</td><td>48.2 (4.6)</td><td>51.7 (2.1)</td><td>58.8 (3.1)</td><td>60.1 (1.7)</td><td>50.3 (4.2)</td><td>53.4 (2.0)</td></tr><tr><td>SIB200</td><td>69.0 (1.4)</td><td>70.2 (1.9)</td><td>82.2 (1.4)</td><td>82.6 (1.2)</td><td>72.1 (1.3)</td><td>73.1 (1.8)</td><td>81.1 (1.5)</td><td>81.7 (1.2)</td><td>75.0 (1.3)</td><td>75.9 (1.6)</td></tr><tr><td>NER</td><td>60.1 (0.6)</td><td>60.8 (0.8)</td><td>64.0 (0.6)</td><td>64.1 (0.6)</td><td>67.0 (0.5)</td><td>67.6 (0.6)</td><td>53.9 (0.7)</td><td>53.9 (0.5)</td><td>62.2 (0.5)</td><td>62.6 (0.6)</td></tr><tr><td>POS</td><td>61.3 (1.0)</td><td>61.4 (0.9)</td><td>76.0 (0.4)</td><td>76.2 (0.4)</td><td>74.6 (0.5)</td><td>74.5 (0.4)</td><td>66.2 (1.0)</td><td>66.8 (0.8)</td><td>71.5 (0.6)</td><td>71.6 (0.5)</td></tr></table>\n\nTable 1: Performance of LANGSAMP and baseline on six downstream tasks across five random seeds. We report the performance by grouping languages according to two characteristics: (1) whether it is a head or a tail language, and (2) whether it is written in Latin script or non-Latin script. The average performance within each group and the standard deviation (in parentheses) are computed. LANGSAMP consistently achieves on-par performance or outperforms the baseline across all groups and downstream tasks. Bold: best result for each group in each task.\n\nsentences from the same language-script which are concatenated to a chunk of 512 tokens. Each batch contains instances from different language-scripts. We store checkpoints every 5K steps and apply early stopping with the best average performance on downstream tasks. We set the maximum steps to 150K. The training takes about 4 weeks.\n\nBaseline To validate LANGSAMP, we create a baseline where language and script embeddings are not used. This baseline can be regarded as a reproduction of Glot500-m (ImaniGooghari et al., 2023). For a fair comparison, the training hyperparameters and training data (100% data of Glot500-c) are the same as LANGSAMP. However, in our ablation study §5.1, due to a constrained computing budget, we cannot continually pretrain model variants on full Glot500-c for validating each component individually (with/without language or script embeddings). Instead, we create such variants and pretrain them using a small portion (5%) of Glot500-c. As a result, the baseline model in Table 1 is different from the vanilla model in Table 2.",
+      "section_number": "4.1",
+      "section_title": "setups",
+      "normalized_section_title": "setups"
+    },
+    {
+      "window_id": "2025.acl-long.88::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GTX 1080 Ti",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We show the information of the evaluation datasets and used measures in Table 5 and introduce the detailed settings and hyperparameters as follows.\n\nSentence Retrieval We use English-aligned sentences (up to 500 and 1000 for SR-B and SR-T, respectively) from languages covered by Glot500-c (ImaniGooghari et al., 2023). No fine-tuning is needed for this evaluation type: we directly use each model as a text encoder and generate the sentence-level representation by averaging the contextual token embeddings at the 8th layer, similar to previous work (Jalili Sabet et al., 2020; Imani-Googhari et al., 2023; Liu et al., 2024a). We perform retrieval by sorting the pairwise similarities.\n\nText Classification We add a 6-class or 7-class (for Taxi1500 and SIB200, respectively) sequence-level classification head onto the backbone model (no language or script IDs are required as input since the language modeling head is not needed in this sequence-level classification model). By default, we train the model on the English train set and store the best checkpoint on the English validation set. We train all models using AdamW optimizer (Kingma and Ba, 2015; Loshchilov and Hutter, 2019) for a maximum of 40 epochs, with a learning rate of 1e-5 and an effective batch size of 16 (batch size of 8, gradient accumulation of 2). We use a single GTX 1080 Ti GPU for training. The evaluation is done in zero-shot transfer: we directly apply the best checkpoint to the test sets of all other languages.\n\nSequence Labeling We add a 7-class or 18-class (for NER and POS, respectively) token-level classification head onto the backbone model (no language or script IDs are required as input since the language modeling head is not needed in this token-level classification model). Similarly, we train the model on the English train set and store the best checkpoint on the English validation set by default. We train all models using the AdamW optimizer (Kingma and Ba, 2015; Loshchilov and Hutter, 2019) for a maximum of 10 epochs. The learning rate is set to 2e-5, and the effective batch size is\n\n<table><tr><td></td><td colspan=\"5\">|head| |tail| |Latnl |non-Latnl #class measure (%)</td></tr><tr><td>SR-B</td><td>94</td><td>275</td><td>290</td><td>79</td><td>- top-10 Acc.</td></tr><tr><td>SR-T</td><td>70</td><td>28</td><td>64</td><td>34</td><td>- top-10 Acc.</td></tr><tr><td>Taxi1500</td><td>89</td><td>262</td><td>281</td><td>70</td><td>6 F1 score</td></tr><tr><td>SIB200</td><td>78</td><td>94</td><td>117</td><td>55</td><td>7 F1 score</td></tr><tr><td>NER</td><td>89</td><td>75</td><td>104</td><td>60</td><td>7 F1 score</td></tr><tr><td>POS</td><td>63</td><td>28</td><td>57</td><td>34</td><td>18 F1 score</td></tr></table>\n\nTable 5: Information of the evaluation datasets and used measures. |head| (resp. |tail|): number of head (resp. tail) language-scripts. |Latnl| (resp. |non-Latnl|): number of languages written in Latin script (resp. non-Latin scripts). #class: the number of the categories if it belongs to a text classification or sequence labeling task.\n\nset to 32 (batch size of 8, gradient accumulation of 4). The training is done on a single GTX 1080 Ti GPU. The evaluation is done in zero-shot transfer: we directly apply the best checkpoint to the test sets of all other languages.",
+      "section_number": "A",
+      "section_title": "settings and hyperparameters",
+      "normalized_section_title": "settings and hyperparameters"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.88::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX6000",
+      "cleaned_hardware_name": "nvidia rtx 6000",
+      "normalized_hardware_name": "NVIDIA Quadro RTX 6000",
+      "benchmark_hardware_name": "NVIDIA Quadro RTX 6000",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "4.1",
+      "section_title": "setups",
+      "normalized_section_title": "setups",
+      "evidence": "Training Corpora and Tokenizer We use Glot500-c (ImaniGooghari et al., 2023), a corpus that has monolingual data from more than 500 languages written in 30 different scripts. We treat each language-script as a separate entity and refer to those covered by XLM-R (Conneau et al., 2020) as head languages, whereas the remaining are tail languages (also low-resource languages). We use the tokenizer of Glot500-m (ImaniGooghari et al., 2023), which is a SentencePiece Unigram tokenizer (Kudo and Richardson, 2018; Kudo, 2018) whose vocabulary is merged from the subwords in XLM-R and new subwords learned from Glot500-c.\n\nContinued pretraining We use the weights from XLM-R to initialize our LANGSAMP model for MLM pretraining. Language and script embeddings are randomly initialized with dimensions $\\mathbb{R}^{610\\times 768}$ and $\\mathbb{R}^{30\\times 768}$ respectively. We continually train our model on Glot500-c, where we sample data from a multinomial distribution with a temperature of 0.3, to increase the amount of training instances of low- and medium-resource languages. We use AdamW optimizer (Kingma and Ba, 2015; Loshchilov and Hutter, 2019) with $(\\beta_{1},\\beta_{2}) = (0.9,0.999)$ and $\\epsilon = 1\\mathrm{e - }6$ . The initial learning rate is set to 5e-5. The effective batch size is 1,024 in each training step, where the gradient accumulation is 8 and the per-GPU batch size is 32. We train the model on 4 NVIDIA RTX6000 GPUs. Each training instance in a batch contains\n\n<table><tr><td rowspan=\"2\"></td><td colspan=\"2\">tail</td><td colspan=\"2\">head</td><td colspan=\"2\">Latn</td><td colspan=\"2\">non-Latn</td><td colspan=\"2\">all</td></tr><tr><td>Baseline</td><td>LANGSAMP</td><td>Baseline</td><td>LANGSAMP</td><td>Baseline</td><td>LANGSAMP</td><td>Baseline</td><td>LANGSAMP</td><td>Baseline</td><td>LANGSAMP</td></tr><tr><td>SR-B</td><td>36.9 (0.0)</td><td>39.5 (0.0)</td><td>60.6 (0.0)</td><td>61.3 (0.0)</td><td>40.7 (0.0)</td><td>42.8 (0.0)</td><td>51.2 (0.0)</td><td>53.5 (0.0)</td><td>42.9 (0.0)</td><td>45.1 (0.0)</td></tr><tr><td>SR-T</td><td>56.9 (0.0)</td><td>58.6 (0.0)</td><td>74.8 (0.0)</td><td>76.1 (0.0)</td><td>67.5 (0.0)</td><td>68.7 (0.0)</td><td>73.7 (0.0)</td><td>75.6 (0.0)</td><td>69.7 (0.0)</td><td>71.1 (0.0)</td></tr><tr><td>Taxi1500</td><td>47.1 (4.8)</td><td>50.8 (2.4)</td><td>59.9 (2.9)</td><td>61.2 (1.2)</td><td>48.2 (4.6)</td><td>51.7 (2.1)</td><td>58.8 (3.1)</td><td>60.1 (1.7)</td><td>50.3 (4.2)</td><td>53.4 (2.0)</td></tr><tr><td>SIB200</td><td>69.0 (1.4)</td><td>70.2 (1.9)</td><td>82.2 (1.4)</td><td>82.6 (1.2)</td><td>72.1 (1.3)</td><td>73.1 (1.8)</td><td>81.1 (1.5)</td><td>81.7 (1.2)</td><td>75.0 (1.3)</td><td>75.9 (1.6)</td></tr><tr><td>NER</td><td>60.1 (0.6)</td><td>60.8 (0.8)</td><td>64.0 (0.6)</td><td>64.1 (0.6)</td><td>67.0 (0.5)</td><td>67.6 (0.6)</td><td>53.9 (0.7)</td><td>53.9 (0.5)</td><td>62.2 (0.5)</td><td>62.6 (0.6)</td></tr><tr><td>POS</td><td>61.3 (1.0)</td><td>61.4 (0.9)</td><td>76.0 (0.4)</td><td>76.2 (0.4)</td><td>74.6 (0.5)</td><td>74.5 (0.4)</td><td>66.2 (1.0)</td><td>66.8 (0.8)</td><td>71.5 (0.6)</td><td>71.6 (0.5)</td></tr></table>\n\nTable 1: Performance of LANGSAMP and baseline on six downstream tasks across five random seeds. We report the performance by grouping languages according to two characteristics: (1) whether it is a head or a tail language, and (2) whether it is written in Latin script or non-Latin script. The average performance within each group and the standard deviation (in parentheses) are computed. LANGSAMP consistently achieves on-par performance or outperforms the baseline across all groups and downstream tasks. Bold: best result for each group in each task.\n\nsentences from the same language-script which are concatenated to a chunk of 512 tokens. Each batch contains instances from different language-scripts. We store checkpoints every 5K steps and apply early stopping with the best average performance on downstream tasks. We set the maximum steps to 150K. The training takes about 4 weeks.\n\nBaseline To validate LANGSAMP, we create a baseline where language and script embeddings are not used. This baseline can be regarded as a reproduction of Glot500-m (ImaniGooghari et al., 2023). For a fair comparison, the training hyperparameters and training data (100% data of Glot500-c) are the same as LANGSAMP. However, in our ablation study §5.1, due to a constrained computing budget, we cannot continually pretrain model variants on full Glot500-c for validating each component individually (with/without language or script embeddings). Instead, we create such variants and pretrain them using a small portion (5%) of Glot500-c. As a result, the baseline model in Table 1 is different from the vanilla model in Table 2.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized RTX professional special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.88::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GTX 1080 Ti",
+      "cleaned_hardware_name": "gtx 1080 ti",
+      "normalized_hardware_name": "NVIDIA GeForce GTX 1080 Ti",
+      "benchmark_hardware_name": "NVIDIA GeForce GTX 1080 Ti",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A",
+      "section_title": "settings and hyperparameters",
+      "normalized_section_title": "settings and hyperparameters",
+      "evidence": "We show the information of the evaluation datasets and used measures in Table 5 and introduce the detailed settings and hyperparameters as follows.\n\nSentence Retrieval We use English-aligned sentences (up to 500 and 1000 for SR-B and SR-T, respectively) from languages covered by Glot500-c (ImaniGooghari et al., 2023). No fine-tuning is needed for this evaluation type: we directly use each model as a text encoder and generate the sentence-level representation by averaging the contextual token embeddings at the 8th layer, similar to previous work (Jalili Sabet et al., 2020; Imani-Googhari et al., 2023; Liu et al., 2024a). We perform retrieval by sorting the pairwise similarities.\n\nText Classification We add a 6-class or 7-class (for Taxi1500 and SIB200, respectively) sequence-level classification head onto the backbone model (no language or script IDs are required as input since the language modeling head is not needed in this sequence-level classification model). By default, we train the model on the English train set and store the best checkpoint on the English validation set. We train all models using AdamW optimizer (Kingma and Ba, 2015; Loshchilov and Hutter, 2019) for a maximum of 40 epochs, with a learning rate of 1e-5 and an effective batch size of 16 (batch size of 8, gradient accumulation of 2). We use a single GTX 1080 Ti GPU for training. The evaluation is done in zero-shot transfer: we directly apply the best checkpoint to the test sets of all other languages.\n\nSequence Labeling We add a 7-class or 18-class (for NER and POS, respectively) token-level classification head onto the backbone model (no language or script IDs are required as input since the language modeling head is not needed in this token-level classification model). Similarly, we train the model on the English train set and store the best checkpoint on the English validation set by default. We train all models using the AdamW optimizer (Kingma and Ba, 2015; Loshchilov and Hutter, 2019) for a maximum of 10 epochs. The learning rate is set to 2e-5, and the effective batch size is\n\n<table><tr><td></td><td colspan=\"5\">|head| |tail| |Latnl |non-Latnl #class measure (%)</td></tr><tr><td>SR-B</td><td>94</td><td>275</td><td>290</td><td>79</td><td>- top-10 Acc.</td></tr><tr><td>SR-T</td><td>70</td><td>28</td><td>64</td><td>34</td><td>- top-10 Acc.</td></tr><tr><td>Taxi1500</td><td>89</td><td>262</td><td>281</td><td>70</td><td>6 F1 score</td></tr><tr><td>SIB200</td><td>78</td><td>94</td><td>117</td><td>55</td><td>7 F1 score</td></tr><tr><td>NER</td><td>89</td><td>75</td><td>104</td><td>60</td><td>7 F1 score</td></tr><tr><td>POS</td><td>63</td><td>28</td><td>57</td><td>34</td><td>18 F1 score</td></tr></table>\n\nTable 5: Information of the evaluation datasets and used measures. |head| (resp. |tail|): number of head (resp. tail) language-scripts. |Latnl| (resp. |non-Latnl|): number of languages written in Latin script (resp. non-Latin scripts). #class: the number of the categories if it belongs to a text classification or sequence labeling task.\n\nset to 32 (batch size of 8, gradient accumulation of 4). The training is done on a single GTX 1080 Ti GPU. The evaluation is done in zero-shot transfer: we directly apply the best checkpoint to the test sets of all other languages.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.88::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methodology",
+      "evidence": "We present LANGSAMP, an approach that incorporates both language and script embeddings to facilitate learning more language-neutral representations in multilingual pretraining. LANGSAMP preserves the same architecture as the most recent multilingual encoder-only models, except for requiring auxiliary language and script IDs/embeddings in pretraining. In the fine-tuning stage, these auxiliary IDs and embeddings are not required. We introduce the key components in the following."
+    },
+    {
+      "source_window_id": "2025.acl-long.88::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.1",
+      "A"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Quadro RTX 6000",
+        "num": 4
+      },
+      {
+        "name": "NVIDIA GeForce GTX 1080 Ti",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.88\\auto\\full.md",
+    "source_md_sha256": "aea65e82d813476915d63040a929e39b4b9070742a8124c674fca7be0d534e22",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "ad96f3b6ca003898756db958dd17467668c845886fa3f1f835d26a866c8af3f0"
+  }
+}

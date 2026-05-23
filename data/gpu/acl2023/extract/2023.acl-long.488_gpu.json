@@ -1,0 +1,204 @@
+{
+  "paper_id": "2023.acl-long.488",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.488::sections::3",
+      "paper_id": "2023.acl-long.488",
+      "section_number": "3",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.488::sections::4",
+      "paper_id": "2023.acl-long.488",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.488::sections::4.2",
+      "paper_id": "2023.acl-long.488",
+      "section_number": "4.2",
+      "section_title": "experimental settings",
+      "normalized_section_title": "experimental settings",
+      "window_text": "We use UniLM-base-cased (Dong et al., 2019) as the shared encoder and decoder of DuNST. The dimension of latent $z$ is 128 for sentiment control and 256 for topic control. We use AdamW (Loshchilov and Hutter, 2019) with learning rate $= 5\\mathrm{e - }5$ , warm-up steps $=$ one epoch, and batch size $= 8$ for optimization across all tasks. $\\lambda_{g} = 1$ and $\\tau = 5$ for all tasks, $\\lambda_{c}$ is 10 for IMDb and 1 for AGNews. As a common practice (Holtzman et al., 2019), we use top- $p$ with $p = 0.9$ sampling method for decoding. To stabilize training, we further incorporate BOW (Wang et al., 2017) and annealing (Fu et al., 2019) techniques. Following ST in NLU (Mukherjee and Hassan Awadallah, 2020), we start ST from a base model tuned on $D_{L}$ without any sample selection as in (Vu et al., 2021). More implementation details are provided in Appendix A.1.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.488::sections::4.4",
+      "paper_id": "2023.acl-long.488",
+      "section_number": "4.4",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "We compare our model with three kinds of (supervised or semi-supervised) strong NLG baselines.\n\nFinetune PLM: We finetune different powerful PLMs on each downstream dataset, including GPT2 (Radford et al., 2019), UniLM (Dong et al., 2019) and T5 (Raffel et al., 2020).\n\nLightweight fine-tuning methods: (1) Prefix-tuning (PF) (Li and Liang, 2021): this method only tunes the prefix and freezes all parameters of the PLM, requiring less data. (2) Ctrl-PF(Qian et al., 2022): A contrastive version of PF.\n\nSelf-training methods: (1) PT: the classical Selftraining (Grandvalet and Bengio, 2004), which generates pseudo text in each ST iteration and updates parameters with both real and pseudo text from the last iteration. (2) PT(noise): Noisy Self-training (He et al., 2020), which brings synthetic noise (token drop, swap and mask) to the pseudo text for self-training. (3) PT(noise)+PL: We combine PT(noise) and pseudo labeling to produce and utilize both pseudo text and pseudo labels, which are predicted from the real unlabeled text by a BERT-base (Devlin et al., 2019) finetuned on our labeled data. (4) PT(select)+PL: PT(select) is a modified ST method with sample selection (Mukherjee and Hassan Awadallah, 2020), which over-generates noisy pseudo text and selects\n\nhigh-quality ones by the classifier confidence and uncertainty.\n\nFor a fair comparison, we choose the PLM with the best fine-tuning performance on each task (and a similar model size to ours) as the backbone of these ST variants (GPT2 for sentiment and UniLM for the others). Besides, we also provide the evaluation results of Ground Truth as an upper bound of performance. We give more details of the baseline models above in Appendix A.4.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.488::appendix::A.1",
+      "paper_id": "2023.acl-long.488",
+      "section_number": "A.1",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "We use pre-trained UniLM-base-cased (Dong et al., 2019) as the encoder and decoder of our VAE model since UniLM shares the parameter of transformer blocks in the encoder and decoder. We use the state of [CLS] token to obtain the representation in the encoder. The dimension of latent $z$ is set to 128 for sentiment-controlled generation and detoxification(2-class) and 256 for topic-controlled generation (4-class). To fuse the latent $z$ better with the Transformer decoder, we use a simplified fusion method of DELLA (Hu et al., 2022) where we concatenate $z$ to the attention output of each token in each Transformer layer, and then add a linear layer to transfer the new attention output to the original shape of attention output. We did not use the low-rank tensor to compute layer-wise latent $z$ to save the number of parameters.\n\nTo avoid KL-vanishing, we utilize cyclical annealing tricks (Fu et al., 2019) to train DuNST and set the cycle length equal to training steps in each epoch. In each cycle, first the KL weight increases from 0 to 1 linearly for the first $80\\%$ steps in a cycle, and keeps to be 1 for the remaining $20\\%$ steps. KL annealing is activated for 5 epochs for classification KL-loss and 7 epochs for generation KL-loss. Besides, we use the KL thresholding scheme (Li et al., 2020) to give up driving down KL for dimensions of $z$ that are already beneath the target compression rate KL-lambda.\n\nWe tuned KL-lambda $\\in \\{0.01, 0.03, 0.05, 0.1\\}$ (following Li et al. (2020)), $\\lambda_c \\in \\{1, 5, 10\\}$ , the ratio of Pseudo Texts (Fig. 4), and softmax temperature $\\tau \\in \\{0.2, 1, 5, 10\\}$ (Fig. 5(b)) to obtain the reported results. We set KL-lambda to be 0.05 for sentiment-controlled generation, 0.03 for detoxification, and 0.01 for topic-controlled generation. $\\lambda_c$ is 10 for sentiment-controlled generation and 1 for topic-controlled generation and detoxification. Softmax temperature $\\tau$ is set to be 5 for all tasks. For other hyperparameters, $\\lambda_g$ is set to be 1, and weight for BOW loss (Wang et al., 2017) $\\lambda_{bow}$ is set to be 0.2 for all tasks. We use AdamW (Loshchilov and Hutter, 2019) as an optimizer. The training batch size is 8 and the learning rate is $5e - 5$ . We apply linear warmup to the optimizer and the number of warm-up steps is one epoch.\n\nWe implement DuNST and all other baselines based on Huggingface Transformers (Wolf et al., 2020) library of v4.21.1 and use NVIDIA A100 to\n\ntrain our model. The total number of training GPU hours is around 8h for IMDb, 10h for Jigsaw, and 9h for AGNews. The number of parameters of our model is 134.56M for sentiment-controlled generation and text detoxification. For a topic-controlled generation, the number of parameters is 136.19M. In the generation phase, we use top- $p$ sampling $(p = 0.9)$ as the decoding method. Other generator configurations include a length penalty to be 1.0, a repetition penalty to be 1.0, and a no-repeat-ngram-size to be 4 for all baselines. All experimental results are trained and tested in a single run.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.488::appendix::C",
+      "paper_id": "2023.acl-long.488",
+      "section_number": "C",
+      "section_title": "additional experimental results",
+      "normalized_section_title": "additional experimental results",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.488::appendix::C.5",
+      "paper_id": "2023.acl-long.488",
+      "section_number": "C.5",
+      "section_title": "full version of experimental results",
+      "normalized_section_title": "full version of experimental results",
+      "window_text": "Table C5, Table C6, and Table C7 reports complete experimental results of IMDb, AGNews, and Ablation Study.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.488::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": null,
+      "count_text": "",
+      "evidence": "We use pre-trained UniLM-base-cased (Dong et al., 2019) as the encoder and decoder of our VAE model since UniLM shares the parameter of transformer blocks in the encoder and decoder. We use the state of [CLS] token to obtain the representation in the encoder. The dimension of latent $z$ is set to 128 for sentiment-controlled generation and detoxification(2-class) and 256 for topic-controlled generation (4-class). To fuse the latent $z$ better with the Transformer decoder, we use a simplified fusion method of DELLA (Hu et al., 2022) where we concatenate $z$ to the attention output of each token in each Transformer layer, and then add a linear layer to transfer the new attention output to the original shape of attention output. We did not use the low-rank tensor to compute layer-wise latent $z$ to save the number of parameters.\n\nTo avoid KL-vanishing, we utilize cyclical annealing tricks (Fu et al., 2019) to train DuNST and set the cycle length equal to training steps in each epoch. In each cycle, first the KL weight increases from 0 to 1 linearly for the first $80\\%$ steps in a cycle, and keeps to be 1 for the remaining $20\\%$ steps. KL annealing is activated for 5 epochs for classification KL-loss and 7 epochs for generation KL-loss. Besides, we use the KL thresholding scheme (Li et al., 2020) to give up driving down KL for dimensions of $z$ that are already beneath the target compression rate KL-lambda.\n\nWe tuned KL-lambda $\\in \\{0.01, 0.03, 0.05, 0.1\\}$ (following Li et al. (2020)), $\\lambda_c \\in \\{1, 5, 10\\}$ , the ratio of Pseudo Texts (Fig. 4), and softmax temperature $\\tau \\in \\{0.2, 1, 5, 10\\}$ (Fig. 5(b)) to obtain the reported results. We set KL-lambda to be 0.05 for sentiment-controlled generation, 0.03 for detoxification, and 0.01 for topic-controlled generation. $\\lambda_c$ is 10 for sentiment-controlled generation and 1 for topic-controlled generation and detoxification. Softmax temperature $\\tau$ is set to be 5 for all tasks. For other hyperparameters, $\\lambda_g$ is set to be 1, and weight for BOW loss (Wang et al., 2017) $\\lambda_{bow}$ is set to be 0.2 for all tasks. We use AdamW (Loshchilov and Hutter, 2019) as an optimizer. The training batch size is 8 and the learning rate is $5e - 5$ . We apply linear warmup to the optimizer and the number of warm-up steps is one epoch.\n\nWe implement DuNST and all other baselines based on Huggingface Transformers (Wolf et al., 2020) library of v4.21.1 and use NVIDIA A100 to\n\ntrain our model. The total number of training GPU hours is around 8h for IMDb, 10h for Jigsaw, and 9h for AGNews. The number of parameters of our model is 134.56M for sentiment-controlled generation and text detoxification. For a topic-controlled generation, the number of parameters is 136.19M. In the generation phase, we use top- $p$ sampling $(p = 0.9)$ as the decoding method. Other generator configurations include a length penalty to be 1.0, a repetition penalty to be 1.0, and a no-repeat-ngram-size to be 4 for all baselines. All experimental results are trained and tested in a single run.",
+      "section_number": "A.1",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.488::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": null,
+      "count_text": "",
+      "section_number": "A.1",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "We use pre-trained UniLM-base-cased (Dong et al., 2019) as the encoder and decoder of our VAE model since UniLM shares the parameter of transformer blocks in the encoder and decoder. We use the state of [CLS] token to obtain the representation in the encoder. The dimension of latent $z$ is set to 128 for sentiment-controlled generation and detoxification(2-class) and 256 for topic-controlled generation (4-class). To fuse the latent $z$ better with the Transformer decoder, we use a simplified fusion method of DELLA (Hu et al., 2022) where we concatenate $z$ to the attention output of each token in each Transformer layer, and then add a linear layer to transfer the new attention output to the original shape of attention output. We did not use the low-rank tensor to compute layer-wise latent $z$ to save the number of parameters.\n\nTo avoid KL-vanishing, we utilize cyclical annealing tricks (Fu et al., 2019) to train DuNST and set the cycle length equal to training steps in each epoch. In each cycle, first the KL weight increases from 0 to 1 linearly for the first $80\\%$ steps in a cycle, and keeps to be 1 for the remaining $20\\%$ steps. KL annealing is activated for 5 epochs for classification KL-loss and 7 epochs for generation KL-loss. Besides, we use the KL thresholding scheme (Li et al., 2020) to give up driving down KL for dimensions of $z$ that are already beneath the target compression rate KL-lambda.\n\nWe tuned KL-lambda $\\in \\{0.01, 0.03, 0.05, 0.1\\}$ (following Li et al. (2020)), $\\lambda_c \\in \\{1, 5, 10\\}$ , the ratio of Pseudo Texts (Fig. 4), and softmax temperature $\\tau \\in \\{0.2, 1, 5, 10\\}$ (Fig. 5(b)) to obtain the reported results. We set KL-lambda to be 0.05 for sentiment-controlled generation, 0.03 for detoxification, and 0.01 for topic-controlled generation. $\\lambda_c$ is 10 for sentiment-controlled generation and 1 for topic-controlled generation and detoxification. Softmax temperature $\\tau$ is set to be 5 for all tasks. For other hyperparameters, $\\lambda_g$ is set to be 1, and weight for BOW loss (Wang et al., 2017) $\\lambda_{bow}$ is set to be 0.2 for all tasks. We use AdamW (Loshchilov and Hutter, 2019) as an optimizer. The training batch size is 8 and the learning rate is $5e - 5$ . We apply linear warmup to the optimizer and the number of warm-up steps is one epoch.\n\nWe implement DuNST and all other baselines based on Huggingface Transformers (Wolf et al., 2020) library of v4.21.1 and use NVIDIA A100 to\n\ntrain our model. The total number of training GPU hours is around 8h for IMDb, 10h for Jigsaw, and 9h for AGNews. The number of parameters of our model is 134.56M for sentiment-controlled generation and text detoxification. For a topic-controlled generation, the number of parameters is 136.19M. In the generation phase, we use top- $p$ sampling $(p = 0.9)$ as the decoding method. Other generator configurations include a length penalty to be 1.0, a repetition penalty to be 1.0, and a no-repeat-ngram-size to be 4 for all baselines. All experimental results are trained and tested in a single run.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.acl-long.488::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methodology",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.488::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.488::sections::4.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2",
+      "section_title": "experimental settings",
+      "evidence": "We use UniLM-base-cased (Dong et al., 2019) as the shared encoder and decoder of DuNST. The dimension of latent $z$ is 128 for sentiment control and 256 for topic control. We use AdamW (Loshchilov and Hutter, 2019) with learning rate $= 5\\mathrm{e - }5$ , warm-up steps $=$ one epoch, and batch size $= 8$ for optimization across all tasks. $\\lambda_{g} = 1$ and $\\tau = 5$ for all tasks, $\\lambda_{c}$ is 10 for IMDb and 1 for AGNews. As a common practice (Holtzman et al., 2019), we use top- $p$ with $p = 0.9$ sampling method for decoding. To stabilize training, we further incorporate BOW (Wang et al., 2017) and annealing (Fu et al., 2019) techniques. Following ST in NLU (Mukherjee and Hassan Awadallah, 2020), we start ST from a base model tuned on $D_{L}$ without any sample selection as in (Vu et al., 2021). More implementation details are provided in Appendix A.1."
+    },
+    {
+      "source_window_id": "2023.acl-long.488::sections::4.4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.4",
+      "section_title": "baselines",
+      "evidence": "We compare our model with three kinds of (supervised or semi-supervised) strong NLG baselines.\n\nFinetune PLM: We finetune different powerful PLMs on each downstream dataset, including GPT2 (Radford et al., 2019), UniLM (Dong et al., 2019) and T5 (Raffel et al., 2020).\n\nLightweight fine-tuning methods: (1) Prefix-tuning (PF) (Li and Liang, 2021): this method only tunes the prefix and freezes all parameters of the PLM, requiring less data. (2) Ctrl-PF(Qian et al., 2022): A contrastive version of PF.\n\nSelf-training methods: (1) PT: the classical Selftraining (Grandvalet and Bengio, 2004), which generates pseudo text in each ST iteration and updates parameters with both real and pseudo text from the last iteration. (2) PT(noise): Noisy Self-training (He et al., 2020), which brings synthetic noise (token drop, swap and mask) to the pseudo text for self-training. (3) PT(noise)+PL: We combine PT(noise) and pseudo labeling to produce and utilize both pseudo text and pseudo labels, which are predicted from the real unlabeled text by a BERT-base (Devlin et al., 2019) finetuned on our labeled data. (4) PT(select)+PL: PT(select) is a modified ST method with sample selection (Mukherjee and Hassan Awadallah, 2020), which over-generates noisy pseudo text and selects\n\nhigh-quality ones by the classifier confidence and uncertainty.\n\nFor a fair comparison, we choose the PLM with the best fine-tuning performance on each task (and a similar model size to ours) as the backbone of these ST variants (GPT2 for sentiment and UniLM for the others). Besides, we also provide the evaluation results of Ground Truth as an upper bound of performance. We give more details of the baseline models above in Appendix A.4."
+    },
+    {
+      "source_window_id": "2023.acl-long.488::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "additional experimental results",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.488::appendix::C.5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C.5",
+      "section_title": "full version of experimental results",
+      "evidence": "Table C5, Table C6, and Table C7 reports complete experimental results of IMDb, AGNews, and Ablation Study."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": null
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2023\\2023.acl-long.488\\auto\\full.md",
+    "source_md_sha256": "9ad391d077ac4473feabfed14cd3b26aab6c81ed0db408f77124668f842080f2",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

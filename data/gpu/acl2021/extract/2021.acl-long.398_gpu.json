@@ -1,0 +1,120 @@
+{
+  "paper_id": "2021.acl-long.398",
+  "candidate_windows": [
+    {
+      "window_id": "2021.acl-long.398::sections::4",
+      "paper_id": "2021.acl-long.398",
+      "section_number": "4",
+      "section_title": "implementation of ulr pre-training",
+      "normalized_section_title": "implementation of ulr pre-training",
+      "window_text": "This section introduces our ULR pre-training details.\n\nAs for the pre-training corpus, we download the English Wikipedia Corpus<sup>2</sup> and pre-process with processWiki.py<sup>3</sup>, which extracts text from xml files. When processing paragraphs from Wikipedia, we find that a large number of entities are annotated with special marks, which may be useful for our task. Therefore, we identify all the entities and treat them as high-quality $n$ -grams. Then, we remove punctuation marks and characters\n\nin other languages based on regular expressions, and finally get a corpus of 2,266M words.\n\nAs for $n$ -gram pruning, PMI scores of all $n$ -grams with a maximum length of $N = 6$ are calculated for each document. We manually evaluate the extracted $n$ -grams and find more than $50\\%$ of the top 2000 $n$ -grams contain $2 \\sim 3$ words, and only less than $3\\%$ $n$ -grams are longer than 4. Although a larger $n$ -gram vocabulary can cover longer $n$ -grams, it will cause too many meaningless $n$ -grams at the same time. Therefore, we empirically retain the top 3000 $n$ -grams for each document. Finally, we randomly sample 10M sentences from the entire corpus to reduce training time.\n\nDuring pre-training, BERT packs sentence pairs into a single sequence and use the special [CLS] token as sentence-pair representation. However, our MiSAD training objective requires single-sentence inputs. Thus in our experiments, each input is an $n$ -gram or a single sequence with a maximum length of 128. Special tokens [CLS] and [SEP] are added at the front and end of each input, respectively. Instead of training from scratch, we initialize our model with the officially released checkpoints of BERT (Devlin et al., 2019), ALBERT (Lan et al., 2019) and ELECTRA (Clark et al., 2020). We use Adam optimizer (Kingma and Ba, 2017) with initial learning rate of 5e-5 and linear warmup over the first $10\\%$ of the training steps. Batch size is 64 and dropout rate is 0.1. Each model is trained for one epoch over 10M training examples on four Nvidia Tesla P40 GPUs.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.398::sections::5",
+      "paper_id": "2021.acl-long.398",
+      "section_number": "5",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.398::sections::5.2",
+      "paper_id": "2021.acl-long.398",
+      "section_number": "5.2",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "On the universal analogy task, we adopt three types of baselines including bag-of-words (BoW) model from pre-trained word embeddings: GloVe (Pennington et al., 2014), sentence embedding models: InferSent (Conneau et al., 2017), GenSen (Subra\n\nTable 2: Performance of different models on the universal analogy dataset. \"sem\" = semantic. \"syn\" = syntactic.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"3\">Word</td><td colspan=\"3\">Phrase</td><td colspan=\"3\">Sentence</td><td rowspan=\"2\">Avg.</td><td rowspan=\"2\">Gain</td></tr><tr><td>sem</td><td>syn</td><td>Avg.</td><td>sem</td><td>syn</td><td>Avg.</td><td>sem</td><td>syn</td><td>Avg.</td></tr><tr><td colspan=\"12\">Word &amp; Sentence Representation Models</td></tr><tr><td>GloVe</td><td>82.6</td><td>78.0</td><td>80.3</td><td>0.0</td><td>40.9</td><td>20.5</td><td>0.2</td><td>39.8</td><td>20.0</td><td>40.3</td><td>-</td></tr><tr><td>InferSent</td><td>68.8</td><td>88.7</td><td>78.8</td><td>0.0</td><td>54.1</td><td>27.0</td><td>0.0</td><td>50.8</td><td>25.4</td><td>43.7</td><td>-</td></tr><tr><td>GenSen</td><td>44.5</td><td>84.4</td><td>64.5</td><td>0.0</td><td>54.4</td><td>27.2</td><td>0.0</td><td>44.9</td><td>22.4</td><td>38.0</td><td>-</td></tr><tr><td>USE</td><td>73.0</td><td>83.1</td><td>78.0</td><td>1.8</td><td>63.1</td><td>32.5</td><td>0.6</td><td>44.1</td><td>22.4</td><td>44.3</td><td>-</td></tr><tr><td>LASER</td><td>26.9</td><td>78.2</td><td>52.6</td><td>0.0</td><td>63.3</td><td>31.7</td><td>1.6</td><td>55.4</td><td>28.5</td><td>37.6</td><td>-</td></tr><tr><td colspan=\"12\">Pre-trained Contextualized Language Models</td></tr><tr><td>BERTBASE</td><td>51.3</td><td>60.2</td><td>55.8</td><td>0.3</td><td>69.3</td><td>34.8</td><td>0.1</td><td>68.3</td><td>34.2</td><td>41.6</td><td>-</td></tr><tr><td>BERTLARGE</td><td>49.7</td><td>46.6</td><td>48.2</td><td>0.1</td><td>67.4</td><td>33.9</td><td>0.5</td><td>61.2</td><td>30.9</td><td>37.7</td><td>-</td></tr><tr><td>ALBERTBASE</td><td>33.7</td><td>38.1</td><td>35.9</td><td>0.1</td><td>53.6</td><td>26.7</td><td>0.1</td><td>60.9</td><td>30.5</td><td>31.0</td><td>-</td></tr><tr><td>ALBERTXXLARGE</td><td>38.2</td><td>35.6</td><td>36.9</td><td>0.8</td><td>52.3</td><td>26.6</td><td>0.4</td><td>49.4</td><td>24.9</td><td>29.5</td><td>-</td></tr><tr><td>ELECTRABASE</td><td>22.9</td><td>32.4</td><td>27.7</td><td>2.2</td><td>57.1</td><td>29.7</td><td>0.4</td><td>39.5</td><td>20.0</td><td>25.8</td><td>-</td></tr><tr><td>ELECTRALARGE</td><td>20.4</td><td>24.7</td><td>22.6</td><td>2.9</td><td>49.8</td><td>26.4</td><td>1.4</td><td>52.0</td><td>26.7</td><td>25.2</td><td>-</td></tr><tr><td colspan=\"12\">Our Universal Language Representation Models</td></tr><tr><td>ULR-BERTBASE</td><td>71.7</td><td>70.0</td><td>70.8</td><td>1.1</td><td>66.8</td><td>34.0</td><td>1.5</td><td>63.0</td><td>32.3</td><td>45.7</td><td>4.1</td></tr><tr><td>ULR-BERTLARGE</td><td>80.8</td><td>66.2</td><td>73.5</td><td>8.4</td><td>60.5</td><td>34.5</td><td>4.7</td><td>54.3</td><td>29.5</td><td>45.8</td><td>8.1</td></tr><tr><td>ULR-ALBERTBASE</td><td>43.5</td><td>56.3</td><td>49.9</td><td>0.3</td><td>58.2</td><td>29.3</td><td>0.3</td><td>60.9</td><td>30.6</td><td>36.6</td><td>5.6</td></tr><tr><td>ULR-ALBERTXXLARGE</td><td>26.8</td><td>31.0</td><td>28.9</td><td>3.6</td><td>55.0</td><td>29.3</td><td>0.7</td><td>60.3</td><td>30.5</td><td>29.6</td><td>0.1</td></tr><tr><td>ULR-ELECTRABASE</td><td>24.4</td><td>34.6</td><td>29.5</td><td>1.7</td><td>56.5</td><td>29.1</td><td>0.9</td><td>57.6</td><td>29.3</td><td>29.3</td><td>3.5</td></tr><tr><td>ULR-ELECTRALARGE</td><td>22.0</td><td>31.0</td><td>26.5</td><td>2.9</td><td>56.7</td><td>29.8</td><td>0.8</td><td>52.9</td><td>26.9</td><td>27.7</td><td>2.5</td></tr></table>\n\nmanian et al., 2018), USE (Cer et al., 2018) and LASER (Artetxe and Schwenk, 2019), and pretrained contextualized language models: BERT, ALBERT and ELECTRA.\n\nOn GLUE and GEOGRANNO, we especially evaluate our model and two baseline models:\n\nBERT The officially released pre-trained BERT models (Devlin et al., 2019).\n\nMLM-BERT BERT models trained with the same additional steps with our model on Wikipedia using only the MLM objective.\n\nULR-BERT Our universal language representation model trained on Wikipedia with MLM and MiSAD.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2021.acl-long.398::sections::4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia Tesla P40",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "This section introduces our ULR pre-training details.\n\nAs for the pre-training corpus, we download the English Wikipedia Corpus<sup>2</sup> and pre-process with processWiki.py<sup>3</sup>, which extracts text from xml files. When processing paragraphs from Wikipedia, we find that a large number of entities are annotated with special marks, which may be useful for our task. Therefore, we identify all the entities and treat them as high-quality $n$ -grams. Then, we remove punctuation marks and characters\n\nin other languages based on regular expressions, and finally get a corpus of 2,266M words.\n\nAs for $n$ -gram pruning, PMI scores of all $n$ -grams with a maximum length of $N = 6$ are calculated for each document. We manually evaluate the extracted $n$ -grams and find more than $50\\%$ of the top 2000 $n$ -grams contain $2 \\sim 3$ words, and only less than $3\\%$ $n$ -grams are longer than 4. Although a larger $n$ -gram vocabulary can cover longer $n$ -grams, it will cause too many meaningless $n$ -grams at the same time. Therefore, we empirically retain the top 3000 $n$ -grams for each document. Finally, we randomly sample 10M sentences from the entire corpus to reduce training time.\n\nDuring pre-training, BERT packs sentence pairs into a single sequence and use the special [CLS] token as sentence-pair representation. However, our MiSAD training objective requires single-sentence inputs. Thus in our experiments, each input is an $n$ -gram or a single sequence with a maximum length of 128. Special tokens [CLS] and [SEP] are added at the front and end of each input, respectively. Instead of training from scratch, we initialize our model with the officially released checkpoints of BERT (Devlin et al., 2019), ALBERT (Lan et al., 2019) and ELECTRA (Clark et al., 2020). We use Adam optimizer (Kingma and Ba, 2017) with initial learning rate of 5e-5 and linear warmup over the first $10\\%$ of the training steps. Batch size is 64 and dropout rate is 0.1. Each model is trained for one epoch over 10M training examples on four Nvidia Tesla P40 GPUs.",
+      "section_number": "4",
+      "section_title": "implementation of ulr pre-training",
+      "normalized_section_title": "implementation of ulr pre-training"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2021.acl-long.398::sections::4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia Tesla P40",
+      "cleaned_hardware_name": "nvidia tesla p40",
+      "normalized_hardware_name": "NVIDIA Tesla P40",
+      "benchmark_hardware_name": "NVIDIA Tesla P40",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "4",
+      "section_title": "implementation of ulr pre-training",
+      "normalized_section_title": "implementation of ulr pre-training",
+      "evidence": "This section introduces our ULR pre-training details.\n\nAs for the pre-training corpus, we download the English Wikipedia Corpus<sup>2</sup> and pre-process with processWiki.py<sup>3</sup>, which extracts text from xml files. When processing paragraphs from Wikipedia, we find that a large number of entities are annotated with special marks, which may be useful for our task. Therefore, we identify all the entities and treat them as high-quality $n$ -grams. Then, we remove punctuation marks and characters\n\nin other languages based on regular expressions, and finally get a corpus of 2,266M words.\n\nAs for $n$ -gram pruning, PMI scores of all $n$ -grams with a maximum length of $N = 6$ are calculated for each document. We manually evaluate the extracted $n$ -grams and find more than $50\\%$ of the top 2000 $n$ -grams contain $2 \\sim 3$ words, and only less than $3\\%$ $n$ -grams are longer than 4. Although a larger $n$ -gram vocabulary can cover longer $n$ -grams, it will cause too many meaningless $n$ -grams at the same time. Therefore, we empirically retain the top 3000 $n$ -grams for each document. Finally, we randomly sample 10M sentences from the entire corpus to reduce training time.\n\nDuring pre-training, BERT packs sentence pairs into a single sequence and use the special [CLS] token as sentence-pair representation. However, our MiSAD training objective requires single-sentence inputs. Thus in our experiments, each input is an $n$ -gram or a single sequence with a maximum length of 128. Special tokens [CLS] and [SEP] are added at the front and end of each input, respectively. Instead of training from scratch, we initialize our model with the officially released checkpoints of BERT (Devlin et al., 2019), ALBERT (Lan et al., 2019) and ELECTRA (Clark et al., 2020). We use Adam optimizer (Kingma and Ba, 2017) with initial learning rate of 5e-5 and linear warmup over the first $10\\%$ of the training steps. Batch size is 64 and dropout rate is 0.1. Each model is trained for one epoch over 10M training examples on four Nvidia Tesla P40 GPUs.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2021.acl-long.398::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experimental setup",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2021.acl-long.398::sections::5.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.2",
+      "section_title": "baselines",
+      "evidence": "On the universal analogy task, we adopt three types of baselines including bag-of-words (BoW) model from pre-trained word embeddings: GloVe (Pennington et al., 2014), sentence embedding models: InferSent (Conneau et al., 2017), GenSen (Subra\n\nTable 2: Performance of different models on the universal analogy dataset. \"sem\" = semantic. \"syn\" = syntactic.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"3\">Word</td><td colspan=\"3\">Phrase</td><td colspan=\"3\">Sentence</td><td rowspan=\"2\">Avg.</td><td rowspan=\"2\">Gain</td></tr><tr><td>sem</td><td>syn</td><td>Avg.</td><td>sem</td><td>syn</td><td>Avg.</td><td>sem</td><td>syn</td><td>Avg.</td></tr><tr><td colspan=\"12\">Word &amp; Sentence Representation Models</td></tr><tr><td>GloVe</td><td>82.6</td><td>78.0</td><td>80.3</td><td>0.0</td><td>40.9</td><td>20.5</td><td>0.2</td><td>39.8</td><td>20.0</td><td>40.3</td><td>-</td></tr><tr><td>InferSent</td><td>68.8</td><td>88.7</td><td>78.8</td><td>0.0</td><td>54.1</td><td>27.0</td><td>0.0</td><td>50.8</td><td>25.4</td><td>43.7</td><td>-</td></tr><tr><td>GenSen</td><td>44.5</td><td>84.4</td><td>64.5</td><td>0.0</td><td>54.4</td><td>27.2</td><td>0.0</td><td>44.9</td><td>22.4</td><td>38.0</td><td>-</td></tr><tr><td>USE</td><td>73.0</td><td>83.1</td><td>78.0</td><td>1.8</td><td>63.1</td><td>32.5</td><td>0.6</td><td>44.1</td><td>22.4</td><td>44.3</td><td>-</td></tr><tr><td>LASER</td><td>26.9</td><td>78.2</td><td>52.6</td><td>0.0</td><td>63.3</td><td>31.7</td><td>1.6</td><td>55.4</td><td>28.5</td><td>37.6</td><td>-</td></tr><tr><td colspan=\"12\">Pre-trained Contextualized Language Models</td></tr><tr><td>BERTBASE</td><td>51.3</td><td>60.2</td><td>55.8</td><td>0.3</td><td>69.3</td><td>34.8</td><td>0.1</td><td>68.3</td><td>34.2</td><td>41.6</td><td>-</td></tr><tr><td>BERTLARGE</td><td>49.7</td><td>46.6</td><td>48.2</td><td>0.1</td><td>67.4</td><td>33.9</td><td>0.5</td><td>61.2</td><td>30.9</td><td>37.7</td><td>-</td></tr><tr><td>ALBERTBASE</td><td>33.7</td><td>38.1</td><td>35.9</td><td>0.1</td><td>53.6</td><td>26.7</td><td>0.1</td><td>60.9</td><td>30.5</td><td>31.0</td><td>-</td></tr><tr><td>ALBERTXXLARGE</td><td>38.2</td><td>35.6</td><td>36.9</td><td>0.8</td><td>52.3</td><td>26.6</td><td>0.4</td><td>49.4</td><td>24.9</td><td>29.5</td><td>-</td></tr><tr><td>ELECTRABASE</td><td>22.9</td><td>32.4</td><td>27.7</td><td>2.2</td><td>57.1</td><td>29.7</td><td>0.4</td><td>39.5</td><td>20.0</td><td>25.8</td><td>-</td></tr><tr><td>ELECTRALARGE</td><td>20.4</td><td>24.7</td><td>22.6</td><td>2.9</td><td>49.8</td><td>26.4</td><td>1.4</td><td>52.0</td><td>26.7</td><td>25.2</td><td>-</td></tr><tr><td colspan=\"12\">Our Universal Language Representation Models</td></tr><tr><td>ULR-BERTBASE</td><td>71.7</td><td>70.0</td><td>70.8</td><td>1.1</td><td>66.8</td><td>34.0</td><td>1.5</td><td>63.0</td><td>32.3</td><td>45.7</td><td>4.1</td></tr><tr><td>ULR-BERTLARGE</td><td>80.8</td><td>66.2</td><td>73.5</td><td>8.4</td><td>60.5</td><td>34.5</td><td>4.7</td><td>54.3</td><td>29.5</td><td>45.8</td><td>8.1</td></tr><tr><td>ULR-ALBERTBASE</td><td>43.5</td><td>56.3</td><td>49.9</td><td>0.3</td><td>58.2</td><td>29.3</td><td>0.3</td><td>60.9</td><td>30.6</td><td>36.6</td><td>5.6</td></tr><tr><td>ULR-ALBERTXXLARGE</td><td>26.8</td><td>31.0</td><td>28.9</td><td>3.6</td><td>55.0</td><td>29.3</td><td>0.7</td><td>60.3</td><td>30.5</td><td>29.6</td><td>0.1</td></tr><tr><td>ULR-ELECTRABASE</td><td>24.4</td><td>34.6</td><td>29.5</td><td>1.7</td><td>56.5</td><td>29.1</td><td>0.9</td><td>57.6</td><td>29.3</td><td>29.3</td><td>3.5</td></tr><tr><td>ULR-ELECTRALARGE</td><td>22.0</td><td>31.0</td><td>26.5</td><td>2.9</td><td>56.7</td><td>29.8</td><td>0.8</td><td>52.9</td><td>26.9</td><td>27.7</td><td>2.5</td></tr></table>\n\nmanian et al., 2018), USE (Cer et al., 2018) and LASER (Artetxe and Schwenk, 2019), and pretrained contextualized language models: BERT, ALBERT and ELECTRA.\n\nOn GLUE and GEOGRANNO, we especially evaluate our model and two baseline models:\n\nBERT The officially released pre-trained BERT models (Devlin et al., 2019).\n\nMLM-BERT BERT models trained with the same additional steps with our model on Wikipedia using only the MLM objective.\n\nULR-BERT Our universal language representation model trained on Wikipedia with MLM and MiSAD."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla P40",
+        "num": 4
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2021\\2021.acl-long.398\\auto\\full.md",
+    "source_md_sha256": "71b0a84f34e78cda3045ccbba39c565928db59f90d23b97c47255b67dc8544c3",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "a2f4e0f2222ac944a84b28fba08cc5ab0184a6c6ccb3a5a4deb8a7eefc1e4438"
+  }
+}

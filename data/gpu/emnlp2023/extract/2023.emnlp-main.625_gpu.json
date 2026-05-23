@@ -1,0 +1,107 @@
+{
+  "paper_id": "2023.emnlp-main.625",
+  "candidate_windows": [
+    {
+      "window_id": "2023.emnlp-main.625::appendix::A",
+      "paper_id": "2023.emnlp-main.625",
+      "section_number": "A",
+      "section_title": "model training details",
+      "normalized_section_title": "model training details",
+      "window_text": "We experiment with three different architectures: the standard Transformer-base on the MT task, two sizes of the state-of-the-art LongT5 architecture for long inputs on the QA tasks, and the classic BERT-base and T5 architectures for text classification.\n\nTransformer. For the MT task, we implement the standard, 6-layer, Transformer-base architecture (Vaswani et al., 2017) trained for 200k steps with a batch size of 128 using T5X (Roberts et al., 2022) on 16-core TPUv2 and fixed input length of 128 on Paracrawl dataset. For training, we use Adafactor with a learning rate of 2.0 and the rsqrt decay (Vaswani et al., 2017) of 0.8, a dropout rate of 0.1 and a 32k SentencePiece model.\n\nLongT5. For our QA tasks, we use the state-of-the-art LongT5-base and LongT5-large architecture (Guo et al., 2022)<sup>1</sup> implemented in T5X, using a 32k SentencePiece model, a batch size of 128 and AdaFactor as in the original work. We fine-tune the models on NQ for 261k steps on a 16-core TPUv2 to convergence, with a learning rate of 0.001, dropout rate of 0.1 and a fixed input length of 4,096. We employ the same setup for TriviaQA, except we double the input length, to account for TriviaQA's much longer contexts than in NQ.\n\nBERT. For the text toxicity classification, we experiment with BERT-base (Devlin et al., 2019), and fine-tune it for $35\\mathrm{k}$ steps with early stopping, batch size of 32, learning rate of $10^{-6}$ , weight decay of $5 \\cdot 10^{-6}$ , input length of 128 and dropout of 0.5.\n\nT5. To use our T5X AutoCL implementation, we reframed the toxicity classification task as a seq2seq task in T5 (Raffel et al., 2019) by predicting two tokens: toxic and safe, treating other output tokens as misclassifications, and report F1 for the toxic class. The T5-base model is trained for 120k steps, with input length of 128, batch size of 64, dropout rate of 0.1, using Adafactor, with a learning rate of 0.01 and decay rate of 0.1.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.625::appendix::F",
+      "paper_id": "2023.emnlp-main.625",
+      "section_number": "F",
+      "section_title": "training on different buckets in isolation",
+      "normalized_section_title": "training on different buckets in isolation",
+      "window_text": "Here, we validate how different the quality signal is from each individual self-influence bucket. In Figure 4, we see that the performance of the highest self-influence bucket is much lower (although not zero) compared to the rest of buckets, which are in turn more difficult to separate, possibly, because they contain data of different grades of usefulness. A positive aspect of AutoCL is that, due to exploration, the model will regularly visit all buckets,\n\n![](images/3d28069c3f179524849adc6d5c517171815a36f83b6af0e43c7fe6157cb46be8.jpg)  \nFigure 4: LongT5-base performance trained individually on each self-influence bin, from B1 (bottom- $10\\%$ to B10 (top- $10\\%$ ), of the NQ dataset.\n\nand may dynamically up- or down-weight buckets depending on the model's current needs, overcoming the rigidity of a fixed threshold filtering.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.625::appendix::G",
+      "paper_id": "2023.emnlp-main.625",
+      "section_number": "G",
+      "section_title": "hyperparameters of autocl runs",
+      "normalized_section_title": "hyperparameters of autocl runs",
+      "window_text": "Here, we report the hyperparameters of the bandit-based AutoCL in Table 9. All experiments used the fixed bandit learning rate of 0.001 and the exploration rate of 0.01. We tuned between two bandit algorithms (EXP3 and EXP3S) and two rewards function (pgnorm vs. cosine similarity between gradients of the train and the reward batch).\n\nWe found that for Paracrawl (very noisy dataset), the EXP3's design goal of minimizing the regret over the whole history by finding a single best arm (Auer et al., 2002) biases the bandit to commit fully to playing the current best arms (lowest influence buckets in Figure 2) and it does not reconsider noisy buckets which may decrease performance. However, for datasets where the highly influential buckets prove valuable and generally have a lower level of noise, we saw that EXP3's piecewise stationary behavior makes better use of all data and brings more consistent gains.\n\nTable 9: Hyperparameters for the reported AutoCL results in Table 5 in §5 found with grid search. The number of checkpoints, $C$ , for TracIn is in brackets.   \n\n<table><tr><td rowspan=\"2\"></td><td rowspan=\"2\">Run</td><td rowspan=\"2\">Method</td><td colspan=\"2\">Hyperparameters</td></tr><tr><td>Algorithm</td><td>Reward</td></tr><tr><td rowspan=\"4\">Paracrawl</td><td>AutoCL - 5 bins</td><td>ABIF</td><td>EXP3</td><td>cosine</td></tr><tr><td>AutoCL - 10 bins</td><td>ABIF</td><td>EXP3</td><td>cosine</td></tr><tr><td>AutoCL - 25 bins</td><td>ABIF</td><td>EXP3</td><td>pgnorm</td></tr><tr><td>AutoCL - 25 bins</td><td>TracIn(1)</td><td>EXP3</td><td>pgnorm</td></tr><tr><td rowspan=\"3\">NQ</td><td>AutoCL - 10 bins</td><td>ABIF</td><td>EXP3S</td><td>pgnorm</td></tr><tr><td>AutoCL - 25 bins</td><td>ABIF</td><td>EXP3S</td><td>pgnorm</td></tr><tr><td>AutoCL - 25 bins</td><td>TracIn(3)</td><td>EXP3S</td><td>pgnorm</td></tr><tr><td rowspan=\"2\">Tox.</td><td>AutoCL - 10 bins</td><td>ABIF</td><td>EXP3S</td><td>cosine</td></tr><tr><td>AutoCL - 25 bins</td><td>ABIF</td><td>EXP3S</td><td>cosine</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.emnlp-main.625::appendix::A",
+      "hardware_type": "TPU",
+      "raw_hardware_name": "TPUv2",
+      "count": 16,
+      "count_text": "16",
+      "evidence": "We experiment with three different architectures: the standard Transformer-base on the MT task, two sizes of the state-of-the-art LongT5 architecture for long inputs on the QA tasks, and the classic BERT-base and T5 architectures for text classification.\n\nTransformer. For the MT task, we implement the standard, 6-layer, Transformer-base architecture (Vaswani et al., 2017) trained for 200k steps with a batch size of 128 using T5X (Roberts et al., 2022) on 16-core TPUv2 and fixed input length of 128 on Paracrawl dataset. For training, we use Adafactor with a learning rate of 2.0 and the rsqrt decay (Vaswani et al., 2017) of 0.8, a dropout rate of 0.1 and a 32k SentencePiece model.\n\nLongT5. For our QA tasks, we use the state-of-the-art LongT5-base and LongT5-large architecture (Guo et al., 2022)<sup>1</sup> implemented in T5X, using a 32k SentencePiece model, a batch size of 128 and AdaFactor as in the original work. We fine-tune the models on NQ for 261k steps on a 16-core TPUv2 to convergence, with a learning rate of 0.001, dropout rate of 0.1 and a fixed input length of 4,096. We employ the same setup for TriviaQA, except we double the input length, to account for TriviaQA's much longer contexts than in NQ.\n\nBERT. For the text toxicity classification, we experiment with BERT-base (Devlin et al., 2019), and fine-tune it for $35\\mathrm{k}$ steps with early stopping, batch size of 32, learning rate of $10^{-6}$ , weight decay of $5 \\cdot 10^{-6}$ , input length of 128 and dropout of 0.5.\n\nT5. To use our T5X AutoCL implementation, we reframed the toxicity classification task as a seq2seq task in T5 (Raffel et al., 2019) by predicting two tokens: toxic and safe, treating other output tokens as misclassifications, and report F1 for the toxic class. The T5-base model is trained for 120k steps, with input length of 128, batch size of 64, dropout rate of 0.1, using Adafactor, with a learning rate of 0.01 and decay rate of 0.1.",
+      "section_number": "A",
+      "section_title": "model training details",
+      "normalized_section_title": "model training details"
+    },
+    {
+      "window_id": "2023.emnlp-main.625::appendix::A",
+      "hardware_type": "TPU",
+      "raw_hardware_name": "TPUv2",
+      "count": 16,
+      "count_text": "16",
+      "evidence": "We experiment with three different architectures: the standard Transformer-base on the MT task, two sizes of the state-of-the-art LongT5 architecture for long inputs on the QA tasks, and the classic BERT-base and T5 architectures for text classification.\n\nTransformer. For the MT task, we implement the standard, 6-layer, Transformer-base architecture (Vaswani et al., 2017) trained for 200k steps with a batch size of 128 using T5X (Roberts et al., 2022) on 16-core TPUv2 and fixed input length of 128 on Paracrawl dataset. For training, we use Adafactor with a learning rate of 2.0 and the rsqrt decay (Vaswani et al., 2017) of 0.8, a dropout rate of 0.1 and a 32k SentencePiece model.\n\nLongT5. For our QA tasks, we use the state-of-the-art LongT5-base and LongT5-large architecture (Guo et al., 2022)<sup>1</sup> implemented in T5X, using a 32k SentencePiece model, a batch size of 128 and AdaFactor as in the original work. We fine-tune the models on NQ for 261k steps on a 16-core TPUv2 to convergence, with a learning rate of 0.001, dropout rate of 0.1 and a fixed input length of 4,096. We employ the same setup for TriviaQA, except we double the input length, to account for TriviaQA's much longer contexts than in NQ.\n\nBERT. For the text toxicity classification, we experiment with BERT-base (Devlin et al., 2019), and fine-tune it for $35\\mathrm{k}$ steps with early stopping, batch size of 32, learning rate of $10^{-6}$ , weight decay of $5 \\cdot 10^{-6}$ , input length of 128 and dropout of 0.5.\n\nT5. To use our T5X AutoCL implementation, we reframed the toxicity classification task as a seq2seq task in T5 (Raffel et al., 2019) by predicting two tokens: toxic and safe, treating other output tokens as misclassifications, and report F1 for the toxic class. The T5-base model is trained for 120k steps, with input length of 128, batch size of 64, dropout rate of 0.1, using Adafactor, with a learning rate of 0.01 and decay rate of 0.1.",
+      "section_number": "A",
+      "section_title": "model training details",
+      "normalized_section_title": "model training details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.emnlp-main.625::appendix::A",
+      "hardware_type": "TPU",
+      "raw_hardware_name": "TPUv2",
+      "cleaned_hardware_name": "tpuv2",
+      "normalized_hardware_name": "TPUv2",
+      "benchmark_hardware_name": null,
+      "count": 16,
+      "count_text": "16",
+      "section_number": "A",
+      "section_title": "model training details",
+      "normalized_section_title": "model training details",
+      "evidence": "We experiment with three different architectures: the standard Transformer-base on the MT task, two sizes of the state-of-the-art LongT5 architecture for long inputs on the QA tasks, and the classic BERT-base and T5 architectures for text classification.\n\nTransformer. For the MT task, we implement the standard, 6-layer, Transformer-base architecture (Vaswani et al., 2017) trained for 200k steps with a batch size of 128 using T5X (Roberts et al., 2022) on 16-core TPUv2 and fixed input length of 128 on Paracrawl dataset. For training, we use Adafactor with a learning rate of 2.0 and the rsqrt decay (Vaswani et al., 2017) of 0.8, a dropout rate of 0.1 and a 32k SentencePiece model.\n\nLongT5. For our QA tasks, we use the state-of-the-art LongT5-base and LongT5-large architecture (Guo et al., 2022)<sup>1</sup> implemented in T5X, using a 32k SentencePiece model, a batch size of 128 and AdaFactor as in the original work. We fine-tune the models on NQ for 261k steps on a 16-core TPUv2 to convergence, with a learning rate of 0.001, dropout rate of 0.1 and a fixed input length of 4,096. We employ the same setup for TriviaQA, except we double the input length, to account for TriviaQA's much longer contexts than in NQ.\n\nBERT. For the text toxicity classification, we experiment with BERT-base (Devlin et al., 2019), and fine-tune it for $35\\mathrm{k}$ steps with early stopping, batch size of 32, learning rate of $10^{-6}$ , weight decay of $5 \\cdot 10^{-6}$ , input length of 128 and dropout of 0.5.\n\nT5. To use our T5X AutoCL implementation, we reframed the toxicity classification task as a seq2seq task in T5 (Raffel et al., 2019) by predicting two tokens: toxic and safe, treating other output tokens as misclassifications, and report F1 for the toxic class. The T5-base model is trained for 120k steps, with input length of 128, batch size of 64, dropout rate of 0.1, using Adafactor, with a learning rate of 0.01 and decay rate of 0.1.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A"
+    ],
+    "pred": [
+      {
+        "name": "TPUv2",
+        "num": 16
+      }
+    ]
+  }
+}

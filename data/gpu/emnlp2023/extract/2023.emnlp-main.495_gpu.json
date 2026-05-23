@@ -1,0 +1,67 @@
+{
+  "paper_id": "2023.emnlp-main.495",
+  "candidate_windows": [
+    {
+      "window_id": "2023.emnlp-main.495::sections::3.3",
+      "paper_id": "2023.emnlp-main.495",
+      "section_number": "3.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "Base LM We validate our method on one of the most advanced GPT-3.5 LMs text-davinci-003 by iteratively querying their API.2\n\nDocument corpus and retrievers. Since we focus on the integration of retrieval and generation, we use off-the-shelf retrievers that take queries as inputs and return a list of relevant documents. For datasets that mainly rely on knowledge from Wikipedia, we use the Wikipedia dump from Karpukhin et al. (2020) and employ BM25 (Robertson and Zaragoza, 2009) as the retriever. For datasets that rely on knowledge from the open web, we use the Bing search engine as our retriever.<sup>3</sup>\n\nRetrieved document formatting. Multiple retrieved documents are linearized according to their ranking and then added to the beginning of the user input using Prompt D.1.\n\nOther implementation details such as sentence tokenization and efficiency are included Appendix A.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.495::sections::5",
+      "paper_id": "2023.emnlp-main.495",
+      "section_number": "5",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "We evaluate the effectiveness of FLARE on 4 diverse knowledge-intensive tasks using few-shot in-context learning (Radford et al., 2019; Brown et al., 2020; Liu et al., 2023). We follow previous works (Trivedi et al., 2022) to sub-sample at most 500 examples from each dataset due to the cost of running experiments. Datasets, metrics, and settings are summarized in Table 7 of Appendix B. The hyperparameters of FLARE are selected based on the development set and listed in Table 9. FLARE refers to $\\mathrm{FLARE}_{\\mathrm{direct}}$ if not specifically stated.\n\nMultihop QA The goal of multihop QA is to answer complex questions through information retrieval and reasoning. We use 2WikiMultihopQA (Ho et al., 2020) which contains 2-hop complex\n\nquestions sourced from Wikipedia articles that require composition, comparison, or inference, e.g., \"Why did the founder of Versus die?\" We follow Wang et al. (2022) to generate both the chain-of-thought and the final answer. Experimental setting details are included in Appendix B.\n\nWe use regular expressions to extract the final answer from the output and compare it with the reference answer using exact match (EM), and token-level $\\mathrm{F_1}$ , precision, and recall.\n\nCommonsense reasoning Commonsense reasoning requires world and commonsense knowledge to generate answers. We use StrategyQA (Geva et al., 2021) which is a collection of crowdsourced yes/no questions, e.g., \"Would a pear sink in water?\" We follow Wei et al. (2022) to generate both the chain-of-thought and the final yes/no answer. Details are included in Appendix B.\n\nWe extract the final answer and match it against the gold answer using exact match.\n\nLong-form QA Long-form QA aims to generate comprehensive answers to questions seeking complex information (Fan et al., 2019; Stelmakh et al., 2022). We use ASQA (Stelmakh et al., 2022) as our testbed where inputs are ambiguous questions with multiple interpretations, and outputs should cover all of them. For example, \"Where do the Philadelphia Eagles play their home games?\" could be asking about the city, sports complex, or stadium. We found in many cases it is challenging even for humans to identify which aspect of the question is ambiguous. Therefore, we created another setting (ASQA-hint) where we provide a brief hint to guide LMs to stay on track when generating answers. The hint for the above case is \"This question is ambiguous in terms of which specific location or venue is being referred to.\" Experimental setting details are included in Appendix B.\n\nWe use metrics from Stelmakh et al. (2022), including EM, RoBERTa-based QA score (Disambig $\\mathbf{F}_1$ ), ROUGE (Lin, 2004), and an overall score combining Disambig- $\\mathbf{F}_1$ and ROUGE (DR).\n\nOpen-domain summarization The goal of open-domain summarization is to generate a comprehensive summary about a topic by gathering information from open web (Giorgi et al., 2022). We use WikiAsp (Hayashi et al., 2021) which aims to generate aspect-based summaries about entities from 20 domains in Wikipedia, e.g., \"Generate a summary about Echo School (Oregon) including the\n\n![](images/c1b5efb49a80bb80a0b82bafb0ec8481504495f085488c3f50e0ed1a3dc329e7.jpg)  \nFigure 4: Comparison between FLARE and baselines across all tasks/datasets. We report the primary metric for each dataset: EM for 2WikiMultihopQA, StrategyQA, and ASQA, and UniEval for WikiAsp.\n\nfollowing aspects: academics, history.\" Experimental setting details are included in Appendix B.\n\nMetrics include ROUGE, named entity-based $\\mathrm{F_1}$ , and UniEval (Zhong et al., 2022) which measures factual consistency.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.495::appendix::A",
+      "paper_id": "2023.emnlp-main.495",
+      "section_number": "A",
+      "section_title": "flare implementation details",
+      "normalized_section_title": "flare implementation details",
+      "window_text": "FLAREinstruct implementation details We found that LMs can effectively combine retrieval and downstream task-related skills and generate meaningful search queries while performing the task. However, there are two issues: (1) LMs tend to generate fewer search queries than necessary. (2) Generating excessive search queries can disrupt answer generation and adversely affect performance. We address these issues using two methods respectively. First, we increase the logit of the token “[” by 2.0 to improve the chances of LMs generating “[Search(query)]”. Second, whenever LMs generate a search query, we use it to retrieve relevant information, promptly remove it from the generation, and generate the next few tokens while forbidding “[” by adding a large negative value to the logit of “[].\n\nThe initial query of FLARE. FLARE starts with the user input $\\pmb{x}$ as the initial query to retrieve documents to generate the first sentence $\\hat{s}_1 = \\mathrm{LM}([D_x, x])$ to bootstrap the iterative generation process. For the following steps, the temporary forward-looking sentence is generated without retrieved documents.\n\nSentence tokenization. For each step $t$ , we generate 64 tokens which are longer than most sentences, and use NLTK sentence tokenizer<sup>5</sup> to extract the first sentence and discard the rest.\n\nEfficiency As shown in subsection 6.2, on average retrieval is triggered for $30\\% \\sim 60\\%$ of sentences depending on downstream tasks. In comparison, KNN-LM (Khandelwal et al., 2020) retrieves every token, RETRO or IC-RALM (Borgeaud et al., 2022; Ram et al., 2023) retrievers every $4\\sim 32$ tokens, and IRCoT (Trivedi et al., 2022) retrieves every sentence. Compared to single-time retrieval, however, interleaving retrieval and generation with a naive implementation indeed increases overheads, which we discuss in the limitation section (section 9).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.495::appendix::C",
+      "paper_id": "2023.emnlp-main.495",
+      "section_number": "C",
+      "section_title": "hyperparameters",
+      "normalized_section_title": "hyperparameters",
+      "window_text": "Hyperparameters of FLARE on different datasets are listed in Table 9.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [],
+  "normalized_extractions": [],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [],
+    "pred": []
+  }
+}

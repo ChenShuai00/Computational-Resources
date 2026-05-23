@@ -1,0 +1,162 @@
+{
+  "paper_id": "2022.acl-long.163",
+  "candidate_windows": [
+    {
+      "window_id": "2022.acl-long.163::sections::4",
+      "paper_id": "2022.acl-long.163",
+      "section_number": "4",
+      "section_title": "experimental setups",
+      "normalized_section_title": "experimental setups",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.163::appendix::A",
+      "paper_id": "2022.acl-long.163",
+      "section_number": "A",
+      "section_title": "experiment details",
+      "normalized_section_title": "experiment details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.163::appendix::A.1",
+      "paper_id": "2022.acl-long.163",
+      "section_number": "A.1",
+      "section_title": "additional experimental results",
+      "normalized_section_title": "additional experimental results",
+      "window_text": "In table 2 we report automatic results on both tasks. Here we present additional automatic results of BLEU-3 and ROUGLE-L (recall) in Table 5 and Table 6.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.163::appendix::A.2",
+      "paper_id": "2022.acl-long.163",
+      "section_number": "A.2",
+      "section_title": "training and decoding details",
+      "normalized_section_title": "training and decoding details",
+      "window_text": "Model Training. Our model is built based on BART, and we use BART-base version for all experiments. Our model contains 185M parameters in total. The batch size is set to be 8, and the maximum training epoch is set as 15 for non-contrastive training and 18 for contrastive training. We truncate both the input statement and output target to be at most 256 tokens during training. We resize the BART embedding matrix with a new token [SN] and insert a [SN] token before each target sentence. This is also done for baselines for a fair comparison. For computing resources, we use NVIDIA Tesla V100 GPUs with 32 GB memory for all experiments, and utilize the mixed-precision (FP16) to improve the computational efficiency. For contrastive learning, for each positive target, we construct 4 negatives using the strategies described in Section 3.5 respectively. The best model checkpoint is chosen based on the validation loss. Our model takes around 4-5 hours for training, and 30 minutes for decoding on V100 GPUs.\n\nDecoding. During decoding time, we apply the nucleus sampling (Holtzman et al., 2019), and set $k = 10$ and $p = 0.9$ . Considering the computational cost, we limit the maximum of generation steps to 150 for argument generation on ArgGen and 200 for opinion article generation on OpinionGen. To reduce variance introduced by sampling-based decoding method, we decode three times and average the results for automatic evaluations. For our model, we enforce each target sentence to start with a [SN] token during inference: we pre-define a list of sentence end markers, and when the model\n\nTable 5: Additional experimental results of BLEU-3 and ROUGE-L (recall) on ArgGen.   \n\n<table><tr><td>System</td><td>BLEU-3 (%)</td><td>ROUGE-L (%)</td></tr><tr><td>RETRIEVAL</td><td>4.52</td><td>16.13</td></tr><tr><td>HIERPLAN</td><td>9.28</td><td>19.11</td></tr><tr><td>FULLSEQ2SEQ</td><td>25.83</td><td>26.88</td></tr><tr><td>SEPPLAN</td><td>22.17</td><td>23.24</td></tr><tr><td>SSPLANER</td><td>25.85</td><td>26.99</td></tr><tr><td>PLANET</td><td>27.11</td><td>27.42*</td></tr><tr><td>- SEL.</td><td>26.58</td><td>27.01</td></tr><tr><td>- BOW</td><td>26.78</td><td>26.97</td></tr><tr><td>PLANET (ours)</td><td>27.21*</td><td>27.54*</td></tr></table>\n\nTable 6: Additional experimental results of BLEU-3 and ROUGE-L (recall) on OpinionGen.   \n\n<table><tr><td>System</td><td>BLEU-3 (%)</td><td>ROUGE-L (%)</td></tr><tr><td>RETRIEVAL</td><td>10.98</td><td>17.99</td></tr><tr><td>HIERPLAN</td><td>5.81</td><td>15.98</td></tr><tr><td>FULLSEQ2SEQ</td><td>25.71</td><td>26.29</td></tr><tr><td>SEPLAN</td><td>21.23</td><td>21.68</td></tr><tr><td>SSPLANER</td><td>25.67</td><td>26.49</td></tr><tr><td>PLANET</td><td>26.91</td><td>27.08*</td></tr><tr><td>- SEL.</td><td>26.49</td><td>26.79</td></tr><tr><td>- BOW</td><td>26.40</td><td>26.77</td></tr><tr><td>PLANET (ours)</td><td>27.01*</td><td>27.18*</td></tr></table>\n\nfinishes generating a sentence, we enforce the next generated token to be [SN], although we find in most cases the model can automatically generate [SN]. The generation process stops when the model generates the <EOS> token. In this way, the model can automatically decide on how many sentences to be generated, and conduct content planning and surface realization in a dynamic way.\n\nEvaluation Scripts. We use NLTK $^2$ to implement BLEU and METEOR, and the ROUGE_SCORE package $^3$ to implement ROUGE.\n\nDetails for SEPPLAN. We design a two-stage generation method, SEPPLAN, as a baseline model by fine-tuning two independent BART models for content planning and surface realization respectively, similar to Hua and Wang (2020). In particular, the planner BART takes a statement and unordered keyphrase as inputs, and autoregressively generates content plans as a sequence of tokens for every target sentence, where each content plan is represented by the ordered keyphrases with the same order as they appear in the corresponding sentence. Segmenter is added between sentence plans to indicate the sentence boundary. Then the generator\n\nBART consumes the concatenation of the statement and content plans to produce the final results. During training, the ground-truth content plans are used to train the generator, and during inference the predicted plans are used. For decoding, we apply beam search for the planner and nucleus sampling for the generator. Note that Hua and Wang (2020) applies BERT as planner in their original paper, and we replace BERT with BART as BART gives better performance in our experiments.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.163::appendix::A.3",
+      "paper_id": "2022.acl-long.163",
+      "section_number": "A.3",
+      "section_title": "training details for coherence model",
+      "normalized_section_title": "training details for coherence model",
+      "window_text": "We propose a neural coherence model to evaluate output coherence. Concretely, we fine-tune BERT (Devlin et al., 2019) on each dataset to compute the coherence scores. Instead of computing the overall coherence scores by measuring and aggregating the coherence of its adjacent sentence pairs (Xu et al., 2019), we fine-tune BERT on the whole text to better learn the global coherence (Xing and Carenini, 2021).\n\nFor training, we follow Sharma et al. (2019) and adopt hinge loss to teach the model to assign higher scores to coherent targets than incoherent ones. The score is normalized into [0, 1] with sigmoid function, and the margin is set to be 0.8. Since each target usually contains multiple sentences, we insert a separator token [SEP] between each adjacent sentence pair. For data construction, we consider the original text as a positive sample, and randomly shuffle sentences to construct negative ones. The test accuracy is $94.3\\%$ on OpinionGen and $73.0\\%$ on ArgGen, respectively. This implies that our coherence model can be used as a reliable metric to evaluate the output coherence.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.acl-long.163::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100 32GB",
+      "count": null,
+      "count_text": "",
+      "evidence": "Model Training. Our model is built based on BART, and we use BART-base version for all experiments. Our model contains 185M parameters in total. The batch size is set to be 8, and the maximum training epoch is set as 15 for non-contrastive training and 18 for contrastive training. We truncate both the input statement and output target to be at most 256 tokens during training. We resize the BART embedding matrix with a new token [SN] and insert a [SN] token before each target sentence. This is also done for baselines for a fair comparison. For computing resources, we use NVIDIA Tesla V100 GPUs with 32 GB memory for all experiments, and utilize the mixed-precision (FP16) to improve the computational efficiency. For contrastive learning, for each positive target, we construct 4 negatives using the strategies described in Section 3.5 respectively. The best model checkpoint is chosen based on the validation loss. Our model takes around 4-5 hours for training, and 30 minutes for decoding on V100 GPUs.\n\nDecoding. During decoding time, we apply the nucleus sampling (Holtzman et al., 2019), and set $k = 10$ and $p = 0.9$ . Considering the computational cost, we limit the maximum of generation steps to 150 for argument generation on ArgGen and 200 for opinion article generation on OpinionGen. To reduce variance introduced by sampling-based decoding method, we decode three times and average the results for automatic evaluations. For our model, we enforce each target sentence to start with a [SN] token during inference: we pre-define a list of sentence end markers, and when the model\n\nTable 5: Additional experimental results of BLEU-3 and ROUGE-L (recall) on ArgGen.   \n\n<table><tr><td>System</td><td>BLEU-3 (%)</td><td>ROUGE-L (%)</td></tr><tr><td>RETRIEVAL</td><td>4.52</td><td>16.13</td></tr><tr><td>HIERPLAN</td><td>9.28</td><td>19.11</td></tr><tr><td>FULLSEQ2SEQ</td><td>25.83</td><td>26.88</td></tr><tr><td>SEPPLAN</td><td>22.17</td><td>23.24</td></tr><tr><td>SSPLANER</td><td>25.85</td><td>26.99</td></tr><tr><td>PLANET</td><td>27.11</td><td>27.42*</td></tr><tr><td>- SEL.</td><td>26.58</td><td>27.01</td></tr><tr><td>- BOW</td><td>26.78</td><td>26.97</td></tr><tr><td>PLANET (ours)</td><td>27.21*</td><td>27.54*</td></tr></table>\n\nTable 6: Additional experimental results of BLEU-3 and ROUGE-L (recall) on OpinionGen.   \n\n<table><tr><td>System</td><td>BLEU-3 (%)</td><td>ROUGE-L (%)</td></tr><tr><td>RETRIEVAL</td><td>10.98</td><td>17.99</td></tr><tr><td>HIERPLAN</td><td>5.81</td><td>15.98</td></tr><tr><td>FULLSEQ2SEQ</td><td>25.71</td><td>26.29</td></tr><tr><td>SEPLAN</td><td>21.23</td><td>21.68</td></tr><tr><td>SSPLANER</td><td>25.67</td><td>26.49</td></tr><tr><td>PLANET</td><td>26.91</td><td>27.08*</td></tr><tr><td>- SEL.</td><td>26.49</td><td>26.79</td></tr><tr><td>- BOW</td><td>26.40</td><td>26.77</td></tr><tr><td>PLANET (ours)</td><td>27.01*</td><td>27.18*</td></tr></table>\n\nfinishes generating a sentence, we enforce the next generated token to be [SN], although we find in most cases the model can automatically generate [SN]. The generation process stops when the model generates the <EOS> token. In this way, the model can automatically decide on how many sentences to be generated, and conduct content planning and surface realization in a dynamic way.\n\nEvaluation Scripts. We use NLTK $^2$ to implement BLEU and METEOR, and the ROUGE_SCORE package $^3$ to implement ROUGE.\n\nDetails for SEPPLAN. We design a two-stage generation method, SEPPLAN, as a baseline model by fine-tuning two independent BART models for content planning and surface realization respectively, similar to Hua and Wang (2020). In particular, the planner BART takes a statement and unordered keyphrase as inputs, and autoregressively generates content plans as a sequence of tokens for every target sentence, where each content plan is represented by the ordered keyphrases with the same order as they appear in the corresponding sentence. Segmenter is added between sentence plans to indicate the sentence boundary. Then the generator\n\nBART consumes the concatenation of the statement and content plans to produce the final results. During training, the ground-truth content plans are used to train the generator, and during inference the predicted plans are used. For decoding, we apply beam search for the planner and nucleus sampling for the generator. Note that Hua and Wang (2020) applies BERT as planner in their original paper, and we replace BERT with BART as BART gives better performance in our experiments.",
+      "section_number": "A.2",
+      "section_title": "training and decoding details",
+      "normalized_section_title": "training and decoding details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.acl-long.163::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100 32GB",
+      "cleaned_hardware_name": "nvidia tesla v100 32gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "count": null,
+      "count_text": "",
+      "section_number": "A.2",
+      "section_title": "training and decoding details",
+      "normalized_section_title": "training and decoding details",
+      "evidence": "Model Training. Our model is built based on BART, and we use BART-base version for all experiments. Our model contains 185M parameters in total. The batch size is set to be 8, and the maximum training epoch is set as 15 for non-contrastive training and 18 for contrastive training. We truncate both the input statement and output target to be at most 256 tokens during training. We resize the BART embedding matrix with a new token [SN] and insert a [SN] token before each target sentence. This is also done for baselines for a fair comparison. For computing resources, we use NVIDIA Tesla V100 GPUs with 32 GB memory for all experiments, and utilize the mixed-precision (FP16) to improve the computational efficiency. For contrastive learning, for each positive target, we construct 4 negatives using the strategies described in Section 3.5 respectively. The best model checkpoint is chosen based on the validation loss. Our model takes around 4-5 hours for training, and 30 minutes for decoding on V100 GPUs.\n\nDecoding. During decoding time, we apply the nucleus sampling (Holtzman et al., 2019), and set $k = 10$ and $p = 0.9$ . Considering the computational cost, we limit the maximum of generation steps to 150 for argument generation on ArgGen and 200 for opinion article generation on OpinionGen. To reduce variance introduced by sampling-based decoding method, we decode three times and average the results for automatic evaluations. For our model, we enforce each target sentence to start with a [SN] token during inference: we pre-define a list of sentence end markers, and when the model\n\nTable 5: Additional experimental results of BLEU-3 and ROUGE-L (recall) on ArgGen.   \n\n<table><tr><td>System</td><td>BLEU-3 (%)</td><td>ROUGE-L (%)</td></tr><tr><td>RETRIEVAL</td><td>4.52</td><td>16.13</td></tr><tr><td>HIERPLAN</td><td>9.28</td><td>19.11</td></tr><tr><td>FULLSEQ2SEQ</td><td>25.83</td><td>26.88</td></tr><tr><td>SEPPLAN</td><td>22.17</td><td>23.24</td></tr><tr><td>SSPLANER</td><td>25.85</td><td>26.99</td></tr><tr><td>PLANET</td><td>27.11</td><td>27.42*</td></tr><tr><td>- SEL.</td><td>26.58</td><td>27.01</td></tr><tr><td>- BOW</td><td>26.78</td><td>26.97</td></tr><tr><td>PLANET (ours)</td><td>27.21*</td><td>27.54*</td></tr></table>\n\nTable 6: Additional experimental results of BLEU-3 and ROUGE-L (recall) on OpinionGen.   \n\n<table><tr><td>System</td><td>BLEU-3 (%)</td><td>ROUGE-L (%)</td></tr><tr><td>RETRIEVAL</td><td>10.98</td><td>17.99</td></tr><tr><td>HIERPLAN</td><td>5.81</td><td>15.98</td></tr><tr><td>FULLSEQ2SEQ</td><td>25.71</td><td>26.29</td></tr><tr><td>SEPLAN</td><td>21.23</td><td>21.68</td></tr><tr><td>SSPLANER</td><td>25.67</td><td>26.49</td></tr><tr><td>PLANET</td><td>26.91</td><td>27.08*</td></tr><tr><td>- SEL.</td><td>26.49</td><td>26.79</td></tr><tr><td>- BOW</td><td>26.40</td><td>26.77</td></tr><tr><td>PLANET (ours)</td><td>27.01*</td><td>27.18*</td></tr></table>\n\nfinishes generating a sentence, we enforce the next generated token to be [SN], although we find in most cases the model can automatically generate [SN]. The generation process stops when the model generates the <EOS> token. In this way, the model can automatically decide on how many sentences to be generated, and conduct content planning and surface realization in a dynamic way.\n\nEvaluation Scripts. We use NLTK $^2$ to implement BLEU and METEOR, and the ROUGE_SCORE package $^3$ to implement ROUGE.\n\nDetails for SEPPLAN. We design a two-stage generation method, SEPPLAN, as a baseline model by fine-tuning two independent BART models for content planning and surface realization respectively, similar to Hua and Wang (2020). In particular, the planner BART takes a statement and unordered keyphrase as inputs, and autoregressively generates content plans as a sequence of tokens for every target sentence, where each content plan is represented by the ordered keyphrases with the same order as they appear in the corresponding sentence. Segmenter is added between sentence plans to indicate the sentence boundary. Then the generator\n\nBART consumes the concatenation of the statement and content plans to produce the final results. During training, the ground-truth content plans are used to train the generator, and during inference the predicted plans are used. For decoding, we apply beam search for the planner and nucleus sampling for the generator. Note that Hua and Wang (2020) applies BERT as planner in their original paper, and we replace BERT with BART as BART gives better performance in our experiments.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2022.acl-long.163::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experimental setups",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2022.acl-long.163::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "experiment details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2022.acl-long.163::appendix::A.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.1",
+      "section_title": "additional experimental results",
+      "evidence": "In table 2 we report automatic results on both tasks. Here we present additional automatic results of BLEU-3 and ROUGLE-L (recall) in Table 5 and Table 6."
+    },
+    {
+      "source_window_id": "2022.acl-long.163::appendix::A.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.3",
+      "section_title": "training details for coherence model",
+      "evidence": "We propose a neural coherence model to evaluate output coherence. Concretely, we fine-tune BERT (Devlin et al., 2019) on each dataset to compute the coherence scores. Instead of computing the overall coherence scores by measuring and aggregating the coherence of its adjacent sentence pairs (Xu et al., 2019), we fine-tune BERT on the whole text to better learn the global coherence (Xing and Carenini, 2021).\n\nFor training, we follow Sharma et al. (2019) and adopt hinge loss to teach the model to assign higher scores to coherent targets than incoherent ones. The score is normalized into [0, 1] with sigmoid function, and the margin is set to be 0.8. Since each target usually contains multiple sentences, we insert a separator token [SEP] between each adjacent sentence pair. For data construction, we consider the original text as a positive sample, and randomly shuffle sentences to construct negative ones. The test accuracy is $94.3\\%$ on OpinionGen and $73.0\\%$ on ArgGen, respectively. This implies that our coherence model can be used as a reliable metric to evaluate the output coherence."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 32 GB",
+        "num": null
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2022\\2022.acl-long.163\\auto\\full.md",
+    "source_md_sha256": "3bf529a14d8619f2c3d28e639a4fcab488daa408f728da73b93bd7586d00f90f",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

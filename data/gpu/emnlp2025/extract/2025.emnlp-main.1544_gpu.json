@@ -1,0 +1,135 @@
+{
+  "paper_id": "2025.emnlp-main.1544",
+  "candidate_windows": [
+    {
+      "window_id": "2025.emnlp-main.1544::sections::2",
+      "paper_id": "2025.emnlp-main.1544",
+      "section_number": "2",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1544::sections::3",
+      "paper_id": "2025.emnlp-main.1544",
+      "section_number": "3",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "As shown in Figure 1,our system consists of a fine-tuned numeric extraction model grounded in reasoning,alongside a rule-based effect size estimation component.In the following,we describe each part in detail.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1544::sections::4",
+      "paper_id": "2025.emnlp-main.1544",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1544::sections::4.1",
+      "paper_id": "2025.emnlp-main.1544",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Training and Evaluation Datasets. For training,we use the dataset created as described in Section 3.1, with the reasoning traces for SFT, using 1864 samples for training and 2O8 for validation.\n\nFor evaluation,we use two datasets. The first is COCHRANEFOREST (Pronesti et al., 2025), which consists of 725 instances derived from 48 Cochrane Systematic Reviews and 22O forest plots. The second, introduced by Yun et al. (2024), contains 413 complete,human-annotated instances derived from 120 RCTs. Dataset statistics are reported in Table 1.\n\nEvaluation Metrics. We report a range of metrics to assess both end-to-end performance and intermediate reasoning accuracy. For the end-to-end task of predicting the final conclusion label of each study, we report accuracy and F1 score. Following Yun et al. (2O24), we also evaluate the quality of numerical extraction using exact match (EM), $\\operatorname { E M } ( \\varnothing 1$ (at least one positional match),as well as the mean squared error (MSE) of the computed point estimate derived from the extracted values.In addition, we measure the Error Impact Rate (EIR), defined as the ratio between the number of extraction errors that lead to a flipped conclusion and the number of total extraction errors at the study level.\n\n$$\n{ \\mathrm { E I R } } = { \\frac { \\# { \\mathrm { e r r o r s ~ t h a t ~ f i p ~ t h e ~ c o n c l u s i o n } } } { \\# { \\mathrm { e x t r a c t i o n ~ e r r o r s } } } }\n$$\n\nThis metric provides an insight into how often extraction mistakes materially affect downstream decision-making.A high EIR indicates that even a few extraction errors can substantially alter the final prediction, whereas a low EIR suggests that the model's conclusions are more robust to imperfect inputs.Thus,EIR serves as a proxy for understanding the correlation between intermediate numerical accuracy and end-to-end reliability.\n\nTraining Setup. We conduct our training using the Qwen2.5 model family (Yang et al., 2025), specifically the 7B variant. Two distinct training regimes are explored: SFT and RL.In the results section,models are labelled with subscripts corresponding to the respective training strategy.\n\nSFT is performed for 5 epochs with a batch size of 1 using a learning rate of $5 \\times 1 0 ^ { - 5 }$ and the AdamW optimiser (Loshchilov and Hutter, 2017). For the RL setup, we adopt the GRPO algorithm (Shao et al., 2024), training for 3 epochs with a learning rate of $1 \\times 1 0 ^ { - 6 }$ ,batch size 1, and 16 sampled generations per batch.Additional details are provided in Appendix E.\n\nModel Baselines. To validate our results,we compare a range of open- and closed-source models,with and without reasoning capabilities. All models are evaluated in zero-shot settings with prompt and hyperparameters shown in Appendix B.\n\n<table><tr><td rowspan=\"2\">Model</td><td rowspan=\"2\">Think</td><td colspan=\"6\">COCHRANEFOREST</td><td colspan=\"6\">RCTs (Yun et al., 2024)</td></tr><tr><td>Acc</td><td>F1</td><td>EM</td><td>EM@1 MSE↓ EIR↓</td><td></td><td></td><td>Acc </td><td>F1</td><td>EM</td><td>EM@1</td><td></td><td>MSE↓EIR↓</td></tr><tr><td colspan=\"2\"> Pretrained LLMs</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>GPT-4-0125</td><td>×</td><td>71.4</td><td>73.7</td><td>28.4</td><td>72.1</td><td>0.88</td><td>0.31</td><td>71.2</td><td>65.3</td><td>34.5</td><td>70.3</td><td>0.69</td><td>0.44</td></tr><tr><td>Qwen2.5-7B</td><td></td><td>69.7</td><td>65.4</td><td>14.9</td><td>66.4</td><td>1.40</td><td>0.39</td><td>63.2</td><td>59.7</td><td>20.3</td><td>73.8</td><td>1.19</td><td>0.50</td></tr><tr><td>Qwen2.5-14B</td><td></td><td>76.2</td><td>73.7</td><td>27.4</td><td>73.6</td><td>0.72</td><td>0.30</td><td>69.8</td><td>66.4</td><td>28.6</td><td>75.8</td><td>0.91</td><td>0.44</td></tr><tr><td>Qwen2.5-72B</td><td>A</td><td>82.2</td><td>80.3</td><td>42.5</td><td>81.7</td><td>0.63</td><td>0.26</td><td>75.3</td><td>72.8</td><td>35.1</td><td>81.1</td><td>0.68</td><td>0.39</td></tr><tr><td>Llama-3.1-8B</td><td></td><td>68.7</td><td>66.6</td><td>15.9</td><td>62.2</td><td>2.16</td><td>0.33</td><td>62.7</td><td>54.7</td><td>14.8</td><td>66.5</td><td>1.30</td><td>0.47</td></tr><tr><td>Llama-3.1-70B</td><td></td><td>79.4</td><td>78.3</td><td>31.5</td><td>78.7</td><td>0.59</td><td>0.28</td><td>65.5</td><td>60.8</td><td>30.0</td><td>74.2</td><td>1.45</td><td>0.44</td></tr><tr><td>Llama-3.1-405B</td><td>×</td><td>82.4</td><td>80.8</td><td>44.3</td><td>82.4</td><td>0.43</td><td>0.23</td><td>70.3</td><td>66.5</td><td>33.6</td><td>76.7</td><td>0.80</td><td>0.41</td></tr><tr><td>DeepSeek-Qwen-7B</td><td>√</td><td>59.7</td><td>54.3</td><td>11.2</td><td>58.3</td><td>2.83</td><td>0.50</td><td>53.8</td><td>45.7</td><td>9.4</td><td>53.8</td><td>3.68</td><td>0.61</td></tr><tr><td>DeepSeek-Qwen-14B</td><td>√</td><td>65.4</td><td>61.2</td><td>19.9</td><td>66.4</td><td>1.29</td><td>0.44</td><td>60.2</td><td>55.1</td><td>11.2</td><td>60.3</td><td>2.41</td><td>0.58</td></tr><tr><td>DeepSeek-Qwen-32B</td><td>√</td><td>74.0</td><td>71.6</td><td>28.6</td><td>73.5</td><td>0.58</td><td>0.28</td><td>68.8</td><td>65.0</td><td>29.1</td><td>78.2</td><td>0.72</td><td>0.43</td></tr><tr><td> Our Models</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>Qwen2.5-7B-SFT</td><td></td><td></td><td></td><td>74.570.1 28.4</td><td>79.1</td><td>0.51</td><td>0.29</td><td>71.5 68.430.2</td><td></td><td></td><td>80.0</td><td>0.64</td><td>0.36</td></tr><tr><td>Qwen2.5-7B-RL</td><td>√</td><td></td><td></td><td>81.6 80.1 42.2</td><td>81.4</td><td>0.40</td><td>0.24</td><td>79.376.441.2</td><td></td><td></td><td>89.7</td><td>0.49</td><td>0.28</td></tr></table>\n\nTable 2: Evaluation results across models on two datasets.We report Accuracy and F1 (label prediction), EM, $\\operatorname { E M } ( \\varnothing 1$ ,EIR and MSE (numerical extraction).\n\nWe include two main model families: Qwen 2.5 (Yang et al., 2025) and Llama 3.1 (Grattafiori et al., 2O24). In addition, we benchmark DeepSeekR1 and the distilled Qwen models derived from it. We exclude distilled models afferent to the Llama family because of their limited context size. For closed-source models,we use GPT-4-0125.\n\nIn addition, we compare performances on the end-to-end task against the two best RAG baselines for this task: URCA (Pronesti et al., 2025), which clusters retrieved passages based on their embedding vectors and filters relevant information from each cluster given the query; and GraphRAG (Edge et al., 2O24), which builds a graph-based text index by summarising closely related entities from the source documents.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1544::sections::4.3",
+      "paper_id": "2025.emnlp-main.1544",
+      "section_number": "4.3",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "window_text": "To assess the impact of different input modalities and training strategies, we conduct a series of ablation experiments (Table 4) on the RL- and SFTtrained models.These include both data ablations and training ablations.\n\nIn the data ablations,we isolate the contribution of different components of the input. We evaluate model performance when provided with: (i) only textual context, where all tables are removed; (ii) only tables,where we exclude surrounding text and provide the model with structured numerical content; and (ii) only the top retrieved chunks obtained with URCA (Pronesti et al., 2025), restricting access to 10 evidence passages per query.\n\nIn the training ablations,we analyse the effect of intermediate reasoning and reward design. To evaluate the role of reasoning traces,we compare the SFT model to a version trained without Chainof-Thought (CoT), which predicts the final answer directly without intermediate steps. To assess the impact of the reward function,we compare the RL model to another version trained using the EX reward, which only provides a positive signal when all predicted values are correct.\n\n$$\nR _ { \\mathrm { E X } } = \\mathbb { 1 } \\left\\{ { \\textstyle \\bigwedge } _ { j = 1 } ^ { n } \\left( v _ { j } \\approx { \\hat { v } } _ { j } \\right) \\right\\}\n$$\n\nWe observe that among the data ablations, the models trained only on tables achieve the best performance, confirming the importance of structured numerical evidence in this task. However, there is a consistent drop in performance across all settings when models only have access to a single input type compared to the full input (text $^ +$ tables), indicating that both textual and tabular information are necessary for accurate reasoning. The URCA setting, which corresponds to the output of a retrieval-based pipeline, yields the lowest scores. This aligns with the findings in Table 3 and further highlights the limitations of existing retrieval-augmented generation approaches in this setting,primarily due to their inability to recover the precise numerical content required for grounded inference.\n\nTable 4: Ablation study on model inputs and training supervision on COCHRANEFOREST.urca refers to the top 10 chunks retrieved by its namesake RAG approach.   \n\n<table><tr><td>Model</td><td>Input</td><td>F1</td><td>Acc</td></tr><tr><td colspan=\"4\"> Input Data Ablations</td></tr><tr><td>Qwen2.5-7B-SFT</td><td>text tables urca</td><td>62.3 70.4 56.7</td><td>60.1 66.5 54.0</td></tr><tr><td>Qwen2.5-7B-RL</td><td>text tables urca</td><td>65.8 73.1 59.2</td><td>63.2 71.6 56.8</td></tr><tr><td colspan=\"4\">Training Ablations</td></tr><tr><td>Qwen2.5-7B + SFT-no-CoT</td><td>text + tables text + tables</td><td>69.7 71.2</td><td>65.4 68.3</td></tr><tr><td>+ SFT (ours)</td><td>text +1 tables</td><td>74.5</td><td>70.1</td></tr><tr><td>+ RL-EX</td><td>text + tables</td><td>79.7</td><td>78.8</td></tr><tr><td>+ RL (ours)</td><td>text + tables</td><td>81.6</td><td>80.1</td></tr></table>\n\nIn the training ablations, removing CoT supervision during SFT (SFT-no-CoT) results in lower performance compared to full SFT, showing that intermediate reasoning traces help guide the model's learning process. When using RL,we find that the dense reward signal $( R _ { \\mathrm { C R } } )$ significantly outperforms the variant trained with the EX reward $( R _ { \\mathrm { E X } } )$ . This confirms that sparse rewards are less effective at shaping model behaviour than denser, fine-grained signals.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1544::appendix::E",
+      "paper_id": "2025.emnlp-main.1544",
+      "section_number": "E",
+      "section_title": "hyperparameters and apis",
+      "normalized_section_title": "hyperparameters and apis",
+      "window_text": "We executed all the experiments either via API or on our own cluster. We used the paid-for OpenAI API to access GPT-3.5-turbo and GPT-4. On the other hand, we hosted and trained the open-source models used in this paper on a distributed cluster.\n\nSFT is performed for 5 epochs with a batch size of 1 (due to the large size of the input data) using a learning rate of $5 \\times 1 0 ^ { - 5 }$ and the AdamW optimiser (Loshchilov and Hutter,2O17).For the RL setup, we adopt the GRPO algorithm (Shao et al., 2024), training for 3 epochs with a learning rate of $1 \\times 1 0 ^ { - 6 }$ , batch size 1,and 16 sampled generations per batch. Both training protocols leverage gradient accumulation with 8 accumulation steps. All experiments are conducted using the Open-R1 framework (Hugging Face, 2025) on 8 NVIDIA\n\nA100 GPUs, each equipped with 80GB of memory. Models have been served for inference with the vllm framework (Kwon et al., 2023).\n\nThe weights of the final reward model have been set to maximise the importance of the correctness reward (O.8) while still ensuring the model follows the YAML format reward (O.1） and the already learnt thought format reward present in the base model (O.1).A tuning of such weights revealed that assigning equal weights to the 3 components leads to a degradation of the performance.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.emnlp-main.1544::appendix::E",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "We executed all the experiments either via API or on our own cluster. We used the paid-for OpenAI API to access GPT-3.5-turbo and GPT-4. On the other hand, we hosted and trained the open-source models used in this paper on a distributed cluster.\n\nSFT is performed for 5 epochs with a batch size of 1 (due to the large size of the input data) using a learning rate of $5 \\times 1 0 ^ { - 5 }$ and the AdamW optimiser (Loshchilov and Hutter,2O17).For the RL setup, we adopt the GRPO algorithm (Shao et al., 2024), training for 3 epochs with a learning rate of $1 \\times 1 0 ^ { - 6 }$ , batch size 1,and 16 sampled generations per batch. Both training protocols leverage gradient accumulation with 8 accumulation steps. All experiments are conducted using the Open-R1 framework (Hugging Face, 2025) on 8 NVIDIA\n\nA100 GPUs, each equipped with 80GB of memory. Models have been served for inference with the vllm framework (Kwon et al., 2023).\n\nThe weights of the final reward model have been set to maximise the importance of the correctness reward (O.8) while still ensuring the model follows the YAML format reward (O.1） and the already learnt thought format reward present in the base model (O.1).A tuning of such weights revealed that assigning equal weights to the 3 components leads to a degradation of the performance.",
+      "section_number": "E",
+      "section_title": "hyperparameters and apis",
+      "normalized_section_title": "hyperparameters and apis"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.emnlp-main.1544::appendix::E",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "E",
+      "section_title": "hyperparameters and apis",
+      "normalized_section_title": "hyperparameters and apis",
+      "evidence": "We executed all the experiments either via API or on our own cluster. We used the paid-for OpenAI API to access GPT-3.5-turbo and GPT-4. On the other hand, we hosted and trained the open-source models used in this paper on a distributed cluster.\n\nSFT is performed for 5 epochs with a batch size of 1 (due to the large size of the input data) using a learning rate of $5 \\times 1 0 ^ { - 5 }$ and the AdamW optimiser (Loshchilov and Hutter,2O17).For the RL setup, we adopt the GRPO algorithm (Shao et al., 2024), training for 3 epochs with a learning rate of $1 \\times 1 0 ^ { - 6 }$ , batch size 1,and 16 sampled generations per batch. Both training protocols leverage gradient accumulation with 8 accumulation steps. All experiments are conducted using the Open-R1 framework (Hugging Face, 2025) on 8 NVIDIA\n\nA100 GPUs, each equipped with 80GB of memory. Models have been served for inference with the vllm framework (Kwon et al., 2023).\n\nThe weights of the final reward model have been set to maximise the importance of the correctness reward (O.8) while still ensuring the model follows the YAML format reward (O.1） and the already learnt thought format reward present in the base model (O.1).A tuning of such weights revealed that assigning equal weights to the 3 components leads to a degradation of the performance.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "E"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 8
+      }
+    ]
+  }
+}

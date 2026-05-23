@@ -1,0 +1,171 @@
+{
+  "paper_id": "2021.emnlp-main.366",
+  "candidate_windows": [
+    {
+      "window_id": "2021.emnlp-main.366::appendix::C",
+      "paper_id": "2021.emnlp-main.366",
+      "section_number": "C",
+      "section_title": "baseline implementation details",
+      "normalized_section_title": "baseline implementation details",
+      "window_text": "We provide implementation details of the two proposed baseline methods, including the pipeline model and the end-to-end model. For both baselines, we adopt the BERT<sub>BASE</sub> (110M) implementation by Wolf et al. (2019).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.emnlp-main.366::appendix::C.1",
+      "paper_id": "2021.emnlp-main.366",
+      "section_number": "C.1",
+      "section_title": "pipeline model.",
+      "normalized_section_title": "pipeline model.",
+      "window_text": "Intra-document Relational Graph Extraction. This phase aims to predict the relations between the entities within each document containing head or tail entities. Documents are first tokenized into word pieces (Wu et al., 2016). To extract the relation between two entities in a document, we mark the position of entity mentions. Specifically, inspired by Baldini Soares et al. (2019), we adopt special tokens as entity markers and insert them to the start and end of all mentions of an entity. Four special tokens (i.e., $\\{[\\text{UNUSED} i]\\}_{i=0}^{3}$ from BERT vocabulary) are used to mark the start and end of two entities in a document.\n\n![](images/d7bb0f8120b8b8782d08877d4b923fc4caf8720c86a2696ff628c6bebb5f8a45.jpg)  \nFigure 4: Document domain distribution.\n\nTable 8: Comparison of average document length between CodRED and document-level RE datasets.   \n\n<table><tr><td>Dataset</td><td>Words/Doc.</td></tr><tr><td>BC5CDR (Li et al., 2016)</td><td>118</td></tr><tr><td>DocRED (Yao et al., 2019)</td><td>198</td></tr><tr><td>DialogRE (Yu et al., 2020)</td><td>226</td></tr><tr><td>CodRED</td><td>2,416</td></tr></table>\n\nAfter marking the entity mentions, we select relevant text in documents to encode. Since the documents in CodRED are typically very long, and the document length usually exceeds the 512 maximum input length of BERT, we extract text snippets surrounding the two entities in the document. Specifically: (1) if the distance between the nearest mentions of two entities is less than 512, we use the 512 tokens centered on the nearest mentions; (2) otherwise we extract 255 tokens centered on the first mention of each entity, and concatenate them to obtain the input tokens. A snippet will be shifted accordingly if the span encounters the document boundaries. A [CLS] token is put at the beginning, and a [SEP] token is concatenated at the end of the input tokens. Then we feed the tokens into BERT and take the [CLS] embedding in the last layer as the entity pair representation.\n\nFinally, the entity pair representation is fed into a fully connected layer followed by a softmax layer to obtain the relation distribution. The target relations are labeled by distant supervision as in Yao et al. (2019). The intra-document relational graph extraction model achieves 53.75 F1 score on the validation set of DocRED (Yao et al., 2019).\n\nHyperparameters. The hyperparameters are selected by grid search based on AUC metric on the\n\nvalidation set. The learning rate is 3e-5, selected from $\\{2\\mathrm{e - 5},3\\mathrm{e - 5},5\\mathrm{e - 5}\\}$ . The batch size is 32, selected from $\\{16,32,64\\}$ . In cross-document relation reasoning phase, the dimension of entity type embedding and relation embedding is 256, selected from $\\{128,256\\}$ . We train our intra-document relational graph extraction model on 4 GeForce RTX 2080Ti GPUs for 2 epochs, which takes about 12 hours. The cross-document relation reasoning model is trained on a GeForce RTX 2080Ti GPUs for 20 epochs, which takes about 0.5 hours.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.emnlp-main.366::appendix::C.2",
+      "paper_id": "2021.emnlp-main.366",
+      "section_number": "C.2",
+      "section_title": "end-to-end model",
+      "normalized_section_title": "end-to-end model",
+      "window_text": "We provide details about the end-to-end model, including intra-document relation prediction and cross-document relation prediction. For intradocument relation prediction, we adopt the same approach in the pipeline model. Here we introduce details of cross-document relation prediction, including text path encoding and path aggregation.\n\nText Path Encoding. Given a text path $(d_h^i, d_t^i)$ of an entity pair $(h, t)$ , we first encode it into representation. The text path encoding largely follows the implementation of the encoder of intradocument relational graph extraction model in the pipeline method. Documents are first concatenated and tokenized. Then entity markers are inserted to the start and end of all mentions of head, tail and bridging entities. We adopt unused tokens $\\{[\\text{UNUSEDDi}]\\}_{i=0}^{83}$ from BERT vocabulary as entity markers. $\\{[\\text{UNUSEDDi}]\\}_{i=0}^{3}$ are used to mark the start and end of head and tail entities. Bridging entities are marked by $\\{[\\text{UNUSEDDi}]\\}_{i=4}^{83}$ according to their occurrence order in the document containing the head entity. Next we select relevant text snippets surrounding the head/tail entity in the document in a similar approach to pipeline model. Finally we feed the tokens into BERT and take the [CLS] embedding in the last layer as the text path representation $\\mathbf{p}_i$ .\n\nPath Aggregation. Given the representations of paths $\\{\\mathbf{p}_i\\}_{i=0}^K$ between the entity pair, to select meaningful paths in the presence of noise, we adopt selective attention (Lin et al., 2016) to obtain the aggregated entity pair representation $\\mathbf{x}$ as follows:\n\n$$\n\\mathbf {x} = \\sum_ {i \\in K} \\alpha_ {i} \\mathbf {p} _ {i}, \\tag {4}\n$$\n\nwhere $\\alpha_{i}$ is the weight of path $p_i$ , and is defined as:\n\n$$\n\\alpha_ {i} = \\frac {\\exp \\left(e _ {i}\\right)}{\\sum_ {k \\in K} \\exp \\left(e _ {k}\\right)}, \\tag {5}\n$$\n\n![](images/dff0e189eec02e9b280937cf4711c706e6344b159ed8610dad9e8414215dcbab.jpg)  \nFigure 5: Accuracies of relation classification on text paths with different numbers of shared entity mentions on the development set.\n\nwhere $e_i$ is the attention score of the path $p_i$ , which indicates how well the path $p_i$ and the query relation $r$ matches. Informative paths are expected to have higher attention scores. The attention score $e_i$ is given by:\n\n$$\ne _ {i} = \\mathbf {p} _ {i} \\mathbf {r}, \\tag {6}\n$$\n\nwhere $\\mathbf{r}$ is the query embedding of relation $r$ .\n\nHyperparameters. The hyperparameters are selected by grid search according to the AUC metric on the validation set. The learning rate is 3e-5, selected from $\\{2\\mathrm{e} - 5,3\\mathrm{e} - 5,5\\mathrm{e} - 5\\}$ . The batch size is selected 16, selected from $\\{8,16,32\\}$ . We also choose the weight decay value 0.01. We train our model on 4 GeForce RTX 2080Ti GPUs for 10 epochs, which takes about 5 hours.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2021.emnlp-main.366::appendix::C.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GeForce RTX 2080Ti",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "Intra-document Relational Graph Extraction. This phase aims to predict the relations between the entities within each document containing head or tail entities. Documents are first tokenized into word pieces (Wu et al., 2016). To extract the relation between two entities in a document, we mark the position of entity mentions. Specifically, inspired by Baldini Soares et al. (2019), we adopt special tokens as entity markers and insert them to the start and end of all mentions of an entity. Four special tokens (i.e., $\\{[\\text{UNUSED} i]\\}_{i=0}^{3}$ from BERT vocabulary) are used to mark the start and end of two entities in a document.\n\n![](images/d7bb0f8120b8b8782d08877d4b923fc4caf8720c86a2696ff628c6bebb5f8a45.jpg)  \nFigure 4: Document domain distribution.\n\nTable 8: Comparison of average document length between CodRED and document-level RE datasets.   \n\n<table><tr><td>Dataset</td><td>Words/Doc.</td></tr><tr><td>BC5CDR (Li et al., 2016)</td><td>118</td></tr><tr><td>DocRED (Yao et al., 2019)</td><td>198</td></tr><tr><td>DialogRE (Yu et al., 2020)</td><td>226</td></tr><tr><td>CodRED</td><td>2,416</td></tr></table>\n\nAfter marking the entity mentions, we select relevant text in documents to encode. Since the documents in CodRED are typically very long, and the document length usually exceeds the 512 maximum input length of BERT, we extract text snippets surrounding the two entities in the document. Specifically: (1) if the distance between the nearest mentions of two entities is less than 512, we use the 512 tokens centered on the nearest mentions; (2) otherwise we extract 255 tokens centered on the first mention of each entity, and concatenate them to obtain the input tokens. A snippet will be shifted accordingly if the span encounters the document boundaries. A [CLS] token is put at the beginning, and a [SEP] token is concatenated at the end of the input tokens. Then we feed the tokens into BERT and take the [CLS] embedding in the last layer as the entity pair representation.\n\nFinally, the entity pair representation is fed into a fully connected layer followed by a softmax layer to obtain the relation distribution. The target relations are labeled by distant supervision as in Yao et al. (2019). The intra-document relational graph extraction model achieves 53.75 F1 score on the validation set of DocRED (Yao et al., 2019).\n\nHyperparameters. The hyperparameters are selected by grid search based on AUC metric on the\n\nvalidation set. The learning rate is 3e-5, selected from $\\{2\\mathrm{e - 5},3\\mathrm{e - 5},5\\mathrm{e - 5}\\}$ . The batch size is 32, selected from $\\{16,32,64\\}$ . In cross-document relation reasoning phase, the dimension of entity type embedding and relation embedding is 256, selected from $\\{128,256\\}$ . We train our intra-document relational graph extraction model on 4 GeForce RTX 2080Ti GPUs for 2 epochs, which takes about 12 hours. The cross-document relation reasoning model is trained on a GeForce RTX 2080Ti GPUs for 20 epochs, which takes about 0.5 hours.",
+      "section_number": "C.1",
+      "section_title": "pipeline model.",
+      "normalized_section_title": "pipeline model."
+    },
+    {
+      "window_id": "2021.emnlp-main.366::appendix::C.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GeForce RTX 2080Ti",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Intra-document Relational Graph Extraction. This phase aims to predict the relations between the entities within each document containing head or tail entities. Documents are first tokenized into word pieces (Wu et al., 2016). To extract the relation between two entities in a document, we mark the position of entity mentions. Specifically, inspired by Baldini Soares et al. (2019), we adopt special tokens as entity markers and insert them to the start and end of all mentions of an entity. Four special tokens (i.e., $\\{[\\text{UNUSED} i]\\}_{i=0}^{3}$ from BERT vocabulary) are used to mark the start and end of two entities in a document.\n\n![](images/d7bb0f8120b8b8782d08877d4b923fc4caf8720c86a2696ff628c6bebb5f8a45.jpg)  \nFigure 4: Document domain distribution.\n\nTable 8: Comparison of average document length between CodRED and document-level RE datasets.   \n\n<table><tr><td>Dataset</td><td>Words/Doc.</td></tr><tr><td>BC5CDR (Li et al., 2016)</td><td>118</td></tr><tr><td>DocRED (Yao et al., 2019)</td><td>198</td></tr><tr><td>DialogRE (Yu et al., 2020)</td><td>226</td></tr><tr><td>CodRED</td><td>2,416</td></tr></table>\n\nAfter marking the entity mentions, we select relevant text in documents to encode. Since the documents in CodRED are typically very long, and the document length usually exceeds the 512 maximum input length of BERT, we extract text snippets surrounding the two entities in the document. Specifically: (1) if the distance between the nearest mentions of two entities is less than 512, we use the 512 tokens centered on the nearest mentions; (2) otherwise we extract 255 tokens centered on the first mention of each entity, and concatenate them to obtain the input tokens. A snippet will be shifted accordingly if the span encounters the document boundaries. A [CLS] token is put at the beginning, and a [SEP] token is concatenated at the end of the input tokens. Then we feed the tokens into BERT and take the [CLS] embedding in the last layer as the entity pair representation.\n\nFinally, the entity pair representation is fed into a fully connected layer followed by a softmax layer to obtain the relation distribution. The target relations are labeled by distant supervision as in Yao et al. (2019). The intra-document relational graph extraction model achieves 53.75 F1 score on the validation set of DocRED (Yao et al., 2019).\n\nHyperparameters. The hyperparameters are selected by grid search based on AUC metric on the\n\nvalidation set. The learning rate is 3e-5, selected from $\\{2\\mathrm{e - 5},3\\mathrm{e - 5},5\\mathrm{e - 5}\\}$ . The batch size is 32, selected from $\\{16,32,64\\}$ . In cross-document relation reasoning phase, the dimension of entity type embedding and relation embedding is 256, selected from $\\{128,256\\}$ . We train our intra-document relational graph extraction model on 4 GeForce RTX 2080Ti GPUs for 2 epochs, which takes about 12 hours. The cross-document relation reasoning model is trained on a GeForce RTX 2080Ti GPUs for 20 epochs, which takes about 0.5 hours.",
+      "section_number": "C.1",
+      "section_title": "pipeline model.",
+      "normalized_section_title": "pipeline model."
+    },
+    {
+      "window_id": "2021.emnlp-main.366::appendix::C.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GeForce RTX 2080Ti",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "We provide details about the end-to-end model, including intra-document relation prediction and cross-document relation prediction. For intradocument relation prediction, we adopt the same approach in the pipeline model. Here we introduce details of cross-document relation prediction, including text path encoding and path aggregation.\n\nText Path Encoding. Given a text path $(d_h^i, d_t^i)$ of an entity pair $(h, t)$ , we first encode it into representation. The text path encoding largely follows the implementation of the encoder of intradocument relational graph extraction model in the pipeline method. Documents are first concatenated and tokenized. Then entity markers are inserted to the start and end of all mentions of head, tail and bridging entities. We adopt unused tokens $\\{[\\text{UNUSEDDi}]\\}_{i=0}^{83}$ from BERT vocabulary as entity markers. $\\{[\\text{UNUSEDDi}]\\}_{i=0}^{3}$ are used to mark the start and end of head and tail entities. Bridging entities are marked by $\\{[\\text{UNUSEDDi}]\\}_{i=4}^{83}$ according to their occurrence order in the document containing the head entity. Next we select relevant text snippets surrounding the head/tail entity in the document in a similar approach to pipeline model. Finally we feed the tokens into BERT and take the [CLS] embedding in the last layer as the text path representation $\\mathbf{p}_i$ .\n\nPath Aggregation. Given the representations of paths $\\{\\mathbf{p}_i\\}_{i=0}^K$ between the entity pair, to select meaningful paths in the presence of noise, we adopt selective attention (Lin et al., 2016) to obtain the aggregated entity pair representation $\\mathbf{x}$ as follows:\n\n$$\n\\mathbf {x} = \\sum_ {i \\in K} \\alpha_ {i} \\mathbf {p} _ {i}, \\tag {4}\n$$\n\nwhere $\\alpha_{i}$ is the weight of path $p_i$ , and is defined as:\n\n$$\n\\alpha_ {i} = \\frac {\\exp \\left(e _ {i}\\right)}{\\sum_ {k \\in K} \\exp \\left(e _ {k}\\right)}, \\tag {5}\n$$\n\n![](images/dff0e189eec02e9b280937cf4711c706e6344b159ed8610dad9e8414215dcbab.jpg)  \nFigure 5: Accuracies of relation classification on text paths with different numbers of shared entity mentions on the development set.\n\nwhere $e_i$ is the attention score of the path $p_i$ , which indicates how well the path $p_i$ and the query relation $r$ matches. Informative paths are expected to have higher attention scores. The attention score $e_i$ is given by:\n\n$$\ne _ {i} = \\mathbf {p} _ {i} \\mathbf {r}, \\tag {6}\n$$\n\nwhere $\\mathbf{r}$ is the query embedding of relation $r$ .\n\nHyperparameters. The hyperparameters are selected by grid search according to the AUC metric on the validation set. The learning rate is 3e-5, selected from $\\{2\\mathrm{e} - 5,3\\mathrm{e} - 5,5\\mathrm{e} - 5\\}$ . The batch size is selected 16, selected from $\\{8,16,32\\}$ . We also choose the weight decay value 0.01. We train our model on 4 GeForce RTX 2080Ti GPUs for 10 epochs, which takes about 5 hours.",
+      "section_number": "C.2",
+      "section_title": "end-to-end model",
+      "normalized_section_title": "end-to-end model"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2021.emnlp-main.366::appendix::C.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GeForce RTX 2080Ti",
+      "cleaned_hardware_name": "geforce rtx 2080ti",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "C.1",
+      "section_title": "pipeline model.",
+      "normalized_section_title": "pipeline model.",
+      "evidence": "Intra-document Relational Graph Extraction. This phase aims to predict the relations between the entities within each document containing head or tail entities. Documents are first tokenized into word pieces (Wu et al., 2016). To extract the relation between two entities in a document, we mark the position of entity mentions. Specifically, inspired by Baldini Soares et al. (2019), we adopt special tokens as entity markers and insert them to the start and end of all mentions of an entity. Four special tokens (i.e., $\\{[\\text{UNUSED} i]\\}_{i=0}^{3}$ from BERT vocabulary) are used to mark the start and end of two entities in a document.\n\n![](images/d7bb0f8120b8b8782d08877d4b923fc4caf8720c86a2696ff628c6bebb5f8a45.jpg)  \nFigure 4: Document domain distribution.\n\nTable 8: Comparison of average document length between CodRED and document-level RE datasets.   \n\n<table><tr><td>Dataset</td><td>Words/Doc.</td></tr><tr><td>BC5CDR (Li et al., 2016)</td><td>118</td></tr><tr><td>DocRED (Yao et al., 2019)</td><td>198</td></tr><tr><td>DialogRE (Yu et al., 2020)</td><td>226</td></tr><tr><td>CodRED</td><td>2,416</td></tr></table>\n\nAfter marking the entity mentions, we select relevant text in documents to encode. Since the documents in CodRED are typically very long, and the document length usually exceeds the 512 maximum input length of BERT, we extract text snippets surrounding the two entities in the document. Specifically: (1) if the distance between the nearest mentions of two entities is less than 512, we use the 512 tokens centered on the nearest mentions; (2) otherwise we extract 255 tokens centered on the first mention of each entity, and concatenate them to obtain the input tokens. A snippet will be shifted accordingly if the span encounters the document boundaries. A [CLS] token is put at the beginning, and a [SEP] token is concatenated at the end of the input tokens. Then we feed the tokens into BERT and take the [CLS] embedding in the last layer as the entity pair representation.\n\nFinally, the entity pair representation is fed into a fully connected layer followed by a softmax layer to obtain the relation distribution. The target relations are labeled by distant supervision as in Yao et al. (2019). The intra-document relational graph extraction model achieves 53.75 F1 score on the validation set of DocRED (Yao et al., 2019).\n\nHyperparameters. The hyperparameters are selected by grid search based on AUC metric on the\n\nvalidation set. The learning rate is 3e-5, selected from $\\{2\\mathrm{e - 5},3\\mathrm{e - 5},5\\mathrm{e - 5}\\}$ . The batch size is 32, selected from $\\{16,32,64\\}$ . In cross-document relation reasoning phase, the dimension of entity type embedding and relation embedding is 256, selected from $\\{128,256\\}$ . We train our intra-document relational graph extraction model on 4 GeForce RTX 2080Ti GPUs for 2 epochs, which takes about 12 hours. The cross-document relation reasoning model is trained on a GeForce RTX 2080Ti GPUs for 20 epochs, which takes about 0.5 hours.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2021.emnlp-main.366::appendix::C.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GeForce RTX 2080Ti",
+      "cleaned_hardware_name": "geforce rtx 2080ti",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "C.1",
+      "section_title": "pipeline model.",
+      "normalized_section_title": "pipeline model.",
+      "evidence": "Intra-document Relational Graph Extraction. This phase aims to predict the relations between the entities within each document containing head or tail entities. Documents are first tokenized into word pieces (Wu et al., 2016). To extract the relation between two entities in a document, we mark the position of entity mentions. Specifically, inspired by Baldini Soares et al. (2019), we adopt special tokens as entity markers and insert them to the start and end of all mentions of an entity. Four special tokens (i.e., $\\{[\\text{UNUSED} i]\\}_{i=0}^{3}$ from BERT vocabulary) are used to mark the start and end of two entities in a document.\n\n![](images/d7bb0f8120b8b8782d08877d4b923fc4caf8720c86a2696ff628c6bebb5f8a45.jpg)  \nFigure 4: Document domain distribution.\n\nTable 8: Comparison of average document length between CodRED and document-level RE datasets.   \n\n<table><tr><td>Dataset</td><td>Words/Doc.</td></tr><tr><td>BC5CDR (Li et al., 2016)</td><td>118</td></tr><tr><td>DocRED (Yao et al., 2019)</td><td>198</td></tr><tr><td>DialogRE (Yu et al., 2020)</td><td>226</td></tr><tr><td>CodRED</td><td>2,416</td></tr></table>\n\nAfter marking the entity mentions, we select relevant text in documents to encode. Since the documents in CodRED are typically very long, and the document length usually exceeds the 512 maximum input length of BERT, we extract text snippets surrounding the two entities in the document. Specifically: (1) if the distance between the nearest mentions of two entities is less than 512, we use the 512 tokens centered on the nearest mentions; (2) otherwise we extract 255 tokens centered on the first mention of each entity, and concatenate them to obtain the input tokens. A snippet will be shifted accordingly if the span encounters the document boundaries. A [CLS] token is put at the beginning, and a [SEP] token is concatenated at the end of the input tokens. Then we feed the tokens into BERT and take the [CLS] embedding in the last layer as the entity pair representation.\n\nFinally, the entity pair representation is fed into a fully connected layer followed by a softmax layer to obtain the relation distribution. The target relations are labeled by distant supervision as in Yao et al. (2019). The intra-document relational graph extraction model achieves 53.75 F1 score on the validation set of DocRED (Yao et al., 2019).\n\nHyperparameters. The hyperparameters are selected by grid search based on AUC metric on the\n\nvalidation set. The learning rate is 3e-5, selected from $\\{2\\mathrm{e - 5},3\\mathrm{e - 5},5\\mathrm{e - 5}\\}$ . The batch size is 32, selected from $\\{16,32,64\\}$ . In cross-document relation reasoning phase, the dimension of entity type embedding and relation embedding is 256, selected from $\\{128,256\\}$ . We train our intra-document relational graph extraction model on 4 GeForce RTX 2080Ti GPUs for 2 epochs, which takes about 12 hours. The cross-document relation reasoning model is trained on a GeForce RTX 2080Ti GPUs for 20 epochs, which takes about 0.5 hours.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2021.emnlp-main.366::appendix::C.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GeForce RTX 2080Ti",
+      "cleaned_hardware_name": "geforce rtx 2080ti",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "C.2",
+      "section_title": "end-to-end model",
+      "normalized_section_title": "end-to-end model",
+      "evidence": "We provide details about the end-to-end model, including intra-document relation prediction and cross-document relation prediction. For intradocument relation prediction, we adopt the same approach in the pipeline model. Here we introduce details of cross-document relation prediction, including text path encoding and path aggregation.\n\nText Path Encoding. Given a text path $(d_h^i, d_t^i)$ of an entity pair $(h, t)$ , we first encode it into representation. The text path encoding largely follows the implementation of the encoder of intradocument relational graph extraction model in the pipeline method. Documents are first concatenated and tokenized. Then entity markers are inserted to the start and end of all mentions of head, tail and bridging entities. We adopt unused tokens $\\{[\\text{UNUSEDDi}]\\}_{i=0}^{83}$ from BERT vocabulary as entity markers. $\\{[\\text{UNUSEDDi}]\\}_{i=0}^{3}$ are used to mark the start and end of head and tail entities. Bridging entities are marked by $\\{[\\text{UNUSEDDi}]\\}_{i=4}^{83}$ according to their occurrence order in the document containing the head entity. Next we select relevant text snippets surrounding the head/tail entity in the document in a similar approach to pipeline model. Finally we feed the tokens into BERT and take the [CLS] embedding in the last layer as the text path representation $\\mathbf{p}_i$ .\n\nPath Aggregation. Given the representations of paths $\\{\\mathbf{p}_i\\}_{i=0}^K$ between the entity pair, to select meaningful paths in the presence of noise, we adopt selective attention (Lin et al., 2016) to obtain the aggregated entity pair representation $\\mathbf{x}$ as follows:\n\n$$\n\\mathbf {x} = \\sum_ {i \\in K} \\alpha_ {i} \\mathbf {p} _ {i}, \\tag {4}\n$$\n\nwhere $\\alpha_{i}$ is the weight of path $p_i$ , and is defined as:\n\n$$\n\\alpha_ {i} = \\frac {\\exp \\left(e _ {i}\\right)}{\\sum_ {k \\in K} \\exp \\left(e _ {k}\\right)}, \\tag {5}\n$$\n\n![](images/dff0e189eec02e9b280937cf4711c706e6344b159ed8610dad9e8414215dcbab.jpg)  \nFigure 5: Accuracies of relation classification on text paths with different numbers of shared entity mentions on the development set.\n\nwhere $e_i$ is the attention score of the path $p_i$ , which indicates how well the path $p_i$ and the query relation $r$ matches. Informative paths are expected to have higher attention scores. The attention score $e_i$ is given by:\n\n$$\ne _ {i} = \\mathbf {p} _ {i} \\mathbf {r}, \\tag {6}\n$$\n\nwhere $\\mathbf{r}$ is the query embedding of relation $r$ .\n\nHyperparameters. The hyperparameters are selected by grid search according to the AUC metric on the validation set. The learning rate is 3e-5, selected from $\\{2\\mathrm{e} - 5,3\\mathrm{e} - 5,5\\mathrm{e} - 5\\}$ . The batch size is selected 16, selected from $\\{8,16,32\\}$ . We also choose the weight decay value 0.01. We train our model on 4 GeForce RTX 2080Ti GPUs for 10 epochs, which takes about 5 hours.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "C.1",
+      "C.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce RTX 2080 Ti",
+        "num": 4
+      },
+      {
+        "name": "NVIDIA GeForce RTX 2080 Ti",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA GeForce RTX 2080 Ti",
+        "num": 4
+      }
+    ]
+  }
+}

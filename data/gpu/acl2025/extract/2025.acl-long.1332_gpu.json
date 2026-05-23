@@ -1,0 +1,146 @@
+{
+  "paper_id": "2025.acl-long.1332",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.1332::sections::3",
+      "paper_id": "2025.acl-long.1332",
+      "section_number": "3",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "Spiking Neurons. LIF is a classic spiking neuron with a charge-fire-reset dynamic, and we take LIF\n\nas an example to introduce the spiking neurons. The dynamic process of LIF can be calculated as:\n\n$$\nH _ {t} = \\left(1 - \\frac {1}{\\tau}\\right) V _ {t - 1} + \\frac {1}{\\tau} X _ {t} \\tag {1}\n$$\n\n$$\nS _ {t} = \\Theta \\left(H _ {t} - V ^ {t h}\\right) \\tag {2}\n$$\n\n$$\nV _ {t} = V ^ {r e} S _ {t} + H _ {t} (1 - S _ {t}) \\tag {3}\n$$\n\nThe sequence from Eq.(1) to (3) describes the key processes in the LIF neuron model: charging, firing, and resetting. In these equations, $X_{t}$ indicates the input current at each time step $t$ , while $H_{t}$ refers to the post-charge membrane potential. $\\tau$ is the time dynamic factor. The spike tensor at time $t$ is denoted by $S_{t}$ . $\\Theta$ is the step function, and $V^{th}$ is the threshold voltage beyond which firing occurs. After firing, the membrane potential resets to $V^{re}$ . In this work, we replace the charging dynamics with dendritic and soma dynamics. Additionally, we substitute the firing and resetting mechanisms with the SSF mechanism.\n\nState Space Model. The SSM is a method for describing and analyzing dynamic systems, applicable to systems described by first-order or higher-order differential equations (Kalman, 1960). Its classical formulation can be expressed as:\n\n$$\n\\dot {h} _ {t} = A h _ {t} + B x _ {t} \\tag {4}\n$$\n\n$$\ny _ {t} = C h _ {t} + D x _ {t} \\tag {5}\n$$\n\nwhere $A, B, C, D$ represent control matrices. Typically, before performing computer simulations, discretization methods are employed, such as the zero-order hold method (ZOH) (DeCarlo, 1989) for discretization. The discretized form of Eq. (4) can be expressed as:\n\n$$\nh _ {t} = \\bar {A} h _ {t - 1} + \\bar {B} x _ {t} \\tag {6}\n$$\n\nwhere $\\bar{A} = \\exp (\\Delta A)$ , $\\bar{B} = (\\Delta A)^{-1}(\\exp (\\Delta A) - I)\\cdot \\Delta B$ , $\\Delta$ represents the sampling interval from continuous to discrete. Since our modeling of the dendrites starts with Kirchhoff's current law with first-order differential equations, the SSM is well-suited for the dendrites modeling and facilitates the parallelization of dendrites.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1332::sections::5",
+      "paper_id": "2025.acl-long.1332",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "In this section, we demonstrate the modeling capability of MMDEND on general sequences in 5.1, its high expressiveness on long sequence language modeling tasks in 5.2 and large-scale language modeling tasks in 5.3. In 5.4, we analyze MMDEND's efficiency in energy consumption and training. Additionally, we validate the effectiveness of each component of MMDEND in 5.5. The experimental setup is detailed in the Appendix A, B, C.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1332::appendix::A",
+      "paper_id": "2025.acl-long.1332",
+      "section_number": "A",
+      "section_title": "computing setting",
+      "normalized_section_title": "computing setting",
+      "window_text": "For the Highly Expressive Language Modeling experiment, we used 8 A100 GPUs. For all other experiments, we completed them on a single A100 GPU.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.acl-long.1332::appendix::C",
+      "paper_id": "2025.acl-long.1332",
+      "section_number": "C",
+      "section_title": "experiment setting",
+      "normalized_section_title": "experiment setting",
+      "window_text": "In this subsection, we will introduce the model architecture and hyperparameter settings in each experiment.\n\nModel Architectures are shown as follows:\n\n- For the Wikitext task, we followed the model architecture in (Gu et al., 2021), which consists of 16 transformer layers with a hidden size of 512. We replaced the activation layer in each transformer block with a 2-branch, 4-compartment MMDEND.   \n- For the LRA task, we followed the model architecture described in (Gu et al., 2021), which consists of 6 S4 blocks. We replaced the activation layer in each block with a 2- branch, 4-compartment MMDEND.   \n- For S-CIFAR10 and S-CIFAR100, we used the same model architecture setup as (Fang et al., 2024), which includes one convolutional layer and two linear layers. Sequence modeling between layers is performed using MMDEND. S-CIFAR10 utilizes a MMDEND with 8 compartments and 6 branches, while S-CIFAR100 employs a MMDEND with 8 compartments and 4 branches.\n\n- For the SSC task, we used a four-layer linear network with a hidden size of 128. Sequence modeling between layers was performed using a MMDEND with 8 compartments and 4 branches.\n\n![](images/a7f3cce2dae0ed03d3bd130bf167191e92b8be01c193dcf62d7bc37e2d339947.jpg)  \n(a) serial\n\n![](images/5fbc394b8c4e77117fcbf1f6fb4db174f53c35adf4b789e4b743e26ccb6ddf74.jpg)  \n(b) parallel\n\n![](images/cb1577f3a6654d453f83298c31b48613559e5fe3020d7f6d29f888b8d9131ad6.jpg)  \nFigure 9: serial and parallel spiking neuron.   \n(a) Compartment 1\n\n![](images/c835217a249dc0778e7dad8fbadd7c4e4e223837c52e8c32b4d8898768346138.jpg)  \n(b) Compartment 2\n\n![](images/959e2cdbfe2a2142b5f99eda59fde1b37646bd9bb826084c485aae0e1937d11a.jpg)  \n(c) Compartment 3\n\n![](images/69467966eb1720f5f6c9abd4ca8e3c6cce42c2ba7b7130ccb953a489149a3c64.jpg)  \n(d) Compartment 4   \nFigure 10: Visualization of dendritic compartment membrane potential information patterns on the SSC dataset.\n\nHyperparameters Our hyperparameter Settings in each experiment are shown in the Table 7.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.1332::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "For the Highly Expressive Language Modeling experiment, we used 8 A100 GPUs. For all other experiments, we completed them on a single A100 GPU.",
+      "section_number": "A",
+      "section_title": "computing setting",
+      "normalized_section_title": "computing setting"
+    },
+    {
+      "window_id": "2025.acl-long.1332::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "For the Highly Expressive Language Modeling experiment, we used 8 A100 GPUs. For all other experiments, we completed them on a single A100 GPU.",
+      "section_number": "A",
+      "section_title": "computing setting",
+      "normalized_section_title": "computing setting"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.1332::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "cleaned_hardware_name": "a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "A",
+      "section_title": "computing setting",
+      "normalized_section_title": "computing setting",
+      "evidence": "For the Highly Expressive Language Modeling experiment, we used 8 A100 GPUs. For all other experiments, we completed them on a single A100 GPU.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.1332::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "cleaned_hardware_name": "a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A",
+      "section_title": "computing setting",
+      "normalized_section_title": "computing setting",
+      "evidence": "For the Highly Expressive Language Modeling experiment, we used 8 A100 GPUs. For all other experiments, we completed them on a single A100 GPU.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 8
+      },
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 1
+      }
+    ]
+  }
+}

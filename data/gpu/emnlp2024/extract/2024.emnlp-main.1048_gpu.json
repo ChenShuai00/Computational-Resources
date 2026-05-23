@@ -1,0 +1,115 @@
+{
+  "paper_id": "2024.emnlp-main.1048",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.1048::sections::4.1",
+      "paper_id": "2024.emnlp-main.1048",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Dataset We used the TL;DR dataset and the eXtreme Summarization (XSUM) dataset (Cachola et al., 2020; Narayan et al., 2018). The TL;DR dataset is constructed by Reddit posts and their corresponding TL;DR summaries, while the XSUM dataset consists of BBC articles and their single-sentence summaries. Both datasets are widely used for abstractive summarization tasks.\n\nModels We utilized GPT-J (6B) (Wang and Komatsuzaki, 2021), Mistral-7B (Jiang et al., 2023) and LLaMA2-7B (Touvron et al., 2023b). For GPT-J model, we used a checkpoint from Huggingface that was already fully fine-tuned on the train dataset. For LLaMA2-7B and Mistral-7B models, we performed Supervised Fine-Tuning (SFT) on each training dataset using QLoRA, and then merged the adapter into the models for further preference optimization experiments.\n\nEvaluation Metrics We adopt the evaluation protocol proposed by Chae et al. (2024). They categorized the evaluation into three key divisions: Faithfulness, Relevance (with the source), and Similarity (with the target). For Faithfulness, we used AlignScore (Zha et al., 2023) and FactCC (Kryscinski et al., 2020). To measure Relevance, we employed BARTScore (Yuan et al., 2021) and BS-FACT. Lastly, to evaluate Similarity, we used ROUGE-L.\n\nImplementation Details For the SFT training, we utilized QLoRA with a batch size of 2 and a learning rate of 1e-4, training for one epoch in training split. After training, the SFT-trained QLoRA was merged with the pre-trained model. For preference optimization, we set the DPO hyperparameter $\\beta$ to 0.5. The learning rate was set to 1e-4 with a batch size of 4, and training was conducted for one epoch on the validation split. During summary generation, the maximum number of generated tokens was limited to 50. For beam search decoding, we used beam size of 6. For temperature sampling, we employed temperatures of 5.0 for GPT-J, and 1.0 for Mistral-7B and LLaMA2-7B.\n\nTable 1: Results of the GPT-J model on the TL;DR dataset. We compared our Model-based Preference Optimization (MPO) with two main baselines: supervised fine-tuning and human preference. All main results are based on a beam search decoding strategy, while the results in parentheses are based on a greedy decoding strategy. MPO showed overall better performance in terms of faithfulness and source relevance compared to other baselines. The SFT model is a fine-tuned model on the training split and the SFT++ model is the SFT model further fine-tuned on the validation split. PPO and DPO are SFT models optimized on human-preference datasets. Preferred-FT is a model fine-tuned only on the chosen samples of MPO. * indicates statistical significance (p-value < 0.001) based on a T-test compared to DPO.   \n\n<table><tr><td rowspan=\"2\">Dataset (Model)</td><td rowspan=\"2\">Method</td><td rowspan=\"2\">Response Ratio</td><td colspan=\"2\">Faithfulness</td><td colspan=\"2\">Relevance</td><td>Similarity</td></tr><tr><td>AlignScore (↑)</td><td>FactCC (↑)</td><td>BARTScore (↑)</td><td>BS-FACT (↑)</td><td>ROUGE-L (↑)</td></tr><tr><td rowspan=\"9\">TL;DR (GPT-J)</td><td colspan=\"7\">with ground-truth data</td></tr><tr><td>SFT</td><td>81.2% (99.4%)</td><td>89.21 (83.54)</td><td>64.18 (53.48)</td><td>-1.25 (-1.63)</td><td>91.53 (90.30)</td><td>26.74 (26.01)</td></tr><tr><td>SFT++</td><td>93.8% (99.7%)</td><td>87.29 (82.30)</td><td>61.50 (57.05)</td><td>-1.37 (-1.63)</td><td>91.06 (90.11)</td><td>27.47 (26.53)</td></tr><tr><td colspan=\"7\">with human feedback (preference dataset)</td></tr><tr><td>PPO</td><td>100.0% (100.0%)</td><td>83.10 (75.88)</td><td>54.40 (47.52)</td><td>-1.35 (-1.80)</td><td>91.32 (89.78)</td><td>23.55 (23.28)</td></tr><tr><td>DPO</td><td>98.3 (99.8%)</td><td>88.12 (82.55)</td><td>61.70 (54.09)</td><td>-1.33 (-1.65)</td><td>91.27 (90.22)</td><td>27.24 (26.28)</td></tr><tr><td colspan=\"7\">without human feedback</td></tr><tr><td>Preferred-FT</td><td>66.8% (99.6%)</td><td>89.90 (82.04)</td><td>76.58 (64.48)</td><td>-1.39 (-1.73)</td><td>91.24 (90.09)</td><td>24.38 (24.39)</td></tr><tr><td>MPO (Ours)</td><td>99.9% (99.9%)</td><td>91.61* (86.82*)</td><td>72.10* (59.39*)</td><td>-1.10* (-1.41*)</td><td>92.20* (91.20*)</td><td>26.10 (26.49)</td></tr></table>\n\nBaselines We compared our method with two main baselines: supervised fine-tuned models and human preference optimized models. First, we compared our approach to models fine-tuned using ground-truth data or summaries generated via deterministic decoding. Second, we compared our method to PPO and DPO models trained on human preference pairs to demonstrate that the contrast between beam search decoding and random sampling is more effective than human-annotated preferences in terms of faithfulness.\n\nSFT is a fine-tuned model on the train split of each dataset. SFT++ is a model further trained on a validation split from the SFT model. Preferred-FT is fine-tuned to maximize likelihood only on the chosen samples (i.e., $\\mathbf{y}_{\\mathrm{beam}}$ ). PPO and DPO are optimized from SFT models on human preference dataset provided by Stiennon et al. (2020). For PPO, we used a Huggingface checkpoint<sup>2</sup>, already optimized with the provided human preference dataset. For DPO, we optimized in the same way as MPO but with the human preference dataset.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1048::appendix::A.7",
+      "paper_id": "2024.emnlp-main.1048",
+      "section_number": "A.7",
+      "section_title": "reproducibility",
+      "normalized_section_title": "reproducibility",
+      "window_text": "We conducted our experiments using computing clusters equipped with NVIDIA RTX 6000 (GPU memory: 48GB) and NVIDIA RTX 3090 GPUs (GPU memory: 24 GB), allocating a single GPU for each experiment.\n\nBased on NVIDIA RTX 6000, model preference optimization typically required an average of 1 hour and 30 minutes. When generating summaries, using GPT-J (6B) with beam search decoding took approximately 20 hours, and with greedy decoding, about 5 hours and 30 minutes. Using Mistral-7B and LLaMA-7B models with beam search decoding took around 5 hours, while with greedy decoding, it took about 1 hour and 30 minutes.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.1048::appendix::A.7",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 6000 48GB",
+      "count": null,
+      "count_text": "",
+      "evidence": "We conducted our experiments using computing clusters equipped with NVIDIA RTX 6000 (GPU memory: 48GB) and NVIDIA RTX 3090 GPUs (GPU memory: 24 GB), allocating a single GPU for each experiment.\n\nBased on NVIDIA RTX 6000, model preference optimization typically required an average of 1 hour and 30 minutes. When generating summaries, using GPT-J (6B) with beam search decoding took approximately 20 hours, and with greedy decoding, about 5 hours and 30 minutes. Using Mistral-7B and LLaMA-7B models with beam search decoding took around 5 hours, while with greedy decoding, it took about 1 hour and 30 minutes.",
+      "section_number": "A.7",
+      "section_title": "reproducibility",
+      "normalized_section_title": "reproducibility"
+    },
+    {
+      "window_id": "2024.emnlp-main.1048::appendix::A.7",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 3090 24GB",
+      "count": null,
+      "count_text": "",
+      "evidence": "We conducted our experiments using computing clusters equipped with NVIDIA RTX 6000 (GPU memory: 48GB) and NVIDIA RTX 3090 GPUs (GPU memory: 24 GB), allocating a single GPU for each experiment.\n\nBased on NVIDIA RTX 6000, model preference optimization typically required an average of 1 hour and 30 minutes. When generating summaries, using GPT-J (6B) with beam search decoding took approximately 20 hours, and with greedy decoding, about 5 hours and 30 minutes. Using Mistral-7B and LLaMA-7B models with beam search decoding took around 5 hours, while with greedy decoding, it took about 1 hour and 30 minutes.",
+      "section_number": "A.7",
+      "section_title": "reproducibility",
+      "normalized_section_title": "reproducibility"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.1048::appendix::A.7",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 6000 48GB",
+      "cleaned_hardware_name": "nvidia rtx 6000 48gb",
+      "normalized_hardware_name": "NVIDIA Quadro RTX 6000",
+      "benchmark_hardware_name": "NVIDIA Quadro RTX 6000",
+      "count": null,
+      "count_text": "",
+      "section_number": "A.7",
+      "section_title": "reproducibility",
+      "normalized_section_title": "reproducibility",
+      "evidence": "We conducted our experiments using computing clusters equipped with NVIDIA RTX 6000 (GPU memory: 48GB) and NVIDIA RTX 3090 GPUs (GPU memory: 24 GB), allocating a single GPU for each experiment.\n\nBased on NVIDIA RTX 6000, model preference optimization typically required an average of 1 hour and 30 minutes. When generating summaries, using GPT-J (6B) with beam search decoding took approximately 20 hours, and with greedy decoding, about 5 hours and 30 minutes. Using Mistral-7B and LLaMA-7B models with beam search decoding took around 5 hours, while with greedy decoding, it took about 1 hour and 30 minutes.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "rtx_6000_shorthand_rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing"
+    },
+    {
+      "window_id": "2024.emnlp-main.1048::appendix::A.7",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 3090 24GB",
+      "cleaned_hardware_name": "nvidia rtx 3090 24gb",
+      "normalized_hardware_name": "NVIDIA RTX 3090 24GB",
+      "benchmark_hardware_name": null,
+      "count": null,
+      "count_text": "",
+      "section_number": "A.7",
+      "section_title": "reproducibility",
+      "normalized_section_title": "reproducibility",
+      "evidence": "We conducted our experiments using computing clusters equipped with NVIDIA RTX 6000 (GPU memory: 48GB) and NVIDIA RTX 3090 GPUs (GPU memory: 24 GB), allocating a single GPU for each experiment.\n\nBased on NVIDIA RTX 6000, model preference optimization typically required an average of 1 hour and 30 minutes. When generating summaries, using GPT-J (6B) with beam search decoding took approximately 20 hours, and with greedy decoding, about 5 hours and 30 minutes. Using Mistral-7B and LLaMA-7B models with beam search decoding took around 5 hours, while with greedy decoding, it took about 1 hour and 30 minutes.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched"
+    }
+  ],
+  "review_flags": [],
+  "pred_result": {
+    "sec": [
+      "A.7"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Quadro RTX 6000",
+        "num": null
+      },
+      {
+        "name": "NVIDIA RTX 3090 24GB",
+        "num": null
+      }
+    ]
+  }
+}
