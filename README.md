@@ -53,9 +53,8 @@ uv run python code/verify.py --quick
 ## License
 
 Code is released under the Apache License 2.0; see [`LICENSE`](LICENSE).
-Original result tables, figures, and documentation are released under CC BY 4.0;
-see [`LICENSE-DATA.md`](LICENSE-DATA.md). Third-party source records retain their
-original terms and are not relicensed by this repository.
+Third-party source records retain their original terms and are not relicensed by
+this repository.
 
 ## Citation
 
