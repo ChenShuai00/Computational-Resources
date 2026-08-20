@@ -1,0 +1,67 @@
+{
+  "paper_id": "2023.emnlp-main.497",
+  "candidate_windows": [
+    {
+      "window_id": "2023.emnlp-main.497::sections::5.1",
+      "paper_id": "2023.emnlp-main.497",
+      "section_number": "5.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Dataset. Three common datasets have been typically used to evaluate the KGDG task: Holl-E (Moghe et al., 2018), CMU_DOG (Zhou et al., 2018), and WoW (Dinan et al., 2018). However, the topics in the first two datasets are limited to movies, with much of the knowledge being composed of movie reviews in the form of dialogues. This is not in line with our goal of exploring the internalization of retrieved world knowledge. The CMU_DOG dataset did not label golden knowledge, so there is no way to tell if the knowledge introduced is correct. Through observations and experiments, we find that the Holl-E dataset is also not suitable for conducting the evaluation of knowledge regurgitation, and we put the detailed reasons and experimental results in the Appendix F. Consequently, we choose the WoW dataset for our experiments. See the Appendix A for a brief introduction to the chosen WoW dataset.\n\nBaseline Methods. We compare our MACL framework with vanilla MLE and several state-of-the-art (SOTA) methods that address the issue of text degeneration.\n\nNT: Welleck et al. (2019) proposed the concept of unlikelihood loss, combining it with MLE loss.\n\nScalegrad: Lin et al. (2021) modified the gradient of the MLE, encouraging the model to use novel tokens. we designate knowledge tokens as non-novel tokens.\n\nND: Li et al. (2022) developed a novel training paradigm known as negative distillation, designed to steer the model away from undesirable degenerated responses. We utilize the MLE-finetuned model as the negative teacher.\n\nCTloss: Jiang et al. (2022) put forward a new contrastive token learning objective. This objective aims to promote label tokens in the ranking at each step while demoting negative tokens, leaving other irrelevant tokens unaffected.\n\nSimCTG: Su et al. (2022) introduced a contrastive objective designed to learn discriminative and isotropic token representations by increasing the distances between distinct tokens' representations.\n\nImplementation Details. We use PyTorch (Paszke et al., 2019) framework to implement our work. For the implementation of PLMs BART, T5 and GPT-2, we utilize the open-source Hugging Face transformers (Wolf et al., 2020). The whole model is optimized with Adam (Kingma and Ba, 2014) algorithm. We set the learning rate to 1e-5 and training batch size to 16, train up to 15 epochs, and select the best checkpoints based on performance on the validation set. Some hyper-parameters are set as follows: $\\alpha = 4$ , $\\lambda = 1$ , $\\mu = 2$ , $b = 32$ , $m = 16$ . At the inference stage, we utilize a decent knowledge selector designed by Yang et al. (2022) to select knowledge first and utilize it to generate response to fit the KGDG. The decoding strategy is set to beam search with a beam size of 3.\n\nEvaluation Metrics. We choose perplexity (PPL) of the ground-truth responses, BOW Embedding (Avg., Ext.) (Liu et al., 2016), BLEU-1(Papineni et al., 2002), Knowledge Utilization Difference (KUD), and Porportion of Degenerated samples (PoD) as automatic metrics for evaluation. The latter two are the metrics we propose to measure knowledge regurgitation and the difference from humans in knowledge utilization pattern.\n\nGiven that the primary characteristic of degeneration is the duplication of knowledge fragments,\n\nwe propose considering samples with a Proportion of Longest Common Sub-sequence (PLCS) greater than $70\\%$ as degenerated samples. We manually annotate a subset of samples from the test set and calculate the precision of the automated metric, PoD. The annotators are given the following instructions: A generated response will be classified as degenerated if it 1) evidently replicates external knowledge and 2) produces content that is visibly unnatural and contextually incoherent. The results in Table 4 demonstrate effectiveness of the PoD metric. To compare the gap between different methods and humans in knowledge utilization patterns, we introduce the metric KUD, which is defined as:\n\n$$\n\\mathrm {K U D} = \\operatorname {M A E} \\left(\\mathrm {P} _ {\\mathrm {h}} (\\mathrm {K P} - 1) \\mid \\mid \\mathrm {P} _ {\\mathrm {g}} (\\mathrm {K P} - 1)\\right), \\tag {13}\n$$\n\nwhere $\\mathrm{P_h}$ is the distribution of human response, and $\\mathrm{P_g}$ is the distribution of generated response.\n\nFor human evaluation, We randomly select 50 responses in test seen set and 50 responses in test unseen set. We conducted an aspect-based pairwise preference test. Specifically, for a given context, we paired our model's response with a response from the baselines and asked five well-educated annotators to choose the superior response based on the following four aspects: (1) Coherence: which model generates more contextually coherent responses; (2) Engagingness: which model generates more interesting responses; (3) Informativeness: which response contains more knowledge; (4) Interactiveness: which model generates more interactive responses that make the user want to continue the conversation. We compute Fleiss' kappa value (Fleiss, 1971) among different annotators to measure their agreement.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.497::appendix::B",
+      "paper_id": "2023.emnlp-main.497",
+      "section_number": "B",
+      "section_title": "problem of negative training (nt)",
+      "normalized_section_title": "problem of negative training (nt)",
+      "window_text": "As the gradient-based optimization progresses, it is expected that the gradient of the loss approaches zero around a minimum. Therefore, the probability of the ground-truth token $p_i$ should increase towards 1 to decrease the gradient norm $|\\nabla \\mathcal{L}_a|$ and achieve convergence to a value close to 0 during the training stage.\n\nHowever, in equation (14), when $p_i > \\frac{1}{1 + \\alpha}$ , the value of the gradient norm $|\\nabla \\mathcal{L}_a|$ becomes larger than 1. Consequently, the training procedure reduces $p_i$ to minimize the gradient norm, which contradicts the optimization principle. This issue prevents the loss function from converging during the later stages of training.\n\nGround-Truth Token $(i = i^{*})$ :\n\n$$\n\\nabla \\mathcal {L} _ {a} = \\frac {\\partial \\mathcal {L}}{\\partial p _ {i}} \\frac {\\partial p _ {i}}{\\partial a _ {i}} = 1 - p _ {i} \\left(1 - \\alpha \\frac {p _ {c}}{1 - p _ {c}}\\right) \\tag {14}\n$$",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.497::appendix::C",
+      "paper_id": "2023.emnlp-main.497",
+      "section_number": "C",
+      "section_title": "more experimental results",
+      "normalized_section_title": "more experimental results",
+      "window_text": "As observed in Table 8, MACL works on the T5-large as well, effectively reducing the knowledge regurgitation. Furthermore, in addition to the beam search decoding strategy with a beam size of 3, we also experimented with beam search using a beam size of 5, greedy decoding, and Nucleus Sampling. The results in Table 9 show that larger beam sizes are more prone to degeneration. Although nucleus sampling could alleviate knowledge regurgitation, it is far less effective than MACL. It also illustrates that our approach is compatible with these decoding strategies as it mitigates the degeneration further.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.497::appendix::E",
+      "paper_id": "2023.emnlp-main.497",
+      "section_number": "E",
+      "section_title": "details of the training algorithm",
+      "normalized_section_title": "details of the training algorithm",
+      "window_text": "See the pseudo-code below for details.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [],
+  "normalized_extractions": [],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [],
+    "pred": []
+  }
+}

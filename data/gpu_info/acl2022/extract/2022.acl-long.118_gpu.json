@@ -1,0 +1,120 @@
+{
+  "paper_id": "2022.acl-long.118",
+  "candidate_windows": [
+    {
+      "window_id": "2022.acl-long.118::sections::3.2",
+      "paper_id": "2022.acl-long.118",
+      "section_number": "3.2",
+      "section_title": "extractor for long inputs",
+      "normalized_section_title": "extractor for long inputs",
+      "window_text": "An interesting research question is how to design the extractor for long inputs. Limited by GPU memory, it is impractical to concatenate all snippets and encode them with a large pre-trained language model. As shown in Figure 2, we group consecutive snippets into chunks. We concatenate the query $q$ with each chunk and compute the encoded vector for each snippet independently within the chunk it belongs to. We project the encoded vectors to scalar scores $s_i = E_{\\eta}(q, x_i)$ using an MLP.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.118::sections::4.3",
+      "paper_id": "2022.acl-long.118",
+      "section_number": "4.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "Pretrained-LM The extractor is initialized with RoBERTa-base (Liu et al., 2019) weights. The generator is initialized with BART-large (Lewis et al., 2020a) weights. We use the Adam optimizer and set the extractor learning rate to 5e-5 and the generator learning rate to 5e-6.\n\nHyperparameters $\\lambda_{g}, \\lambda_{o}$ , and $\\lambda_{c}$ are the coefficients for the generation loss, oracle loss, and the consistency loss respectively. For $\\lambda_{g}$ and $\\lambda_{o}$ , we did a 2-step binary search between 0 and 2. For $\\lambda_{c}$ , we did a 3-step binary search between 0 and 10. For the QMSum dataset, we used $\\lambda_{g} = 1$ , $\\lambda_{o} = 1$ , $\\lambda_{c} = 1$ . For the GovReport dataset, we used $\\lambda_{g} = 0.5$ , $\\lambda_{o} = 1$ , $\\lambda_{c} = 1$ . For the ArXiv dataset, we used $\\lambda_{g} = 0.5$ , $\\lambda_{o} = 1$ , $\\lambda_{c} = 5$ .\n\nHardware We apply gradient checkpointing (Chen et al., 2016) to save the GPU memory. Each experiment is run on one NVIDIA Quadro RTX 8000 GPU. The effective batch size is set to 8.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2022.acl-long.118::sections::6",
+      "paper_id": "2022.acl-long.118",
+      "section_number": "6",
+      "section_title": "analysis and discussion",
+      "normalized_section_title": "analysis and discussion",
+      "window_text": "Analysis of extracted snippets We are interested in the amount of salient information passed to the generator. To investigate this, we report the decomposed precision and recall of ROUGE scores in Table 6. We observe that the extracted snippets have much higher recall than the generated summaries, while the generated summaries have higher precision. This suggests that to improve the overall performance, we can increase the information coverage (i.e., recall) of the extractor and improve the accuracy of the generator in identifying the salient snippets (i.e., precision).\n\nInterpretability of dynamic weights Our approach is more interpretable than sparse attention and two-step extraction-generation pipeline meth\n\n![](images/02b27c79d5022e689bd84d769c3abeec9b130fcae4e32e30dc217b5b07c75760.jpg)  \n(a) QMSum sample 1\n\n![](images/3b4ee80818356fac1e2a30cd597827c7894becef0928b2d285c9bc617504054c.jpg)  \n(b) QMSum sample 2\n\n![](images/d7928bc1b95cf9a3ce632ae31b8663bf29ffff8fa9216d70e8368b8c6cadea1a.jpg)  \n(c) QMSum sample 3\n\n![](images/5d940c2eb898d8041c264ec97b97e96519dc72ba44882e3c018844e8b4ac8008.jpg)  \n(d) QMSum sample 4\n\n![](images/28e63565ed9fce24e364fe18c53ee2bd17c0ed846ae6faa1fb882bbe75329ba5.jpg)  \n(e) GovReport sample 1\n\n![](images/798b0c1e8dce3a9dcc43f107de12d389efe3a71003c85b010ddfaa4229973fd6.jpg)  \n(f) GovReport sample 2\n\n![](images/2880dd96976378cb1566d89c9231dc933b1800f055118214679ea5b670f5d4b9.jpg)  \n(g) GovReport sample 3\n\n![](images/33ee9d02ff8905528176de30ecf61515e25890147e6ffb4fc87384ec17161f5c.jpg)  \n(h) GovReport sample 4   \nFigure 4: Dynamic weight visualization. We visualized the dynamic weight matrices of the generated summary and a random summary from other samples in the validation set. $x$ -axis: decoding time step; $y$ -axis: index of the extracted top- $K$ snippets. Darker squares stand for higher weights. More examples can be found in Appendix A.\n\nods. Specifically, dynamic weights in the generator shows how the information is used throughout the decoding process. In Figure 4, we visualize the dynamic weights for the extracted snippets assigned by the generator during decoding. In each subfigure, we visualize the dynamic weight matrices of the generated summary and a random summary from other samples in the validation set. The $x$ -axis and $y$ -axis represent the index of the extracted top- $K$ snippets and the decoding time step, respectively. Darker squares denote higher weights. For each generated summary, we observe multiple consecutive high-weight areas, indicating alignments between the extracted snippets and the generated summary. By contrast, weights are uniformly distributed for random summaries. Interestingly, we observe that, on QMSum, fewer sentences are con\n\nsidered when generating the summaries. Our explanation for this observation is that QMSum is a query-based dataset, where the queried information is more concentrated in a few snippets. By contrast, we find that a larger number of snippets are used on the GovReport dataset as seen in Figure 4, as GovReport is a general summarization dataset.\n\nEffect of number of extracted snippets To evaluate the effect of number of extracted snippets on model performance, we vary the value of $K$ of top- $K$ in Eq. (1) and test it on both the GovReport and QMSum datasets. We observe that the model performance generally increases as the value of $K$ increases. This is expected as more extracted snippets provide the generator with more information to form a final summary. The results are summa\n\nTable 7: Comparing model performance with different values of $K$ on the GovReport and QMSum dataset   \n\n<table><tr><td></td><td>R-1</td><td>R-2</td><td>R-L</td></tr><tr><td colspan=\"4\">GovReport</td></tr><tr><td>K=25</td><td>61.01</td><td>28.83</td><td>57.82</td></tr><tr><td>K=20</td><td>59.25</td><td>27.46</td><td>55.74</td></tr><tr><td>K=15</td><td>58.55</td><td>26.95</td><td>54.89</td></tr><tr><td>K=10</td><td>54.98</td><td>24.10</td><td>51.25</td></tr><tr><td colspan=\"4\">QMSum</td></tr><tr><td>K=25</td><td>34.42</td><td>9.71</td><td>30.10</td></tr><tr><td>K=20</td><td>33.10</td><td>8.69</td><td>29.62</td></tr><tr><td>K=15</td><td>31.78</td><td>8.36</td><td>28.31</td></tr><tr><td>K=10</td><td>33.30</td><td>9.18</td><td>29.53</td></tr></table>\n\nTable 8: Feeding extractive oracles to generator. \"Oracle\" is computed based on the gold summary; thus, it is a soft upper-bound of the extractor's performance.   \n\n<table><tr><td></td><td>R-1</td><td>R-2</td><td>R-L</td></tr><tr><td colspan=\"4\">GovReport</td></tr><tr><td>Extractor Output</td><td>61.01</td><td>28.83</td><td>57.82</td></tr><tr><td>Oracle</td><td>68.02</td><td>39.16</td><td>65.29</td></tr><tr><td colspan=\"4\">QMSum</td></tr><tr><td>Extractor Output</td><td>34.42</td><td>9.71</td><td>30.10</td></tr><tr><td>Oracle</td><td>39.80</td><td>14.74</td><td>36.06</td></tr></table>\n\nrized in Table 7. Due to the limit of GPU memory, the largest $K$ value we tried is 25.\n\nEffect of consistency loss We evaluate the effect of consistency loss on extractor performance. Note that removing the consistency loss means that the extractor and the generator are independently trained. The results are presented in Table 5 as part of the ablation study. Removing the consistency loss leads to worse model performance. We observe that the consistency loss helps the model better learn the importance of the selected text snippets useful for the generation.\n\nExtractor performance compared with extractive oracles We feed the extractive oracles to the generator. The results are summarized in Table 8. We observe that extractive oracles contain more salient information than the text snippets extracted by the extractor. Feeding the extractive oracle to the generator indicates the upper bound of the extractor performance. However, we observe that the gap between the performance of using the extractive oracle and using the extractor output is relatively small.\n\nComparison with RAG The generator of our method is related to but differs significantly from Retrieval-Augmented Generation (RAG) (Lewis\n\net al., 2020b). The similarity only lies in the idea of marginalization over a set of text snippets, which is shown to be useful in question answering as well (Ni et al., 2021b). However, unlike our dynamic weights, the weights in RAG remains static during decoding. In our notations, RAG's generation probability can be formulated as:\n\n$$\n\\begin{array}{l} P _ {\\theta} (y | q, X _ {K}) = \\prod_ {t = 1} ^ {T} P _ {\\theta} \\left(y _ {t} \\mid q, X _ {K}, y _ {<   t}\\right) \\tag {8} \\\\ = \\prod_ {t = 1} ^ {T} \\sum_ {x \\in X _ {K}} P _ {\\theta} \\left(y _ {t} | q, x, y _ {<   t}\\right) P _ {\\theta} \\left(x | q, X _ {K}\\right) \\\\ \\end{array}\n$$\n\nThe static weight $P_{\\theta}(x|q,X_K)$ in Eq. 8 is computed based on $q$ and $X_K$ , while our dynamic weight $P_{\\theta}(x|q,X_K,y_{<t})$ is additionally conditioned on the already generated tokens.\n\nLimitations and future directions We acknowledge that joint training of the extractor and the generator cannot eliminate information loss, which might be addressed by combining DYLE and sparse attention to encode longer snippets. Though formulated for long-input summarization, DYLE can be applied to general long-input generation tasks where information is scattered across the input, e.g., open-domain question answering and multi-turn dialogue systems with long dialogue history.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.acl-long.118::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Quadro RTX 8000",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Pretrained-LM The extractor is initialized with RoBERTa-base (Liu et al., 2019) weights. The generator is initialized with BART-large (Lewis et al., 2020a) weights. We use the Adam optimizer and set the extractor learning rate to 5e-5 and the generator learning rate to 5e-6.\n\nHyperparameters $\\lambda_{g}, \\lambda_{o}$ , and $\\lambda_{c}$ are the coefficients for the generation loss, oracle loss, and the consistency loss respectively. For $\\lambda_{g}$ and $\\lambda_{o}$ , we did a 2-step binary search between 0 and 2. For $\\lambda_{c}$ , we did a 3-step binary search between 0 and 10. For the QMSum dataset, we used $\\lambda_{g} = 1$ , $\\lambda_{o} = 1$ , $\\lambda_{c} = 1$ . For the GovReport dataset, we used $\\lambda_{g} = 0.5$ , $\\lambda_{o} = 1$ , $\\lambda_{c} = 1$ . For the ArXiv dataset, we used $\\lambda_{g} = 0.5$ , $\\lambda_{o} = 1$ , $\\lambda_{c} = 5$ .\n\nHardware We apply gradient checkpointing (Chen et al., 2016) to save the GPU memory. Each experiment is run on one NVIDIA Quadro RTX 8000 GPU. The effective batch size is set to 8.",
+      "section_number": "4.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.acl-long.118::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Quadro RTX 8000",
+      "cleaned_hardware_name": "nvidia quadro rtx 8000",
+      "normalized_hardware_name": "NVIDIA Quadro RTX 8000",
+      "benchmark_hardware_name": "NVIDIA Quadro RTX 8000",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "4.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "Pretrained-LM The extractor is initialized with RoBERTa-base (Liu et al., 2019) weights. The generator is initialized with BART-large (Lewis et al., 2020a) weights. We use the Adam optimizer and set the extractor learning rate to 5e-5 and the generator learning rate to 5e-6.\n\nHyperparameters $\\lambda_{g}, \\lambda_{o}$ , and $\\lambda_{c}$ are the coefficients for the generation loss, oracle loss, and the consistency loss respectively. For $\\lambda_{g}$ and $\\lambda_{o}$ , we did a 2-step binary search between 0 and 2. For $\\lambda_{c}$ , we did a 3-step binary search between 0 and 10. For the QMSum dataset, we used $\\lambda_{g} = 1$ , $\\lambda_{o} = 1$ , $\\lambda_{c} = 1$ . For the GovReport dataset, we used $\\lambda_{g} = 0.5$ , $\\lambda_{o} = 1$ , $\\lambda_{c} = 1$ . For the ArXiv dataset, we used $\\lambda_{g} = 0.5$ , $\\lambda_{o} = 1$ , $\\lambda_{c} = 5$ .\n\nHardware We apply gradient checkpointing (Chen et al., 2016) to save the GPU memory. Each experiment is run on one NVIDIA Quadro RTX 8000 GPU. The effective batch size is set to 8.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2022.acl-long.118::sections::3.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3.2",
+      "section_title": "extractor for long inputs",
+      "evidence": "An interesting research question is how to design the extractor for long inputs. Limited by GPU memory, it is impractical to concatenate all snippets and encode them with a large pre-trained language model. As shown in Figure 2, we group consecutive snippets into chunks. We concatenate the query $q$ with each chunk and compute the encoded vector for each snippet independently within the chunk it belongs to. We project the encoded vectors to scalar scores $s_i = E_{\\eta}(q, x_i)$ using an MLP."
+    },
+    {
+      "source_window_id": "2022.acl-long.118::sections::6",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6",
+      "section_title": "analysis and discussion",
+      "evidence": "Analysis of extracted snippets We are interested in the amount of salient information passed to the generator. To investigate this, we report the decomposed precision and recall of ROUGE scores in Table 6. We observe that the extracted snippets have much higher recall than the generated summaries, while the generated summaries have higher precision. This suggests that to improve the overall performance, we can increase the information coverage (i.e., recall) of the extractor and improve the accuracy of the generator in identifying the salient snippets (i.e., precision).\n\nInterpretability of dynamic weights Our approach is more interpretable than sparse attention and two-step extraction-generation pipeline meth\n\n![](images/02b27c79d5022e689bd84d769c3abeec9b130fcae4e32e30dc217b5b07c75760.jpg)  \n(a) QMSum sample 1\n\n![](images/3b4ee80818356fac1e2a30cd597827c7894becef0928b2d285c9bc617504054c.jpg)  \n(b) QMSum sample 2\n\n![](images/d7928bc1b95cf9a3ce632ae31b8663bf29ffff8fa9216d70e8368b8c6cadea1a.jpg)  \n(c) QMSum sample 3\n\n![](images/5d940c2eb898d8041c264ec97b97e96519dc72ba44882e3c018844e8b4ac8008.jpg)  \n(d) QMSum sample 4\n\n![](images/28e63565ed9fce24e364fe18c53ee2bd17c0ed846ae6faa1fb882bbe75329ba5.jpg)  \n(e) GovReport sample 1\n\n![](images/798b0c1e8dce3a9dcc43f107de12d389efe3a71003c85b010ddfaa4229973fd6.jpg)  \n(f) GovReport sample 2\n\n![](images/2880dd96976378cb1566d89c9231dc933b1800f055118214679ea5b670f5d4b9.jpg)  \n(g) GovReport sample 3\n\n![](images/33ee9d02ff8905528176de30ecf61515e25890147e6ffb4fc87384ec17161f5c.jpg)  \n(h) GovReport sample 4   \nFigure 4: Dynamic weight visualization. We visualized the dynamic weight matrices of the generated summary and a random summary from other samples in the validation set. $x$ -axis: decoding time step; $y$ -axis: index of the extracted top- $K$ snippets. Darker squares stand for higher weights. More examples can be found in Appendix A.\n\nods. Specifically, dynamic weights in the generator shows how the information is used throughout the decoding process. In Figure 4, we visualize the dynamic weights for the extracted snippets assigned by the generator during decoding. In each subfigure, we visualize the dynamic weight matrices of the generated summary and a random summary from other samples in the validation set. The $x$ -axis and $y$ -axis represent the index of the extracted top- $K$ snippets and the decoding time step, respectively. Darker squares denote higher weights. For each generated summary, we observe multiple consecutive high-weight areas, indicating alignments between the extracted snippets and the generated summary. By contrast, weights are uniformly distributed for random summaries. Interestingly, we observe that, on QMSum, fewer sentences are con\n\nsidered when generating the summaries. Our explanation for this observation is that QMSum is a query-based dataset, where the queried information is more concentrated in a few snippets. By contrast, we find that a larger number of snippets are used on the GovReport dataset as seen in Figure 4, as GovReport is a general summarization dataset.\n\nEffect of number of extracted snippets To evaluate the effect of number of extracted snippets on model performance, we vary the value of $K$ of top- $K$ in Eq. (1) and test it on both the GovReport and QMSum datasets. We observe that the model performance generally increases as the value of $K$ increases. This is expected as more extracted snippets provide the generator with more information to form a final summary. The results are summa\n\nTable 7: Comparing model performance with different values of $K$ on the GovReport and QMSum dataset   \n\n<table><tr><td></td><td>R-1</td><td>R-2</td><td>R-L</td></tr><tr><td colspan=\"4\">GovReport</td></tr><tr><td>K=25</td><td>61.01</td><td>28.83</td><td>57.82</td></tr><tr><td>K=20</td><td>59.25</td><td>27.46</td><td>55.74</td></tr><tr><td>K=15</td><td>58.55</td><td>26.95</td><td>54.89</td></tr><tr><td>K=10</td><td>54.98</td><td>24.10</td><td>51.25</td></tr><tr><td colspan=\"4\">QMSum</td></tr><tr><td>K=25</td><td>34.42</td><td>9.71</td><td>30.10</td></tr><tr><td>K=20</td><td>33.10</td><td>8.69</td><td>29.62</td></tr><tr><td>K=15</td><td>31.78</td><td>8.36</td><td>28.31</td></tr><tr><td>K=10</td><td>33.30</td><td>9.18</td><td>29.53</td></tr></table>\n\nTable 8: Feeding extractive oracles to generator. \"Oracle\" is computed based on the gold summary; thus, it is a soft upper-bound of the extractor's performance.   \n\n<table><tr><td></td><td>R-1</td><td>R-2</td><td>R-L</td></tr><tr><td colspan=\"4\">GovReport</td></tr><tr><td>Extractor Output</td><td>61.01</td><td>28.83</td><td>57.82</td></tr><tr><td>Oracle</td><td>68.02</td><td>39.16</td><td>65.29</td></tr><tr><td colspan=\"4\">QMSum</td></tr><tr><td>Extractor Output</td><td>34.42</td><td>9.71</td><td>30.10</td></tr><tr><td>Oracle</td><td>39.80</td><td>14.74</td><td>36.06</td></tr></table>\n\nrized in Table 7. Due to the limit of GPU memory, the largest $K$ value we tried is 25.\n\nEffect of consistency loss We evaluate the effect of consistency loss on extractor performance. Note that removing the consistency loss means that the extractor and the generator are independently trained. The results are presented in Table 5 as part of the ablation study. Removing the consistency loss leads to worse model performance. We observe that the consistency loss helps the model better learn the importance of the selected text snippets useful for the generation.\n\nExtractor performance compared with extractive oracles We feed the extractive oracles to the generator. The results are summarized in Table 8. We observe that extractive oracles contain more salient information than the text snippets extracted by the extractor. Feeding the extractive oracle to the generator indicates the upper bound of the extractor performance. However, we observe that the gap between the performance of using the extractive oracle and using the extractor output is relatively small.\n\nComparison with RAG The generator of our method is related to but differs significantly from Retrieval-Augmented Generation (RAG) (Lewis\n\net al., 2020b). The similarity only lies in the idea of marginalization over a set of text snippets, which is shown to be useful in question answering as well (Ni et al., 2021b). However, unlike our dynamic weights, the weights in RAG remains static during decoding. In our notations, RAG's generation probability can be formulated as:\n\n$$\n\\begin{array}{l} P _ {\\theta} (y | q, X _ {K}) = \\prod_ {t = 1} ^ {T} P _ {\\theta} \\left(y _ {t} \\mid q, X _ {K}, y _ {<   t}\\right) \\tag {8} \\\\ = \\prod_ {t = 1} ^ {T} \\sum_ {x \\in X _ {K}} P _ {\\theta} \\left(y _ {t} | q, x, y _ {<   t}\\right) P _ {\\theta} \\left(x | q, X _ {K}\\right) \\\\ \\end{array}\n$$\n\nThe static weight $P_{\\theta}(x|q,X_K)$ in Eq. 8 is computed based on $q$ and $X_K$ , while our dynamic weight $P_{\\theta}(x|q,X_K,y_{<t})$ is additionally conditioned on the already generated tokens.\n\nLimitations and future directions We acknowledge that joint training of the extractor and the generator cannot eliminate information loss, which might be addressed by combining DYLE and sparse attention to encode longer snippets. Though formulated for long-input summarization, DYLE can be applied to general long-input generation tasks where information is scattered across the input, e.g., open-domain question answering and multi-turn dialogue systems with long dialogue history."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.3"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Quadro RTX 8000",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2022\\2022.acl-long.118\\auto\\full.md",
+    "source_md_sha256": "f38828c1f5c59f92f2a115e4fdfb23a1a2deee54381e1d02c65149f675c6d93d",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

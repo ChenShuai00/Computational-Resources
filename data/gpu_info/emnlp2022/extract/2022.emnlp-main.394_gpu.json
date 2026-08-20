@@ -1,0 +1,183 @@
+{
+  "paper_id": "2022.emnlp-main.394",
+  "candidate_windows": [
+    {
+      "window_id": "2022.emnlp-main.394::sections::4",
+      "paper_id": "2022.emnlp-main.394",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "In this section, we evaluate GraphQ IR on several benchmarks under different task settings.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.394::sections::5",
+      "paper_id": "2022.emnlp-main.394",
+      "section_number": "5",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "To further explore the reasons behind the superior performance of our methods, we compute and visualize the semantic distance between the natural language utterances and their corresponding logical forms or GraphQ IR.\n\nSpecifically, to simulate how a neural semantic parser processes the sequences in the above experiments, we use a pretrained BART-base model without fine-tuning to obtain the contextualized embeddings (Li et al., 2020a). For each sequence, we\n\nTable 6: The analysis of 4 error types based on the failure cases as occurred in benchmark KQA PRO's test data. \"# OSC\" refers to the number of errors that can be fixed with one step correction on the IR's structure.   \n\n<table><tr><td>Error Type</td><td>#</td><td># OSC</td><td>Example</td></tr><tr><td rowspan=\"4\">Inaccurate data annotation</td><td rowspan=\"4\">28</td><td rowspan=\"4\">-</td><td>User utterance: Out of newscasts that last 110 minutes, which is the shortest?</td></tr><tr><td>Gold SPARQL: SELECT ?e WHERE { ?e instance_of ?c . ?c name &quot;newscast&quot; . ?e duration ?pv_1 . ?pv_1 unit &quot;minute&quot;. ?pv_1 value ?v_1 . FILTER ( ?v_1 != &quot;110%^xsd:double&quot; . ?e duration ?pv . ?pv value ?v} ORDER BY ?v LIMIT 1</td></tr><tr><td>Generated IR: which one has the smallest &lt;A&gt; duration &lt;/A&gt; among &lt;ES&gt; &lt;C&gt; newscast &lt;/C&gt; whose &lt;A&gt; duration &lt;/A&gt; is number &lt;/v&gt; 110 minute &lt;/v&gt;&lt;/ES&gt;</td></tr><tr><td>Compiled SPARQL: SELECT ?e WHERE { ?e instance_of ?c . ?c name &quot;newscast&quot; . ?e duration ?pv_1 . ?pv_1 unit &quot;minute&quot;. ?pv_1 value &quot;110%^xsd:double&quot; . ?e duration ?pv . ?pv value ?v} ORDER BY ?v LIMIT 1</td></tr><tr><td rowspan=\"4\">Ambiguous query expression</td><td rowspan=\"4\">27</td><td rowspan=\"4\">27</td><td>User utterance: How is the kid&#x27;s movie The Spiderwick Chronicles related to John Sayles?</td></tr><tr><td>Gold SPARQL: SELECT DISTINCT ?p WHERE { ?e_1 name &quot;The Spiderwick Chronicles&quot; . ?e_1 genre ?e_3 . ?e_3 name &quot;children&#x27;s film&quot; . ?e_2 name &quot;John Sayles&quot; . ?e_1 ?p ?e_2}</td></tr><tr><td>Generated IR: what is the relation from &lt;ES&gt; &lt;E&gt; The Spiderwick Chronicles &lt;/E&gt; (&lt;ES&gt; ones that &lt;R&gt; genre &lt;/R&gt; backward to &lt;E&gt; kid film &lt;/E&gt;&lt;/ES&gt; ) &lt;/ES&gt; to &lt;E&gt; John Sayles &lt;/E&gt;</td></tr><tr><td>Compiled SPARQL: SELECT DISTINCT ?p WHERE { ?e_1 name &quot;The Spiderwick Chronicles&quot; . ?e_1 genre ?e_3 . ?e_3 name &quot;kid film&quot; . ?e_2 name &quot;John Sayles&quot; . ?e_1 ?p ?e_2}</td></tr><tr><td rowspan=\"4\">Unspecified graph structure</td><td rowspan=\"4\">13</td><td rowspan=\"4\">9</td><td>User utterance: When did Tashkent become the capital of Uzbekistan?</td></tr><tr><td>Gold SPARQL: SELECT DISTINCT ?qpv WHERE { ?e_1 name &quot;Tashkent&quot; . ?e_2 name &quot;Uzbekistan&quot; . ?e_1 capital_of ?e_2 . [ fact_h ?e_1 ; fact_r capital_of ; fact_t &gt; ?e_2 ] start_time ?qpv}</td></tr><tr><td>Generated IR: what is the qualifier &lt;Q&gt; start time &lt;/Q&gt; of &lt;E&gt; Uzbekistan &lt;/E&gt; that &lt;R&gt; capital &lt;/R&gt; to &lt;E&gt; Tashkent &lt;/E&gt;</td></tr><tr><td>Compiled SPARQL: SELECT DISTINCT ?qpv WHERE { ?e_1 name &quot;Uzbekistan&quot; . ?e_2 name &quot;Tashkent&quot; . ?e_1 capital ?e_2 . [ fact_h ?e_1 ; fact_r capital ; fact_t &gt; ?e_2 ] start_time ?qpv}</td></tr><tr><td rowspan=\"4\">Nonequivalent semantics</td><td rowspan=\"4\">32</td><td rowspan=\"4\">25</td><td>User utterance: When did Joseph L. Mankiewicz graduate from Columbia University?</td></tr><tr><td>Gold SPARQL: SELECT DISTINCT ?qpv WHERE { ?e_1 name &quot;Joseph L. Mankiewicz&quot; . ?e_2 name &quot;Columbia University&quot;. ?e_1 educated_at ?e_2 . [ fact_h ?e_1 ; fact_r educated_at ; fact_t ?e_2 ] end_time ?qpv}</td></tr><tr><td>Generated IR: what is the qualifier &lt;Q&gt; start time &lt;/Q&gt; of &lt;E&gt; Joseph L. Mankiewicz &lt;/E&gt; that &lt;R&gt; educated at &lt;/R&gt; to &lt;E&gt; Columbia University &lt;/E&gt;</td></tr><tr><td>Compiled SPARQL: SELECT DISTINCT ?qpv WHERE { ?e_1 name &quot;Joseph L. Mankiewicz&quot; . ?e_2 name &quot;Columbia University&quot;. ?e_1 educated_at ?e_2 . [ fact_h ?e_1 ; fact_r educated_at ; fact_t ?e_2 ] start_time ?qpv}</td></tr></table>\n\ntake the average of the encoder outputs across all word tokens to obtain a 768-dimensional vector as its sentence embedding (Ni et al., 2022). Thereafter, we measure the semantic distance between two sequences by computing the Euclidean distance (L2-norm) of their embeddings (Chandrasekaran and Mago, 2021).\n\nWe randomly sampled 1000 queries respectively from KQA PRO and OVERNIGHT's validation set. We compare the semantic distance between natural language utterances and the GraphQ IRs (i.e., NL $\\Leftrightarrow$ IR), as well as the distance between natural language utterances and their corresponding logical forms (e.g., NL $\\Leftrightarrow$ SPARQL).\n\nThe results are listed in Table 5. The semantic distance from natural language utterances to GraphQ IR is significantly closer than that to different logical forms by at most $25.28\\%$ . We also use t-SNE (Van der Maaten and Hinton, 2008) to reduce the dimension and visualize the embeddings. Figure 3 (a) and (b) respectively shows the visualized feature space on KQA PRO and OVERNIGHT datasets. The computation and visualization results affirm our hypothesis that GraphQ IR can effectively close the semantic gap and ease the learning of neural semantic parser.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.394::sections::limitations",
+      "paper_id": "2022.emnlp-main.394",
+      "section_number": "",
+      "section_title": "limitations",
+      "normalized_section_title": "limitations",
+      "window_text": "The major limitations of this work include: (a) the composition rules of GraphQ IR are closely aligned with interrogative sentences. Therefore, our current formalism may not be applicable to general-domain semantic parsing; (b) for the semantic parsing of an input language whose syntax significantly differs from English (e.g., Arabic, Chinese, Hindi, etc.), the benefits of GraphQ IR may be limited; (c) our experiments fine-tuned a neural semantic parser on top of a pretrained model with $\\sim 139$ million parameters, thus cannot be easily reproduced without adequate GPU resources.",
+      "rule_tier": "hard_skip_override",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.394::appendix::B",
+      "paper_id": "2022.emnlp-main.394",
+      "section_number": "B",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.394::appendix::B.1",
+      "paper_id": "2022.emnlp-main.394",
+      "section_number": "B.1",
+      "section_title": "model hyperparameters",
+      "normalized_section_title": "model hyperparameters",
+      "window_text": "For the neural semantic parser, we used the BART-base model (Lewis et al., 2020) released by Facebook on HuggingFace<sup>1</sup>. 12 special tokens (e.g., $<\\mathsf{E}>))$ were added to the tokenizer vocabulary as the structure indicators for GraphQ IR. We used the AdamW optimizer (Loshchilov and Hutter, 2017) with the learning rate set to $3e^{-5}$ and weight decay set to $1e^{-5}$ following the default settings.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.394::appendix::B.2",
+      "paper_id": "2022.emnlp-main.394",
+      "section_number": "B.2",
+      "section_title": "environmental configurations",
+      "normalized_section_title": "environmental configurations",
+      "window_text": "In our implementation of the compiler, we used ANTLR (Parr, 2013) version 4.9.2 for analyzing our specified grammar rules and building up the correspondinglexerand parser toolkit.For evaluation,we used Virtuoso $7.20^{2}$ ,SEMPRE $2.4^{3}$ ,Neo4j $4.4^{4}$ and KoPL $0.3^{5}$ as the back-ends respectively for executing the SPARQL,Lambda-DCS,Cypher, and KoPL queries.\n\nOur whole experiments were performed on a single machine with 8 NVIDIA Tesla V100 (32GB memory) GPUs on CUDA 11.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.emnlp-main.394::appendix::B.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100 32GB",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "In our implementation of the compiler, we used ANTLR (Parr, 2013) version 4.9.2 for analyzing our specified grammar rules and building up the correspondinglexerand parser toolkit.For evaluation,we used Virtuoso $7.20^{2}$ ,SEMPRE $2.4^{3}$ ,Neo4j $4.4^{4}$ and KoPL $0.3^{5}$ as the back-ends respectively for executing the SPARQL,Lambda-DCS,Cypher, and KoPL queries.\n\nOur whole experiments were performed on a single machine with 8 NVIDIA Tesla V100 (32GB memory) GPUs on CUDA 11.",
+      "section_number": "B.2",
+      "section_title": "environmental configurations",
+      "normalized_section_title": "environmental configurations"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.emnlp-main.394::appendix::B.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100 32GB",
+      "cleaned_hardware_name": "nvidia tesla v100 32gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "B.2",
+      "section_title": "environmental configurations",
+      "normalized_section_title": "environmental configurations",
+      "evidence": "In our implementation of the compiler, we used ANTLR (Parr, 2013) version 4.9.2 for analyzing our specified grammar rules and building up the correspondinglexerand parser toolkit.For evaluation,we used Virtuoso $7.20^{2}$ ,SEMPRE $2.4^{3}$ ,Neo4j $4.4^{4}$ and KoPL $0.3^{5}$ as the back-ends respectively for executing the SPARQL,Lambda-DCS,Cypher, and KoPL queries.\n\nOur whole experiments were performed on a single machine with 8 NVIDIA Tesla V100 (32GB memory) GPUs on CUDA 11.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2022.emnlp-main.394::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": "In this section, we evaluate GraphQ IR on several benchmarks under different task settings."
+    },
+    {
+      "source_window_id": "2022.emnlp-main.394::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "discussion",
+      "evidence": "To further explore the reasons behind the superior performance of our methods, we compute and visualize the semantic distance between the natural language utterances and their corresponding logical forms or GraphQ IR.\n\nSpecifically, to simulate how a neural semantic parser processes the sequences in the above experiments, we use a pretrained BART-base model without fine-tuning to obtain the contextualized embeddings (Li et al., 2020a). For each sequence, we\n\nTable 6: The analysis of 4 error types based on the failure cases as occurred in benchmark KQA PRO's test data. \"# OSC\" refers to the number of errors that can be fixed with one step correction on the IR's structure.   \n\n<table><tr><td>Error Type</td><td>#</td><td># OSC</td><td>Example</td></tr><tr><td rowspan=\"4\">Inaccurate data annotation</td><td rowspan=\"4\">28</td><td rowspan=\"4\">-</td><td>User utterance: Out of newscasts that last 110 minutes, which is the shortest?</td></tr><tr><td>Gold SPARQL: SELECT ?e WHERE { ?e instance_of ?c . ?c name &quot;newscast&quot; . ?e duration ?pv_1 . ?pv_1 unit &quot;minute&quot;. ?pv_1 value ?v_1 . FILTER ( ?v_1 != &quot;110%^xsd:double&quot; . ?e duration ?pv . ?pv value ?v} ORDER BY ?v LIMIT 1</td></tr><tr><td>Generated IR: which one has the smallest &lt;A&gt; duration &lt;/A&gt; among &lt;ES&gt; &lt;C&gt; newscast &lt;/C&gt; whose &lt;A&gt; duration &lt;/A&gt; is number &lt;/v&gt; 110 minute &lt;/v&gt;&lt;/ES&gt;</td></tr><tr><td>Compiled SPARQL: SELECT ?e WHERE { ?e instance_of ?c . ?c name &quot;newscast&quot; . ?e duration ?pv_1 . ?pv_1 unit &quot;minute&quot;. ?pv_1 value &quot;110%^xsd:double&quot; . ?e duration ?pv . ?pv value ?v} ORDER BY ?v LIMIT 1</td></tr><tr><td rowspan=\"4\">Ambiguous query expression</td><td rowspan=\"4\">27</td><td rowspan=\"4\">27</td><td>User utterance: How is the kid&#x27;s movie The Spiderwick Chronicles related to John Sayles?</td></tr><tr><td>Gold SPARQL: SELECT DISTINCT ?p WHERE { ?e_1 name &quot;The Spiderwick Chronicles&quot; . ?e_1 genre ?e_3 . ?e_3 name &quot;children&#x27;s film&quot; . ?e_2 name &quot;John Sayles&quot; . ?e_1 ?p ?e_2}</td></tr><tr><td>Generated IR: what is the relation from &lt;ES&gt; &lt;E&gt; The Spiderwick Chronicles &lt;/E&gt; (&lt;ES&gt; ones that &lt;R&gt; genre &lt;/R&gt; backward to &lt;E&gt; kid film &lt;/E&gt;&lt;/ES&gt; ) &lt;/ES&gt; to &lt;E&gt; John Sayles &lt;/E&gt;</td></tr><tr><td>Compiled SPARQL: SELECT DISTINCT ?p WHERE { ?e_1 name &quot;The Spiderwick Chronicles&quot; . ?e_1 genre ?e_3 . ?e_3 name &quot;kid film&quot; . ?e_2 name &quot;John Sayles&quot; . ?e_1 ?p ?e_2}</td></tr><tr><td rowspan=\"4\">Unspecified graph structure</td><td rowspan=\"4\">13</td><td rowspan=\"4\">9</td><td>User utterance: When did Tashkent become the capital of Uzbekistan?</td></tr><tr><td>Gold SPARQL: SELECT DISTINCT ?qpv WHERE { ?e_1 name &quot;Tashkent&quot; . ?e_2 name &quot;Uzbekistan&quot; . ?e_1 capital_of ?e_2 . [ fact_h ?e_1 ; fact_r capital_of ; fact_t &gt; ?e_2 ] start_time ?qpv}</td></tr><tr><td>Generated IR: what is the qualifier &lt;Q&gt; start time &lt;/Q&gt; of &lt;E&gt; Uzbekistan &lt;/E&gt; that &lt;R&gt; capital &lt;/R&gt; to &lt;E&gt; Tashkent &lt;/E&gt;</td></tr><tr><td>Compiled SPARQL: SELECT DISTINCT ?qpv WHERE { ?e_1 name &quot;Uzbekistan&quot; . ?e_2 name &quot;Tashkent&quot; . ?e_1 capital ?e_2 . [ fact_h ?e_1 ; fact_r capital ; fact_t &gt; ?e_2 ] start_time ?qpv}</td></tr><tr><td rowspan=\"4\">Nonequivalent semantics</td><td rowspan=\"4\">32</td><td rowspan=\"4\">25</td><td>User utterance: When did Joseph L. Mankiewicz graduate from Columbia University?</td></tr><tr><td>Gold SPARQL: SELECT DISTINCT ?qpv WHERE { ?e_1 name &quot;Joseph L. Mankiewicz&quot; . ?e_2 name &quot;Columbia University&quot;. ?e_1 educated_at ?e_2 . [ fact_h ?e_1 ; fact_r educated_at ; fact_t ?e_2 ] end_time ?qpv}</td></tr><tr><td>Generated IR: what is the qualifier &lt;Q&gt; start time &lt;/Q&gt; of &lt;E&gt; Joseph L. Mankiewicz &lt;/E&gt; that &lt;R&gt; educated at &lt;/R&gt; to &lt;E&gt; Columbia University &lt;/E&gt;</td></tr><tr><td>Compiled SPARQL: SELECT DISTINCT ?qpv WHERE { ?e_1 name &quot;Joseph L. Mankiewicz&quot; . ?e_2 name &quot;Columbia University&quot;. ?e_1 educated_at ?e_2 . [ fact_h ?e_1 ; fact_r educated_at ; fact_t ?e_2 ] start_time ?qpv}</td></tr></table>\n\ntake the average of the encoder outputs across all word tokens to obtain a 768-dimensional vector as its sentence embedding (Ni et al., 2022). Thereafter, we measure the semantic distance between two sequences by computing the Euclidean distance (L2-norm) of their embeddings (Chandrasekaran and Mago, 2021).\n\nWe randomly sampled 1000 queries respectively from KQA PRO and OVERNIGHT's validation set. We compare the semantic distance between natural language utterances and the GraphQ IRs (i.e., NL $\\Leftrightarrow$ IR), as well as the distance between natural language utterances and their corresponding logical forms (e.g., NL $\\Leftrightarrow$ SPARQL).\n\nThe results are listed in Table 5. The semantic distance from natural language utterances to GraphQ IR is significantly closer than that to different logical forms by at most $25.28\\%$ . We also use t-SNE (Van der Maaten and Hinton, 2008) to reduce the dimension and visualize the embeddings. Figure 3 (a) and (b) respectively shows the visualized feature space on KQA PRO and OVERNIGHT datasets. The computation and visualization results affirm our hypothesis that GraphQ IR can effectively close the semantic gap and ease the learning of neural semantic parser."
+    },
+    {
+      "source_window_id": "2022.emnlp-main.394::sections::limitations",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "",
+      "section_title": "limitations",
+      "evidence": "The major limitations of this work include: (a) the composition rules of GraphQ IR are closely aligned with interrogative sentences. Therefore, our current formalism may not be applicable to general-domain semantic parsing; (b) for the semantic parsing of an input language whose syntax significantly differs from English (e.g., Arabic, Chinese, Hindi, etc.), the benefits of GraphQ IR may be limited; (c) our experiments fine-tuned a neural semantic parser on top of a pretrained model with $\\sim 139$ million parameters, thus cannot be easily reproduced without adequate GPU resources."
+    },
+    {
+      "source_window_id": "2022.emnlp-main.394::appendix::B",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B",
+      "section_title": "implementation details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2022.emnlp-main.394::appendix::B.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B.1",
+      "section_title": "model hyperparameters",
+      "evidence": "For the neural semantic parser, we used the BART-base model (Lewis et al., 2020) released by Facebook on HuggingFace<sup>1</sup>. 12 special tokens (e.g., $<\\mathsf{E}>))$ were added to the tokenizer vocabulary as the structure indicators for GraphQ IR. We used the AdamW optimizer (Loshchilov and Hutter, 2017) with the learning rate set to $3e^{-5}$ and weight decay set to $1e^{-5}$ following the default settings."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 32 GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2022\\2022.emnlp-main.394\\auto\\full.md",
+    "source_md_sha256": "0f4119cf0533128038941a9ac3c6bf54d342e68c6b26e0aec67a9cdbf3146a86",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "44ecc0af216a9e5fe6ff4e8a000ce2b17b722bcc41b386c829c53021783d2d05"
+  }
+}

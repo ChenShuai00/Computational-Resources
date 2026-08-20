@@ -1,0 +1,96 @@
+{
+  "paper_id": "2021.acl-long.51",
+  "candidate_windows": [
+    {
+      "window_id": "2021.acl-long.51::sections::6",
+      "paper_id": "2021.acl-long.51",
+      "section_number": "6",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "In this section, we discuss limitations of our work and future directions, and finally conclude.\n\nLimitations and future directions. We adopted a computational approach to investigate our research question, and this method inherently shares common limitations with observational studies, e.g., prone to bias and confounding (Benson and Hartz, 2000). Specifically, our corpus contains fact-checks from Snopes.com, one of the most comprehensive fact-checking agencies in the US.\n\nSnopes.com covers a broader spectrum of topics than politics-focused fact-checkers (e.g., PolitiFact.com, FactCheck.org), $^{15}$ and thus we argue that it covers a representative sample of misinformation within the US. However, Snopes.com may not be representative of the international misinformation ecosystem (Ahinkorah et al., 2020; Kaur et al., 2018; Fletcher et al., 2018). In the future, we hope that our method can help characterize misinformation comparatively on a global scale when more structured fact-checks become available. $^{16}$ Additionally, fact-checkers are time constrained, as thus the misinformation stories they cover tend to be high-profile. Therefore low-prevalence, long-tail misinformation stories may not be observed in our study. Understanding low-volume misinformation types may require a different collection of corpora other than fact-checks, e.g., a cross-platform investigation on social media conversations (Wilson and Starbird, 2020; Abilov et al., 2021).\n\nLastly, the misinformation types we extract from our weakly supervised approach are not validated with ground-truth labels. This is largely due to the lack of empirical knowledge on misinformation types, and therefore we are unable to provide specific guidance to annotators. Although the clusters in Figure 3 provide straightforward structure of misinformation stories, in future work, we plan to leverage these results to construct annotation guidelines and obtain human-identified misinformation types for further analysis.\n\nConclusion. In this paper, we identify ten prevalent misinformation types with rationalized models on fact-checks and analyze their evolution over the last ten years and between notable events. We hope that this paper offers an empirical lens to the systematic understanding of fine-grained misinformation types, and complements existing work investigating the misinformation problem.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.51::appendix::A",
+      "paper_id": "2021.acl-long.51",
+      "section_number": "A",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "In this section, we discuss additional implementation details that we omitted in the main paper.\n\nLoss functions. For the predictive loss $L_{y}(\\hat{\\pmb{y}},\\pmb {y})$ we use a common cross entropy loss function.\n\nFor the rationale regularization loss $L_{z}(z)$ , we introduced it as a single item in the main paper for simplicity, but it actually contains two parts as implemented by Yu et al. (2019). The first part is to encourage conciseness:\n\n$$\nL _ {z k} (z) = \\max  \\left\\{\\sum_ {i} z ^ {i} - k, 0 \\right\\},\n$$\n\nwhere $\\sum_{i}z^{i}$ represents the number of selected tokens, and $k$ is a hyperparameter defining a loss-free upper-bound for it. The second part is to encourage contiguity:\n\n$$\nL _ {z l} (z) = \\max  \\left\\{\\sum_ {i} \\left| z ^ {i} - z ^ {i - 1} \\right| - l, 0 \\right\\},\n$$\n\nwhere $z^i - z^{i-1}$ denotes a transition between $z^i = 0$ and $z^{i-1} = 1$ or vice versa, therefore $\\sum_{i} |z^i - z^{i-1}|$ represents the number of rationale phrases, and $l$ is another hyperparameter defining a loss-free upper-bound for it.\n\nCombining these two parts together, we can further specify $\\lambda_{z}L_{z}(z)$ as $\\lambda_{zk}L_{zk}(z) + \\lambda_{zl}L_{zl}(z)$ .\n\nFor domain knowledge weak supervision, we define $L_{d}(z,z_{d})$ as:\n\n$$\nL _ {d} (z, z _ {d}) = - \\sum_ {i} z ^ {i} z _ {d} ^ {i},\n$$\n\nwhich decreases loss by 1 if both $z^i = 1$ and $z_d^i = 1$ , i.e., selecting a token in the domain knowledge vocabulary $V_d$ , and has no effect on the loss otherwise. Similarly, we define $L_d(s, z_d)$ as:\n\n$$\nL _ {d} (s, z _ {d}) = - \\sum_ {i} s ^ {i} z _ {d} ^ {i},\n$$\n\nwhich decreases loss by $s^i$ if $z_d^i = 1$ , and has no effect on the loss if $z_d^i = 0$ . This encourages the training to increase the importance score $s^i$ on domain knowledge to reduce the loss.\n\nWith this implementation, there are five hyperparameters to search for the hard rationalization method: $\\lambda_{zk}$ , $k$ , $\\lambda_{zl}$ , $l$ and $\\lambda_d$ , and only one hyperparameter to search for the soft rationalization method: $\\lambda_d$ .\n\nModule cells. Each module in soft and hard rationalization methods can be implemented with different neural cells. Here, we consider two common types of choices: RNN cells, e.g., LSTM, and transformer cells (Vaswani et al., 2017), e.g., BERT (Devlin et al., 2019).\n\nFor hard rationalization, the rationale selection process is actively regularized by $L_{z}(z)$ , therefore we simply choose the cell type that optimizes $\\mathrm{F}_1(\\pmb{y})$ on dev sets, i.e., transformers.\n\nFor soft rationalization, the rationale selection process is based on passively generated importance scores (i.e., attention), therefore the inherent behavioral difference between RNN and transformer cells would significantly impact our choice.\n\nTable 2: Evaluation results on both test and dev sets for hard and soft rationalization methods. An additional accuracy metric $\\mathrm{Ac}(\\mathbf{y})$ is included, as well as results for the fact-checks dataset. The results on dev sets align with our findings on test sets in the main paper.   \n\n<table><tr><td rowspan=\"2\"></td><td colspan=\"5\">Test set evaluation</td><td colspan=\"5\">Dev set evaluation</td></tr><tr><td>Pr(z)</td><td>%(z)</td><td>F1(y)</td><td>Ac(y)</td><td>%(x)</td><td>Pr(z)</td><td>%(z)</td><td>F1(y)</td><td>Ac(y)</td><td>%(x)</td></tr><tr><td colspan=\"11\">Movie reviews (Zaidan et al., 2007)</td></tr><tr><td>Hard rationalization</td><td>0.37</td><td>2.7%</td><td>0.72</td><td>0.72</td><td>2.7%</td><td>0.12</td><td>3.2%</td><td>0.71</td><td>0.71</td><td>3.5%</td></tr><tr><td>w/ Domain knowledge</td><td>0.38</td><td>3.7%</td><td>0.72</td><td>0.72</td><td>3.7%</td><td>0.14</td><td>3.9%</td><td>0.71</td><td>0.71</td><td>4.2%</td></tr><tr><td>w/o Rationale regu.</td><td>0.31</td><td>99.9%</td><td>0.92</td><td>0.92</td><td>99.9%</td><td>0.08</td><td>99.9%</td><td>0.91</td><td>0.91</td><td>99.9%</td></tr><tr><td>w/ Adversarial comp.</td><td>0.33</td><td>2.5%</td><td>0.70</td><td>0.70</td><td>2.5%</td><td>0.13</td><td>4.1%</td><td>0.70</td><td>0.70</td><td>3.7%</td></tr><tr><td>Soft rationalization</td><td>0.58</td><td>3.7%</td><td>0.91</td><td>0.91</td><td>100%</td><td>0.30</td><td>3.9%</td><td>0.90</td><td>0.90</td><td>100%</td></tr><tr><td>w/ Domain knowledge</td><td>0.62</td><td>3.7%</td><td>0.92</td><td>0.92</td><td>100%</td><td>0.33</td><td>3.9%</td><td>0.91</td><td>0.91</td><td>100%</td></tr><tr><td colspan=\"11\">Personal attacks (Carton et al., 2018)</td></tr><tr><td>Hard rationalization</td><td>0.17</td><td>32.5%</td><td>0.73</td><td>0.73</td><td>32.5%</td><td>0.19</td><td>30.2%</td><td>0.74</td><td>0.74</td><td>30.2%</td></tr><tr><td>w/ Domain knowledge</td><td>0.22</td><td>16.9%</td><td>0.73</td><td>0.73</td><td>16.9%</td><td>0.23</td><td>15.7%</td><td>0.74</td><td>0.74</td><td>15.8%</td></tr><tr><td>w/o Rationale regu.</td><td>0.19</td><td>99.9%</td><td>0.82</td><td>0.82</td><td>99.9%</td><td>0.20</td><td>99.9%</td><td>0.84</td><td>0.84</td><td>99.9%</td></tr><tr><td>w/ Adversarial comp.</td><td>0.22</td><td>14.9%</td><td>0.75</td><td>0.75</td><td>14.9%</td><td>0.23</td><td>15.2%</td><td>0.76</td><td>0.76</td><td>15.2%</td></tr><tr><td>Soft rationalization</td><td>0.35</td><td>16.9%</td><td>0.82</td><td>0.82</td><td>100%</td><td>0.37</td><td>15.7%</td><td>0.84</td><td>0.84</td><td>100%</td></tr><tr><td>w/ Domain knowledge</td><td>0.39</td><td>16.9%</td><td>0.82</td><td>0.82</td><td>100%</td><td>0.40</td><td>15.7%</td><td>0.85</td><td>0.85</td><td>100%</td></tr><tr><td colspan=\"11\">Fact-checks</td></tr><tr><td>Soft rationalization</td><td>-</td><td>-</td><td>0.74</td><td>0.83</td><td>100%</td><td>-</td><td>-</td><td>0.72</td><td>0.83</td><td>100%</td></tr><tr><td>w/ Domain knowledge</td><td>-</td><td>-</td><td>0.75</td><td>0.85</td><td>100%</td><td>-</td><td>-</td><td>0.73</td><td>0.85</td><td>100%</td></tr></table>\n\nIn our experiments, we observe that transformer cells often assign strong importance to a single token, but assign near zero weights to its neighboring tokens (possibly as a result of its multi-head attention mechanism), while RNN cells assign strong importance to a single token, but also some residue, fading weights to its neighboring tokens.\n\nConsider the following example, which shows the distribution of importance scores generated by transformer cells, with darker text representing higher importance scores and lighter text scoring near zero. In the following example, only the token conspiracy is selected as rationale:\n\n\"...Furthermore, claims that COVID-19 was \"manufactured,\" or that it \"escaped from\" this Chinese lab, are nothing more than baseless conspiracy theories...\n\nIn contrast, the following example shows the distribution of importance scores generated by RNN cells for the same snippet, i.e., the token conspiracy has the strongest importance score, but its neighboring tokens are also assigned some weight above the threshold, and therefore the phrase baseless conspiracy theories is selected as rationale:\n\n\"...Furthermore, claims that COVID-19 was \"manufactured,\" or that it \"escaped from\" this Chinese lab, are nothing more than baseless conspiracy theories...\n\nAs we prefer to obtain phrases (i.e., one or more tokens) for rationales, we choose between RNN\n\ncells. After optimizing $\\mathrm{F}_1(\\pmb {y})$ on dev set, we choose bidirectional LSTM initialized with GloVe embeddings (Pennington et al., 2014) for the soft rationalization method.\n\nHyperparameters. As discussed in the paper, we optimize hyperparameters for $\\mathrm{F}_1(\\pmb {y})$ on the dev sets.\n\nSince the size of dev sets is relatively small in our experiments, a rigorous grid search for hyperparameters might overfit to several instances in the dev set, therefore we tune the hyperparameters manually starting from the hyperparameters released by (Yu et al., 2019) and (Carton et al., 2018).\n\nFor movie reviews (Zaidan et al., 2007), the best-performing model for hard rationalization uses $\\lambda_{zk} = 5.0$ , $k = 240$ , $\\lambda_{zl} = 5.0$ , $l = 10$ , and $\\lambda_d = 8.0$ with domain knowledge as weak supervision, and the best-performing model for soft rationalization uses $\\lambda_d = 0.5$ .\n\nFor personal attacks (Carton et al., 2018), the best-performing model for hard rationalization uses $\\lambda_{zk} = 5.0, k = 7, \\lambda_{zl} = 5.0, l = 1$ , and $\\lambda_d = 10.0$ with domain knowledge as weak supervision, and the best-performing model for soft rationalization uses $\\lambda_d = 0.5$ .\n\nFor fact-checks, the best-performing model for soft rationalization uses $\\lambda_d = 1.0$ .\n\nDomain knowledge for fact-checks. $V_{d}$ contains the following words, in which the first 5 are from Wardle (2017) and the remaining 7 are\n\nfrom Snopes.com (2021a):\n\n\"fabricated, manipulated, imposter, misleading, parody, satire, unproven, outdated, scam, legend, miscaptioned, misattributed.\"",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.51::appendix::B",
+      "paper_id": "2021.acl-long.51",
+      "section_number": "B",
+      "section_title": "additional results",
+      "normalized_section_title": "additional results",
+      "window_text": "In this section, we record additional results from our experiments that we omitted in the main paper.\n\nValidation performance. The evaluation results for all our experiments on both test and dev sets are reported in Table 2. We also include accuracy metric $\\mathrm{Ac}(\\pmb{y})$ in the table<sup>18</sup>, and the evaluation results for fact-checks. Note that evaluation for $z$ is empty for fact-checks, since there are no ground-truth rationales. As shown in Table 2, the results on dev sets align with our findings on test sets discussed in the main paper.\n\nModel size, computing machine and runtime. The number of parameters is 325K for hard rationalization models, and 967K for soft rationalization models. All experiments were conducted on a 12GB Nvidia Titan X GPU node, and finished training within an hour per experiment.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2021.acl-long.51::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia Titan X 12GB",
+      "count": null,
+      "count_text": "",
+      "evidence": "In this section, we record additional results from our experiments that we omitted in the main paper.\n\nValidation performance. The evaluation results for all our experiments on both test and dev sets are reported in Table 2. We also include accuracy metric $\\mathrm{Ac}(\\pmb{y})$ in the table<sup>18</sup>, and the evaluation results for fact-checks. Note that evaluation for $z$ is empty for fact-checks, since there are no ground-truth rationales. As shown in Table 2, the results on dev sets align with our findings on test sets discussed in the main paper.\n\nModel size, computing machine and runtime. The number of parameters is 325K for hard rationalization models, and 967K for soft rationalization models. All experiments were conducted on a 12GB Nvidia Titan X GPU node, and finished training within an hour per experiment.",
+      "section_number": "B",
+      "section_title": "additional results",
+      "normalized_section_title": "additional results"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2021.acl-long.51::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia Titan X 12GB",
+      "cleaned_hardware_name": "nvidia titan x 12gb",
+      "normalized_hardware_name": "NVIDIA GeForce GTX TITAN X",
+      "benchmark_hardware_name": "NVIDIA GeForce GTX TITAN X",
+      "count": null,
+      "count_text": "",
+      "section_number": "B",
+      "section_title": "additional results",
+      "normalized_section_title": "additional results",
+      "evidence": "In this section, we record additional results from our experiments that we omitted in the main paper.\n\nValidation performance. The evaluation results for all our experiments on both test and dev sets are reported in Table 2. We also include accuracy metric $\\mathrm{Ac}(\\pmb{y})$ in the table<sup>18</sup>, and the evaluation results for fact-checks. Note that evaluation for $z$ is empty for fact-checks, since there are no ground-truth rationales. As shown in Table 2, the results on dev sets align with our findings on test sets discussed in the main paper.\n\nModel size, computing machine and runtime. The number of parameters is 325K for hard rationalization models, and 967K for soft rationalization models. All experiments were conducted on a 12GB Nvidia Titan X GPU node, and finished training within an hour per experiment.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce GTX TITAN X",
+        "num": null
+      }
+    ]
+  }
+}

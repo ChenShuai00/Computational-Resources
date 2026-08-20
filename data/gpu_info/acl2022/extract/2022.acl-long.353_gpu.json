@@ -1,0 +1,120 @@
+{
+  "paper_id": "2022.acl-long.353",
+  "candidate_windows": [
+    {
+      "window_id": "2022.acl-long.353::sections::5",
+      "paper_id": "2022.acl-long.353",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "In this section, we evaluate the performance of PGNN-EK. We conduct experiments on two program understanding tasks: code summarization and code clone detection. For each task, we use two benchmark datasets, whose statistics are listed in Table 1.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.353::sections::5.1",
+      "paper_id": "2022.acl-long.353",
+      "section_number": "5.1",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "In our experiments, we use the AdamW optimizer and linear schedule from (Wolf et al., 2020) to update model parameters. For fair comparison, we run all experiments on 2 Tesla V100 with 32G memory. For PGNN, we set the number of GNN layers, the number of LSTM layers, the embedding size of GNN node, and the embedding size of LSTM hidden layer to 3, 2, 768 and 768, respectively. We choose the mean operator as the READOUT function. To avoid overfitting, we set the dropout rate to 0.2 in PGNN. We implement GNNs\n\nTable 1: The statistics of datasets   \n\n<table><tr><td>Task</td><td>Dataset</td><td>Training</td><td>Validation</td><td>Test</td><td>Description</td></tr><tr><td rowspan=\"2\">Code summarization</td><td>CodeSearchNet-Java (CSN)</td><td>164,814</td><td>5,179</td><td>10,952</td><td>Provided by CodeXGLUE</td></tr><tr><td>TL-CodeSum (TLC)</td><td>69,708</td><td>8,714</td><td>8,714</td><td>Original</td></tr><tr><td rowspan=\"2\">Code clone detection</td><td>BigCloneBench (BCB)</td><td>901,028</td><td>415,416</td><td>415,416</td><td>Provided by CodeXGLUE</td></tr><tr><td>BigCloneBench-Function (BCB-F)</td><td>398,110</td><td>78,602</td><td>81,202</td><td>Split by functionality</td></tr></table>\n\nbased on PyTorch Geometric (Fey and Lenssen, 2019). In the EK-enhanced component, we obtain 51, 191 method-description pairs after preprocessing the API documentation<sup>5</sup>. For pair examples, see Appendix B. In the code summarization task, we add a 6-layer Transformer-based decoder to generate summarization as in CodeBERT. We set learning rate to 0.00005, batch size to 16, training steps to 50,000, maximum code length to 256 and maximum summarization length to 32, respectively. In the code clone detection task, as suggested by (Neculoiu et al., 2016), we double the PGNN-EK to a siamese neural network to calculate code similarity. We set learning rate to 0.00005, batch size to 4, training steps to 200,000 and maximum code length to 400, respectively.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.353::sections::5.3",
+      "paper_id": "2022.acl-long.353",
+      "section_number": "5.3",
+      "section_title": "code clone detection",
+      "normalized_section_title": "code clone detection",
+      "window_text": "The goal of code clone detection is to detect whether two code fragments implement the same functionality. Following (Zhang et al., 2019; Wang et al., 2020), we use the BigCloneBench 2014 dataset (Svajlenko et al., 2014) and adopt the version provided by CodeXGLUE. We short it as BCB.\n\nBefore we apply PGNN-EK on BCB, we notice from the leaderboard of CodeXGLUE that the results on BCB are incredibly high, where the mini\n\nmum F1 score is 0.949. Then we dive into the characteristics of the dataset and compare BCB with the original benchmark (Svajlenko et al., 2014). We find that the functionalities of codes in the test set have all appeared in the training set of BCB. Therefore, BCB is a very simple dataset. To test the model's generalization ability, we construct a new dataset, named BCB-F, where the test set contains codes whose functionality has never appeared in the training set. We first extract codes from the new version benchmark (Svajlenko and Roy, 2015) that has more code fragments and code functionalities. We next split training/validation/test set based on code functionalities. Specifically, we construct training/validation/test set with $22/11/10$ code functionalities. For details on the functionality splits of BCB and BCB-F, see Appendix D. We keep the same number of positive and negative samples in all the three sets. The comparison between BCB and BCB-F is given in Table 3.\n\nTable 3: Comparisons between BCB and BCB-F   \n\n<table><tr><td></td><td>BCB</td><td>BCB-F</td></tr><tr><td>Code fragments</td><td>9134</td><td>73182</td></tr><tr><td>Functionalities</td><td>10</td><td>43</td></tr><tr><td>Training/Test splitting</td><td>random sample</td><td>by functionality</td></tr><tr><td>Ratio of positive-negative</td><td>nearly 2:1</td><td>1:1</td></tr></table>\n\nIn addition to the pre-training models CodeBERT and PLBART, we further compare our model with two representative methods in code clone detection, which are ASTNN (Zhang et al., 2019) and FA-AST (Wang et al., 2020) (For the details of these baselines, see Appendix C).\n\nTable 4 shows the evaluation results on the two datasets. For BCB, we take the results of other baseline methods from CodeXGLUE<sup>6</sup>. For BCB-F, we run the source codes released by their authors to obtain the results. From the table, we observe: 1) All models perform very well on BCB, indicating that the dataset is very simple. However, the best F1 score on BCB-F is only 0.724, which shows that this dataset is very challenging. 2) The non-pretraining models ASTNN and FA-AST predict all samples to be positive and perform poorly on BCB-F, while pre-training models perform better. This\n\nfurther demonstrates the importance of introducing external knowledge. 3) PGNN-EK achieves the best results on both datasets. This shows that considering human behaviors in program understanding enhances the generalization ability of PGNN- EK.\n\nTable 4: Code clone detection results w.r.t. precision (P), recall (R) and F1 measures. We highlight the best results in bold. * indicates that the improvements are statistically significant for $p < 0.01$ with paired t-test.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"3\">BCB</td><td colspan=\"3\">BCB-F</td></tr><tr><td>P</td><td>R</td><td>F1</td><td>P</td><td>R</td><td>F1</td></tr><tr><td>ASTNN</td><td>0.92</td><td>0.94</td><td>0.93</td><td>0.50</td><td>1.00</td><td>0.67</td></tr><tr><td>FA-AST</td><td>0.96</td><td>0.94</td><td>0.95</td><td>0.50</td><td>1.00</td><td>0.67</td></tr><tr><td>CodeBERT</td><td>0.960</td><td>0.969</td><td>0.965</td><td>0.611</td><td>0.842</td><td>0.708</td></tr><tr><td>PLBART</td><td>-</td><td>-</td><td>0.972</td><td>0.517</td><td>0.996</td><td>0.681</td></tr><tr><td>PGNN-EK</td><td>0.975*</td><td>0.973*</td><td>0.974*</td><td>0.621*</td><td>0.869</td><td>0.724*</td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.acl-long.353::sections::5.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100 32G",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "In our experiments, we use the AdamW optimizer and linear schedule from (Wolf et al., 2020) to update model parameters. For fair comparison, we run all experiments on 2 Tesla V100 with 32G memory. For PGNN, we set the number of GNN layers, the number of LSTM layers, the embedding size of GNN node, and the embedding size of LSTM hidden layer to 3, 2, 768 and 768, respectively. We choose the mean operator as the READOUT function. To avoid overfitting, we set the dropout rate to 0.2 in PGNN. We implement GNNs\n\nTable 1: The statistics of datasets   \n\n<table><tr><td>Task</td><td>Dataset</td><td>Training</td><td>Validation</td><td>Test</td><td>Description</td></tr><tr><td rowspan=\"2\">Code summarization</td><td>CodeSearchNet-Java (CSN)</td><td>164,814</td><td>5,179</td><td>10,952</td><td>Provided by CodeXGLUE</td></tr><tr><td>TL-CodeSum (TLC)</td><td>69,708</td><td>8,714</td><td>8,714</td><td>Original</td></tr><tr><td rowspan=\"2\">Code clone detection</td><td>BigCloneBench (BCB)</td><td>901,028</td><td>415,416</td><td>415,416</td><td>Provided by CodeXGLUE</td></tr><tr><td>BigCloneBench-Function (BCB-F)</td><td>398,110</td><td>78,602</td><td>81,202</td><td>Split by functionality</td></tr></table>\n\nbased on PyTorch Geometric (Fey and Lenssen, 2019). In the EK-enhanced component, we obtain 51, 191 method-description pairs after preprocessing the API documentation<sup>5</sup>. For pair examples, see Appendix B. In the code summarization task, we add a 6-layer Transformer-based decoder to generate summarization as in CodeBERT. We set learning rate to 0.00005, batch size to 16, training steps to 50,000, maximum code length to 256 and maximum summarization length to 32, respectively. In the code clone detection task, as suggested by (Neculoiu et al., 2016), we double the PGNN-EK to a siamese neural network to calculate code similarity. We set learning rate to 0.00005, batch size to 4, training steps to 200,000 and maximum code length to 400, respectively.",
+      "section_number": "5.1",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.acl-long.353::sections::5.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100 32G",
+      "cleaned_hardware_name": "tesla v100 32gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "5.1",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "In our experiments, we use the AdamW optimizer and linear schedule from (Wolf et al., 2020) to update model parameters. For fair comparison, we run all experiments on 2 Tesla V100 with 32G memory. For PGNN, we set the number of GNN layers, the number of LSTM layers, the embedding size of GNN node, and the embedding size of LSTM hidden layer to 3, 2, 768 and 768, respectively. We choose the mean operator as the READOUT function. To avoid overfitting, we set the dropout rate to 0.2 in PGNN. We implement GNNs\n\nTable 1: The statistics of datasets   \n\n<table><tr><td>Task</td><td>Dataset</td><td>Training</td><td>Validation</td><td>Test</td><td>Description</td></tr><tr><td rowspan=\"2\">Code summarization</td><td>CodeSearchNet-Java (CSN)</td><td>164,814</td><td>5,179</td><td>10,952</td><td>Provided by CodeXGLUE</td></tr><tr><td>TL-CodeSum (TLC)</td><td>69,708</td><td>8,714</td><td>8,714</td><td>Original</td></tr><tr><td rowspan=\"2\">Code clone detection</td><td>BigCloneBench (BCB)</td><td>901,028</td><td>415,416</td><td>415,416</td><td>Provided by CodeXGLUE</td></tr><tr><td>BigCloneBench-Function (BCB-F)</td><td>398,110</td><td>78,602</td><td>81,202</td><td>Split by functionality</td></tr></table>\n\nbased on PyTorch Geometric (Fey and Lenssen, 2019). In the EK-enhanced component, we obtain 51, 191 method-description pairs after preprocessing the API documentation<sup>5</sup>. For pair examples, see Appendix B. In the code summarization task, we add a 6-layer Transformer-based decoder to generate summarization as in CodeBERT. We set learning rate to 0.00005, batch size to 16, training steps to 50,000, maximum code length to 256 and maximum summarization length to 32, respectively. In the code clone detection task, as suggested by (Neculoiu et al., 2016), we double the PGNN-EK to a siamese neural network to calculate code similarity. We set learning rate to 0.00005, batch size to 4, training steps to 200,000 and maximum code length to 400, respectively.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2022.acl-long.353::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiments",
+      "evidence": "In this section, we evaluate the performance of PGNN-EK. We conduct experiments on two program understanding tasks: code summarization and code clone detection. For each task, we use two benchmark datasets, whose statistics are listed in Table 1."
+    },
+    {
+      "source_window_id": "2022.acl-long.353::sections::5.3",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.3",
+      "section_title": "code clone detection",
+      "evidence": "The goal of code clone detection is to detect whether two code fragments implement the same functionality. Following (Zhang et al., 2019; Wang et al., 2020), we use the BigCloneBench 2014 dataset (Svajlenko et al., 2014) and adopt the version provided by CodeXGLUE. We short it as BCB.\n\nBefore we apply PGNN-EK on BCB, we notice from the leaderboard of CodeXGLUE that the results on BCB are incredibly high, where the mini\n\nmum F1 score is 0.949. Then we dive into the characteristics of the dataset and compare BCB with the original benchmark (Svajlenko et al., 2014). We find that the functionalities of codes in the test set have all appeared in the training set of BCB. Therefore, BCB is a very simple dataset. To test the model's generalization ability, we construct a new dataset, named BCB-F, where the test set contains codes whose functionality has never appeared in the training set. We first extract codes from the new version benchmark (Svajlenko and Roy, 2015) that has more code fragments and code functionalities. We next split training/validation/test set based on code functionalities. Specifically, we construct training/validation/test set with $22/11/10$ code functionalities. For details on the functionality splits of BCB and BCB-F, see Appendix D. We keep the same number of positive and negative samples in all the three sets. The comparison between BCB and BCB-F is given in Table 3.\n\nTable 3: Comparisons between BCB and BCB-F   \n\n<table><tr><td></td><td>BCB</td><td>BCB-F</td></tr><tr><td>Code fragments</td><td>9134</td><td>73182</td></tr><tr><td>Functionalities</td><td>10</td><td>43</td></tr><tr><td>Training/Test splitting</td><td>random sample</td><td>by functionality</td></tr><tr><td>Ratio of positive-negative</td><td>nearly 2:1</td><td>1:1</td></tr></table>\n\nIn addition to the pre-training models CodeBERT and PLBART, we further compare our model with two representative methods in code clone detection, which are ASTNN (Zhang et al., 2019) and FA-AST (Wang et al., 2020) (For the details of these baselines, see Appendix C).\n\nTable 4 shows the evaluation results on the two datasets. For BCB, we take the results of other baseline methods from CodeXGLUE<sup>6</sup>. For BCB-F, we run the source codes released by their authors to obtain the results. From the table, we observe: 1) All models perform very well on BCB, indicating that the dataset is very simple. However, the best F1 score on BCB-F is only 0.724, which shows that this dataset is very challenging. 2) The non-pretraining models ASTNN and FA-AST predict all samples to be positive and perform poorly on BCB-F, while pre-training models perform better. This\n\nfurther demonstrates the importance of introducing external knowledge. 3) PGNN-EK achieves the best results on both datasets. This shows that considering human behaviors in program understanding enhances the generalization ability of PGNN- EK.\n\nTable 4: Code clone detection results w.r.t. precision (P), recall (R) and F1 measures. We highlight the best results in bold. * indicates that the improvements are statistically significant for $p < 0.01$ with paired t-test.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"3\">BCB</td><td colspan=\"3\">BCB-F</td></tr><tr><td>P</td><td>R</td><td>F1</td><td>P</td><td>R</td><td>F1</td></tr><tr><td>ASTNN</td><td>0.92</td><td>0.94</td><td>0.93</td><td>0.50</td><td>1.00</td><td>0.67</td></tr><tr><td>FA-AST</td><td>0.96</td><td>0.94</td><td>0.95</td><td>0.50</td><td>1.00</td><td>0.67</td></tr><tr><td>CodeBERT</td><td>0.960</td><td>0.969</td><td>0.965</td><td>0.611</td><td>0.842</td><td>0.708</td></tr><tr><td>PLBART</td><td>-</td><td>-</td><td>0.972</td><td>0.517</td><td>0.996</td><td>0.681</td></tr><tr><td>PGNN-EK</td><td>0.975*</td><td>0.973*</td><td>0.974*</td><td>0.621*</td><td>0.869</td><td>0.724*</td></tr></table>"
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "5.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 32 GB",
+        "num": 2
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2022\\2022.acl-long.353\\auto\\full.md",
+    "source_md_sha256": "014f9eec60889c5005ce148a3aff7fd1ac2e409ea15c190dbb3abc743a7d84f0",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

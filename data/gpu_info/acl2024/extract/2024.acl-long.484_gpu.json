@@ -1,0 +1,96 @@
+{
+  "paper_id": "2024.acl-long.484",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.484::sections::3",
+      "paper_id": "2024.acl-long.484",
+      "section_number": "3",
+      "section_title": "methods",
+      "normalized_section_title": "methods",
+      "window_text": "In this section, we elaborate on our proposed method, PROTLLM, which is illustrated in Figure 2. Initially, we detail the model architecture in Section 3.1. Subsequently, the pre-training strategy is explained, introducing the concept of protein-as-word modeling, as outlined in Section 3.2. We then present the uniquely constructed interleaved protein-text dataset, InterPT, in Section 3.3. Lastly, we explore the application of PROTLLM on a variety of tasks in Section 3.4.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.484::sections::4",
+      "paper_id": "2024.acl-long.484",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "We evaluate PROTLLM on three types of downstream tasks: (1) protein-centric tasks, which include supervised fine-tuning on conventional benchmarks for protein understanding; (2) protein-text in-context learning, where we show the unique ability of PROTLLM by in-context learning on protein-protein interaction prediction; (3) text-guided functional protein retrieval, where we conduct a real-world enzyme mining task as a proof-of-concept study to validate the retrieval capability of PROTLLM. We present detailed hyperparameters, and prompt templates for pre-training and fine-tuning in Appendix A.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.484::appendix::A",
+      "paper_id": "2024.acl-long.484",
+      "section_number": "A",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "window_text": "Table 4: Pre-training hyperparameters of PROTLLM.   \n\n<table><tr><td colspan=\"2\">Hyperparameter</td></tr><tr><td>Batch size</td><td>256</td></tr><tr><td>Sequence length</td><td>512</td></tr><tr><td>Training steps</td><td>10K</td></tr><tr><td>Optimizer</td><td>AdamW</td></tr><tr><td>Adam β</td><td>(0.9, 0.999)</td></tr><tr><td>Adam ε</td><td>1 × 10-6</td></tr><tr><td>Learning rate</td><td>2 × 10-4</td></tr><tr><td>Learning rate schedule</td><td>Cosine decay</td></tr><tr><td>Warmup ratio</td><td>0.03</td></tr><tr><td>Weight decay</td><td>0</td></tr><tr><td>LoRA r</td><td>32</td></tr><tr><td>LoRA a</td><td>64</td></tr><tr><td>LoRA dropout</td><td>0.1</td></tr><tr><td>LoRA modules</td><td>All linear modules</td></tr></table>\n\nPre-training We list the detailed pre-training hyperparameters of PROTLLM in Table 4. PROTLLM is pre-trained on 4 NVIDIA A100 GPUs for 10,000 steps with batch size 256 on the InterPT dataset described in Table 1. We adopt LoRA for efficient training, applying LoRA to all linear models of LLaMA, including [downProj, upProj, qProj, vProj, kProj, oProj, gateProj]. Notice that only the LoRA weights and the cross-modal connector modules are updated during training.\n\nFine-tuning PROTLLM is further fine-tuned on various downstream tasks including EC number prediction, GO term prediction, and PPI prediction. Table 5 presents the fine-tuning hyperparameters. We apply LoRA for efficient tuning of the language model weights. The weights of the protein encoder are frozen for the PPI task, and updated for the other tasks, with a learning rate of $2 \\times 10^{-5}$ . The handcrafted prompt templates for each task are shown in Table 6. At each [mount] position, we encode the protein sequences with the protein encoder and feed the resulting protein embedding to the language model. For multilabel classification tasks, i.e., GO and EC, we convert the tasks to binary classification tasks for each label. We fill [name] with the label name, and fill [description] with text descriptions associated with this label. Besides, we utilize a resampling strategy during fine-tuning to ensure a uniform distribution of positive and negative labels.\n\nTable 5: Fine-tuning hyperparameters of PROTLLM on various downstream tasks.   \n\n<table><tr><td>Hyperparameter</td><td>EC</td><td>GO-BP</td><td>GO-MF</td><td>GO-CC</td><td>PPI</td></tr><tr><td>Batch size</td><td>128</td><td>128</td><td>128</td><td>128</td><td>16</td></tr><tr><td>Training steps</td><td>50K</td><td>50K</td><td>50K</td><td>10K</td><td>10K</td></tr><tr><td>Optimizer</td><td>AdamW</td><td>AdamW</td><td>AdamW</td><td>AdamW</td><td>AdamW</td></tr><tr><td>Learning rate</td><td>\\( 2 \\times 10^{-4} \\)</td><td>\\( 2 \\times 10^{-4} \\)</td><td>\\( 2 \\times 10^{-4} \\)</td><td>\\( 2 \\times 10^{-4} \\)</td><td>\\( 2 \\times 10^{-4} \\)</td></tr><tr><td>Learning rate schedule</td><td>Cosine decay</td><td>Cosine decay</td><td>Cosine decay</td><td>Cosine decay</td><td>Cosine decay</td></tr><tr><td>Warmup ratio</td><td>0.03</td><td>0.03</td><td>0.03</td><td>0.03</td><td>0</td></tr><tr><td>Weight decay</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>LoRA r</td><td>128</td><td>128</td><td>128</td><td>128</td><td>32</td></tr><tr><td>LoRA a</td><td>256</td><td>256</td><td>256</td><td>256</td><td>64</td></tr><tr><td>LoRA dropout</td><td>0.1</td><td>0.1</td><td>0.1</td><td>0.1</td><td>0.1</td></tr><tr><td>LoRA modules</td><td>All linear</td><td>All linear</td><td>All linear</td><td>All linear</td><td>All linear</td></tr><tr><td>Update protein encoder</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td><td>No</td></tr></table>\n\nTable 6: Prompt templates for each task.   \n\n<table><tr><td>Task</td><td>Prompt template</td><td>Verbalizer</td></tr><tr><td>GO</td><td>&lt;PROT&gt; [mount] &lt;/PROT&gt; Does the protein belong to [name], which is [description]?</td><td>Yes/No</td></tr><tr><td>EC</td><td>&lt;PROT&gt; [mount] &lt;/PROT&gt; Does the protein catalyze [name], which is [description]?</td><td>Yes/No</td></tr><tr><td>PPI</td><td>Do &lt;PROT&gt; [mount1] &lt;/PROT&gt; and &lt;PROT&gt; [mount2] &lt;/PROT&gt; interact with each other?</td><td>Yes/No</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.484::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "Table 4: Pre-training hyperparameters of PROTLLM.   \n\n<table><tr><td colspan=\"2\">Hyperparameter</td></tr><tr><td>Batch size</td><td>256</td></tr><tr><td>Sequence length</td><td>512</td></tr><tr><td>Training steps</td><td>10K</td></tr><tr><td>Optimizer</td><td>AdamW</td></tr><tr><td>Adam β</td><td>(0.9, 0.999)</td></tr><tr><td>Adam ε</td><td>1 × 10-6</td></tr><tr><td>Learning rate</td><td>2 × 10-4</td></tr><tr><td>Learning rate schedule</td><td>Cosine decay</td></tr><tr><td>Warmup ratio</td><td>0.03</td></tr><tr><td>Weight decay</td><td>0</td></tr><tr><td>LoRA r</td><td>32</td></tr><tr><td>LoRA a</td><td>64</td></tr><tr><td>LoRA dropout</td><td>0.1</td></tr><tr><td>LoRA modules</td><td>All linear modules</td></tr></table>\n\nPre-training We list the detailed pre-training hyperparameters of PROTLLM in Table 4. PROTLLM is pre-trained on 4 NVIDIA A100 GPUs for 10,000 steps with batch size 256 on the InterPT dataset described in Table 1. We adopt LoRA for efficient training, applying LoRA to all linear models of LLaMA, including [downProj, upProj, qProj, vProj, kProj, oProj, gateProj]. Notice that only the LoRA weights and the cross-modal connector modules are updated during training.\n\nFine-tuning PROTLLM is further fine-tuned on various downstream tasks including EC number prediction, GO term prediction, and PPI prediction. Table 5 presents the fine-tuning hyperparameters. We apply LoRA for efficient tuning of the language model weights. The weights of the protein encoder are frozen for the PPI task, and updated for the other tasks, with a learning rate of $2 \\times 10^{-5}$ . The handcrafted prompt templates for each task are shown in Table 6. At each [mount] position, we encode the protein sequences with the protein encoder and feed the resulting protein embedding to the language model. For multilabel classification tasks, i.e., GO and EC, we convert the tasks to binary classification tasks for each label. We fill [name] with the label name, and fill [description] with text descriptions associated with this label. Besides, we utilize a resampling strategy during fine-tuning to ensure a uniform distribution of positive and negative labels.\n\nTable 5: Fine-tuning hyperparameters of PROTLLM on various downstream tasks.   \n\n<table><tr><td>Hyperparameter</td><td>EC</td><td>GO-BP</td><td>GO-MF</td><td>GO-CC</td><td>PPI</td></tr><tr><td>Batch size</td><td>128</td><td>128</td><td>128</td><td>128</td><td>16</td></tr><tr><td>Training steps</td><td>50K</td><td>50K</td><td>50K</td><td>10K</td><td>10K</td></tr><tr><td>Optimizer</td><td>AdamW</td><td>AdamW</td><td>AdamW</td><td>AdamW</td><td>AdamW</td></tr><tr><td>Learning rate</td><td>\\( 2 \\times 10^{-4} \\)</td><td>\\( 2 \\times 10^{-4} \\)</td><td>\\( 2 \\times 10^{-4} \\)</td><td>\\( 2 \\times 10^{-4} \\)</td><td>\\( 2 \\times 10^{-4} \\)</td></tr><tr><td>Learning rate schedule</td><td>Cosine decay</td><td>Cosine decay</td><td>Cosine decay</td><td>Cosine decay</td><td>Cosine decay</td></tr><tr><td>Warmup ratio</td><td>0.03</td><td>0.03</td><td>0.03</td><td>0.03</td><td>0</td></tr><tr><td>Weight decay</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>LoRA r</td><td>128</td><td>128</td><td>128</td><td>128</td><td>32</td></tr><tr><td>LoRA a</td><td>256</td><td>256</td><td>256</td><td>256</td><td>64</td></tr><tr><td>LoRA dropout</td><td>0.1</td><td>0.1</td><td>0.1</td><td>0.1</td><td>0.1</td></tr><tr><td>LoRA modules</td><td>All linear</td><td>All linear</td><td>All linear</td><td>All linear</td><td>All linear</td></tr><tr><td>Update protein encoder</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td><td>No</td></tr></table>\n\nTable 6: Prompt templates for each task.   \n\n<table><tr><td>Task</td><td>Prompt template</td><td>Verbalizer</td></tr><tr><td>GO</td><td>&lt;PROT&gt; [mount] &lt;/PROT&gt; Does the protein belong to [name], which is [description]?</td><td>Yes/No</td></tr><tr><td>EC</td><td>&lt;PROT&gt; [mount] &lt;/PROT&gt; Does the protein catalyze [name], which is [description]?</td><td>Yes/No</td></tr><tr><td>PPI</td><td>Do &lt;PROT&gt; [mount1] &lt;/PROT&gt; and &lt;PROT&gt; [mount2] &lt;/PROT&gt; interact with each other?</td><td>Yes/No</td></tr></table>",
+      "section_number": "A",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.484::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "A",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "evidence": "Table 4: Pre-training hyperparameters of PROTLLM.   \n\n<table><tr><td colspan=\"2\">Hyperparameter</td></tr><tr><td>Batch size</td><td>256</td></tr><tr><td>Sequence length</td><td>512</td></tr><tr><td>Training steps</td><td>10K</td></tr><tr><td>Optimizer</td><td>AdamW</td></tr><tr><td>Adam β</td><td>(0.9, 0.999)</td></tr><tr><td>Adam ε</td><td>1 × 10-6</td></tr><tr><td>Learning rate</td><td>2 × 10-4</td></tr><tr><td>Learning rate schedule</td><td>Cosine decay</td></tr><tr><td>Warmup ratio</td><td>0.03</td></tr><tr><td>Weight decay</td><td>0</td></tr><tr><td>LoRA r</td><td>32</td></tr><tr><td>LoRA a</td><td>64</td></tr><tr><td>LoRA dropout</td><td>0.1</td></tr><tr><td>LoRA modules</td><td>All linear modules</td></tr></table>\n\nPre-training We list the detailed pre-training hyperparameters of PROTLLM in Table 4. PROTLLM is pre-trained on 4 NVIDIA A100 GPUs for 10,000 steps with batch size 256 on the InterPT dataset described in Table 1. We adopt LoRA for efficient training, applying LoRA to all linear models of LLaMA, including [downProj, upProj, qProj, vProj, kProj, oProj, gateProj]. Notice that only the LoRA weights and the cross-modal connector modules are updated during training.\n\nFine-tuning PROTLLM is further fine-tuned on various downstream tasks including EC number prediction, GO term prediction, and PPI prediction. Table 5 presents the fine-tuning hyperparameters. We apply LoRA for efficient tuning of the language model weights. The weights of the protein encoder are frozen for the PPI task, and updated for the other tasks, with a learning rate of $2 \\times 10^{-5}$ . The handcrafted prompt templates for each task are shown in Table 6. At each [mount] position, we encode the protein sequences with the protein encoder and feed the resulting protein embedding to the language model. For multilabel classification tasks, i.e., GO and EC, we convert the tasks to binary classification tasks for each label. We fill [name] with the label name, and fill [description] with text descriptions associated with this label. Besides, we utilize a resampling strategy during fine-tuning to ensure a uniform distribution of positive and negative labels.\n\nTable 5: Fine-tuning hyperparameters of PROTLLM on various downstream tasks.   \n\n<table><tr><td>Hyperparameter</td><td>EC</td><td>GO-BP</td><td>GO-MF</td><td>GO-CC</td><td>PPI</td></tr><tr><td>Batch size</td><td>128</td><td>128</td><td>128</td><td>128</td><td>16</td></tr><tr><td>Training steps</td><td>50K</td><td>50K</td><td>50K</td><td>10K</td><td>10K</td></tr><tr><td>Optimizer</td><td>AdamW</td><td>AdamW</td><td>AdamW</td><td>AdamW</td><td>AdamW</td></tr><tr><td>Learning rate</td><td>\\( 2 \\times 10^{-4} \\)</td><td>\\( 2 \\times 10^{-4} \\)</td><td>\\( 2 \\times 10^{-4} \\)</td><td>\\( 2 \\times 10^{-4} \\)</td><td>\\( 2 \\times 10^{-4} \\)</td></tr><tr><td>Learning rate schedule</td><td>Cosine decay</td><td>Cosine decay</td><td>Cosine decay</td><td>Cosine decay</td><td>Cosine decay</td></tr><tr><td>Warmup ratio</td><td>0.03</td><td>0.03</td><td>0.03</td><td>0.03</td><td>0</td></tr><tr><td>Weight decay</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>LoRA r</td><td>128</td><td>128</td><td>128</td><td>128</td><td>32</td></tr><tr><td>LoRA a</td><td>256</td><td>256</td><td>256</td><td>256</td><td>64</td></tr><tr><td>LoRA dropout</td><td>0.1</td><td>0.1</td><td>0.1</td><td>0.1</td><td>0.1</td></tr><tr><td>LoRA modules</td><td>All linear</td><td>All linear</td><td>All linear</td><td>All linear</td><td>All linear</td></tr><tr><td>Update protein encoder</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td><td>No</td></tr></table>\n\nTable 6: Prompt templates for each task.   \n\n<table><tr><td>Task</td><td>Prompt template</td><td>Verbalizer</td></tr><tr><td>GO</td><td>&lt;PROT&gt; [mount] &lt;/PROT&gt; Does the protein belong to [name], which is [description]?</td><td>Yes/No</td></tr><tr><td>EC</td><td>&lt;PROT&gt; [mount] &lt;/PROT&gt; Does the protein catalyze [name], which is [description]?</td><td>Yes/No</td></tr><tr><td>PPI</td><td>Do &lt;PROT&gt; [mount1] &lt;/PROT&gt; and &lt;PROT&gt; [mount2] &lt;/PROT&gt; interact with each other?</td><td>Yes/No</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 4
+      }
+    ]
+  }
+}

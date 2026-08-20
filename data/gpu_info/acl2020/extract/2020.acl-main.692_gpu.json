@@ -1,0 +1,234 @@
+{
+  "paper_id": "2020.acl-main.692",
+  "candidate_windows": [
+    {
+      "window_id": "2020.acl-main.692::sections::2.4",
+      "paper_id": "2020.acl-main.692",
+      "section_number": "2.4",
+      "section_title": "evaluation",
+      "normalized_section_title": "evaluation",
+      "window_text": "To evaluate the unsupervised domain clustering we used the multi-domain corpus proposed by Koehn and Knowles (2017) which includes textual data in five diverse domains: subtitles $^{6}$ , medical text (PDF documents from the European Medicines Agency), legal text (legislative text of the European Union), translations of the Koran, and IT-related text (manuals and localization files of open-source software). This dataset includes parallel sentences in English and German; for this experiment we used the English portion of the data. See more details on the dataset in Section 3.1. We used 2000 distinct sentences from each domain. To evaluate whether the resulting clusters indeed capture the domains the data was drawn from we measure the clustering purity, which is a well-known metric for evaluating clustering (Manning et al., 2008). To measure the clustering purity, we assign each unsupervised cluster with the most common \"true\" domain in the sentences assigned to that cluster, and then compute the accuracy according to this majority-based cluster-domain assignment (note that in this case several unsupervised clusters can be assigned to the same domain). In cases where randomness is involved we run each experiment five times with different initializations and report the mean and variance of the purity metric for each model.\n\n![](images/f1911169cc0e5626afab47e0dbe07bf0b62a6fe420bd1b7e81d1f790c1d0fcc3.jpg)  \nFigure 2: A confusion matrix for clustering with $k = 5$ using BERT-base.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.acl-main.692::sections::4.1",
+      "paper_id": "2020.acl-main.692",
+      "section_number": "4.1",
+      "section_title": "methods",
+      "normalized_section_title": "methods",
+      "window_text": "We propose two methods for domain data selection with pretrained language models.\n\nDomain-Cosine In this method we first compute a query vector, which is the element-wise average over the vector representations of the sentences in the small in-domain set. We use the same sentence-level average-pooling approach as described in Section 2 to obtain sentence representations. We then retrieve the most relevant sentences in the training set by computing the cosine similarity of each sentence with this query vector and ranking the sentences accordingly.\n\nDomain-Finetune It is now common knowledge that pretrained language models are especially useful when fine-tuned for the task of interest in an end-to-end manner (Ruder et al., 2019). In this method we fine-tune the pretrained LM for binary classification, where we use the in-domain sentences as positive examples, and randomly sampled general-domain sentences as negative examples. We then apply this classifier on the general-domain data and pick the sentences that are classified as positive as in-domain, or choose the top-k sentences as ranked by the classifier output distribution. This can be seen as an instance of positive-unlabeled learning for document-set expansion; see Jacovi et al. (2019) for a recent discussion and methodology for this task.\n\nNegative Sampling with Pre-ranking One problem that may rise when randomly sampling negative examples is that unlabeled in-domain sentences from the general-domain data may be sampled as negative examples - deteriorating the classifier performance. To alleviate this issue, we perform a biased sampling of negative examples. We first rank the general-domain data using the\n\nTable 5: Ablation analysis showing precision (p) recall (r) and F1 for the binary classification accuracy on a held-out set, with and without pre-ranking.   \n\n<table><tr><td rowspan=\"2\"></td><td colspan=\"3\">without pre-ranking</td><td colspan=\"3\">with pre-ranking</td></tr><tr><td>p</td><td>r</td><td>F1</td><td>p</td><td>r</td><td>F1</td></tr><tr><td>Subtitles</td><td>0.722</td><td>0.984</td><td>0.833</td><td>0.964</td><td>0.978</td><td>0.971</td></tr><tr><td>Law</td><td>0.761</td><td>0.94</td><td>0.841</td><td>0.944</td><td>0.94</td><td>0.942</td></tr><tr><td>Medical</td><td>0.821</td><td>0.916</td><td>0.866</td><td>0.929</td><td>0.92</td><td>0.925</td></tr><tr><td>IT</td><td>0.848</td><td>0.956</td><td>0.898</td><td>0.955</td><td>0.98</td><td>0.967</td></tr><tr><td>Koran</td><td>0.966</td><td>0.958</td><td>0.962</td><td>0.994</td><td>0.974</td><td>0.984</td></tr></table>\n\nTable 6: SacreBLEU scores for the data selection experiments. Highest scores per column are marked in bold.   \n\n<table><tr><td></td><td>Medical</td><td>Law</td><td>Koran</td><td>IT</td><td>Subtitles</td><td>Average</td></tr><tr><td>Random-500k</td><td>49.8</td><td>53.3</td><td>18.5</td><td>37.5</td><td>25.5</td><td>36.92</td></tr><tr><td>Moore-Lewis-Top-500k</td><td>55</td><td>58</td><td>21.4</td><td>42.7</td><td>27.3</td><td>40.88</td></tr><tr><td>Domain-Cosine-Top-500k</td><td>52.7</td><td>58</td><td>22</td><td>42.5</td><td>27.1</td><td>40.46</td></tr><tr><td>Domain-Finetune-Top-500k</td><td>54.8</td><td>58.8</td><td>21.8</td><td>43.5</td><td>27.4</td><td>41.26</td></tr><tr><td>Domain-Finetune-Positive</td><td>55.3</td><td>58.7</td><td>19.2</td><td>42.5</td><td>27</td><td>40.54</td></tr><tr><td>Oracle</td><td>56.5</td><td>59</td><td>15.9</td><td>43</td><td>27.3</td><td>40.34</td></tr><tr><td>All</td><td>53.3</td><td>57.2</td><td>20.9</td><td>42.1</td><td>27.6</td><td>40.22</td></tr></table>\n\nDomain-Cosine method, and then sample negative examples under a certain threshold in the ranking (in our experiments we sampled from the bottom two-thirds). Table 5 shows an ablation for such pre-ranking, measuring precision, recall and F1 for binary classification on a held-out set for each domain. When not using pre-ranking, as the training data for the domain is larger, the precision is lower – since more in-domain examples are drawn as negative samples. Using pre-ranking indeed alleviates this issue, achieving higher F1 scores in all cases. Given the results in Table 5 we always use pre-ranking in the following experiments.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.acl-main.692::sections::4.2",
+      "paper_id": "2020.acl-main.692",
+      "section_number": "4.2",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "We perform data selection experiments for each domain in the multi-domain dataset. As the small set of monolingual in-domain data we take the 2000 development sentences from each domain. For the general-domain corpus we concatenate the training data from all domains, resulting in 1,456,317 sentences. To enable faster experimentation we used DistilBERT (Sanh et al., 2019) for the Domain-Cosine and Domain-Finetune methods. More technical details are available in the supplementary material. We compare our methods to four approaches: (1) The established method by Moore and Lewis (2010), (2) a random selection baseline, (3) an oracle which is trained on all the available in-domain data, and (4) the model we train on all the domains concatenated. We select the top 500k examples to cover the size of every specific in-domain dataset. We train Transformer NMT models on the selected data with a similar configuration to the ones trained in the cross-domain evaluation.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.acl-main.692::appendix::A",
+      "paper_id": "2020.acl-main.692",
+      "section_number": "A",
+      "section_title": "appendix",
+      "normalized_section_title": "appendix",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.acl-main.692::appendix::A.1",
+      "paper_id": "2020.acl-main.692",
+      "section_number": "A.1",
+      "section_title": "nmt training",
+      "normalized_section_title": "nmt training",
+      "window_text": "Figure 5 details the hyperparameter configuration we used to train the NMT models. We use Transformer models (Vaswani et al., 2017) in the Base configuration using the implementation provided in Fairseq (Ott et al., 2019). For all models we use a joint BPE vocabulary (Sennrich et al., 2016) learned with $32\\mathrm{k}$ merge operations over the concatenated corpus in both languages, enabling to tie all the embedding layers (Press and Wolf, 2017).<sup>12</sup> We perform early stopping if the BLEU score on the domain-specific development set did not improve in 10 consequent checkpoints. We use the ADAM (Kingma and Ba, 2014) optimizer with an initial learning rate of $5 \\cdot 10^{-4}$ and a maximum of 4096 tokens per batch. We trained all models on a single NVIDIA GPU. We decode using beam search with a beam size of 5. For pre-processing we used the Moses (Koehn et al., 2007) pipeline including tokenization, normalize-punctuation, non-printing character removal, truemasing and cleaning. We removed examples with sequences longer than 100 tokens from the training data (before subword segmentation).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.acl-main.692::appendix::A.4",
+      "paper_id": "2020.acl-main.692",
+      "section_number": "A.4",
+      "section_title": "language model finetuning",
+      "normalized_section_title": "language model finetuning",
+      "window_text": "We fine-tune the binary classification head for 5 epochs. We use the ADAM (Kingma and Ba, 2014) optimizer with an initial learning rate of $2 \\cdot 10^{-5}$ . We train the model using 4 NVIDIA GPUs with 256 sentences per batch (64 per GPU).\n\nCUDA_VISIBLE_DEVICE $\\mathbf{\\Pi} = \\mathbf{0}$ python $FAIRSEQ_PATH/train.py ${BINARYIZED_DATA_DIR}  \n--arch transformer_wmt_en_de  \n--share-all-embeddings  \n--optimizer adam  \n--adam-betas'(0.9,0.98)'  \n--clip-norm 1.0  \n--lr 0.0005  \n--lr-scheduler inverse_sqrt  \n--warmup-updates 4000  \n--warmup-init-lr 1e-07  \n--dropout 0.2  \n--weight-decay 0.0  \n--criterion label_smoothed CROSS_entropy  \n--label-smoothing 0.1  \n--max-tokens 4096  \n--update-freq 5  \n--attention-dropout 0.2  \n--activation-dropout 0.2  \n--max-epoch 200  \n--seed 17  \n-s $src  \n-t $tgt  \n--save-dir $MODEL_PATH  \n--save-interval-updates 10000  \n--validate-interval 1\n\nFigure 5: The hyperparameter configuration we used for NMT model training using Fairseq (Ott et al., 2019).",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.acl-main.692::appendix::A.5",
+      "paper_id": "2020.acl-main.692",
+      "section_number": "A.5",
+      "section_title": "moore-lewis implementation",
+      "normalized_section_title": "moore-lewis implementation",
+      "window_text": "We used the implementation of Moore and Lewis (2010) by Pamela Shapiro, as available in: https://github.com/pamelashapiro/moore-lewis. This implementation uses the KenLM N-Gram language model toolkit (Heafield, 2011).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2020.acl-main.692::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA GPU",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Figure 5 details the hyperparameter configuration we used to train the NMT models. We use Transformer models (Vaswani et al., 2017) in the Base configuration using the implementation provided in Fairseq (Ott et al., 2019). For all models we use a joint BPE vocabulary (Sennrich et al., 2016) learned with $32\\mathrm{k}$ merge operations over the concatenated corpus in both languages, enabling to tie all the embedding layers (Press and Wolf, 2017).<sup>12</sup> We perform early stopping if the BLEU score on the domain-specific development set did not improve in 10 consequent checkpoints. We use the ADAM (Kingma and Ba, 2014) optimizer with an initial learning rate of $5 \\cdot 10^{-4}$ and a maximum of 4096 tokens per batch. We trained all models on a single NVIDIA GPU. We decode using beam search with a beam size of 5. For pre-processing we used the Moses (Koehn et al., 2007) pipeline including tokenization, normalize-punctuation, non-printing character removal, truemasing and cleaning. We removed examples with sequences longer than 100 tokens from the training data (before subword segmentation).",
+      "section_number": "A.1",
+      "section_title": "nmt training",
+      "normalized_section_title": "nmt training"
+    },
+    {
+      "window_id": "2020.acl-main.692::appendix::A.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA GPU",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "We fine-tune the binary classification head for 5 epochs. We use the ADAM (Kingma and Ba, 2014) optimizer with an initial learning rate of $2 \\cdot 10^{-5}$ . We train the model using 4 NVIDIA GPUs with 256 sentences per batch (64 per GPU).\n\nCUDA_VISIBLE_DEVICE $\\mathbf{\\Pi} = \\mathbf{0}$ python $FAIRSEQ_PATH/train.py ${BINARYIZED_DATA_DIR}  \n--arch transformer_wmt_en_de  \n--share-all-embeddings  \n--optimizer adam  \n--adam-betas'(0.9,0.98)'  \n--clip-norm 1.0  \n--lr 0.0005  \n--lr-scheduler inverse_sqrt  \n--warmup-updates 4000  \n--warmup-init-lr 1e-07  \n--dropout 0.2  \n--weight-decay 0.0  \n--criterion label_smoothed CROSS_entropy  \n--label-smoothing 0.1  \n--max-tokens 4096  \n--update-freq 5  \n--attention-dropout 0.2  \n--activation-dropout 0.2  \n--max-epoch 200  \n--seed 17  \n-s $src  \n-t $tgt  \n--save-dir $MODEL_PATH  \n--save-interval-updates 10000  \n--validate-interval 1\n\nFigure 5: The hyperparameter configuration we used for NMT model training using Fairseq (Ott et al., 2019).",
+      "section_number": "A.4",
+      "section_title": "language model finetuning",
+      "normalized_section_title": "language model finetuning"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2020.acl-main.692::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA GPU",
+      "cleaned_hardware_name": "nvidia gpu",
+      "normalized_hardware_name": "NVIDIA GPU",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.1",
+      "section_title": "nmt training",
+      "normalized_section_title": "nmt training",
+      "evidence": "Figure 5 details the hyperparameter configuration we used to train the NMT models. We use Transformer models (Vaswani et al., 2017) in the Base configuration using the implementation provided in Fairseq (Ott et al., 2019). For all models we use a joint BPE vocabulary (Sennrich et al., 2016) learned with $32\\mathrm{k}$ merge operations over the concatenated corpus in both languages, enabling to tie all the embedding layers (Press and Wolf, 2017).<sup>12</sup> We perform early stopping if the BLEU score on the domain-specific development set did not improve in 10 consequent checkpoints. We use the ADAM (Kingma and Ba, 2014) optimizer with an initial learning rate of $5 \\cdot 10^{-4}$ and a maximum of 4096 tokens per batch. We trained all models on a single NVIDIA GPU. We decode using beam search with a beam size of 5. For pre-processing we used the Moses (Koehn et al., 2007) pipeline including tokenization, normalize-punctuation, non-printing character removal, truemasing and cleaning. We removed examples with sequences longer than 100 tokens from the training data (before subword segmentation).",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "input names a vendor but not a specific GPU model",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2020.acl-main.692::appendix::A.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA GPU",
+      "cleaned_hardware_name": "nvidia gpu",
+      "normalized_hardware_name": "NVIDIA GPU",
+      "benchmark_hardware_name": null,
+      "count": 4,
+      "count_text": "4",
+      "section_number": "A.4",
+      "section_title": "language model finetuning",
+      "normalized_section_title": "language model finetuning",
+      "evidence": "We fine-tune the binary classification head for 5 epochs. We use the ADAM (Kingma and Ba, 2014) optimizer with an initial learning rate of $2 \\cdot 10^{-5}$ . We train the model using 4 NVIDIA GPUs with 256 sentences per batch (64 per GPU).\n\nCUDA_VISIBLE_DEVICE $\\mathbf{\\Pi} = \\mathbf{0}$ python $FAIRSEQ_PATH/train.py ${BINARYIZED_DATA_DIR}  \n--arch transformer_wmt_en_de  \n--share-all-embeddings  \n--optimizer adam  \n--adam-betas'(0.9,0.98)'  \n--clip-norm 1.0  \n--lr 0.0005  \n--lr-scheduler inverse_sqrt  \n--warmup-updates 4000  \n--warmup-init-lr 1e-07  \n--dropout 0.2  \n--weight-decay 0.0  \n--criterion label_smoothed CROSS_entropy  \n--label-smoothing 0.1  \n--max-tokens 4096  \n--update-freq 5  \n--attention-dropout 0.2  \n--activation-dropout 0.2  \n--max-epoch 200  \n--seed 17  \n-s $src  \n-t $tgt  \n--save-dir $MODEL_PATH  \n--save-interval-updates 10000  \n--validate-interval 1\n\nFigure 5: The hyperparameter configuration we used for NMT model training using Fairseq (Ott et al., 2019).",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "input names a vendor but not a specific GPU model",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2020.acl-main.692::sections::2.4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "2.4",
+      "section_title": "evaluation",
+      "evidence": "To evaluate the unsupervised domain clustering we used the multi-domain corpus proposed by Koehn and Knowles (2017) which includes textual data in five diverse domains: subtitles $^{6}$ , medical text (PDF documents from the European Medicines Agency), legal text (legislative text of the European Union), translations of the Koran, and IT-related text (manuals and localization files of open-source software). This dataset includes parallel sentences in English and German; for this experiment we used the English portion of the data. See more details on the dataset in Section 3.1. We used 2000 distinct sentences from each domain. To evaluate whether the resulting clusters indeed capture the domains the data was drawn from we measure the clustering purity, which is a well-known metric for evaluating clustering (Manning et al., 2008). To measure the clustering purity, we assign each unsupervised cluster with the most common \"true\" domain in the sentences assigned to that cluster, and then compute the accuracy according to this majority-based cluster-domain assignment (note that in this case several unsupervised clusters can be assigned to the same domain). In cases where randomness is involved we run each experiment five times with different initializations and report the mean and variance of the purity metric for each model.\n\n![](images/f1911169cc0e5626afab47e0dbe07bf0b62a6fe420bd1b7e81d1f790c1d0fcc3.jpg)  \nFigure 2: A confusion matrix for clustering with $k = 5$ using BERT-base."
+    },
+    {
+      "source_window_id": "2020.acl-main.692::sections::4.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "methods",
+      "evidence": "We propose two methods for domain data selection with pretrained language models.\n\nDomain-Cosine In this method we first compute a query vector, which is the element-wise average over the vector representations of the sentences in the small in-domain set. We use the same sentence-level average-pooling approach as described in Section 2 to obtain sentence representations. We then retrieve the most relevant sentences in the training set by computing the cosine similarity of each sentence with this query vector and ranking the sentences accordingly.\n\nDomain-Finetune It is now common knowledge that pretrained language models are especially useful when fine-tuned for the task of interest in an end-to-end manner (Ruder et al., 2019). In this method we fine-tune the pretrained LM for binary classification, where we use the in-domain sentences as positive examples, and randomly sampled general-domain sentences as negative examples. We then apply this classifier on the general-domain data and pick the sentences that are classified as positive as in-domain, or choose the top-k sentences as ranked by the classifier output distribution. This can be seen as an instance of positive-unlabeled learning for document-set expansion; see Jacovi et al. (2019) for a recent discussion and methodology for this task.\n\nNegative Sampling with Pre-ranking One problem that may rise when randomly sampling negative examples is that unlabeled in-domain sentences from the general-domain data may be sampled as negative examples - deteriorating the classifier performance. To alleviate this issue, we perform a biased sampling of negative examples. We first rank the general-domain data using the\n\nTable 5: Ablation analysis showing precision (p) recall (r) and F1 for the binary classification accuracy on a held-out set, with and without pre-ranking.   \n\n<table><tr><td rowspan=\"2\"></td><td colspan=\"3\">without pre-ranking</td><td colspan=\"3\">with pre-ranking</td></tr><tr><td>p</td><td>r</td><td>F1</td><td>p</td><td>r</td><td>F1</td></tr><tr><td>Subtitles</td><td>0.722</td><td>0.984</td><td>0.833</td><td>0.964</td><td>0.978</td><td>0.971</td></tr><tr><td>Law</td><td>0.761</td><td>0.94</td><td>0.841</td><td>0.944</td><td>0.94</td><td>0.942</td></tr><tr><td>Medical</td><td>0.821</td><td>0.916</td><td>0.866</td><td>0.929</td><td>0.92</td><td>0.925</td></tr><tr><td>IT</td><td>0.848</td><td>0.956</td><td>0.898</td><td>0.955</td><td>0.98</td><td>0.967</td></tr><tr><td>Koran</td><td>0.966</td><td>0.958</td><td>0.962</td><td>0.994</td><td>0.974</td><td>0.984</td></tr></table>\n\nTable 6: SacreBLEU scores for the data selection experiments. Highest scores per column are marked in bold.   \n\n<table><tr><td></td><td>Medical</td><td>Law</td><td>Koran</td><td>IT</td><td>Subtitles</td><td>Average</td></tr><tr><td>Random-500k</td><td>49.8</td><td>53.3</td><td>18.5</td><td>37.5</td><td>25.5</td><td>36.92</td></tr><tr><td>Moore-Lewis-Top-500k</td><td>55</td><td>58</td><td>21.4</td><td>42.7</td><td>27.3</td><td>40.88</td></tr><tr><td>Domain-Cosine-Top-500k</td><td>52.7</td><td>58</td><td>22</td><td>42.5</td><td>27.1</td><td>40.46</td></tr><tr><td>Domain-Finetune-Top-500k</td><td>54.8</td><td>58.8</td><td>21.8</td><td>43.5</td><td>27.4</td><td>41.26</td></tr><tr><td>Domain-Finetune-Positive</td><td>55.3</td><td>58.7</td><td>19.2</td><td>42.5</td><td>27</td><td>40.54</td></tr><tr><td>Oracle</td><td>56.5</td><td>59</td><td>15.9</td><td>43</td><td>27.3</td><td>40.34</td></tr><tr><td>All</td><td>53.3</td><td>57.2</td><td>20.9</td><td>42.1</td><td>27.6</td><td>40.22</td></tr></table>\n\nDomain-Cosine method, and then sample negative examples under a certain threshold in the ranking (in our experiments we sampled from the bottom two-thirds). Table 5 shows an ablation for such pre-ranking, measuring precision, recall and F1 for binary classification on a held-out set for each domain. When not using pre-ranking, as the training data for the domain is larger, the precision is lower – since more in-domain examples are drawn as negative samples. Using pre-ranking indeed alleviates this issue, achieving higher F1 scores in all cases. Given the results in Table 5 we always use pre-ranking in the following experiments."
+    },
+    {
+      "source_window_id": "2020.acl-main.692::sections::4.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2",
+      "section_title": "experimental setup",
+      "evidence": "We perform data selection experiments for each domain in the multi-domain dataset. As the small set of monolingual in-domain data we take the 2000 development sentences from each domain. For the general-domain corpus we concatenate the training data from all domains, resulting in 1,456,317 sentences. To enable faster experimentation we used DistilBERT (Sanh et al., 2019) for the Domain-Cosine and Domain-Finetune methods. More technical details are available in the supplementary material. We compare our methods to four approaches: (1) The established method by Moore and Lewis (2010), (2) a random selection baseline, (3) an oracle which is trained on all the available in-domain data, and (4) the model we train on all the domains concatenated. We select the top 500k examples to cover the size of every specific in-domain dataset. We train Transformer NMT models on the selected data with a similar configuration to the ones trained in the cross-domain evaluation."
+    },
+    {
+      "source_window_id": "2020.acl-main.692::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "appendix",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2020.acl-main.692::appendix::A.5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.5",
+      "section_title": "moore-lewis implementation",
+      "evidence": "We used the implementation of Moore and Lewis (2010) by Pamela Shapiro, as available in: https://github.com/pamelashapiro/moore-lewis. This implementation uses the KenLM N-Gram language model toolkit (Heafield, 2011)."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.1",
+      "A.4"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GPU",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA GPU",
+        "num": 4
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2020\\2020.acl-main.692\\auto\\full.md",
+    "source_md_sha256": "ca7c6c94698d04b275ea2ed5a8f9a5d1a4ad8a0422dde8060fc233eb28f254a5",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "a2f4e0f2222ac944a84b28fba08cc5ab0184a6c6ccb3a5a4deb8a7eefc1e4438"
+  }
+}

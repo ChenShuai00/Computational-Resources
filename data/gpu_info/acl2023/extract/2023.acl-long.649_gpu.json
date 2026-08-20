@@ -1,0 +1,183 @@
+{
+  "paper_id": "2023.acl-long.649",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.649::sections::3",
+      "paper_id": "2023.acl-long.649",
+      "section_number": "3",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.649::sections::4",
+      "paper_id": "2023.acl-long.649",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.649::sections::4.1",
+      "paper_id": "2023.acl-long.649",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Datasets. We conduct experiments on two large-scale public benchmarks, LRS3 (Afouras et al.,\n\n${}^{3}$ Function $\\log \\left( x\\right)  + \\log \\left( {1 - x}\\right)$ reaches maximum at $x =$ 0.5,and the minimum is obtained around $x = 0$ and $x = 1$ .\n\nAlgorithm 1 MIR-GAN Optimization.   \nRequire: Training data $D$ that contains visual-audio pairs $(x_{v},x_{a})$ and the text transcription $y$ . The MIR-GAN network $\\theta$ that consists of front-ends $\\theta_{vf}$ and $\\theta_{af}$ , encoders $\\theta_{vae}$ , MIR generator $\\theta_{G}$ , modality discriminator $\\theta_{D}$ and downstream speech recognition model $\\theta_{rec}$ . Hyper-parameter weights $\\lambda_{GAN}, \\lambda_{MIM}$ .  \n1: Randomly initialize the entire system $\\theta$ .  \n2: if select self-supervised setting then  \n3: Load the pre-trained AV-HuBERT for speech recognition model $\\theta_{rec}$ and front-ends $\\theta_{vf}, \\theta_{af}$ 4: end if  \n5: while not converged do  \n6: for $(x_{v}, x_{a}) \\in D$ do  \n7: FORWARD-PROPAGATION:  \n8: $f_{v} = \\theta_{vf}(x_{v}), f_{a} = \\theta_{af}(x_{a})$ 9: $f_{v}^{spe}, f_{a}^{spe} = \\theta_{vae}(f_{v}, f_{a})$ 10: $f_{va} = f_{v} \\| f_{a}$ 11: $f_{va}^{inv} = \\theta_{G}(f_{v}^{spe}, f_{a}^{spe}, f_{va})$ 12: $\\hat{y} = \\theta_{rec}(f_{v}^{spe} \\| f_{a}^{spe} \\| f_{va}^{inv})$ 13: TRAINING OBJECTIVES:  \n14: $\\mathcal{L}_{GAN}$ ( $\\mathcal{L}_D$ and $\\mathcal{L}_G$ ) in Eq. 6  \n15: $\\mathcal{L}_{MIM}$ in Eq. 7  \n16: $\\mathcal{L}_{rec} = \\text{CrossEntropy}(\\hat{y}, y)$ 17: BACK-PROPAGATION: $\\triangleright$ adversarial training  \n18: UPDATE DISCRIMINATOR: $\\triangleright$ unfreeze $\\theta_D$ 19: arg max $\\mathcal{L}_{GAN}$ 20: UPDATE THE REST NETWORK: $\\triangleright$ freeze $\\theta_D$ 21: arg min $\\mathcal{L}_{rec} + \\lambda_{GAN} \\cdot \\mathcal{L}_G + \\lambda_{MIM} \\cdot \\mathcal{L}_{MIM}$ 22: end for  \n23: end while\n\n2018b) and LRS2 (Chung et al., 2017). LRS3 dataset collects 433 hours of transcribed English videos in TED and TEDx talks from over 5000 speakers, which is the largest publicly available labeled audio-visual speech recognition dataset. LRS2 dataset contains 224 hours of video speech, with a total of 144K clips from BBC programs.\n\nModel Configurations. We first build a base model with only front-ends and downstream speech recognition module, which follows Transformer architecture with 24 encoder layers and 9 decoder layers. Based on that, we build the MIR-GAN with $N_{E} = 3$ visual & audio encoder layers and $N_{G} = 3$ MIR generator layers. To maintain similar model size, we only use 12 encoder layers and 9 decoder layers in the recognition model. The number of parameters in our base model and MIR-GAN are 476M and 469M respectively. We also use Conformer (Gulati et al., 2020) as our backbone. In addition, we implement a self-supervised setting by loading pre-trained AV-HuBERT $^{4}$ . Following prior work (Shi et al., 2022b), we employ data augmentation and noisy test set based on MUSAN\n\nTable 1: WER (%) of our MIR-GAN and prior works on LRS3 benchmark. \"S2S\" denotes sequence-to-sequence loss (Watanabe et al., 2017), \"CTC\" denotes CTC loss (Graves et al., 2006), \"DataAug\" denotes noise augmentation, \"LM\" denotes language model rescoring. The noisy test set is synthesized using MUSAN noise (Snyder et al., 2015).   \n\n<table><tr><td rowspan=\"2\" colspan=\"2\">Method</td><td rowspan=\"2\">Backbone</td><td rowspan=\"2\">Criterion</td><td rowspan=\"2\">Unlabeled data (hrs)</td><td rowspan=\"2\">Labeled data (hrs)</td><td rowspan=\"2\">DataAug</td><td rowspan=\"2\">LM</td><td colspan=\"2\">WER(%)</td></tr><tr><td>Clean</td><td>Noisy</td></tr><tr><td colspan=\"10\">Supervised</td></tr><tr><td colspan=\"2\">TM-seq2seq (2018a)</td><td>Transformer</td><td>S2S</td><td>-</td><td>1,519</td><td>✓</td><td>✓</td><td>7.2</td><td>-</td></tr><tr><td colspan=\"2\">EG-seq2seq (2020)</td><td>RNN</td><td>S2S</td><td>-</td><td>590</td><td>✓</td><td>-</td><td>6.8</td><td>-</td></tr><tr><td colspan=\"2\">RNN-T (2019)</td><td>RNN</td><td>RNN-T</td><td>-</td><td>31,000</td><td>-</td><td>-</td><td>4.5</td><td>-</td></tr><tr><td colspan=\"2\">Hyb-Conformer (2021)</td><td>Conformer</td><td>S2S + CTC</td><td>-</td><td>590</td><td>✓</td><td>✓</td><td>2.3</td><td>-</td></tr><tr><td colspan=\"10\">Self-Supervised</td></tr><tr><td colspan=\"2\">AV-HuBERT (2022b)</td><td>Transformer</td><td>S2S</td><td>1,759</td><td>433</td><td>✓</td><td>-</td><td>1.4</td><td>5.8</td></tr><tr><td colspan=\"2\">u-HuBERT (2022)</td><td>Transformer</td><td>S2S</td><td>2,211</td><td>433</td><td>✓</td><td>-</td><td>1.2</td><td>-</td></tr><tr><td colspan=\"10\">Proposed (Supervised)</td></tr><tr><td rowspan=\"4\">Ours</td><td>Base model</td><td rowspan=\"2\">Transformer</td><td rowspan=\"2\">S2S</td><td rowspan=\"2\">-</td><td rowspan=\"2\">433</td><td rowspan=\"2\">✓</td><td rowspan=\"2\">-</td><td>3.5</td><td>14.8</td></tr><tr><td>MIR-GAN</td><td>2.8</td><td>11.7</td></tr><tr><td>Base model</td><td rowspan=\"2\">Conformer</td><td rowspan=\"2\">S2S</td><td rowspan=\"2\">-</td><td rowspan=\"2\">433</td><td rowspan=\"2\">✓</td><td rowspan=\"2\">-</td><td>2.5</td><td>10.9</td></tr><tr><td>MIR-GAN</td><td>2.1</td><td>8.5</td></tr><tr><td colspan=\"10\">Proposed (Self-Supervised)</td></tr><tr><td rowspan=\"2\">Ours</td><td>Base model</td><td rowspan=\"2\">Transformer</td><td rowspan=\"2\">S2S</td><td rowspan=\"2\">1,759</td><td rowspan=\"2\">433</td><td rowspan=\"2\">✓</td><td rowspan=\"2\">-</td><td>1.4</td><td>5.8</td></tr><tr><td>MIR-GAN</td><td>1.2</td><td>5.6</td></tr></table>\n\nnoise (Snyder et al., 2015). More detailed settings are presented in Appendix A.3 - A.5.\n\nBaselines. To evaluate our proposed MIR-GAN, we select some popular AVSR methods for comparison, which can be roughly divided into two groups. The first is supervised learning method, including TM-seq2seq/CTC (Afouras et al., 2018a), RNN-T (Makino et al., 2019), EG-seq2seq (Xu et al., 2020) and Hyb-Conformer (Ma et al., 2021). Another one is the recently popular self-supervised learning method such as MoCo+wav2vec (Pan et al., 2022), AV-HuBERT (Shi et al., 2022b) and u-HuBERT (Hsu and Shi, 2022).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.649::appendix::A",
+      "paper_id": "2023.acl-long.649",
+      "section_number": "A",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.649::appendix::A.5",
+      "paper_id": "2023.acl-long.649",
+      "section_number": "A.5",
+      "section_title": "training details",
+      "normalized_section_title": "training details",
+      "window_text": "Training. We follow the sequence-to-sequence finetuning configurations of AV-HuBERT (Shi et al., 2022b) to train our systems. We use Transformer decoder to decode the encoded features into unigram-based subword units (Kudo, 2018), where the vocabulary size is set to 1000. The temperature $\\tau$ in Eq. 7 is set to 0.1, and the weighting parameters $\\lambda_{GAN} / \\lambda_{MIM}$ in Eq. 8 are set to $0.01 / 0.005$ respectively. The entire system is trained for 60K steps using Adam optimizer (Kingma and Ba, 2014), where the learning rate is warmed up to a peak of 0.001 for the first 20K updates and then linearly decayed. The finetuning process takes $\\sim$ 1.4 days on 4 NVIDIA-V100-32GB GPUs.\n\nInference. No language model is used during inference. We employ beam search for decoding, where the beam width and length penalty are set to 50 and 1 respectively. All the hyper-parameters in our systems are tuned on validation set. Since our experimental results are quite stable, a single run is performed for each reported result.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.649::appendix::A.6",
+      "paper_id": "2023.acl-long.649",
+      "section_number": "A.6",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "In this section, we describe the baselines for comparison.\n\n- TM-seq2seq (Afouras et al., 2018a): TM-seq2seq proposes a Transformer-based AVSR system to model the A-V features separately and then attentively fuse them for decoding, and uses sequence-to-sequence loss (Watanabe et al., 2017) as training criterion.\n\n- TM-CTC (Afouras et al., 2018a): TM-CTC shares the same architecture with TM-seq2seq, but uses CTC loss (Graves et al., 2006) as training criterion.   \n- Hyb-RNN (Petridis et al., 2018): Hyb-RNN proposes a RNN-based AVSR model with hybrid seq2seq/CTC loss (Watanabe et al., 2017), where the A-V features are encoded separately and then concatenated for decoding.   \n- RNN-T (Makino et al., 2019): RNN-T adopts the popular recurrent neural network transducer (Graves, 2012) for AVSR task, where the audio and visual features are concatenated before fed into the encoder.   \n- EG-seq2seq (Xu et al., 2020): EG-seq2seq builds a joint audio enhancement and multimodal speech recognition system based on the element-wise attention gated recurrent unit (Zhang et al., 2019), where the A-V features are concatenated before decoding.   \n- LF-MMI TDNN (Yu et al., 2020): LF-MMI TDNN proposes a joint audio-visual speech separation and recognition system based on time-delay neural network (TDNN), where the A-V features are concatenated before fed into the recognition network.   \n- Hyb-Conformer (Ma et al., 2021): Hyb-Conformer proposes a Conformer-based (Gulati et al., 2020) AVSR system with hybrid seq2seq/CTC loss, where the A-V input streams are first encoded separately and then concatenated for decoding.   \n- MoCo+wav2vec (Pan et al., 2022): MoCo+wav2vec employs self-supervised pre-trained audio and visual front-ends, i.e., wav2vec 2.0 (Baevski et al., 2020) and MoCo v2 (Chen et al., 2020), to generate better audio-visual features for fusion and decoding.   \n- AV-HuBERT (Shi et al., 2022a,b): AV-HuBERT employs self-supervised learning to capture deep A-V contextual information, where the A-V features are masked and concatenated before fed into Transformer encoder to calculate masked-prediction loss for pretraining, and cross-entropy based sequence-to-sequence loss is used for finetuning.\n\n- u-HuBERT (Hsu and Shi, 2022): u-HuBERT extends AV-HuBERT to a unified framework of audio-visual and audio-only pre-training.   \n- Distill-Pretrain (Ma et al., 2022): Distill-Pretrain proposes a Conformer-based VSR framework with additional distillation from pre-trained ASR and VSR models.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.649::appendix::A.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA V100 32GB",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "Training. We follow the sequence-to-sequence finetuning configurations of AV-HuBERT (Shi et al., 2022b) to train our systems. We use Transformer decoder to decode the encoded features into unigram-based subword units (Kudo, 2018), where the vocabulary size is set to 1000. The temperature $\\tau$ in Eq. 7 is set to 0.1, and the weighting parameters $\\lambda_{GAN} / \\lambda_{MIM}$ in Eq. 8 are set to $0.01 / 0.005$ respectively. The entire system is trained for 60K steps using Adam optimizer (Kingma and Ba, 2014), where the learning rate is warmed up to a peak of 0.001 for the first 20K updates and then linearly decayed. The finetuning process takes $\\sim$ 1.4 days on 4 NVIDIA-V100-32GB GPUs.\n\nInference. No language model is used during inference. We employ beam search for decoding, where the beam width and length penalty are set to 50 and 1 respectively. All the hyper-parameters in our systems are tuned on validation set. Since our experimental results are quite stable, a single run is performed for each reported result.",
+      "section_number": "A.5",
+      "section_title": "training details",
+      "normalized_section_title": "training details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.649::appendix::A.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA V100 32GB",
+      "cleaned_hardware_name": "nvidia v100 32gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "A.5",
+      "section_title": "training details",
+      "normalized_section_title": "training details",
+      "evidence": "Training. We follow the sequence-to-sequence finetuning configurations of AV-HuBERT (Shi et al., 2022b) to train our systems. We use Transformer decoder to decode the encoded features into unigram-based subword units (Kudo, 2018), where the vocabulary size is set to 1000. The temperature $\\tau$ in Eq. 7 is set to 0.1, and the weighting parameters $\\lambda_{GAN} / \\lambda_{MIM}$ in Eq. 8 are set to $0.01 / 0.005$ respectively. The entire system is trained for 60K steps using Adam optimizer (Kingma and Ba, 2014), where the learning rate is warmed up to a peak of 0.001 for the first 20K updates and then linearly decayed. The finetuning process takes $\\sim$ 1.4 days on 4 NVIDIA-V100-32GB GPUs.\n\nInference. No language model is used during inference. We employ beam search for decoding, where the beam width and length penalty are set to 50 and 1 respectively. All the hyper-parameters in our systems are tuned on validation set. Since our experimental results are quite stable, a single run is performed for each reported result.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.acl-long.649::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methodology",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.649::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.649::sections::4.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "evidence": "Datasets. We conduct experiments on two large-scale public benchmarks, LRS3 (Afouras et al.,\n\n${}^{3}$ Function $\\log \\left( x\\right)  + \\log \\left( {1 - x}\\right)$ reaches maximum at $x =$ 0.5,and the minimum is obtained around $x = 0$ and $x = 1$ .\n\nAlgorithm 1 MIR-GAN Optimization.   \nRequire: Training data $D$ that contains visual-audio pairs $(x_{v},x_{a})$ and the text transcription $y$ . The MIR-GAN network $\\theta$ that consists of front-ends $\\theta_{vf}$ and $\\theta_{af}$ , encoders $\\theta_{vae}$ , MIR generator $\\theta_{G}$ , modality discriminator $\\theta_{D}$ and downstream speech recognition model $\\theta_{rec}$ . Hyper-parameter weights $\\lambda_{GAN}, \\lambda_{MIM}$ .  \n1: Randomly initialize the entire system $\\theta$ .  \n2: if select self-supervised setting then  \n3: Load the pre-trained AV-HuBERT for speech recognition model $\\theta_{rec}$ and front-ends $\\theta_{vf}, \\theta_{af}$ 4: end if  \n5: while not converged do  \n6: for $(x_{v}, x_{a}) \\in D$ do  \n7: FORWARD-PROPAGATION:  \n8: $f_{v} = \\theta_{vf}(x_{v}), f_{a} = \\theta_{af}(x_{a})$ 9: $f_{v}^{spe}, f_{a}^{spe} = \\theta_{vae}(f_{v}, f_{a})$ 10: $f_{va} = f_{v} \\| f_{a}$ 11: $f_{va}^{inv} = \\theta_{G}(f_{v}^{spe}, f_{a}^{spe}, f_{va})$ 12: $\\hat{y} = \\theta_{rec}(f_{v}^{spe} \\| f_{a}^{spe} \\| f_{va}^{inv})$ 13: TRAINING OBJECTIVES:  \n14: $\\mathcal{L}_{GAN}$ ( $\\mathcal{L}_D$ and $\\mathcal{L}_G$ ) in Eq. 6  \n15: $\\mathcal{L}_{MIM}$ in Eq. 7  \n16: $\\mathcal{L}_{rec} = \\text{CrossEntropy}(\\hat{y}, y)$ 17: BACK-PROPAGATION: $\\triangleright$ adversarial training  \n18: UPDATE DISCRIMINATOR: $\\triangleright$ unfreeze $\\theta_D$ 19: arg max $\\mathcal{L}_{GAN}$ 20: UPDATE THE REST NETWORK: $\\triangleright$ freeze $\\theta_D$ 21: arg min $\\mathcal{L}_{rec} + \\lambda_{GAN} \\cdot \\mathcal{L}_G + \\lambda_{MIM} \\cdot \\mathcal{L}_{MIM}$ 22: end for  \n23: end while\n\n2018b) and LRS2 (Chung et al., 2017). LRS3 dataset collects 433 hours of transcribed English videos in TED and TEDx talks from over 5000 speakers, which is the largest publicly available labeled audio-visual speech recognition dataset. LRS2 dataset contains 224 hours of video speech, with a total of 144K clips from BBC programs.\n\nModel Configurations. We first build a base model with only front-ends and downstream speech recognition module, which follows Transformer architecture with 24 encoder layers and 9 decoder layers. Based on that, we build the MIR-GAN with $N_{E} = 3$ visual & audio encoder layers and $N_{G} = 3$ MIR generator layers. To maintain similar model size, we only use 12 encoder layers and 9 decoder layers in the recognition model. The number of parameters in our base model and MIR-GAN are 476M and 469M respectively. We also use Conformer (Gulati et al., 2020) as our backbone. In addition, we implement a self-supervised setting by loading pre-trained AV-HuBERT $^{4}$ . Following prior work (Shi et al., 2022b), we employ data augmentation and noisy test set based on MUSAN\n\nTable 1: WER (%) of our MIR-GAN and prior works on LRS3 benchmark. \"S2S\" denotes sequence-to-sequence loss (Watanabe et al., 2017), \"CTC\" denotes CTC loss (Graves et al., 2006), \"DataAug\" denotes noise augmentation, \"LM\" denotes language model rescoring. The noisy test set is synthesized using MUSAN noise (Snyder et al., 2015).   \n\n<table><tr><td rowspan=\"2\" colspan=\"2\">Method</td><td rowspan=\"2\">Backbone</td><td rowspan=\"2\">Criterion</td><td rowspan=\"2\">Unlabeled data (hrs)</td><td rowspan=\"2\">Labeled data (hrs)</td><td rowspan=\"2\">DataAug</td><td rowspan=\"2\">LM</td><td colspan=\"2\">WER(%)</td></tr><tr><td>Clean</td><td>Noisy</td></tr><tr><td colspan=\"10\">Supervised</td></tr><tr><td colspan=\"2\">TM-seq2seq (2018a)</td><td>Transformer</td><td>S2S</td><td>-</td><td>1,519</td><td>✓</td><td>✓</td><td>7.2</td><td>-</td></tr><tr><td colspan=\"2\">EG-seq2seq (2020)</td><td>RNN</td><td>S2S</td><td>-</td><td>590</td><td>✓</td><td>-</td><td>6.8</td><td>-</td></tr><tr><td colspan=\"2\">RNN-T (2019)</td><td>RNN</td><td>RNN-T</td><td>-</td><td>31,000</td><td>-</td><td>-</td><td>4.5</td><td>-</td></tr><tr><td colspan=\"2\">Hyb-Conformer (2021)</td><td>Conformer</td><td>S2S + CTC</td><td>-</td><td>590</td><td>✓</td><td>✓</td><td>2.3</td><td>-</td></tr><tr><td colspan=\"10\">Self-Supervised</td></tr><tr><td colspan=\"2\">AV-HuBERT (2022b)</td><td>Transformer</td><td>S2S</td><td>1,759</td><td>433</td><td>✓</td><td>-</td><td>1.4</td><td>5.8</td></tr><tr><td colspan=\"2\">u-HuBERT (2022)</td><td>Transformer</td><td>S2S</td><td>2,211</td><td>433</td><td>✓</td><td>-</td><td>1.2</td><td>-</td></tr><tr><td colspan=\"10\">Proposed (Supervised)</td></tr><tr><td rowspan=\"4\">Ours</td><td>Base model</td><td rowspan=\"2\">Transformer</td><td rowspan=\"2\">S2S</td><td rowspan=\"2\">-</td><td rowspan=\"2\">433</td><td rowspan=\"2\">✓</td><td rowspan=\"2\">-</td><td>3.5</td><td>14.8</td></tr><tr><td>MIR-GAN</td><td>2.8</td><td>11.7</td></tr><tr><td>Base model</td><td rowspan=\"2\">Conformer</td><td rowspan=\"2\">S2S</td><td rowspan=\"2\">-</td><td rowspan=\"2\">433</td><td rowspan=\"2\">✓</td><td rowspan=\"2\">-</td><td>2.5</td><td>10.9</td></tr><tr><td>MIR-GAN</td><td>2.1</td><td>8.5</td></tr><tr><td colspan=\"10\">Proposed (Self-Supervised)</td></tr><tr><td rowspan=\"2\">Ours</td><td>Base model</td><td rowspan=\"2\">Transformer</td><td rowspan=\"2\">S2S</td><td rowspan=\"2\">1,759</td><td rowspan=\"2\">433</td><td rowspan=\"2\">✓</td><td rowspan=\"2\">-</td><td>1.4</td><td>5.8</td></tr><tr><td>MIR-GAN</td><td>1.2</td><td>5.6</td></tr></table>\n\nnoise (Snyder et al., 2015). More detailed settings are presented in Appendix A.3 - A.5.\n\nBaselines. To evaluate our proposed MIR-GAN, we select some popular AVSR methods for comparison, which can be roughly divided into two groups. The first is supervised learning method, including TM-seq2seq/CTC (Afouras et al., 2018a), RNN-T (Makino et al., 2019), EG-seq2seq (Xu et al., 2020) and Hyb-Conformer (Ma et al., 2021). Another one is the recently popular self-supervised learning method such as MoCo+wav2vec (Pan et al., 2022), AV-HuBERT (Shi et al., 2022b) and u-HuBERT (Hsu and Shi, 2022)."
+    },
+    {
+      "source_window_id": "2023.acl-long.649::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "experimental details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.649::appendix::A.6",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.6",
+      "section_title": "baselines",
+      "evidence": "In this section, we describe the baselines for comparison.\n\n- TM-seq2seq (Afouras et al., 2018a): TM-seq2seq proposes a Transformer-based AVSR system to model the A-V features separately and then attentively fuse them for decoding, and uses sequence-to-sequence loss (Watanabe et al., 2017) as training criterion.\n\n- TM-CTC (Afouras et al., 2018a): TM-CTC shares the same architecture with TM-seq2seq, but uses CTC loss (Graves et al., 2006) as training criterion.   \n- Hyb-RNN (Petridis et al., 2018): Hyb-RNN proposes a RNN-based AVSR model with hybrid seq2seq/CTC loss (Watanabe et al., 2017), where the A-V features are encoded separately and then concatenated for decoding.   \n- RNN-T (Makino et al., 2019): RNN-T adopts the popular recurrent neural network transducer (Graves, 2012) for AVSR task, where the audio and visual features are concatenated before fed into the encoder.   \n- EG-seq2seq (Xu et al., 2020): EG-seq2seq builds a joint audio enhancement and multimodal speech recognition system based on the element-wise attention gated recurrent unit (Zhang et al., 2019), where the A-V features are concatenated before decoding.   \n- LF-MMI TDNN (Yu et al., 2020): LF-MMI TDNN proposes a joint audio-visual speech separation and recognition system based on time-delay neural network (TDNN), where the A-V features are concatenated before fed into the recognition network.   \n- Hyb-Conformer (Ma et al., 2021): Hyb-Conformer proposes a Conformer-based (Gulati et al., 2020) AVSR system with hybrid seq2seq/CTC loss, where the A-V input streams are first encoded separately and then concatenated for decoding.   \n- MoCo+wav2vec (Pan et al., 2022): MoCo+wav2vec employs self-supervised pre-trained audio and visual front-ends, i.e., wav2vec 2.0 (Baevski et al., 2020) and MoCo v2 (Chen et al., 2020), to generate better audio-visual features for fusion and decoding.   \n- AV-HuBERT (Shi et al., 2022a,b): AV-HuBERT employs self-supervised learning to capture deep A-V contextual information, where the A-V features are masked and concatenated before fed into Transformer encoder to calculate masked-prediction loss for pretraining, and cross-entropy based sequence-to-sequence loss is used for finetuning.\n\n- u-HuBERT (Hsu and Shi, 2022): u-HuBERT extends AV-HuBERT to a unified framework of audio-visual and audio-only pre-training.   \n- Distill-Pretrain (Ma et al., 2022): Distill-Pretrain proposes a Conformer-based VSR framework with additional distillation from pre-trained ASR and VSR models."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.5"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 32 GB",
+        "num": 4
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2023\\2023.acl-long.649\\auto\\full.md",
+    "source_md_sha256": "d4f21ee77523d67caf04621e62b3d467957fc64911c27b541ce16397e7db7630",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

@@ -1,0 +1,204 @@
+{
+  "paper_id": "2023.acl-long.527",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.527::sections::3",
+      "paper_id": "2023.acl-long.527",
+      "section_number": "3",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "In this section, we first introduce our problem definition of the SVHR task. Then, we present our Guided Generative Model (GGM) which generates the hashtag from multimodal inputs.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.527::sections::4",
+      "paper_id": "2023.acl-long.527",
+      "section_number": "4",
+      "section_title": "experimental settings",
+      "normalized_section_title": "experimental settings",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.527::sections::4.2",
+      "paper_id": "2023.acl-long.527",
+      "section_number": "4.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "For the video pre-processing, we extract frames with a frame rate of 2fps if the video duration is less than seven seconds and uniformly sample 15 frames if the video is longer than seven seconds. ffmpeg is used to extract the audio as a WAV format file from the video. The retrieval pool of hashtags contains all hashtags in the training set.\n\nWe further evaluate the unseen hashtags to test the retriever's generalization ability as shown in Table 4. For the GGM, we initialize the video encoder with the ViT-base model and construct the text encoder-decoder based on the BART-base model. During decoding, we use beam search with a beam size of 5. The decoding process will not stop until the end-of-sequence token is emitted or the length of the generated hashtags reaches to maximum length. We set the maximum length as 32 for SFVD1 and 64 for SFVD2. See Appendix A for more implementation details.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.527::sections::4.3",
+      "paper_id": "2023.acl-long.527",
+      "section_number": "4.3",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "The following baselines are implemented for comparison: 1) BERT (Devlin et al., 2019) takes video description as input for classification. 2) VLM is the same as our VLM-based Hashtag Retriever. 3) ViT (Dosovitskiy et al., 2020) takes video as input for classification. 4) ViT-BERT concatenates the video and description embedding for classification. 5) BART (Lewis et al., 2020a) generates hashtags from the video description. 6) Trocr-fid (Li et al., 2021) generates hashtags based on the video. we apply the fusion-in-decoder (Izacard and Grave, 2021) strategy to let the model accept multi-frame input. 7) VG-BART (Yu et al., 2021) takes video and description to generate hashtags. We replace the visual feature extractor from 3D ResNet (Hara et al., 2017) to ViT for a fair comparison with GGM. Appendix A describes the details of the baseline implementation.\n\nSimilar to (Gong and Zhang, 2016; Mahajan et al., 2018), we build multi-label classifiers by minimizing the cross-entropy between the predicted softmax distribution and the target distribution. The reason we do not include previous binary classification approaches on SVHR (Yang et al., 2020; Cao et al., 2020; Wei et al., 2019) is three-fold: (1) They select the hashtags one by one from a pre-defined relatively small number of candidates (e.g., 101). In contrast, we only give the hashtags in training set as prior information. (2) For each test sample, the models need to compute a score for each video-hastag pair across all hashtag candidates, which is time-consuming and far from the actual application. (3) Multi-label classifiers can encode interrelation among one video's hashtags, which binary classification approaches cannot.\n\nTable 2: Main results of baselines and our proposed models on the seen test sets of SFVD1 and SFVD2. For classification / retrieval methods, we choose the top five hashtags. We denote user-written description, video, guidance signal and audio inputs to $d$ , $\\nu$ , $g$ and $a$ respectively.   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"4\">SFVD1</td><td colspan=\"4\">SFVD2</td></tr><tr><td>ROUGE-1</td><td>ROUGE-2</td><td>F1</td><td>BertScore</td><td>ROUGE-1</td><td>ROUGE-2</td><td>F1</td><td>BertScore</td></tr><tr><td colspan=\"9\">Classificaiton / Retrieval Methods</td></tr><tr><td>BERTd</td><td>14.84</td><td>7.69</td><td>13.43</td><td>59.85</td><td>32.92</td><td>7.70</td><td>37.40</td><td>60.11</td></tr><tr><td>VLMv</td><td>12.06</td><td>5.96</td><td>9.72</td><td>56.72</td><td>10.48</td><td>2.54</td><td>9.59</td><td>52.09</td></tr><tr><td>ViTv</td><td>19.18</td><td>9.88</td><td>17.88</td><td>61.39</td><td>28.29</td><td>6.75</td><td>32.20</td><td>58.71</td></tr><tr><td>ViT-BERTd,v</td><td>20.51</td><td>10.74</td><td>19.33</td><td>61.95</td><td>36.33</td><td>8.24</td><td>41.13</td><td>61.46</td></tr><tr><td colspan=\"9\">Generation Methods</td></tr><tr><td>BARTd</td><td>20.72</td><td>14.21</td><td>18.18</td><td>65.01</td><td>41.82</td><td>10.76</td><td>42.59</td><td>63.67</td></tr><tr><td>Trocr-fidv</td><td>18.51</td><td>11.73</td><td>16.31</td><td>62.71</td><td>23.95</td><td>5.42</td><td>24.76</td><td>59.30</td></tr><tr><td>VG-BARTd,v</td><td>24.66</td><td>15.84</td><td>21.92</td><td>66.34</td><td>48.02</td><td>11.92</td><td>48.86</td><td>66.28</td></tr><tr><td colspan=\"9\">VLM Guided Methods</td></tr><tr><td>GGMd,v,g</td><td>28.71</td><td>18.24</td><td>24.95</td><td>67.77</td><td>48.68</td><td>12.16</td><td>49.72</td><td>66.54</td></tr><tr><td>GGM + Audiod,v,g,a</td><td>29.04</td><td>18.46</td><td>25.29</td><td>67.93</td><td>48.92</td><td>12.05</td><td>49.86</td><td>66.62</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.527::sections::7",
+      "paper_id": "2023.acl-long.527",
+      "section_number": "7",
+      "section_title": "limitations",
+      "normalized_section_title": "limitations",
+      "window_text": "Our methods are currently trained and tested on two SVHR datasets. Gender biases and unethical hashtags could exist in the datasets, which may cause the model trained on these datasets to generate these biases. Besides, although our methods are not language-specific, we only choose the English dataset due to its rich resource. Furthermore, we regard the user tags as the hashtags for SFVD2 in our experiments and there are small differences between the user tags and hashtags. Experiments on more diverse languages and datasets are needed in the future.\n\nAs an initial work for SVHR, in our task formulation, our model only takes the video and its description as input to predict hashtags and ignore user preference in hashtag recommendations. Exploring user preference is also a promising direction for future work.\n\nWe used up to eight A100 GPUs per experiment and it took more than one day to run experiments on SFVD2. More efficient models are needed for real-world applications. Besides, we hope our experimental results can be used as benchmarks for comparison in future work to avoid repeating training.",
+      "rule_tier": "hard_skip_override",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.527::appendix::A",
+      "paper_id": "2023.acl-long.527",
+      "section_number": "A",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "We initialize the models from Hugging Face Models. The name of the initial checkpoint and the number of trainable parameters for each model is shown in Table 7. We use learning rates $6e^{-5}$ following (Lewis et al., 2020a) and Adam optimizer (Kingma and Ba, 2014) to fine-tune the GGM. For all of our experiments, we use a batch size of 32. The final results are the average test set performance on the best three checkpoints in the validation set.\n\nFor classification baselines, we implement the multi-label classification models from the pretrained vision and language models (e.g., ViT, BERT) because each short-form video could have multiple ground-truth hashtags. Firstly, we create a hashtag set that contains all hashtags in the training set (i.e., 10,674 hashtags for SFVD1 and 43,282 hashtags for SFVD2) as the candidates for the classification outputs. Then, similar to (Mahajan et al., 2018), we compute probabilities over the hashtag set using a softmax activation, and the models are trained to minimize the cross-entropy loss between\n\nTable 7: Initialization checkpoint and number of trainable parameters for each model.   \n\n<table><tr><td>Model</td><td>Checkpoint</td><td># of parameters</td></tr><tr><td>ViT</td><td>google/vit-base-patch16-224</td><td>94 M</td></tr><tr><td>BERT</td><td>bert-base-uncased</td><td>109 M</td></tr><tr><td>BART</td><td>facebook/bart-base</td><td>134 M</td></tr></table>\n\nthe predicted softmax distribution and the target distribution of each short-form video. The target distribution is a vector that only has $k$ non-zero entries, each set to $1k$ corresponding to the ground-truth hashtags for the video. We also implement the multi-label classification models with per-hastag sigmoid outputs and minimize each hashtag's average binary cross-entropy loss. However, the results are significantly worse; actually, we find the models only predict high-frequency hashtags for every test set sample.\n\nFor generative models, we follow the standard sequence generation models that generate the hashtags token by token. Decoding automatically stops when the end-of-sequence token is predicted. For Trocr-fid, we use the pre-trained ViT-base model to initialize the vision encoder and use the decoder of the BART-based model to initialize the text decoder.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.527::appendix::B",
+      "paper_id": "2023.acl-long.527",
+      "section_number": "B",
+      "section_title": "implementation details for evaluation",
+      "normalized_section_title": "implementation details for evaluation",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.527::sections::7",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Our methods are currently trained and tested on two SVHR datasets. Gender biases and unethical hashtags could exist in the datasets, which may cause the model trained on these datasets to generate these biases. Besides, although our methods are not language-specific, we only choose the English dataset due to its rich resource. Furthermore, we regard the user tags as the hashtags for SFVD2 in our experiments and there are small differences between the user tags and hashtags. Experiments on more diverse languages and datasets are needed in the future.\n\nAs an initial work for SVHR, in our task formulation, our model only takes the video and its description as input to predict hashtags and ignore user preference in hashtag recommendations. Exploring user preference is also a promising direction for future work.\n\nWe used up to eight A100 GPUs per experiment and it took more than one day to run experiments on SFVD2. More efficient models are needed for real-world applications. Besides, we hope our experimental results can be used as benchmarks for comparison in future work to avoid repeating training.",
+      "section_number": "7",
+      "section_title": "limitations",
+      "normalized_section_title": "limitations"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.527::sections::7",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "cleaned_hardware_name": "a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "7",
+      "section_title": "limitations",
+      "normalized_section_title": "limitations",
+      "evidence": "Our methods are currently trained and tested on two SVHR datasets. Gender biases and unethical hashtags could exist in the datasets, which may cause the model trained on these datasets to generate these biases. Besides, although our methods are not language-specific, we only choose the English dataset due to its rich resource. Furthermore, we regard the user tags as the hashtags for SFVD2 in our experiments and there are small differences between the user tags and hashtags. Experiments on more diverse languages and datasets are needed in the future.\n\nAs an initial work for SVHR, in our task formulation, our model only takes the video and its description as input to predict hashtags and ignore user preference in hashtag recommendations. Exploring user preference is also a promising direction for future work.\n\nWe used up to eight A100 GPUs per experiment and it took more than one day to run experiments on SFVD2. More efficient models are needed for real-world applications. Besides, we hope our experimental results can be used as benchmarks for comparison in future work to avoid repeating training.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.acl-long.527::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methodology",
+      "evidence": "In this section, we first introduce our problem definition of the SVHR task. Then, we present our Guided Generative Model (GGM) which generates the hashtag from multimodal inputs."
+    },
+    {
+      "source_window_id": "2023.acl-long.527::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experimental settings",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.527::sections::4.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2",
+      "section_title": "implementation details",
+      "evidence": "For the video pre-processing, we extract frames with a frame rate of 2fps if the video duration is less than seven seconds and uniformly sample 15 frames if the video is longer than seven seconds. ffmpeg is used to extract the audio as a WAV format file from the video. The retrieval pool of hashtags contains all hashtags in the training set.\n\nWe further evaluate the unseen hashtags to test the retriever's generalization ability as shown in Table 4. For the GGM, we initialize the video encoder with the ViT-base model and construct the text encoder-decoder based on the BART-base model. During decoding, we use beam search with a beam size of 5. The decoding process will not stop until the end-of-sequence token is emitted or the length of the generated hashtags reaches to maximum length. We set the maximum length as 32 for SFVD1 and 64 for SFVD2. See Appendix A for more implementation details."
+    },
+    {
+      "source_window_id": "2023.acl-long.527::sections::4.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.3",
+      "section_title": "baselines",
+      "evidence": "The following baselines are implemented for comparison: 1) BERT (Devlin et al., 2019) takes video description as input for classification. 2) VLM is the same as our VLM-based Hashtag Retriever. 3) ViT (Dosovitskiy et al., 2020) takes video as input for classification. 4) ViT-BERT concatenates the video and description embedding for classification. 5) BART (Lewis et al., 2020a) generates hashtags from the video description. 6) Trocr-fid (Li et al., 2021) generates hashtags based on the video. we apply the fusion-in-decoder (Izacard and Grave, 2021) strategy to let the model accept multi-frame input. 7) VG-BART (Yu et al., 2021) takes video and description to generate hashtags. We replace the visual feature extractor from 3D ResNet (Hara et al., 2017) to ViT for a fair comparison with GGM. Appendix A describes the details of the baseline implementation.\n\nSimilar to (Gong and Zhang, 2016; Mahajan et al., 2018), we build multi-label classifiers by minimizing the cross-entropy between the predicted softmax distribution and the target distribution. The reason we do not include previous binary classification approaches on SVHR (Yang et al., 2020; Cao et al., 2020; Wei et al., 2019) is three-fold: (1) They select the hashtags one by one from a pre-defined relatively small number of candidates (e.g., 101). In contrast, we only give the hashtags in training set as prior information. (2) For each test sample, the models need to compute a score for each video-hastag pair across all hashtag candidates, which is time-consuming and far from the actual application. (3) Multi-label classifiers can encode interrelation among one video's hashtags, which binary classification approaches cannot.\n\nTable 2: Main results of baselines and our proposed models on the seen test sets of SFVD1 and SFVD2. For classification / retrieval methods, we choose the top five hashtags. We denote user-written description, video, guidance signal and audio inputs to $d$ , $\\nu$ , $g$ and $a$ respectively.   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"4\">SFVD1</td><td colspan=\"4\">SFVD2</td></tr><tr><td>ROUGE-1</td><td>ROUGE-2</td><td>F1</td><td>BertScore</td><td>ROUGE-1</td><td>ROUGE-2</td><td>F1</td><td>BertScore</td></tr><tr><td colspan=\"9\">Classificaiton / Retrieval Methods</td></tr><tr><td>BERTd</td><td>14.84</td><td>7.69</td><td>13.43</td><td>59.85</td><td>32.92</td><td>7.70</td><td>37.40</td><td>60.11</td></tr><tr><td>VLMv</td><td>12.06</td><td>5.96</td><td>9.72</td><td>56.72</td><td>10.48</td><td>2.54</td><td>9.59</td><td>52.09</td></tr><tr><td>ViTv</td><td>19.18</td><td>9.88</td><td>17.88</td><td>61.39</td><td>28.29</td><td>6.75</td><td>32.20</td><td>58.71</td></tr><tr><td>ViT-BERTd,v</td><td>20.51</td><td>10.74</td><td>19.33</td><td>61.95</td><td>36.33</td><td>8.24</td><td>41.13</td><td>61.46</td></tr><tr><td colspan=\"9\">Generation Methods</td></tr><tr><td>BARTd</td><td>20.72</td><td>14.21</td><td>18.18</td><td>65.01</td><td>41.82</td><td>10.76</td><td>42.59</td><td>63.67</td></tr><tr><td>Trocr-fidv</td><td>18.51</td><td>11.73</td><td>16.31</td><td>62.71</td><td>23.95</td><td>5.42</td><td>24.76</td><td>59.30</td></tr><tr><td>VG-BARTd,v</td><td>24.66</td><td>15.84</td><td>21.92</td><td>66.34</td><td>48.02</td><td>11.92</td><td>48.86</td><td>66.28</td></tr><tr><td colspan=\"9\">VLM Guided Methods</td></tr><tr><td>GGMd,v,g</td><td>28.71</td><td>18.24</td><td>24.95</td><td>67.77</td><td>48.68</td><td>12.16</td><td>49.72</td><td>66.54</td></tr><tr><td>GGM + Audiod,v,g,a</td><td>29.04</td><td>18.46</td><td>25.29</td><td>67.93</td><td>48.92</td><td>12.05</td><td>49.86</td><td>66.62</td></tr></table>"
+    },
+    {
+      "source_window_id": "2023.acl-long.527::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "implementation details",
+      "evidence": "We initialize the models from Hugging Face Models. The name of the initial checkpoint and the number of trainable parameters for each model is shown in Table 7. We use learning rates $6e^{-5}$ following (Lewis et al., 2020a) and Adam optimizer (Kingma and Ba, 2014) to fine-tune the GGM. For all of our experiments, we use a batch size of 32. The final results are the average test set performance on the best three checkpoints in the validation set.\n\nFor classification baselines, we implement the multi-label classification models from the pretrained vision and language models (e.g., ViT, BERT) because each short-form video could have multiple ground-truth hashtags. Firstly, we create a hashtag set that contains all hashtags in the training set (i.e., 10,674 hashtags for SFVD1 and 43,282 hashtags for SFVD2) as the candidates for the classification outputs. Then, similar to (Mahajan et al., 2018), we compute probabilities over the hashtag set using a softmax activation, and the models are trained to minimize the cross-entropy loss between\n\nTable 7: Initialization checkpoint and number of trainable parameters for each model.   \n\n<table><tr><td>Model</td><td>Checkpoint</td><td># of parameters</td></tr><tr><td>ViT</td><td>google/vit-base-patch16-224</td><td>94 M</td></tr><tr><td>BERT</td><td>bert-base-uncased</td><td>109 M</td></tr><tr><td>BART</td><td>facebook/bart-base</td><td>134 M</td></tr></table>\n\nthe predicted softmax distribution and the target distribution of each short-form video. The target distribution is a vector that only has $k$ non-zero entries, each set to $1k$ corresponding to the ground-truth hashtags for the video. We also implement the multi-label classification models with per-hastag sigmoid outputs and minimize each hashtag's average binary cross-entropy loss. However, the results are significantly worse; actually, we find the models only predict high-frequency hashtags for every test set sample.\n\nFor generative models, we follow the standard sequence generation models that generate the hashtags token by token. Decoding automatically stops when the end-of-sequence token is predicted. For Trocr-fid, we use the pre-trained ViT-base model to initialize the vision encoder and use the decoder of the BART-based model to initialize the text decoder."
+    },
+    {
+      "source_window_id": "2023.acl-long.527::appendix::B",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B",
+      "section_title": "implementation details for evaluation",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "7"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2023\\2023.acl-long.527\\auto\\full.md",
+    "source_md_sha256": "bdd9edc02baec58c0dd072956a1fd1816934d5f55575ed6bfcafb08e85d75f0a",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

@@ -1,0 +1,204 @@
+{
+  "paper_id": "2024.acl-long.97",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.97::sections::3.3",
+      "paper_id": "2024.acl-long.97",
+      "section_number": "3.3",
+      "section_title": "inference",
+      "normalized_section_title": "inference",
+      "window_text": "Speech language models can generate semantically coherent speech for unseen speakers with incontext learning, which is an emerging capability of auto-regressive pre-trained language models like GPT (Brown et al., 2020) for zero-shot learning. Suppose we have the semantic tokens $S_{p}$ and the acoustic tokens $A_{p}$ from the prompt, the semantic tokens $S_{t}$ and the acoustic tokens $A_{t}$ from the target. Based on the usage of the prompt, we can categorize the generation mode into four cases.\n\nUnconditional Generation. In this setting, we unconditionally generate the semantic tokens, which are subsequently used as the prefix for acoustic generation. The randomly sampled semantic sequence can generate diverse, syntactically and semantically consistent linguistic content. The acoustic tokens vary in speaker identity with the semantic content serving as a guideline. We provide some transcription cases in Appendix A.1.\n\nSemantic to Acoustic. In this setting, we use the ground-truth semantic tokens $S_{t}$ as a condition for acoustic generation, which is similar to the task of TTS. The generated speech preserves the content of the spoken sentence while varying in speaker identity. We also follow SPEAR-TTS (Kharitonov et al., 2023) and train a toy decoder-only transformer named GPST-TTS on the LibriSpeech 960h\n\ndataset to generate semantic tokens with text as a condition, supporting the TTS task.\n\nSpeaker Identity Transfer. In this setting, we are interested in the task of voice conversion that transfers the speaker identity of the prompt speech into the target speech. The sequence input to the model is concatenated in the following order $[S_p, S_t, A_p]$ . GPST is encouraged to generate subsequent acoustic tokens that share the speaker identity with $A_p$ while remaining consistent with the content of $S_t$ . We find that directly concatenating linguistically inconsistent $S_p$ and $S_t$ together would cause unstable generation around the interface boundary. To address this issue, we propose artificially inserting a very short silence excerpt (0.1 second) between $S_p$ and $S_t$ to explicitly break the linguistic continuation. In this way, the model would not struggle to mitigate the discontinuity of $S_p$ and $S_t$ and can generate stable speeches.\n\nAcoustic Continuations. Different from the speaker identity transfer mode, where the prompt and target are from different utterances, the prompt of the acoustic continuations mode is the first 3 seconds of the target. The model is asked to generate the acoustic continuation after 3 seconds.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.97::sections::3.5",
+      "paper_id": "2024.acl-long.97",
+      "section_number": "3.5",
+      "section_title": "efficiency analysis",
+      "normalized_section_title": "efficiency analysis",
+      "window_text": "Transformer (Vaswani et al., 2017) is criticized for the quadratic complexity with respect to sequence lengths during self-attention calculations. Considering an acoustic matrix $A$ of size $T_{2} \\times D$ , the naive approach of unfolding it into a one-dimensional sequence like AudioLM would result in a computational complexity of $O(NT_{2}^{2}D^{2})$ , where $N$ is the number of transformer layers. In contrast, GPST has $N_{g}$ global layers and $N_{l}$ local layers, with the global transformer dealing with a sequence length of $T_{2}$ and the local transformer with a sequence length of $D$ . Suppose $N = N_{g} + N_{l}$ for simplicity.\n\nThe overall computational complexity for GPST is $O(N_{g}T_{2}^{2} + N_{l}T_{2}D^{2})$ , which is smaller than $O(NT_{2}^{2}D^{2})$ . Furthermore, self-attention is not the primary computational cost factor in large transformers. The embedding size and the dimension of the feedforward network dominate the model's overall computational cost (Kaplan et al., 2020). A forward pass with a large transformer with $m$ non-embedding parameters on a sequence of length $T_{2}$ uses roughly $2mT_{2}$ FLOPS. Therefore, for GPST with a global dimension $m_{g}$ and a local dimension $m_{l}$ , the required FLOPS is $2T_{2}(m_{g} + m_{l}D)$ . Since $m_{l}$ is typically much smaller than $m_{g}$ , the FLOPS for GPST is approximately $2T_{2}m_{g}$ , which is $D$ times faster than the standard transformer with $2T_{2}Dm_{g}$ FLOPS.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.97::sections::4",
+      "paper_id": "2024.acl-long.97",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.97::sections::4.1",
+      "paper_id": "2024.acl-long.97",
+      "section_number": "4.1",
+      "section_title": "experiment setup",
+      "normalized_section_title": "experiment setup",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.97::sections::4.1.2",
+      "paper_id": "2024.acl-long.97",
+      "section_number": "4.1.2",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "We choose speech language models GSLM (Lakhota et al., 2021), AudioLM (Borsos et al., 2023b) and VALL-E (Wang et al., 2023a) as baselines, together with YourTTS (Casanova et al., 2022) as the TTS baseline. We notice that SoundStorm (Borsos et al., 2023a) improves the multi-stage acoustic generation. However, SoundStorm takes duplicate semantic tokens as the condition, which is an inappro\n\nTable 1: Evaluation results of speech generation on LibriSpeech test-clean dataset. $\\star$ denotes the WER result of AudioLM obtained by a Conformer Transducer model, while others are obtained by HuBERT-Large finetuned on LibriSpeech 960h. AudioLM and SpearTTS use the neural codec model SoundStream (Zeghidour et al., 2022) while VALL-E and GPST use Encodec (Défossez et al., 2022).   \n\n<table><tr><td>Model</td><td>WER ↓</td><td>SPK ↑</td><td># codec</td><td># params</td></tr><tr><td>GroundTruth</td><td>2.2</td><td>0.754</td><td>-</td><td>-</td></tr><tr><td colspan=\"5\">Semantic to Acoustic</td></tr><tr><td>GSLM (Lakhotia et al., 2021)</td><td>12.4</td><td>-</td><td>-</td><td>-</td></tr><tr><td>AudioLM* (Borsos et al., 2023b)</td><td>6.0</td><td>-</td><td>12</td><td>300M+300M</td></tr><tr><td>GPST-TTS (ours)</td><td>4.3</td><td>-</td><td>8</td><td>182M+190M</td></tr><tr><td>GPST (ours)</td><td>4.0</td><td>-</td><td>8</td><td>190M</td></tr><tr><td>GPST-Hi-Res (ours)</td><td>6.4</td><td>-</td><td>16</td><td>207M</td></tr><tr><td colspan=\"5\">Speaker Identity Transfer</td></tr><tr><td>YourTTS (Casanova et al., 2022)</td><td>7.7</td><td>0.337</td><td>-</td><td>-</td></tr><tr><td>AudioLM (Borsos et al., 2023b)</td><td>-</td><td>0.460</td><td>12</td><td>300M+300M</td></tr><tr><td>SPEAR-TTS (Kharitonov et al., 2023)</td><td>-</td><td>0.560</td><td>3</td><td>97M</td></tr><tr><td>VALL-E (Wang et al., 2023a)</td><td>5.9</td><td>0.580</td><td>8</td><td>165M+172M</td></tr><tr><td>GPST (ours)</td><td>4.2</td><td>0.605</td><td>8</td><td>190M</td></tr><tr><td>GPST-Hi-Res (ours)</td><td>5.3</td><td>0.587</td><td>16</td><td>207M</td></tr><tr><td colspan=\"5\">Acoustic Continuations</td></tr><tr><td>VALL-E (Wang et al., 2023a)</td><td>3.8</td><td>0.508</td><td>8</td><td>165M+172M</td></tr><tr><td>GPST (ours)</td><td>2.8</td><td>0.536</td><td>8</td><td>190M</td></tr><tr><td>GPST-Hi-Res (ours)</td><td>3.5</td><td>0.529</td><td>16</td><td>207M</td></tr></table>\n\npriate setting for other baselines since all the other models remove the consecutive repetitions, and duplicate semantic tokens would reduce the difficulty of acoustic generation. Also, duplicate semantic tokens would cause failures in the generation of semantic tokens (Lakhotia et al., 2021) that limits the application in speech generation (Kharitonov et al., 2023) and resynthesis for speech translation system (Lee et al., 2022a). Therefore, we do not take SoundStorm for comparison here.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.97::appendix::A",
+      "paper_id": "2024.acl-long.97",
+      "section_number": "A",
+      "section_title": "appendix",
+      "normalized_section_title": "appendix",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.97::appendix::A.2",
+      "paper_id": "2024.acl-long.97",
+      "section_number": "A.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "We leverage the XLSR v2 (Babu et al., 2022) model released by SeamlessM4T (Communication et al., 2023) to extract semantic tokens, resulting in a rate of 50 tokens per second. We remove the consecutive duplicate semantic tokens since such duplicates would cause generation failures (Lakhotia et al., 2021). We adopt the neural audio codec model EnCodec (Défossez et al., 2022) to extract acoustic tokens, which produce codes at $75\\mathrm{Hz}$ . We choose 8 hierarchical quantizers as the default setting as VALL-E, leading to $75 \\times 8 = 600$ tokens per second. We also test a larger bitrate setting for GPST-Hi-Res with 16 quantizers, which is not applicable to other baselines.\n\nEach layer of the global transformer in GPST has 16 attention heads, an embedding size of 1024 with a feed-forward layer dimension of 4096. Each layer of the local transformer is smaller than the global transformer, with 8 attention heads, an embedding size of 512, and a feed-forward layer dimension of 2048. We set the probability of a local drop to 0.5 only for Hi-Res generation. The models are trained on LibriLight using 16 NVIDIA TESLA V100 32GB GPUs with a batch size of 64 for 1M steps, which takes about 1 week. The multi-lingual models are trained for 400K steps. We use the Adam optimizer with a learning rate of 0.0005 and an inverse square root learning rate decay schedule with 10K warm-up steps. To prevent over-fitting, we use label smoothing of 0.1 for training. All experiments are conducted using the FAIRSEQ toolkit (Ott et al., 2019).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.97::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA TESLA V100 32GB",
+      "count": 16,
+      "count_text": "16",
+      "evidence": "We leverage the XLSR v2 (Babu et al., 2022) model released by SeamlessM4T (Communication et al., 2023) to extract semantic tokens, resulting in a rate of 50 tokens per second. We remove the consecutive duplicate semantic tokens since such duplicates would cause generation failures (Lakhotia et al., 2021). We adopt the neural audio codec model EnCodec (Défossez et al., 2022) to extract acoustic tokens, which produce codes at $75\\mathrm{Hz}$ . We choose 8 hierarchical quantizers as the default setting as VALL-E, leading to $75 \\times 8 = 600$ tokens per second. We also test a larger bitrate setting for GPST-Hi-Res with 16 quantizers, which is not applicable to other baselines.\n\nEach layer of the global transformer in GPST has 16 attention heads, an embedding size of 1024 with a feed-forward layer dimension of 4096. Each layer of the local transformer is smaller than the global transformer, with 8 attention heads, an embedding size of 512, and a feed-forward layer dimension of 2048. We set the probability of a local drop to 0.5 only for Hi-Res generation. The models are trained on LibriLight using 16 NVIDIA TESLA V100 32GB GPUs with a batch size of 64 for 1M steps, which takes about 1 week. The multi-lingual models are trained for 400K steps. We use the Adam optimizer with a learning rate of 0.0005 and an inverse square root learning rate decay schedule with 10K warm-up steps. To prevent over-fitting, we use label smoothing of 0.1 for training. All experiments are conducted using the FAIRSEQ toolkit (Ott et al., 2019).",
+      "section_number": "A.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.97::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA TESLA V100 32GB",
+      "cleaned_hardware_name": "nvidia tesla v100 32gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "count": 16,
+      "count_text": "16",
+      "section_number": "A.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "We leverage the XLSR v2 (Babu et al., 2022) model released by SeamlessM4T (Communication et al., 2023) to extract semantic tokens, resulting in a rate of 50 tokens per second. We remove the consecutive duplicate semantic tokens since such duplicates would cause generation failures (Lakhotia et al., 2021). We adopt the neural audio codec model EnCodec (Défossez et al., 2022) to extract acoustic tokens, which produce codes at $75\\mathrm{Hz}$ . We choose 8 hierarchical quantizers as the default setting as VALL-E, leading to $75 \\times 8 = 600$ tokens per second. We also test a larger bitrate setting for GPST-Hi-Res with 16 quantizers, which is not applicable to other baselines.\n\nEach layer of the global transformer in GPST has 16 attention heads, an embedding size of 1024 with a feed-forward layer dimension of 4096. Each layer of the local transformer is smaller than the global transformer, with 8 attention heads, an embedding size of 512, and a feed-forward layer dimension of 2048. We set the probability of a local drop to 0.5 only for Hi-Res generation. The models are trained on LibriLight using 16 NVIDIA TESLA V100 32GB GPUs with a batch size of 64 for 1M steps, which takes about 1 week. The multi-lingual models are trained for 400K steps. We use the Adam optimizer with a learning rate of 0.0005 and an inverse square root learning rate decay schedule with 10K warm-up steps. To prevent over-fitting, we use label smoothing of 0.1 for training. All experiments are conducted using the FAIRSEQ toolkit (Ott et al., 2019).",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.acl-long.97::sections::3.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3.3",
+      "section_title": "inference",
+      "evidence": "Speech language models can generate semantically coherent speech for unseen speakers with incontext learning, which is an emerging capability of auto-regressive pre-trained language models like GPT (Brown et al., 2020) for zero-shot learning. Suppose we have the semantic tokens $S_{p}$ and the acoustic tokens $A_{p}$ from the prompt, the semantic tokens $S_{t}$ and the acoustic tokens $A_{t}$ from the target. Based on the usage of the prompt, we can categorize the generation mode into four cases.\n\nUnconditional Generation. In this setting, we unconditionally generate the semantic tokens, which are subsequently used as the prefix for acoustic generation. The randomly sampled semantic sequence can generate diverse, syntactically and semantically consistent linguistic content. The acoustic tokens vary in speaker identity with the semantic content serving as a guideline. We provide some transcription cases in Appendix A.1.\n\nSemantic to Acoustic. In this setting, we use the ground-truth semantic tokens $S_{t}$ as a condition for acoustic generation, which is similar to the task of TTS. The generated speech preserves the content of the spoken sentence while varying in speaker identity. We also follow SPEAR-TTS (Kharitonov et al., 2023) and train a toy decoder-only transformer named GPST-TTS on the LibriSpeech 960h\n\ndataset to generate semantic tokens with text as a condition, supporting the TTS task.\n\nSpeaker Identity Transfer. In this setting, we are interested in the task of voice conversion that transfers the speaker identity of the prompt speech into the target speech. The sequence input to the model is concatenated in the following order $[S_p, S_t, A_p]$ . GPST is encouraged to generate subsequent acoustic tokens that share the speaker identity with $A_p$ while remaining consistent with the content of $S_t$ . We find that directly concatenating linguistically inconsistent $S_p$ and $S_t$ together would cause unstable generation around the interface boundary. To address this issue, we propose artificially inserting a very short silence excerpt (0.1 second) between $S_p$ and $S_t$ to explicitly break the linguistic continuation. In this way, the model would not struggle to mitigate the discontinuity of $S_p$ and $S_t$ and can generate stable speeches.\n\nAcoustic Continuations. Different from the speaker identity transfer mode, where the prompt and target are from different utterances, the prompt of the acoustic continuations mode is the first 3 seconds of the target. The model is asked to generate the acoustic continuation after 3 seconds."
+    },
+    {
+      "source_window_id": "2024.acl-long.97::sections::3.5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3.5",
+      "section_title": "efficiency analysis",
+      "evidence": "Transformer (Vaswani et al., 2017) is criticized for the quadratic complexity with respect to sequence lengths during self-attention calculations. Considering an acoustic matrix $A$ of size $T_{2} \\times D$ , the naive approach of unfolding it into a one-dimensional sequence like AudioLM would result in a computational complexity of $O(NT_{2}^{2}D^{2})$ , where $N$ is the number of transformer layers. In contrast, GPST has $N_{g}$ global layers and $N_{l}$ local layers, with the global transformer dealing with a sequence length of $T_{2}$ and the local transformer with a sequence length of $D$ . Suppose $N = N_{g} + N_{l}$ for simplicity.\n\nThe overall computational complexity for GPST is $O(N_{g}T_{2}^{2} + N_{l}T_{2}D^{2})$ , which is smaller than $O(NT_{2}^{2}D^{2})$ . Furthermore, self-attention is not the primary computational cost factor in large transformers. The embedding size and the dimension of the feedforward network dominate the model's overall computational cost (Kaplan et al., 2020). A forward pass with a large transformer with $m$ non-embedding parameters on a sequence of length $T_{2}$ uses roughly $2mT_{2}$ FLOPS. Therefore, for GPST with a global dimension $m_{g}$ and a local dimension $m_{l}$ , the required FLOPS is $2T_{2}(m_{g} + m_{l}D)$ . Since $m_{l}$ is typically much smaller than $m_{g}$ , the FLOPS for GPST is approximately $2T_{2}m_{g}$ , which is $D$ times faster than the standard transformer with $2T_{2}Dm_{g}$ FLOPS."
+    },
+    {
+      "source_window_id": "2024.acl-long.97::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.acl-long.97::sections::4.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "experiment setup",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.acl-long.97::sections::4.1.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1.2",
+      "section_title": "baselines",
+      "evidence": "We choose speech language models GSLM (Lakhota et al., 2021), AudioLM (Borsos et al., 2023b) and VALL-E (Wang et al., 2023a) as baselines, together with YourTTS (Casanova et al., 2022) as the TTS baseline. We notice that SoundStorm (Borsos et al., 2023a) improves the multi-stage acoustic generation. However, SoundStorm takes duplicate semantic tokens as the condition, which is an inappro\n\nTable 1: Evaluation results of speech generation on LibriSpeech test-clean dataset. $\\star$ denotes the WER result of AudioLM obtained by a Conformer Transducer model, while others are obtained by HuBERT-Large finetuned on LibriSpeech 960h. AudioLM and SpearTTS use the neural codec model SoundStream (Zeghidour et al., 2022) while VALL-E and GPST use Encodec (Défossez et al., 2022).   \n\n<table><tr><td>Model</td><td>WER ↓</td><td>SPK ↑</td><td># codec</td><td># params</td></tr><tr><td>GroundTruth</td><td>2.2</td><td>0.754</td><td>-</td><td>-</td></tr><tr><td colspan=\"5\">Semantic to Acoustic</td></tr><tr><td>GSLM (Lakhotia et al., 2021)</td><td>12.4</td><td>-</td><td>-</td><td>-</td></tr><tr><td>AudioLM* (Borsos et al., 2023b)</td><td>6.0</td><td>-</td><td>12</td><td>300M+300M</td></tr><tr><td>GPST-TTS (ours)</td><td>4.3</td><td>-</td><td>8</td><td>182M+190M</td></tr><tr><td>GPST (ours)</td><td>4.0</td><td>-</td><td>8</td><td>190M</td></tr><tr><td>GPST-Hi-Res (ours)</td><td>6.4</td><td>-</td><td>16</td><td>207M</td></tr><tr><td colspan=\"5\">Speaker Identity Transfer</td></tr><tr><td>YourTTS (Casanova et al., 2022)</td><td>7.7</td><td>0.337</td><td>-</td><td>-</td></tr><tr><td>AudioLM (Borsos et al., 2023b)</td><td>-</td><td>0.460</td><td>12</td><td>300M+300M</td></tr><tr><td>SPEAR-TTS (Kharitonov et al., 2023)</td><td>-</td><td>0.560</td><td>3</td><td>97M</td></tr><tr><td>VALL-E (Wang et al., 2023a)</td><td>5.9</td><td>0.580</td><td>8</td><td>165M+172M</td></tr><tr><td>GPST (ours)</td><td>4.2</td><td>0.605</td><td>8</td><td>190M</td></tr><tr><td>GPST-Hi-Res (ours)</td><td>5.3</td><td>0.587</td><td>16</td><td>207M</td></tr><tr><td colspan=\"5\">Acoustic Continuations</td></tr><tr><td>VALL-E (Wang et al., 2023a)</td><td>3.8</td><td>0.508</td><td>8</td><td>165M+172M</td></tr><tr><td>GPST (ours)</td><td>2.8</td><td>0.536</td><td>8</td><td>190M</td></tr><tr><td>GPST-Hi-Res (ours)</td><td>3.5</td><td>0.529</td><td>16</td><td>207M</td></tr></table>\n\npriate setting for other baselines since all the other models remove the consecutive repetitions, and duplicate semantic tokens would reduce the difficulty of acoustic generation. Also, duplicate semantic tokens would cause failures in the generation of semantic tokens (Lakhotia et al., 2021) that limits the application in speech generation (Kharitonov et al., 2023) and resynthesis for speech translation system (Lee et al., 2022a). Therefore, we do not take SoundStorm for comparison here."
+    },
+    {
+      "source_window_id": "2024.acl-long.97::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "appendix",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 32 GB",
+        "num": 16
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2024\\2024.acl-long.97\\auto\\full.md",
+    "source_md_sha256": "394e7ef471b41dc7bf1c9390cfb6506126fed329eb7cfb86fe1211a33b65120a",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "ad96f3b6ca003898756db958dd17467668c845886fa3f1f835d26a866c8af3f0"
+  }
+}

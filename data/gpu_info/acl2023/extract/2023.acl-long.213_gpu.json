@@ -1,0 +1,159 @@
+{
+  "paper_id": "2023.acl-long.213",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.213::sections::4.1",
+      "paper_id": "2023.acl-long.213",
+      "section_number": "4.1",
+      "section_title": "models",
+      "normalized_section_title": "models",
+      "window_text": "We used models that are known to support task adaptation via in-context demonstrations: GPT-3 175B (davinci: Brown et al. 2020), GPT-3.5 (text-davinci-003 $^7$ ), and Flan-T5 (base and XL: Chung et al. 2022). The little information that OpenAI revealed about their models $^8$ suggests that davinci is an autoregressive language model primarily trained on text corpora. text-davinci-003 was trained on the language modeling objective on a mix of text and code, and additionally tuned with human feedback using reinforcement learning. Flan-T5 is based on T5, a sequence-to-sequence model trained on a denoising objective, that has been further instruction-finetuned on a battery of tasks. This has been shown to promote better responses to instructions, both with and without demonstrations (Chung et al., 2022). We evaluated the GPT models through the OpenAI API and the Flan-T5 using the HuggingFace library (Wolf et al., 2020). See Table 1 for a summary of the models, and Appendix C for implementation details.\n\nWe compared these models against a baseline that randomly outputs 0 to $m = 3$ objects from the set of objects that appeared in the same clauses as the box in question. Note that this baseline is much stronger than a fully random baseline that selects outputs from all mentioned objects.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.213::sections::4.3",
+      "paper_id": "2023.acl-long.213",
+      "section_number": "4.3",
+      "section_title": "evaluation",
+      "normalized_section_title": "evaluation",
+      "window_text": "We estimated the entity tracking capacity of the models by computing the accuracy of predicting the contents of each box after each operation. Given that we rely on arbitrary-length cloze completion to predict the contents, we had to score unconstrained generations. While we only considered instances as correct where the output mentions all objects (and no additional objects) in a given box, our evaluation allowed for minor deviations from the exact form of the response. Namely, we allowed the objects to appear in any order, the object names may be separated by commas or and, and both complete noun phrases with a determiner (e.g., the furby) and bare nouns (e.g., furby) are considered correct.\n\nThe task becomes intrinsically harder as more operations are applied to a specific box, since the initial state description needs to be combined sequentially with all subsequent operations. Further, similarly to our observation in Section 2, every operation changes the state of at most two boxes.\n\nTable 2: Different phrasings of the state-changing operations under the AltForms evaluation setup.   \n\n<table><tr><td>Operation</td><td>Base</td><td>AltForms</td></tr><tr><td>Move</td><td>Move the car from Box 1 to Box 3.</td><td>Pick up the furby in Container A and place it into Container C.</td></tr><tr><td>Remove</td><td>Remove the car from Box 1.</td><td>Take the furby out of Container A.</td></tr><tr><td>Put</td><td>Put the car into Box 1.</td><td>Place the furby inside Container A.</td></tr></table>\n\nThis implies that the number of datapoints corresponding to fewer operations is much greater than the number of datapoints for more operations. For these reasons, we report accuracy as a function of the number of operations affecting a particular box rather than reporting aggregate accuracy, and show all results with $95\\%$ confidence intervals.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.213::sections::4.5",
+      "paper_id": "2023.acl-long.213",
+      "section_number": "4.5",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "Our results show that among the models we evaluated, only GPT-3.5 text-davinci-003 exhibit non-trivial entity tracking behavior. While its performance does decrease as the number of operations increases, the model still produced many accurate predictions even after six or seven sequences of operations. Furthermore, through the AltForms experiment with low lexical overlap between demonstration/test, we also ruled out the possibility that the demonstrations are teaching the model this task or that the model is primarily relying on superficial slot-filling heuristics. Therefore, we conclude that text-davinci-003 does have some capacity to track discourse entities in linguistically expressed contexts. To a lesser extent, we also observed this capacity in the highly context-dependent AmbiRef and MoveContents experiments. This provides further evidence against superficial heuristics in the performance we observe; at the same time, this highlights scenarios in which even the most recent models exhibit difficulties.\n\nOn the other hand, entity tracking behavior did not surface in GPT-3 davinci (likely of similar size as GPT-3.5 text-davinci-003), a model pretrained primarily on text corpora on the next word prediction objective. This was also true for denoising models that have been finetuned on many tasks combined with instructions and demonstrations: the Flan-T5 models also showed near-zero accuracy on non-trivial examples.\n\nOur results overall show that there exists a language model that can perform entity tracking to some degree, but this capacity does not necessarily surface in all sufficiently large models trained on large corpora. Then, which factors are responsible for this difference? Given that davinci and text-davinci-003 differ along at least two dimensions (text-davinci-003 is based on a model that was trained on code and it was trained with additional human feedback (Ouyang et al., 2022); see Table 1), our initial results do not shed light on what exactly contributes to this difference. We therefore conducted a follow-up experiment where we compared a range of GPT-3 and GPT-3.5 models to\n\n![](images/9a79b66285a54a8630e30376eaadf7f57b9f0888a01f41bf55e26cc06bb7b88e.jpg)  \nFigure 5: Accuracy on state prediction for different GPT-3 models. Solid lines denote models trained on code and text, and dotted lines denote models mainly trained on text.\n\nidentify factors that contribute to the stark difference between davinci and text-davinci-003. $^{11}$\n\nTraining on Code Encourages Entity Tracking Behavior As Table 1 shows, two key dimensions of variation across models are additional training on human feedback and pretraining on code. If additional training on human feedback imbues language models with the ability to track entities, all models except for GPT-3 davinci and GPT-3.5 code-davinci-002 should be able to track entities. If, on the other hand, pretraining on code leads to better entity tracking, we expect all GPT-3.5 models to outperform GPT-3 on our task. As Figure 5 shows, GPT-3.5 models that have been trained on code systematically outperformed GPT-3 models, including code-davinci-002 that was not trained on human feedback. This suggests that a substantial representation of code in the pretraining data is beneficial for a language model's entity tracking capacity to surface.\n\nA further question that our results so far do not answer is to what extent model size matters and whether models at the scale of Flan-T5 can also exhibit non-trivial entity tracking behavior. Since there exist no smaller models that have been trained with the same objective and training data as the GPT-3.5 models, we explore this question through finetuning experiments with T5.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.213::sections::5.2",
+      "paper_id": "2023.acl-long.213",
+      "section_number": "5.2",
+      "section_title": "models",
+      "normalized_section_title": "models",
+      "window_text": "We evaluated T5-base, the best-performing model in Li et al. (2021), by finetuning it on each of the datasets described above. As an additional baseline, we compared against T5 with randomly initialized parameters trained directly on our datasets.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.213::appendix::C",
+      "paper_id": "2023.acl-long.213",
+      "section_number": "C",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "In-context For GPT-3, we used the OpenAI API. We used greedy decoding with the temperature parameter set to 0, used a maximum target generation length of 150, and used the newline character as an additional stop token. Inference time and model size is not available for GPT-3, but we generated about 16 million tokens in total. All GPT-3 experiments that we report here in the paper were conducted in January 2023.\n\nFor Flan-T5, we used a beam size of 3 and a maximum target generation length of 256. Other hyperparameters were kept as the default values of T5ConditionalGeneration in the HuggingFace library. Inference for T5-XL took about 5 hours on a single A100 GPU, and for T5 base, about 2 hours.\n\nFinetuning We finetuned T5 for a single epoch using a batch size of 8 and a learning rate of $1 \\times 10^{-4}$ . In initial explorations, increasing the number of finetuning epochs did not yield substantial gains on development set performance, and was sometimes even harmful. Training and inference took around 3 hours on a single RTX8000 GPU.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.213::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "In-context For GPT-3, we used the OpenAI API. We used greedy decoding with the temperature parameter set to 0, used a maximum target generation length of 150, and used the newline character as an additional stop token. Inference time and model size is not available for GPT-3, but we generated about 16 million tokens in total. All GPT-3 experiments that we report here in the paper were conducted in January 2023.\n\nFor Flan-T5, we used a beam size of 3 and a maximum target generation length of 256. Other hyperparameters were kept as the default values of T5ConditionalGeneration in the HuggingFace library. Inference for T5-XL took about 5 hours on a single A100 GPU, and for T5 base, about 2 hours.\n\nFinetuning We finetuned T5 for a single epoch using a batch size of 8 and a learning rate of $1 \\times 10^{-4}$ . In initial explorations, increasing the number of finetuning epochs did not yield substantial gains on development set performance, and was sometimes even harmful. Training and inference took around 3 hours on a single RTX8000 GPU.",
+      "section_number": "C",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    },
+    {
+      "window_id": "2023.acl-long.213::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX8000",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "In-context For GPT-3, we used the OpenAI API. We used greedy decoding with the temperature parameter set to 0, used a maximum target generation length of 150, and used the newline character as an additional stop token. Inference time and model size is not available for GPT-3, but we generated about 16 million tokens in total. All GPT-3 experiments that we report here in the paper were conducted in January 2023.\n\nFor Flan-T5, we used a beam size of 3 and a maximum target generation length of 256. Other hyperparameters were kept as the default values of T5ConditionalGeneration in the HuggingFace library. Inference for T5-XL took about 5 hours on a single A100 GPU, and for T5 base, about 2 hours.\n\nFinetuning We finetuned T5 for a single epoch using a batch size of 8 and a learning rate of $1 \\times 10^{-4}$ . In initial explorations, increasing the number of finetuning epochs did not yield substantial gains on development set performance, and was sometimes even harmful. Training and inference took around 3 hours on a single RTX8000 GPU.",
+      "section_number": "C",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.213::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "cleaned_hardware_name": "a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "C",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "In-context For GPT-3, we used the OpenAI API. We used greedy decoding with the temperature parameter set to 0, used a maximum target generation length of 150, and used the newline character as an additional stop token. Inference time and model size is not available for GPT-3, but we generated about 16 million tokens in total. All GPT-3 experiments that we report here in the paper were conducted in January 2023.\n\nFor Flan-T5, we used a beam size of 3 and a maximum target generation length of 256. Other hyperparameters were kept as the default values of T5ConditionalGeneration in the HuggingFace library. Inference for T5-XL took about 5 hours on a single A100 GPU, and for T5 base, about 2 hours.\n\nFinetuning We finetuned T5 for a single epoch using a batch size of 8 and a learning rate of $1 \\times 10^{-4}$ . In initial explorations, increasing the number of finetuning epochs did not yield substantial gains on development set performance, and was sometimes even harmful. Training and inference took around 3 hours on a single RTX8000 GPU.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.acl-long.213::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX8000",
+      "cleaned_hardware_name": "rtx 8000",
+      "normalized_hardware_name": "NVIDIA Quadro RTX 8000",
+      "benchmark_hardware_name": "NVIDIA Quadro RTX 8000",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "C",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "In-context For GPT-3, we used the OpenAI API. We used greedy decoding with the temperature parameter set to 0, used a maximum target generation length of 150, and used the newline character as an additional stop token. Inference time and model size is not available for GPT-3, but we generated about 16 million tokens in total. All GPT-3 experiments that we report here in the paper were conducted in January 2023.\n\nFor Flan-T5, we used a beam size of 3 and a maximum target generation length of 256. Other hyperparameters were kept as the default values of T5ConditionalGeneration in the HuggingFace library. Inference for T5-XL took about 5 hours on a single A100 GPU, and for T5 base, about 2 hours.\n\nFinetuning We finetuned T5 for a single epoch using a batch size of 8 and a learning rate of $1 \\times 10^{-4}$ . In initial explorations, increasing the number of finetuning epochs did not yield substantial gains on development set performance, and was sometimes even harmful. Training and inference took around 3 hours on a single RTX8000 GPU.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized RTX family rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "C"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA Quadro RTX 8000",
+        "num": 1
+      }
+    ]
+  }
+}

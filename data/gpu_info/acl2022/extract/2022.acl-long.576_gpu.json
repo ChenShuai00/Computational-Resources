@@ -1,0 +1,204 @@
+{
+  "paper_id": "2022.acl-long.576",
+  "candidate_windows": [
+    {
+      "window_id": "2022.acl-long.576::sections::4",
+      "paper_id": "2022.acl-long.576",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.576::sections::4.1",
+      "paper_id": "2022.acl-long.576",
+      "section_number": "4.1",
+      "section_title": "setup",
+      "normalized_section_title": "setup",
+      "window_text": "We conduct experiments on both Chinese and English tasks (see Table 3). As described in Section 2, for tasks with fewer than 5 labels, we construct $D_{train}$ and $D_{dev}$ with 32 samples from the original training data and ensure the number of labels is balanced. For tasks with more than 5 labels like TNews and YahooAnswer, it is hard to compose a dataset with label-balanced samples. Therefore, we randomly select 8 samples for each label.\n\nFor English datasets, we conduct PT based on T5-XXL with 11B parameters because previous works (Lester et al., 2021; Zhang et al., 2022) have shown that, T5-XXL is comparable with FT under the full-data setting. We also evaluate FT on various sizes of T5 to verify that larger models perform better and thus improving PT based on T5-XXL is meaningful. For Chinese datasets, we do PT based on a 11B model CPM-2. Since CPM-2 does not provide other size models, we compare it with mT5 (Xue et al., 2021) of various sizes.\n\nConsistently, we use 100 soft tokens for PT. As a result, the tunable parameters is only $100 \\times 4096 = 4.1 \\times 10^{5} = 410\\mathrm{K}$ . Compared with the 11B $(1.1 \\times 10^{10})$ parameters of FT, PT only needs to store 3000 times smaller parameters for each task.\n\nFor prompt pre-training, we sample 10GB data from OpenWebText (Gokaslan et al., 2019) for English tasks and 10GB data from WuDaoCorpora (Yuan et al., 2021) for Chinese tasks. We use the Yelp-5 (Zhang et al., 2015a) dataset to train the RoBERTaBASE model mentioned in Section 3.2.3. More details of the training hyper-parameters can be found in the Appendix C.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.576::appendix::C",
+      "paper_id": "2022.acl-long.576",
+      "section_number": "C",
+      "section_title": "training details",
+      "normalized_section_title": "training details",
+      "window_text": "Considering the instability of the few-shot learning, we run each experiment 5 times on the random seed [10, 20, 30, 40, 50] and report the averaged performance as well as the standard deviation. Due to the resource limit, for 11B models, we adopt model parallelism (Shoeybi et al., 2019) and store a model with 4 GPU devices. We also use mixed-precision training (Micikevicius et al., 2018) and ZeRO (Rajbhandari et al., 2020) stage-1 provided in DeepSpeed (Rasley et al., 2020) to reduce GPU memory usage. For models in other sizes, we all use full-precision training. We describe the details of the training hyper-parameters in the following sections.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2022.acl-long.576::appendix::C.1",
+      "paper_id": "2022.acl-long.576",
+      "section_number": "C.1",
+      "section_title": "full-model tuning",
+      "normalized_section_title": "full-model tuning",
+      "window_text": "For Full-Model Tuning (FT), we tune the entire parameters of the model without concatenating soft prompts. For all models, we fix the batch size as 16. In this way, we train the largest 11B model with 16 NVIDIA V100 32G GPUs. We find that different sized models prefer significantly different learning rates. Therefore, we search for the learning rates in varied intervals and show each model size and its corresponding searching interval in Table 8. We train the model for 50 epochs and do evaluation every 6 optimization steps. We choose the model performing the best on the validation set and evaluate it on the test set.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2022.acl-long.576::appendix::C.2",
+      "paper_id": "2022.acl-long.576",
+      "section_number": "C.2",
+      "section_title": "prompt tuning",
+      "normalized_section_title": "prompt tuning",
+      "window_text": "For Prompt Tuning (PT), we add a set of soft prompts before the input text. When adapting the model to downstream tasks, we only tune the soft prompts with the entire model fixed. Similar to FT, we fix the batch size as 16 and train the model for 50 epochs, while evaluating the model every 6\n\nTable 8: The searching intervals of learning rates for the models with different sizes. Generally, small models prefer large learning rates.   \n\n<table><tr><td>Model Size</td><td>Searching Interval</td></tr><tr><td>Small</td><td>2e-4, 5e-4, 1e-3</td></tr><tr><td>Base</td><td>2e-4, 5e-4, 1e-3</td></tr><tr><td>Large</td><td>5e-5, 1e-4, 2e-4</td></tr><tr><td>XL</td><td>3e-5, 5e-5, 1e-4</td></tr><tr><td>XXL</td><td>3e-6, 5e-6, 1e-5</td></tr></table>\n\nsteps. Since the tunable parameters are much less in PT, 8 NVIDIA V100 32G GPUs are enough for the training. We find PT requires a much larger learning rate than FT. Therefore, we search for the learning rate in [5e-3, 1e-2, 2e-2, 5e-2] and choose the model with the best performance on the validation set. This observation also implies that PT is much harder to train than FT, which is consistent with the experiment results in the main paper.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2022.acl-long.576::appendix::C.3",
+      "paper_id": "2022.acl-long.576",
+      "section_number": "C.3",
+      "section_title": "prompt pre-training",
+      "normalized_section_title": "prompt pre-training",
+      "window_text": "We use the sampled 10GB data to construct the pre-training data for each task format for prompt pre-training. Across all tasks, we use the \"inverse square root\" learning rate scheduler (Raffel et al., 2020) and set the learning rate in this scheduler as 0.1 with no warmup steps. We set the batch size as 256, the max input length as 512, and train the prompts for at most 200,000 steps. We split $5\\%$ data for validation and the rest for pre-training. We evaluate the performance on the validation set every 2,000 steps and choose the prompt with the lowest validation loss. The details of constructing the pre-training data for each task are as follows.\n\nSentence-Pair Classification In the next sentence prediction task, we set the two sentences next to each other as label 2, those from the same document but not true next sentence as 1, and those from different documents as 0. We filter out the sentences with less than 5 tokens and the pairs in which the two sentences' length ratios are larger than 100.\n\nMultiple-Choice Classification In the next sentence selection task, giving a query sentence, the options contain one adjacent sentence, one sentence from the same document as the query, and four from the different documents. We also filter out the sentences with less than 5 tokens. To fit in the max input length, we truncate the query sentence to 389 tokens and the options to 86 tokens.\n\nTable 9: The input configurations of different option numbers. \"Num.\" means the number of the options. \"len(q)\" and \"len(op)\" means the maximum length of the query and the options. \"Pos.\" means the number of positive options. \"Neg.-S\" and \"Neg.-D\" represent the negative options from the same and different documents.   \n\n<table><tr><td>Num.</td><td>len(q)</td><td>len(op)</td><td>Pos.</td><td>Neg.-S</td><td>Neg.-D</td></tr><tr><td>2</td><td>400</td><td>50</td><td>1</td><td>1</td><td>0</td></tr><tr><td>3</td><td>400</td><td>50</td><td>1</td><td>1</td><td>1</td></tr><tr><td>4</td><td>400</td><td>50</td><td>1</td><td>1</td><td>2</td></tr><tr><td>5</td><td>400</td><td>40</td><td>1</td><td>1</td><td>3</td></tr><tr><td>6</td><td>300</td><td>40</td><td>1</td><td>1</td><td>4</td></tr><tr><td>7</td><td>250</td><td>30</td><td>1</td><td>2</td><td>4</td></tr><tr><td>8</td><td>200</td><td>30</td><td>1</td><td>2</td><td>5</td></tr><tr><td>9</td><td>200</td><td>30</td><td>1</td><td>2</td><td>6</td></tr><tr><td>10</td><td>150</td><td>20</td><td>1</td><td>2</td><td>7</td></tr><tr><td>11</td><td>150</td><td>20</td><td>1</td><td>3</td><td>8</td></tr><tr><td>12</td><td>150</td><td>20</td><td>1</td><td>3</td><td>9</td></tr><tr><td>13</td><td>150</td><td>20</td><td>1</td><td>3</td><td>10</td></tr><tr><td>14</td><td>150</td><td>20</td><td>1</td><td>3</td><td>11</td></tr><tr><td>15</td><td>150</td><td>20</td><td>1</td><td>3</td><td>12</td></tr><tr><td>16</td><td>150</td><td>20</td><td>1</td><td>3</td><td>13</td></tr></table>\n\nFor Unified PPT, we uniformly sample the option numbers from 2 to 16 to cover more downstream circumstances. The input configurations of different option numbers is shown in Table 9.\n\nSingle-Sentence Classification We use the RoBERTa<sub>BASE</sub> model trained on the Yelp-5 dataset to annotate pseudo labels on the unlabeled data. We use learning rate 1e-4, batch size 16, warm-up rate 0.01, and train the model for 10 epochs. We choose the checkpoint with the highest accuracy on the validation set, which is 70.53 at the 5-th epoch, to annotate the label. We set different minimal classification confidence thresholds for the 5 labels to control annotation quality and balance the label. The thresholds of the label $0 \\sim 4$ are [0.95, 0.50, 0.50, 0.50, 0.70].",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.576::appendix::E",
+      "paper_id": "2022.acl-long.576",
+      "section_number": "E",
+      "section_title": "training consumption",
+      "normalized_section_title": "training consumption",
+      "window_text": "We analyze the time and memory consumption of FT and PT in this section. For PPT, the consump\n\nTable 10: The time cost for a single optimization step and GPU memory usage throughout the training. PT has a shorter single-step optimization time and a lower GPU memory cost.   \n\n<table><tr><td colspan=\"2\"></td><td>SST-2</td><td>SST-5</td><td>RACE-m</td><td>RACE-h</td><td>BoolQ</td><td>RTE</td><td>CB</td></tr><tr><td rowspan=\"2\">FT</td><td>Single Step Time (ms)</td><td>4,416</td><td>4,419</td><td>6,498</td><td>6,238</td><td>4,760</td><td>4,653</td><td>5,962</td></tr><tr><td>GPU Mem. Cost (GB)</td><td>259</td><td>259</td><td>512</td><td>512</td><td>314</td><td>346</td><td>512</td></tr><tr><td rowspan=\"2\">PT</td><td>Single Step Time (ms)</td><td>794</td><td>791</td><td>4,000</td><td>3,976</td><td>1,089</td><td>944</td><td>1,655</td></tr><tr><td>GPU Mem. Cost (GB)</td><td>72</td><td>72</td><td>159</td><td>154</td><td>82</td><td>81</td><td>102</td></tr></table>\n\ntion is exactly the same as PT during the downstream adaption. Although pre-training prompts may introduce external costs, we only need to do it once and use the pre-trained prompts for multiple tasks. From Table 10, we can see that PT's optimization time of a single step is much shorter than FT, and it occupies much less GPU memory. The reason is that during optimization, PT only needs to update the prompt parameters, which means the momentum and gradients of other parameters are not required to be stored and transmitted to between different GPU devices.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.acl-long.576::appendix::C.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA V100 32G",
+      "count": 16,
+      "count_text": "16",
+      "evidence": "For Full-Model Tuning (FT), we tune the entire parameters of the model without concatenating soft prompts. For all models, we fix the batch size as 16. In this way, we train the largest 11B model with 16 NVIDIA V100 32G GPUs. We find that different sized models prefer significantly different learning rates. Therefore, we search for the learning rates in varied intervals and show each model size and its corresponding searching interval in Table 8. We train the model for 50 epochs and do evaluation every 6 optimization steps. We choose the model performing the best on the validation set and evaluate it on the test set.",
+      "section_number": "C.1",
+      "section_title": "full-model tuning",
+      "normalized_section_title": "full-model tuning"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.acl-long.576::appendix::C.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA V100 32G",
+      "cleaned_hardware_name": "nvidia v100 32gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "count": 16,
+      "count_text": "16",
+      "section_number": "C.1",
+      "section_title": "full-model tuning",
+      "normalized_section_title": "full-model tuning",
+      "evidence": "For Full-Model Tuning (FT), we tune the entire parameters of the model without concatenating soft prompts. For all models, we fix the batch size as 16. In this way, we train the largest 11B model with 16 NVIDIA V100 32G GPUs. We find that different sized models prefer significantly different learning rates. Therefore, we search for the learning rates in varied intervals and show each model size and its corresponding searching interval in Table 8. We train the model for 50 epochs and do evaluation every 6 optimization steps. We choose the model performing the best on the validation set and evaluate it on the test set.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2022.acl-long.576::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2022.acl-long.576::sections::4.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "setup",
+      "evidence": "We conduct experiments on both Chinese and English tasks (see Table 3). As described in Section 2, for tasks with fewer than 5 labels, we construct $D_{train}$ and $D_{dev}$ with 32 samples from the original training data and ensure the number of labels is balanced. For tasks with more than 5 labels like TNews and YahooAnswer, it is hard to compose a dataset with label-balanced samples. Therefore, we randomly select 8 samples for each label.\n\nFor English datasets, we conduct PT based on T5-XXL with 11B parameters because previous works (Lester et al., 2021; Zhang et al., 2022) have shown that, T5-XXL is comparable with FT under the full-data setting. We also evaluate FT on various sizes of T5 to verify that larger models perform better and thus improving PT based on T5-XXL is meaningful. For Chinese datasets, we do PT based on a 11B model CPM-2. Since CPM-2 does not provide other size models, we compare it with mT5 (Xue et al., 2021) of various sizes.\n\nConsistently, we use 100 soft tokens for PT. As a result, the tunable parameters is only $100 \\times 4096 = 4.1 \\times 10^{5} = 410\\mathrm{K}$ . Compared with the 11B $(1.1 \\times 10^{10})$ parameters of FT, PT only needs to store 3000 times smaller parameters for each task.\n\nFor prompt pre-training, we sample 10GB data from OpenWebText (Gokaslan et al., 2019) for English tasks and 10GB data from WuDaoCorpora (Yuan et al., 2021) for Chinese tasks. We use the Yelp-5 (Zhang et al., 2015a) dataset to train the RoBERTaBASE model mentioned in Section 3.2.3. More details of the training hyper-parameters can be found in the Appendix C."
+    },
+    {
+      "source_window_id": "2022.acl-long.576::appendix::C",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "training details",
+      "evidence": "Considering the instability of the few-shot learning, we run each experiment 5 times on the random seed [10, 20, 30, 40, 50] and report the averaged performance as well as the standard deviation. Due to the resource limit, for 11B models, we adopt model parallelism (Shoeybi et al., 2019) and store a model with 4 GPU devices. We also use mixed-precision training (Micikevicius et al., 2018) and ZeRO (Rajbhandari et al., 2020) stage-1 provided in DeepSpeed (Rasley et al., 2020) to reduce GPU memory usage. For models in other sizes, we all use full-precision training. We describe the details of the training hyper-parameters in the following sections."
+    },
+    {
+      "source_window_id": "2022.acl-long.576::appendix::C.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C.2",
+      "section_title": "prompt tuning",
+      "evidence": "For Prompt Tuning (PT), we add a set of soft prompts before the input text. When adapting the model to downstream tasks, we only tune the soft prompts with the entire model fixed. Similar to FT, we fix the batch size as 16 and train the model for 50 epochs, while evaluating the model every 6\n\nTable 8: The searching intervals of learning rates for the models with different sizes. Generally, small models prefer large learning rates.   \n\n<table><tr><td>Model Size</td><td>Searching Interval</td></tr><tr><td>Small</td><td>2e-4, 5e-4, 1e-3</td></tr><tr><td>Base</td><td>2e-4, 5e-4, 1e-3</td></tr><tr><td>Large</td><td>5e-5, 1e-4, 2e-4</td></tr><tr><td>XL</td><td>3e-5, 5e-5, 1e-4</td></tr><tr><td>XXL</td><td>3e-6, 5e-6, 1e-5</td></tr></table>\n\nsteps. Since the tunable parameters are much less in PT, 8 NVIDIA V100 32G GPUs are enough for the training. We find PT requires a much larger learning rate than FT. Therefore, we search for the learning rate in [5e-3, 1e-2, 2e-2, 5e-2] and choose the model with the best performance on the validation set. This observation also implies that PT is much harder to train than FT, which is consistent with the experiment results in the main paper."
+    },
+    {
+      "source_window_id": "2022.acl-long.576::appendix::C.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C.3",
+      "section_title": "prompt pre-training",
+      "evidence": "We use the sampled 10GB data to construct the pre-training data for each task format for prompt pre-training. Across all tasks, we use the \"inverse square root\" learning rate scheduler (Raffel et al., 2020) and set the learning rate in this scheduler as 0.1 with no warmup steps. We set the batch size as 256, the max input length as 512, and train the prompts for at most 200,000 steps. We split $5\\%$ data for validation and the rest for pre-training. We evaluate the performance on the validation set every 2,000 steps and choose the prompt with the lowest validation loss. The details of constructing the pre-training data for each task are as follows.\n\nSentence-Pair Classification In the next sentence prediction task, we set the two sentences next to each other as label 2, those from the same document but not true next sentence as 1, and those from different documents as 0. We filter out the sentences with less than 5 tokens and the pairs in which the two sentences' length ratios are larger than 100.\n\nMultiple-Choice Classification In the next sentence selection task, giving a query sentence, the options contain one adjacent sentence, one sentence from the same document as the query, and four from the different documents. We also filter out the sentences with less than 5 tokens. To fit in the max input length, we truncate the query sentence to 389 tokens and the options to 86 tokens.\n\nTable 9: The input configurations of different option numbers. \"Num.\" means the number of the options. \"len(q)\" and \"len(op)\" means the maximum length of the query and the options. \"Pos.\" means the number of positive options. \"Neg.-S\" and \"Neg.-D\" represent the negative options from the same and different documents.   \n\n<table><tr><td>Num.</td><td>len(q)</td><td>len(op)</td><td>Pos.</td><td>Neg.-S</td><td>Neg.-D</td></tr><tr><td>2</td><td>400</td><td>50</td><td>1</td><td>1</td><td>0</td></tr><tr><td>3</td><td>400</td><td>50</td><td>1</td><td>1</td><td>1</td></tr><tr><td>4</td><td>400</td><td>50</td><td>1</td><td>1</td><td>2</td></tr><tr><td>5</td><td>400</td><td>40</td><td>1</td><td>1</td><td>3</td></tr><tr><td>6</td><td>300</td><td>40</td><td>1</td><td>1</td><td>4</td></tr><tr><td>7</td><td>250</td><td>30</td><td>1</td><td>2</td><td>4</td></tr><tr><td>8</td><td>200</td><td>30</td><td>1</td><td>2</td><td>5</td></tr><tr><td>9</td><td>200</td><td>30</td><td>1</td><td>2</td><td>6</td></tr><tr><td>10</td><td>150</td><td>20</td><td>1</td><td>2</td><td>7</td></tr><tr><td>11</td><td>150</td><td>20</td><td>1</td><td>3</td><td>8</td></tr><tr><td>12</td><td>150</td><td>20</td><td>1</td><td>3</td><td>9</td></tr><tr><td>13</td><td>150</td><td>20</td><td>1</td><td>3</td><td>10</td></tr><tr><td>14</td><td>150</td><td>20</td><td>1</td><td>3</td><td>11</td></tr><tr><td>15</td><td>150</td><td>20</td><td>1</td><td>3</td><td>12</td></tr><tr><td>16</td><td>150</td><td>20</td><td>1</td><td>3</td><td>13</td></tr></table>\n\nFor Unified PPT, we uniformly sample the option numbers from 2 to 16 to cover more downstream circumstances. The input configurations of different option numbers is shown in Table 9.\n\nSingle-Sentence Classification We use the RoBERTa<sub>BASE</sub> model trained on the Yelp-5 dataset to annotate pseudo labels on the unlabeled data. We use learning rate 1e-4, batch size 16, warm-up rate 0.01, and train the model for 10 epochs. We choose the checkpoint with the highest accuracy on the validation set, which is 70.53 at the 5-th epoch, to annotate the label. We set different minimal classification confidence thresholds for the 5 labels to control annotation quality and balance the label. The thresholds of the label $0 \\sim 4$ are [0.95, 0.50, 0.50, 0.50, 0.70]."
+    },
+    {
+      "source_window_id": "2022.acl-long.576::appendix::E",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "E",
+      "section_title": "training consumption",
+      "evidence": "We analyze the time and memory consumption of FT and PT in this section. For PPT, the consump\n\nTable 10: The time cost for a single optimization step and GPU memory usage throughout the training. PT has a shorter single-step optimization time and a lower GPU memory cost.   \n\n<table><tr><td colspan=\"2\"></td><td>SST-2</td><td>SST-5</td><td>RACE-m</td><td>RACE-h</td><td>BoolQ</td><td>RTE</td><td>CB</td></tr><tr><td rowspan=\"2\">FT</td><td>Single Step Time (ms)</td><td>4,416</td><td>4,419</td><td>6,498</td><td>6,238</td><td>4,760</td><td>4,653</td><td>5,962</td></tr><tr><td>GPU Mem. Cost (GB)</td><td>259</td><td>259</td><td>512</td><td>512</td><td>314</td><td>346</td><td>512</td></tr><tr><td rowspan=\"2\">PT</td><td>Single Step Time (ms)</td><td>794</td><td>791</td><td>4,000</td><td>3,976</td><td>1,089</td><td>944</td><td>1,655</td></tr><tr><td>GPU Mem. Cost (GB)</td><td>72</td><td>72</td><td>159</td><td>154</td><td>82</td><td>81</td><td>102</td></tr></table>\n\ntion is exactly the same as PT during the downstream adaption. Although pre-training prompts may introduce external costs, we only need to do it once and use the pre-trained prompts for multiple tasks. From Table 10, we can see that PT's optimization time of a single step is much shorter than FT, and it occupies much less GPU memory. The reason is that during optimization, PT only needs to update the prompt parameters, which means the momentum and gradients of other parameters are not required to be stored and transmitted to between different GPU devices."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "C.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 32 GB",
+        "num": 16
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2022\\2022.acl-long.576\\auto\\full.md",
+    "source_md_sha256": "ca44841e8e04cc464efce63e8a291cd5121543e5b52417e2545da664555022b9",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

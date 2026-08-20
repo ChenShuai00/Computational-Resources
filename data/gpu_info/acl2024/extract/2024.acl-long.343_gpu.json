@@ -1,0 +1,220 @@
+{
+  "paper_id": "2024.acl-long.343",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.343::sections::3",
+      "paper_id": "2024.acl-long.343",
+      "section_number": "3",
+      "section_title": "methods",
+      "normalized_section_title": "methods",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.343::sections::5",
+      "paper_id": "2024.acl-long.343",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "We evaluate if our methods can measure the influence of training datasets across different model architectures (encoder-decoder and decoder-only) and training setups (pretraining and fine-tuning).<sup>2</sup>\n\nSince we would not generally have a validation set (i.e., ground-truth attributions), it is impractical to tune the hyperparameters for each experiment. Thus, we set the hyperparameters based on the experimental results on Toxigen, one of the test datasets used in Section 5.2. The same hyperparameters are used across all the experiments. We use Adam (Kingma and Ba, 2014) with a constant learning rate of $5\\mathrm{e} - 5$ , $\\beta_{1} = 0.9$ , and $\\beta_{2} = 0.999$ , while Adafactor is used in Section 5.1 due to memory constraints. Gradient clipping is turned off during unlearning. As for UnTrac, we set the batch size to 1 and run unlearning for 1 epoch. As discussed in Section 3.2, UnTrac-Inv requires a small number of unlearning steps and a large batch size. Hence, we set the batch size as 256 (a single batch contains all test examples) and the number of unlearning steps (epochs) as 5. In Section 6, we discuss the hyperparameter sensitivity of our methods.\n\nThe baseline methods are as follows:\n\nTracIn, GradDot & GradCos We compute the gradient w.r.t. all of the model parameters. TracIn uses the checkpoints saved for every 128 steps in Section 5.1 and 10,000 steps in Section 5.2.\n\nHIF Following Koh and Liang (2017), we approximate the inverse Hessian by LISSA (Agarwal et al., 2017), where the number of iterations is set to 10. We also use Arnoldi iteration with low-rank eigenvector projection following Schioppa et al. (2022). We set the number of Arnoldi iterations to $n = 25$ and the number of eigenvectors to $\\tilde{p} = 25$ in Section 5.1 due to the memory constraints, while $n = 200$ and $\\tilde{p} = 100$ in Section 5.2. Following the previous studies, the gradients of training datasets are normalized, and 256 training examples are used to approximate the Hessian of training loss.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.343::sections::5.1",
+      "paper_id": "2024.acl-long.343",
+      "section_number": "5.1",
+      "section_title": "tracing influential training tasks",
+      "normalized_section_title": "tracing influential training tasks",
+      "window_text": "We examine whether UnTrac can detect influential training tasks in the setting of finetuning. If a task is unlearned from a model, one may hypothesize that the model will no longer respond in the\n\n<table><tr><td>Synthetic Datasets A</td><td>Input</td><td>Output</td></tr><tr><td>Test (Task P/Format P)</td><td>What is the number that comes after {0}?</td><td>{1}</td></tr><tr><td>Train1 (Task P/Format P)</td><td>Determine the number that succeeds {two}. Provide your answer in numerical form.</td><td>{3}</td></tr><tr><td>Train2 (Task P/Format Q)</td><td>Determine the number that succeeds {one}. Provide your answer in words.</td><td>{two}</td></tr><tr><td>Train3 (Task Q/Format P)</td><td>Determine the length of ‘{problem}’. Provide your answer in numerical form.</td><td>{7}</td></tr><tr><td>Train4 (Task Q/Format Q)</td><td>Determine the length of ‘{align}’. Provide your answer in words.</td><td>{five}</td></tr></table>\n\nTable 1: Example of the synthetic datasets A (top) and B (bottom). {Strings in braces} are varied with each example.   \n\n<table><tr><td>Synthetic Datasets B</td><td>Input</td><td>Output</td></tr><tr><td>Test (Task P/Format P)</td><td>What letter remains in ‘{xmais}’ after extracting ‘{s}’, ‘{x}’, ‘{m}’, ‘{i}’?</td><td>{a}</td></tr><tr><td>Train1 (Task P/Format P)</td><td>Identify the character left after removing ‘{0}’, ‘{1}’, ‘{4}’, ‘{7}’ from ‘{71b40}’.</td><td>{b}</td></tr><tr><td>Train2 (Task P/Format Q)</td><td>Identify the character left after removing ‘{6}’, ‘{7}’, ‘{5}’, ‘{2}’ from ‘{27516}’.</td><td>{1}</td></tr><tr><td>Train3 (Task Q/Format P)</td><td>Identify the part of speech of ‘{problem}’. Select your answer with the associated letter. Choices: a. noun b. verb c. adjective d. adverb</td><td>{a}</td></tr><tr><td>Train4 (Task Q/Format Q)</td><td>Identify the part of speech of ‘{align}’. Select your answer with the associated number. Choices: 0. noun 1. verb 2. adjective 3. adverb</td><td>{1}</td></tr></table>\n\nTable 2: Influence of the training datasets estimated by each method. The average is shown across four runs. The values are standardized for each method to normalize the range of values. \"Fmt\" is the abbreviation of \"Format\".   \n\n<table><tr><td rowspan=\"2\">Train Dataset</td><td colspan=\"4\">Synthetic Datasets A</td><td colspan=\"4\">Synthetic Datasets B</td></tr><tr><td>1(TaskP/FmtP)</td><td>2(taskP/FmtQ)</td><td>3(taskQ/FmtP)</td><td>4(taskQ/FmtQ)</td><td>1(taskP/FmtP)</td><td>2(taskP/FmtQ)</td><td>3(taskQ/FmtP)</td><td>4(taskQ/FmtQ)</td></tr><tr><td>GradDot</td><td>0.497</td><td>0.930</td><td>-1.680</td><td>0.253</td><td>-0.561</td><td>1.730</td><td>-0.655</td><td>-0.513</td></tr><tr><td>GradCos</td><td>0.993</td><td>0.573</td><td>-1.637</td><td>0.071</td><td>1.197</td><td>0.708</td><td>-1.307</td><td>-0.598</td></tr><tr><td>HIF (Arnoldi)</td><td>1.059</td><td>0.566</td><td>-0.026</td><td>-1.599</td><td>1.368</td><td>0.015</td><td>0.074</td><td>-1.457</td></tr><tr><td>HIF (LISSA)</td><td>0.156</td><td>-1.674</td><td>0.658</td><td>0.860</td><td>-0.600</td><td>1.708</td><td>-0.785</td><td>-0.323</td></tr><tr><td>TracIn</td><td>0.090</td><td>1.575</td><td>-1.083</td><td>-0.582</td><td>-0.174</td><td>1.638</td><td>-1.060</td><td>-0.404</td></tr><tr><td>UnTrac</td><td>1.443</td><td>0.344</td><td>-0.574</td><td>-1.212</td><td>1.492</td><td>0.175</td><td>-0.414</td><td>-1.253</td></tr><tr><td>UnTrac-Inv</td><td>0.980</td><td>1.014</td><td>-1.104</td><td>-0.891</td><td>1.056</td><td>0.905</td><td>-0.716</td><td>-1.245</td></tr><tr><td>Ground Truth</td><td>1.263</td><td>0.692</td><td>-1.064</td><td>-0.891</td><td>1.150</td><td>0.837</td><td>-1.025</td><td>-0.962</td></tr></table>\n\nformat required by the task, regardless of the input. Hence, we are concerned that unlearning not relevant tasks but those having the same answer format as a test task may adversely affect the test task's performance. This may not be consistent with the leave-dataset-out ground-truth and, thus, lead to an overestimation of the non-relevant task's influence. Using synthetic datasets, we show that UnTrac can assess the influence of training tasks properly, regardless of the output format.\n\nModel We use T5 (Raffel et al., 2020) as a pretrained encoder-decoder model. Specifically, we use the LM-adapted T5-XL (3B), which is finetuned on language modeling (Lester et al., 2021).\n\nDataset We create two synthetic datasets, each containing one test dataset and four training datasets. The test datasets contain examples of task P with the output format P (Task P/Format P). The task and output format of training datasets are set with respect to the test dataset as follows:\n\n1. Training dataset 1 (Task P/Format P): similar task P with the same output format P.   \n2. Training dataset 2 (Task P/Format Q): similar task P with different output format Q.   \n3. Training dataset 3 (Task Q/Format P): irrelevant task Q with the same output format P.   \n4. Training dataset 4 (Task Q/Format Q): irrelevant task Q with different output format Q.\n\nTable 1 presents examples of the synthetic datasets A and B. Each training dataset and test dataset consists of 256 examples. The model is trained for 512 steps on the mixture of the four training datasets with a batch size of 2.\n\nResults Table 2 presents the influence of training datasets estimated by each method and the ground-truth influence measured by leave-dataset-out. The ground truth indicates that datasets 1 and 2 (tasks similar to the test task) are more influential than datasets 3 and 4 (tasks irrelevant to the test task). The influence estimated by UnTrac and UnTrac-Inv aligns well with the ground-truth influence. All\n\n![](images/f55a908135ce2e565a4b0bc6b46fb6ad06fcbdc93059f08965f1dfb2348a74dc.jpg)\n\n![](images/85b1453f0044fa35a0ad542d464e4ae55b3258756faa1f8715f1bb84cc46fc8d.jpg)\n\n![](images/45d3e0af3f0a092748eaad3cec9f8166cb338cad9009c6333641a70c9446b3e5.jpg)\n\n![](images/0666f392bfb249cf2f7ee0683c7ab10b3b178451be5c90097828ef67fdb09539.jpg)  \nFigure 2: The influence estimated by UnTrac (top) and UnTrac-Inv (bottom) on the synthetic datasets A (left) and B (right). The line denotes the average across four runs, and the shaded area corresponds to $95\\%$ confidence region.\n\nother methods assess the influence of dataset 4 as lower than that of other datasets. However, they tend to overestimate the influence of dataset 3 or underestimate it for datasets 1 and 2.\n\nFigure 2 shows the change in influence estimated by UnTrac and UnTrac-Inv on the synthetic datasets A (left) and B (right), respectively. For both synthetic datasets, our methods estimate the influence of datasets 1 and 2 as greater than that of datasets 3 and 4 across unlearning steps. These results indicate that UnTrac and UnTrac-Inv appropriately estimate the influence of training datasets in terms of the relevance of tasks and do not seem overly affected by the output format.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.343::sections::6",
+      "paper_id": "2024.acl-long.343",
+      "section_number": "6",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "In this section, we explore how hyperparameters affect the performance of our methods. Following the experiment in Section 5.2, we compute the influence of the pretraining dataset on Toxigen under various hyperparameter settings, where the size of each training dataset is set to be equal. By monitoring the Pearson correlation coefficient between the estimated influence and ground truth, we investigate the hyperparameter sensitivity of our methods.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.343::appendix::A",
+      "paper_id": "2024.acl-long.343",
+      "section_number": "A",
+      "section_title": "appendix",
+      "normalized_section_title": "appendix",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.343::appendix::A.2",
+      "paper_id": "2024.acl-long.343",
+      "section_number": "A.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "Our code is implemented with Python v3.8.13, PyTorch v1.12.0 (Paszke et al., 2019), and Transformers v4.18.0 (Wolf et al., 2020). In Section 5.1, we used the synthetic datasets which are originally created in this study. The numbers used in the output text range from 1 to 256, while the characters and their part of speech are collected from WordNet (Miller, 1994, WordNet 3.0 license). Our study was conducted under the licenses and terms of the scientific artifacts.\n\nOur experiments were conducted with a single NVIDIA A100 (80GB) for each run in Section 5.1 and a single Tesla V100 (16GB) for each run in Section 5.2. Unlearning each training dataset (UnTrac) takes approximately two minutes in Section 5.1 and four hours in Section 5.2. Unlearning each test dataset (UnTrac-Inv) takes approximately one minute in Section 5.1 and 30 minutes in Section 5.2, not including the time required for evaluation.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.343::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Our code is implemented with Python v3.8.13, PyTorch v1.12.0 (Paszke et al., 2019), and Transformers v4.18.0 (Wolf et al., 2020). In Section 5.1, we used the synthetic datasets which are originally created in this study. The numbers used in the output text range from 1 to 256, while the characters and their part of speech are collected from WordNet (Miller, 1994, WordNet 3.0 license). Our study was conducted under the licenses and terms of the scientific artifacts.\n\nOur experiments were conducted with a single NVIDIA A100 (80GB) for each run in Section 5.1 and a single Tesla V100 (16GB) for each run in Section 5.2. Unlearning each training dataset (UnTrac) takes approximately two minutes in Section 5.1 and four hours in Section 5.2. Unlearning each test dataset (UnTrac-Inv) takes approximately one minute in Section 5.1 and 30 minutes in Section 5.2, not including the time required for evaluation.",
+      "section_number": "A.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    },
+    {
+      "window_id": "2024.acl-long.343::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100 16GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Our code is implemented with Python v3.8.13, PyTorch v1.12.0 (Paszke et al., 2019), and Transformers v4.18.0 (Wolf et al., 2020). In Section 5.1, we used the synthetic datasets which are originally created in this study. The numbers used in the output text range from 1 to 256, while the characters and their part of speech are collected from WordNet (Miller, 1994, WordNet 3.0 license). Our study was conducted under the licenses and terms of the scientific artifacts.\n\nOur experiments were conducted with a single NVIDIA A100 (80GB) for each run in Section 5.1 and a single Tesla V100 (16GB) for each run in Section 5.2. Unlearning each training dataset (UnTrac) takes approximately two minutes in Section 5.1 and four hours in Section 5.2. Unlearning each test dataset (UnTrac-Inv) takes approximately one minute in Section 5.1 and 30 minutes in Section 5.2, not including the time required for evaluation.",
+      "section_number": "A.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.343::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "Our code is implemented with Python v3.8.13, PyTorch v1.12.0 (Paszke et al., 2019), and Transformers v4.18.0 (Wolf et al., 2020). In Section 5.1, we used the synthetic datasets which are originally created in this study. The numbers used in the output text range from 1 to 256, while the characters and their part of speech are collected from WordNet (Miller, 1994, WordNet 3.0 license). Our study was conducted under the licenses and terms of the scientific artifacts.\n\nOur experiments were conducted with a single NVIDIA A100 (80GB) for each run in Section 5.1 and a single Tesla V100 (16GB) for each run in Section 5.2. Unlearning each training dataset (UnTrac) takes approximately two minutes in Section 5.1 and four hours in Section 5.2. Unlearning each test dataset (UnTrac-Inv) takes approximately one minute in Section 5.1 and 30 minutes in Section 5.2, not including the time required for evaluation.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.acl-long.343::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100 16GB",
+      "cleaned_hardware_name": "tesla v100 16gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "Our code is implemented with Python v3.8.13, PyTorch v1.12.0 (Paszke et al., 2019), and Transformers v4.18.0 (Wolf et al., 2020). In Section 5.1, we used the synthetic datasets which are originally created in this study. The numbers used in the output text range from 1 to 256, while the characters and their part of speech are collected from WordNet (Miller, 1994, WordNet 3.0 license). Our study was conducted under the licenses and terms of the scientific artifacts.\n\nOur experiments were conducted with a single NVIDIA A100 (80GB) for each run in Section 5.1 and a single Tesla V100 (16GB) for each run in Section 5.2. Unlearning each training dataset (UnTrac) takes approximately two minutes in Section 5.1 and four hours in Section 5.2. Unlearning each test dataset (UnTrac-Inv) takes approximately one minute in Section 5.1 and 30 minutes in Section 5.2, not including the time required for evaluation.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.acl-long.343::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methods",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.acl-long.343::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiments",
+      "evidence": "We evaluate if our methods can measure the influence of training datasets across different model architectures (encoder-decoder and decoder-only) and training setups (pretraining and fine-tuning).<sup>2</sup>\n\nSince we would not generally have a validation set (i.e., ground-truth attributions), it is impractical to tune the hyperparameters for each experiment. Thus, we set the hyperparameters based on the experimental results on Toxigen, one of the test datasets used in Section 5.2. The same hyperparameters are used across all the experiments. We use Adam (Kingma and Ba, 2014) with a constant learning rate of $5\\mathrm{e} - 5$ , $\\beta_{1} = 0.9$ , and $\\beta_{2} = 0.999$ , while Adafactor is used in Section 5.1 due to memory constraints. Gradient clipping is turned off during unlearning. As for UnTrac, we set the batch size to 1 and run unlearning for 1 epoch. As discussed in Section 3.2, UnTrac-Inv requires a small number of unlearning steps and a large batch size. Hence, we set the batch size as 256 (a single batch contains all test examples) and the number of unlearning steps (epochs) as 5. In Section 6, we discuss the hyperparameter sensitivity of our methods.\n\nThe baseline methods are as follows:\n\nTracIn, GradDot & GradCos We compute the gradient w.r.t. all of the model parameters. TracIn uses the checkpoints saved for every 128 steps in Section 5.1 and 10,000 steps in Section 5.2.\n\nHIF Following Koh and Liang (2017), we approximate the inverse Hessian by LISSA (Agarwal et al., 2017), where the number of iterations is set to 10. We also use Arnoldi iteration with low-rank eigenvector projection following Schioppa et al. (2022). We set the number of Arnoldi iterations to $n = 25$ and the number of eigenvectors to $\\tilde{p} = 25$ in Section 5.1 due to the memory constraints, while $n = 200$ and $\\tilde{p} = 100$ in Section 5.2. Following the previous studies, the gradients of training datasets are normalized, and 256 training examples are used to approximate the Hessian of training loss."
+    },
+    {
+      "source_window_id": "2024.acl-long.343::sections::5.1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.1",
+      "section_title": "tracing influential training tasks",
+      "evidence": "We examine whether UnTrac can detect influential training tasks in the setting of finetuning. If a task is unlearned from a model, one may hypothesize that the model will no longer respond in the\n\n<table><tr><td>Synthetic Datasets A</td><td>Input</td><td>Output</td></tr><tr><td>Test (Task P/Format P)</td><td>What is the number that comes after {0}?</td><td>{1}</td></tr><tr><td>Train1 (Task P/Format P)</td><td>Determine the number that succeeds {two}. Provide your answer in numerical form.</td><td>{3}</td></tr><tr><td>Train2 (Task P/Format Q)</td><td>Determine the number that succeeds {one}. Provide your answer in words.</td><td>{two}</td></tr><tr><td>Train3 (Task Q/Format P)</td><td>Determine the length of ‘{problem}’. Provide your answer in numerical form.</td><td>{7}</td></tr><tr><td>Train4 (Task Q/Format Q)</td><td>Determine the length of ‘{align}’. Provide your answer in words.</td><td>{five}</td></tr></table>\n\nTable 1: Example of the synthetic datasets A (top) and B (bottom). {Strings in braces} are varied with each example.   \n\n<table><tr><td>Synthetic Datasets B</td><td>Input</td><td>Output</td></tr><tr><td>Test (Task P/Format P)</td><td>What letter remains in ‘{xmais}’ after extracting ‘{s}’, ‘{x}’, ‘{m}’, ‘{i}’?</td><td>{a}</td></tr><tr><td>Train1 (Task P/Format P)</td><td>Identify the character left after removing ‘{0}’, ‘{1}’, ‘{4}’, ‘{7}’ from ‘{71b40}’.</td><td>{b}</td></tr><tr><td>Train2 (Task P/Format Q)</td><td>Identify the character left after removing ‘{6}’, ‘{7}’, ‘{5}’, ‘{2}’ from ‘{27516}’.</td><td>{1}</td></tr><tr><td>Train3 (Task Q/Format P)</td><td>Identify the part of speech of ‘{problem}’. Select your answer with the associated letter. Choices: a. noun b. verb c. adjective d. adverb</td><td>{a}</td></tr><tr><td>Train4 (Task Q/Format Q)</td><td>Identify the part of speech of ‘{align}’. Select your answer with the associated number. Choices: 0. noun 1. verb 2. adjective 3. adverb</td><td>{1}</td></tr></table>\n\nTable 2: Influence of the training datasets estimated by each method. The average is shown across four runs. The values are standardized for each method to normalize the range of values. \"Fmt\" is the abbreviation of \"Format\".   \n\n<table><tr><td rowspan=\"2\">Train Dataset</td><td colspan=\"4\">Synthetic Datasets A</td><td colspan=\"4\">Synthetic Datasets B</td></tr><tr><td>1(TaskP/FmtP)</td><td>2(taskP/FmtQ)</td><td>3(taskQ/FmtP)</td><td>4(taskQ/FmtQ)</td><td>1(taskP/FmtP)</td><td>2(taskP/FmtQ)</td><td>3(taskQ/FmtP)</td><td>4(taskQ/FmtQ)</td></tr><tr><td>GradDot</td><td>0.497</td><td>0.930</td><td>-1.680</td><td>0.253</td><td>-0.561</td><td>1.730</td><td>-0.655</td><td>-0.513</td></tr><tr><td>GradCos</td><td>0.993</td><td>0.573</td><td>-1.637</td><td>0.071</td><td>1.197</td><td>0.708</td><td>-1.307</td><td>-0.598</td></tr><tr><td>HIF (Arnoldi)</td><td>1.059</td><td>0.566</td><td>-0.026</td><td>-1.599</td><td>1.368</td><td>0.015</td><td>0.074</td><td>-1.457</td></tr><tr><td>HIF (LISSA)</td><td>0.156</td><td>-1.674</td><td>0.658</td><td>0.860</td><td>-0.600</td><td>1.708</td><td>-0.785</td><td>-0.323</td></tr><tr><td>TracIn</td><td>0.090</td><td>1.575</td><td>-1.083</td><td>-0.582</td><td>-0.174</td><td>1.638</td><td>-1.060</td><td>-0.404</td></tr><tr><td>UnTrac</td><td>1.443</td><td>0.344</td><td>-0.574</td><td>-1.212</td><td>1.492</td><td>0.175</td><td>-0.414</td><td>-1.253</td></tr><tr><td>UnTrac-Inv</td><td>0.980</td><td>1.014</td><td>-1.104</td><td>-0.891</td><td>1.056</td><td>0.905</td><td>-0.716</td><td>-1.245</td></tr><tr><td>Ground Truth</td><td>1.263</td><td>0.692</td><td>-1.064</td><td>-0.891</td><td>1.150</td><td>0.837</td><td>-1.025</td><td>-0.962</td></tr></table>\n\nformat required by the task, regardless of the input. Hence, we are concerned that unlearning not relevant tasks but those having the same answer format as a test task may adversely affect the test task's performance. This may not be consistent with the leave-dataset-out ground-truth and, thus, lead to an overestimation of the non-relevant task's influence. Using synthetic datasets, we show that UnTrac can assess the influence of training tasks properly, regardless of the output format.\n\nModel We use T5 (Raffel et al., 2020) as a pretrained encoder-decoder model. Specifically, we use the LM-adapted T5-XL (3B), which is finetuned on language modeling (Lester et al., 2021).\n\nDataset We create two synthetic datasets, each containing one test dataset and four training datasets. The test datasets contain examples of task P with the output format P (Task P/Format P). The task and output format of training datasets are set with respect to the test dataset as follows:\n\n1. Training dataset 1 (Task P/Format P): similar task P with the same output format P.   \n2. Training dataset 2 (Task P/Format Q): similar task P with different output format Q.   \n3. Training dataset 3 (Task Q/Format P): irrelevant task Q with the same output format P.   \n4. Training dataset 4 (Task Q/Format Q): irrelevant task Q with different output format Q.\n\nTable 1 presents examples of the synthetic datasets A and B. Each training dataset and test dataset consists of 256 examples. The model is trained for 512 steps on the mixture of the four training datasets with a batch size of 2.\n\nResults Table 2 presents the influence of training datasets estimated by each method and the ground-truth influence measured by leave-dataset-out. The ground truth indicates that datasets 1 and 2 (tasks similar to the test task) are more influential than datasets 3 and 4 (tasks irrelevant to the test task). The influence estimated by UnTrac and UnTrac-Inv aligns well with the ground-truth influence. All\n\n![](images/f55a908135ce2e565a4b0bc6b46fb6ad06fcbdc93059f08965f1dfb2348a74dc.jpg)\n\n![](images/85b1453f0044fa35a0ad542d464e4ae55b3258756faa1f8715f1bb84cc46fc8d.jpg)\n\n![](images/45d3e0af3f0a092748eaad3cec9f8166cb338cad9009c6333641a70c9446b3e5.jpg)\n\n![](images/0666f392bfb249cf2f7ee0683c7ab10b3b178451be5c90097828ef67fdb09539.jpg)  \nFigure 2: The influence estimated by UnTrac (top) and UnTrac-Inv (bottom) on the synthetic datasets A (left) and B (right). The line denotes the average across four runs, and the shaded area corresponds to $95\\%$ confidence region.\n\nother methods assess the influence of dataset 4 as lower than that of other datasets. However, they tend to overestimate the influence of dataset 3 or underestimate it for datasets 1 and 2.\n\nFigure 2 shows the change in influence estimated by UnTrac and UnTrac-Inv on the synthetic datasets A (left) and B (right), respectively. For both synthetic datasets, our methods estimate the influence of datasets 1 and 2 as greater than that of datasets 3 and 4 across unlearning steps. These results indicate that UnTrac and UnTrac-Inv appropriately estimate the influence of training datasets in terms of the relevance of tasks and do not seem overly affected by the output format."
+    },
+    {
+      "source_window_id": "2024.acl-long.343::sections::6",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6",
+      "section_title": "discussion",
+      "evidence": "In this section, we explore how hyperparameters affect the performance of our methods. Following the experiment in Section 5.2, we compute the influence of the pretraining dataset on Toxigen under various hyperparameter settings, where the size of each training dataset is set to be equal. By monitoring the Pearson correlation coefficient between the estimated influence and ground truth, we investigate the hyperparameter sensitivity of our methods."
+    },
+    {
+      "source_window_id": "2024.acl-long.343::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "appendix",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2024\\2024.acl-long.343\\auto\\full.md",
+    "source_md_sha256": "ed8afddd6f606d8484eae0b5d4328049a2dfc96f409dc9a40b1921c8c896ab38",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "ad96f3b6ca003898756db958dd17467668c845886fa3f1f835d26a866c8af3f0"
+  }
+}

@@ -1,0 +1,351 @@
+{
+  "paper_id": "2025.acl-long.710",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.710::sections::1",
+      "paper_id": "2025.acl-long.710",
+      "section_number": "1",
+      "section_title": "introduction",
+      "normalized_section_title": "introduction",
+      "window_text": "Large Language Models (LLMs) (Devlin et al., 2019; Liu et al., 2019; Brown et al., 2020; Touvron et al., 2023; Achiam et al., 2023; Team et al., 2024; AI@Meta, 2024) have demonstrated exceptional performance across various tasks, including sentiment classification (Devlin et al., 2019; Liu et al., 2019), commonsense reasoning (Sap et al., 2020), arithmetic reasoning (Brown et al., 2020; Wei et al., 2022), and natural language understanding (Wang et al., 2018). This success is attributed to a training strategy involving two steps—pre-training and finetuning—which has now become standard practice.\n\nMoreover, instead of directly fine-tuning on the end task, conducting additional pre-training on\n\nunlabeled domain-specific datasets related to the end task, followed by fine-tuning on the end-task datasets, has been shown to be far more effective (Gururangan et al., 2020; Xu et al., 2019; Ke et al., 2022b). This training framework is known as Domain-Adaptive Pre-training (DAP). Furthermore, Ke et al. (2021a,b,c, 2022a,b, 2023) have extended the DAP setting to a continual DAP setting, arguing that in real-world scenarios, there is a need for a framework that incrementally incorporates knowledge from newly obtained domain datasets into a foundation model.\n\nHowever, existing continual DAP methods (Ke et al., 2021a,b,c, 2022a,b, 2023) and traditional continual learning methods (Kirkpatrick et al., 2017; Serra et al., 2018; Buzzega et al., 2020), which can be applied to continual DAP, lack efficiency in domain knowledge accumulation, incurring high computational costs due to the need to prevent catastrophic forgetting while integrating new domain knowledge. This inefficiency hinders their application in real-world scenarios, especially when managing large datasets. Moreover, these methods are limited to settings where datasets arrive incrementally, whereas real-world data are often obtained simultaneously through multiple channels. Due to the nature of sequential methods, where training on new data depends on previously processed data, they are sensitive to the order in which data are processed, as we will show in Section 5.1.3. Therefore, we argue that a new training framework is needed to enable efficient, parallel accumulation of domain knowledge.\n\nFurthermore, the continual DAP methods (Kirkpatrick et al., 2017; Serra et al., 2018; Buzzega et al., 2020; Ke et al., 2021a,b,c, 2022a,b, 2023) lack the ability to exploit appropriate domain knowledge for a specific task. This is because they accumulate all domain knowledge, especially general knowledge, into a single model and fine-tune this model to any target task. The essence of DAP\n\nis to provide appropriate model for each target task but continual DAP does not satisfy the essence by providing a same model for any target task. Knowledge contained within unlabeled domain corpora is valuable not only for its general natural language understanding but also for its specialized, domain-specific knowledge. However, existing continual DAP methods compromise the specialization of each domain by merging them into a single model.\n\nAs a result, we propose a new training framework based on LoRA (Hu et al., 2022), a representative parameter-efficient fine-tuning (PEFT) method. For knowledge accumulation, we preserve the specialization of each domain by separately storing domain knowledge in distinct LoRA modules. For knowledge exploitation, we concatenate the domain-specific LoRA modules at each layer and introduce a square bridge module—diagonally initialized for effective integration—while partially freezing the LoRA modules. This design efficiently and effectively leverages the accumulated domain knowledge for the end task. Our contributions are as follows:\n\n- We propose a novel knowledge accumulation and exploitation framework based on LoRA, where domain knowledge is saved separately and flexibly exploited for target tasks.   \n- In the continual DAP scenario, we demonstrate superior performance compared to state-of-the-art continual DAP methods, while reducing pre-training time by $58\\%$ , GPU memory usage during pre-training by $87\\%$ , and GPU memory usage during end-task finetuning by $37\\%$ .   \n- We also extend our method to a standard LLM fine-tuning scenario, achieving superior performance while reducing training time by $36\\%$ and memory usage by $18\\%$ compared to the state-of-the-art PEFT method.",
+      "rule_tier": "soft_skip",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.710::sections::2",
+      "paper_id": "2025.acl-long.710",
+      "section_number": "2",
+      "section_title": "related work",
+      "normalized_section_title": "related work",
+      "window_text": "Continual Domain-Adaptive Pre-training. Performing pre-training on domain-specific datasets related to the end task—a process known as domain-adaptive pre-training (DAP)—has proven effective (Alsentzer et al., 2019; Gururangan et al., 2020; Lee et al., 2020; Xu et al., 2019; Sun et al., 2019). Building on this idea, the continual DAP setting has emerged, applying the concept of continual learning (CL) (Kirkpatrick et al., 2017; Serra\n\n![](images/ff6442541b4ba6fdde1151475a635b15d4180600b1e35b44bd30887ab7b3c4a6.jpg)  \nFigure 1: Cross-domain transferability of domain-adaptive pre-training. Each cell $(i,j)$ shows the end-task performance when using domain-adaptive pretraining on domain $i$ and fine-tuning on task $j$ .\n\net al., 2018; Buzzega et al., 2020; Liang and Li, 2024) to DAP, with the goal of constructing a single model that incrementally incorporates domain knowledge (Ke et al., 2022b, 2023). However, previous work often underestimates the computational and memory overheads required to prevent catastrophic forgetting and preserve general knowledge, thereby limiting real-world applicability. In contrast, we improve the efficiency of both pretraining and fine-tuning, reducing training time and GPU memory usage without compromising performance. Our method builds on insights from Liang and Li (2024), which demonstrated that freezing specific weights constrains model updates to the corresponding subspace, as detailed in Section 4.2.\n\nParameter-Efficient Fine-Tuning. Parameter-Efficient Fine-Tuning (PEFT) (Houlsby et al., 2019; Pfeiffer et al., 2020; He et al., 2022; Lester et al., 2021; Li and Liang, 2021; Hu et al., 2022) has emerged as a promising approach to fine-tune LLMs with significantly reduced memory and computational costs. In this paper, we focus on LoRA (Hu et al., 2022), which has become a standard PEFT method. Several LoRA variants have been proposed to improve its effectiveness (Liu et al., 2024; Si et al., 2025; Wu et al., 2024; Kopiczko et al., 2024). Our method shares similarities with Wu et al. (2024) in introducing additional modules within the LoRA architecture, but differs in initialization strategy and overall objective, as discussed in Section 5.3.3.",
+      "rule_tier": "soft_skip",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.710::sections::4.1",
+      "paper_id": "2025.acl-long.710",
+      "section_number": "4.1",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "In this section, we briefly explain LoRA (Hu et al., 2022), a PEFT method that adapts pre-trained models by introducing low-rank learnable matrices to approximate full weight updates. LoRA keeps the original model weights frozen and updates only the residual weights, represented as:\n\n$$\nW ^ {\\prime} = W + \\Delta W, \\quad \\Delta W = B A,\n$$\n\nin which $W \\in \\mathbb{R}^{m \\times n}$ represents the frozen original model weights, $\\Delta W$ is the learnable residual weight, and $A \\in \\mathbb{R}^{r \\times n}$ and $B \\in \\mathbb{R}^{m \\times r}$ are low-rank matrices with rank $r \\ll \\min(m, n)$ . By decomposing $\\Delta W$ into the product of $A$ and $B$ , LoRA significantly reduces the number of trainable parameters while maintaining competitive performance.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.710::sections::5",
+      "paper_id": "2025.acl-long.710",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "We demonstrate the efficiency and effectiveness of our method across various experimental settings, including continual DAP scenarios and standard LLM fine-tuning with multiple PEFT methods. In addition, we provide extensive ablation studies to verify the underlying intuitions of our approach.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.710::sections::5.1.2",
+      "paper_id": "2025.acl-long.710",
+      "section_number": "5.1.2",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "For the domain-adaptive pre-training stage, we compare our method against three Non-CL baselines and four CL baselines. RoBERTa refers to the foundation model without DAP. Separate LoRA trains a distinct LoRA module on each domain dataset independently. Joint LoRA trains a single LoRA module across all domain datasets simultaneously. NCL (Naive Continual Learning) trains a single model as new domain data arrive, without any specialized mechanism for mitigating forgetting. EWC (Kirkpatrick et al., 2017) is a representative CL method that regularizes changes in parameters deemed important for previously learned domains, thus reducing catastrophic forgetting. DAS (Ke et al., 2023) is a state-of-the-art continual DAP method that employs soft-masking, contrastive loss, and distillation to effectively accumulate domain knowledge without forgetting. KD (Hinton, 2015) applies knowledge distillation whenever new domain data arrive, transferring knowledge from the previous model to the updated model.\n\nUsing the pre-trained models derived from these baselines, we then fine-tune each model on the end tasks with three strategies: full fine-tuning, LoRA-based fine-tuning, and our proposed approach, DoMIX. To elaborate on DoMIX, we first apply Separate LoRA during the domain-adaptive pretraining stage and then utilize the DoMIX framework during end-task fine-tuning.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.710::sections::5.1.3",
+      "paper_id": "2025.acl-long.710",
+      "section_number": "5.1.3",
+      "section_title": "results",
+      "normalized_section_title": "results",
+      "window_text": "Performance. In Table 1, we observe that DoMIX achieves the best average performance. Specifically, ours show the better performance than Seperate LoRA with LoRA finetuning and fullfinetuning. This results suggest that our fientuning method exploits several domain knowledges appropriately so that it can improve the performance.\n\nEfficiency. The performance of DoMIX is noteworthy given its efficiency. In the right two plots of Figure 3, we present the peak GPU memory usage and training time during the DAP stage. Our method demonstrates significantly lower memory usage and training time, reducing memory usage by $87\\%$ and training time by $58\\%$ compared to\n\nTable 1: Comparison of Accuracy and F1 Scores (micro-F1 for PubMed, following Gururangan et al. (2020); Dery et al. (2022); Beltagy et al. (2019), and macro-F1 for other domains) across different pre-training and fine-tuning methods. $\\checkmark$ : Indicates that the method requires a domain ID during end-task fine-tuning. Bold values represent the best scores in each column.   \n\n<table><tr><td>Pretrain</td><td>Finetune</td><td>Domain ID</td><td colspan=\"2\">Restaurant</td><td colspan=\"2\">ACL</td><td colspan=\"2\">AI</td><td colspan=\"2\">Phone</td><td>PubMed</td><td colspan=\"2\">Camera</td><td colspan=\"2\">Average</td></tr><tr><td></td><td></td><td></td><td>Acc</td><td>F1</td><td>Acc</td><td>F1</td><td>Acc</td><td>F1</td><td>Acc</td><td>F1</td><td>F1</td><td>Acc</td><td>F1</td><td>Acc</td><td>F1</td></tr><tr><td rowspan=\"2\">RoBERTa</td><td>Full</td><td rowspan=\"2\">-</td><td>86.67</td><td>79.25</td><td>72.52</td><td>68.71</td><td>76.13</td><td>70.08</td><td>86.26</td><td>83.84</td><td>72.20</td><td>89.73</td><td>83.84</td><td>80.59</td><td>76.32</td></tr><tr><td>LoRA</td><td>86.17</td><td>78.60</td><td>69.52</td><td>63.33</td><td>74.15</td><td>66.51</td><td>86.94</td><td>85.15</td><td>72.40</td><td>90.70</td><td>86.10</td><td>79.98</td><td>75.35</td></tr><tr><td rowspan=\"2\">Seperate LoRA</td><td>Full</td><td rowspan=\"2\">✓</td><td>87.75</td><td>81.07</td><td>73.82</td><td>69.95</td><td>78.29</td><td>72.72</td><td>85.15</td><td>82.35</td><td>72.52</td><td>90.93</td><td>86.37</td><td>81.41</td><td>77.50</td></tr><tr><td>LoRA</td><td>86.75</td><td>79.24</td><td>72.33</td><td>66.98</td><td>77.20</td><td>70.92</td><td>87.65</td><td>85.79</td><td>72.50</td><td>92.57</td><td>89.16</td><td>81.50</td><td>77.43</td></tr><tr><td rowspan=\"2\">Joint LoRA</td><td>Full</td><td rowspan=\"2\">X</td><td>87.31</td><td>80.51</td><td>73.82</td><td>69.91</td><td>78.48</td><td>72.93</td><td>84.77</td><td>81.69</td><td>72.48</td><td>89.95</td><td>84.32</td><td>81.14</td><td>76.97</td></tr><tr><td>LoRA</td><td>86.63</td><td>79.43</td><td>71.43</td><td>66.25</td><td>76.66</td><td>69.88</td><td>85.37</td><td>82.48</td><td>72.15</td><td>91.05</td><td>86.62</td><td>80.55</td><td>76.13</td></tr><tr><td rowspan=\"2\">NCL</td><td>Full</td><td rowspan=\"2\">X</td><td>87.56</td><td>80.87</td><td>74.74</td><td>70.82</td><td>78.28</td><td>72.25</td><td>85.51</td><td>82.96</td><td>72.89</td><td>89.94</td><td>84.42</td><td>81.49</td><td>77.37</td></tr><tr><td>LoRA</td><td>86.38</td><td>78.69</td><td>72.09</td><td>66.59</td><td>76.58</td><td>69.50</td><td>86.35</td><td>84.20</td><td>72.63</td><td>93.10</td><td>89.76</td><td>81.19</td><td>76.90</td></tr><tr><td rowspan=\"2\">EWC</td><td>Full</td><td rowspan=\"2\">X</td><td>87.33</td><td>80.42</td><td>73.95</td><td>69.94</td><td>79.28</td><td>73.91</td><td>85.55</td><td>82.92</td><td>72.96</td><td>89.82</td><td>83.94</td><td>81.48</td><td>77.35</td></tr><tr><td>LoRA</td><td>87.38</td><td>80.32</td><td>72.27</td><td>66.99</td><td>76.91</td><td>70.00</td><td>86.43</td><td>84.37</td><td>72.27</td><td>91.62</td><td>87.25</td><td>81.15</td><td>76.87</td></tr><tr><td rowspan=\"2\">KD</td><td>Full</td><td rowspan=\"2\">X</td><td>87.27</td><td>80.41</td><td>74.31</td><td>70.11</td><td>78.20</td><td>72.33</td><td>85.99</td><td>83.69</td><td>73.04</td><td>90.96</td><td>86.08</td><td>81.63</td><td>77.61</td></tr><tr><td>LoRA</td><td>87.18</td><td>80.21</td><td>72.55</td><td>67.63</td><td>76.29</td><td>69.19</td><td>86.68</td><td>84.88</td><td>72.97</td><td>91.78</td><td>87.86</td><td>81.24</td><td>77.12</td></tr><tr><td rowspan=\"2\">DAS</td><td>Full</td><td rowspan=\"2\">X</td><td>87.57</td><td>80.90</td><td>74.47</td><td>70.52</td><td>78.72</td><td>72.85</td><td>85.40</td><td>82.82</td><td>72.99</td><td>89.98</td><td>84.47</td><td>81.52</td><td>77.43</td></tr><tr><td>LoRA</td><td>87.44</td><td>80.62</td><td>72.02</td><td>66.37</td><td>76.33</td><td>68.75</td><td>86.48</td><td>84.38</td><td>72.27</td><td>91.55</td><td>87.28</td><td>81.01</td><td>76.61</td></tr><tr><td>Seperate LoRA</td><td>DoMIX (Ours)</td><td>X</td><td>86.67</td><td>79.30</td><td>72.97</td><td>69.10</td><td>79.11</td><td>74.01</td><td>87.12</td><td>85.23</td><td>73.61</td><td>90.54</td><td>85.79</td><td>81.67</td><td>77.84</td></tr></table>\n\n![](images/3b20cfca07357ac318b3d32811bda1cf20471a516a21adbaf0db1f065a97b759.jpg)\n\n![](images/b92ca2929a467f2f3fc7b95826506d3a6d2decdf286e7d87880e9fe8d77d3ec1.jpg)\n\n![](images/ef0f8ddee3c7068985aaa018f02d57cd045e659c801f08876b5158ed0bbe5ebe.jpg)\n\n![](images/b22c10a10a93886c8095bf3926a7b9235d4ba0a0630c384dbef7a93e88d3a2c2.jpg)  \nFigure 3: Left: Variance comparison of average accuracy and F1 scores. Right: Memory usage and training time costs during the DAP stage.\n\nTable 2: Comparison of trainable parameters and GPU memory usage during end-task fine-tuning.   \n\n<table><tr><td>Finetune Method</td><td># of Domains</td><td># of Params (vs Full)</td><td>GPU Mem.</td></tr><tr><td>Full Finetuning</td><td>-</td><td>124.06M (100%)</td><td>6,253MiB</td></tr><tr><td>LoRA (r = 48)</td><td>-</td><td>11.28M (9.09%)</td><td>5,076MiB</td></tr><tr><td></td><td>1</td><td>0.67M (0.54%)</td><td>4,063MiB</td></tr><tr><td></td><td>2</td><td>1.35M (1.09%)</td><td>4,093MiB</td></tr><tr><td>DoMIX (Ours)</td><td>3</td><td>2.03M (1.64%)</td><td>4,123MiB</td></tr><tr><td>(r = 8 per domain)</td><td>4</td><td>2.73M (2.20%)</td><td>4,173MiB</td></tr><tr><td></td><td>5</td><td>3.43M (2.76%)</td><td>4,217MiB</td></tr><tr><td></td><td>6</td><td>4.15M (3.35%)</td><td>4,235MiB</td></tr></table>\n\nDAS, which is known as a state-of-the-art (SOTA) method in continual DAP scenario. However, in our experiments, DAS does not achieve SOTA performance due to the extensive evaluation of robustness across six domain orders.\n\nIn the end-task fine-tuning stage, Table 2 shows the number of trainable parameters and the corresponding memory usage. DoMIX (last row) requires less than half the trainable parameters compared to LoRA $(r = 48)$ tuning, which has the\n\nsame LoRA size as ours, due to the freezing of the $A$ module. Furthermore, DoMIX requires only $3.3\\%$ of the trainable parameters compared to full fine-tuning, resulting in a $37\\%$ reduction in peak GPU memory usage. While it may be a concern that the number of parameters of DoMIX increases linearly with the number of utilized domains, Table 2 demonstrates that this results in only a small overhead in memory usage for each added domain module. Further explanations are provided in Appendix C.2.\n\nRobustness. As shown in the left two plots of Figure 3, DoMIX is not affected by variations in the domain sequence. In these plots, the error bars indicate the standard deviation computed over six values—each representing the average performance across six end tasks under a specific domain order. Specifically, for each of six randomly sampled domain orders, we perform continual domain-adaptive pre-training, then fine-tune the resulting model on all six end tasks. We then compute a sin\n\ngle average performance score per domain order, resulting in six such scores in total. The standard deviation across these six average scores is visualized using error bars. As illustrated, all continual methods exhibit large variance across domain orders, indicating their sensitivity to the order in which data are presented. This characteristic is critical in real-world scenarios, where the sequence of data cannot be predetermined. In contrast, DoMIX demonstrates robust performance regardless of the domain sequence, as it does not rely on previously seen domains.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.710::sections::5.2.1",
+      "paper_id": "2025.acl-long.710",
+      "section_number": "5.2.1",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "We primarily compare our method against LoRA and its variants. DoRA (Liu et al., 2024) achieves state-of-the-art results in this setting by decomposing weights into magnitude and direction. LoRA-Dash (Si et al., 2025) identifies task-specific directions in an initial stage to enhance performance. MoSLoRA (Wu et al., 2024) introduces a mixer matrix to utilize multiple subspaces during finetuning. Although MoSLoRA is closely related to our method, our approach differs by inserting a bridge matrix to appropriately exploit domain knowledge. We employ an intuitive initialization strategy, rather than random initialization, and adopt a different training procedure by freezing part of the modules. In addition to LoRA-based methods, we also compare our approach with non-LoRA PEFT techniques. AdapterH (Houlsby et al., 2019)\n\ninserts a fully connected (FC) layer after both the attention and FFN layers, while AdapterP (Pfeiffer et al., 2020) inserts an FC layer only after the self-attention layer. Parallel Adapter (He et al., 2022) introduces parallel learnable modules into the layers of the backbone model.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.710::sections::5.2.3",
+      "paper_id": "2025.acl-long.710",
+      "section_number": "5.2.3",
+      "section_title": "results",
+      "normalized_section_title": "results",
+      "window_text": "DoMIX either matches the state-of-the-art or achieves the best average performance across all settings. Specifically, it matches DoRA, the state-of-the-art method, at rank 16 on LLaMA3-8B, and outperforms all baselines at rank 32 on LLaMA3-8B and rank 16 on Gema2-9B. This result is notable given that DoMIX requires substantially fewer computational resources—reducing GPU memory usage by $18\\%$ and training time by $36\\%$ —compared to DoRA (Liu et al., 2024). The training time of DoMIX is the sum of the training time for LoRA on Math10k and the training time for DoMIX on Common-sense170k, which amounts to $0.5\\mathrm{h} + 8.7\\mathrm{h}$ for LLaMA3-8B and $0.8\\mathrm{h} + 13.5\\mathrm{h}$ for Gema2-9B.\n\nWe also compared DoMIX with two cases: training from a LoRA module pre-trained on the Math10k dataset, referred to as LoRA (from Math LoRA), and training a LoRA module on a joint dataset (Math10k and Common-sense170k), referred to as LoRA (with Joint Dataset). DoMIX demonstrates significantly better performance $(+2.29\\%)$ p and $+3.17\\%$ p, respectively), for LLaMA3-8B at rank 16, suggesting that DoMIX is an effective framework for exploiting domain knowledge.\n\nTable 3: Accuracy comparison on commonsense reasoning tasks using LLaMA3-8B and Gemma2-9B. \"Mem.\" denotes peak GPU memory usage during training. Bold numbers indicate the best performance for each task.\n\nTable 5: Performance comparison of trainable configurations.   \n\n<table><tr><td>Model</td><td>Method</td><td>Rank</td><td>Mem.</td><td>Time</td><td>WinoG.</td><td>OBQA</td><td>SIQA</td><td>ARC-e</td><td>BoolQ</td><td>ARC-c</td><td>PIQA</td><td>HellaS.</td><td>Avg.</td></tr><tr><td rowspan=\"13\">LLaMA3-8B</td><td>AdapterP</td><td>-</td><td>43.4G</td><td>7.0h</td><td>81.69</td><td>81.60</td><td>78.10</td><td>82.03</td><td>68.38</td><td>69.97</td><td>83.08</td><td>90.48</td><td>79.41</td></tr><tr><td>AdapterH</td><td>-</td><td>48.3G</td><td>8.0h</td><td>75.77</td><td>73.80</td><td>76.15</td><td>73.19</td><td>65.44</td><td>58.96</td><td>80.25</td><td>76.69</td><td>72.53</td></tr><tr><td>Parallel</td><td>-</td><td>48.4G</td><td>7.7h</td><td>80.74</td><td>75.40</td><td>78.25</td><td>79.04</td><td>67.65</td><td>64.93</td><td>82.97</td><td>88.71</td><td>77.21</td></tr><tr><td>LoRA</td><td>16</td><td>54.5G</td><td>8.7h</td><td>84.61</td><td>83.60</td><td>79.58</td><td>87.29</td><td>71.16</td><td>75.09</td><td>86.18</td><td>93.97</td><td>82.68</td></tr><tr><td>LoRA-Dash</td><td>16</td><td>74.8G</td><td>13.4h</td><td>87.37</td><td>86.00</td><td>79.17</td><td>89.52</td><td>72.72</td><td>76.96</td><td>87.21</td><td>94.65</td><td>84.20</td></tr><tr><td>MoSLoRA</td><td>16</td><td>54.5G</td><td>8.7h</td><td>86.19</td><td>84.40</td><td>80.50</td><td>89.56</td><td>68.56</td><td>79.95</td><td>88.36</td><td>95.25</td><td>84.10</td></tr><tr><td>DoRA</td><td>16</td><td>66.5G</td><td>14.3h</td><td>85.64</td><td>85.80</td><td>80.30</td><td>90.66</td><td>74.95</td><td>79.52</td><td>89.34</td><td>95.52</td><td>85.22</td></tr><tr><td>LoRA (from Math LoRA)</td><td>16</td><td>54.5G</td><td>9.2h</td><td>84.69</td><td>85.00</td><td>79.84</td><td>86.32</td><td>72.05</td><td>75.17</td><td>86.56</td><td>93.84</td><td>82.93</td></tr><tr><td>LoRA (with Joint Dataset)</td><td>16</td><td>54.5G</td><td>9.2h</td><td>85.40</td><td>84.00</td><td>80.99</td><td>86.78</td><td>64.43</td><td>74.66</td><td>87.05</td><td>94.02</td><td>82.05</td></tr><tr><td>DoMIX (+ Math LoRA)</td><td>16</td><td>54.5G</td><td>9.2h</td><td>85.95</td><td>85.80</td><td>80.25</td><td>91.04</td><td>73.94</td><td>80.55</td><td>88.36</td><td>95.85</td><td>85.22</td></tr><tr><td>LoRA</td><td>32</td><td>54.6G</td><td>8.7h</td><td>82.95</td><td>81.00</td><td>79.53</td><td>85.10</td><td>69.85</td><td>70.73</td><td>85.85</td><td>92.00</td><td>80.88</td></tr><tr><td>DoRA</td><td>32</td><td>66.6G</td><td>14.3h</td><td>87.92</td><td>86.60</td><td>80.96</td><td>90.45</td><td>73.73</td><td>77.82</td><td>88.74</td><td>95.63</td><td>85.23</td></tr><tr><td>DoMIX (+ Math LoRA)</td><td>32</td><td>54.6G</td><td>9.2h</td><td>86.35</td><td>85.20</td><td>79.63</td><td>91.08</td><td>74.77</td><td>80.72</td><td>89.12</td><td>95.84</td><td>85.34</td></tr><tr><td rowspan=\"4\">Gemma2-9B</td><td>LoRA</td><td>16</td><td>51.8G</td><td>13.5h</td><td>87.69</td><td>90.00</td><td>81.78</td><td>92.89</td><td>75.44</td><td>84.30</td><td>89.72</td><td>95.58</td><td>87.17</td></tr><tr><td>DoRA</td><td>16</td><td>60.3G</td><td>21.3h</td><td>88.24</td><td>91.20</td><td>82.14</td><td>95.20</td><td>78.13</td><td>87.71</td><td>90.48</td><td>96.62</td><td>88.72</td></tr><tr><td>LoRA (with Joint Dataset)</td><td>16</td><td>51.8G</td><td>14.3h</td><td>89.11</td><td>88.20</td><td>81.42</td><td>93.10</td><td>75.72</td><td>82.76</td><td>90.21</td><td>95.31</td><td>86.98</td></tr><tr><td>DoMIX (+ Math LoRA)</td><td>16</td><td>51.8G</td><td>14.3h</td><td>90.37</td><td>92.80</td><td>82.40</td><td>96.00</td><td>77.61</td><td>88.74</td><td>91.51</td><td>96.93</td><td>89.55</td></tr></table>\n\nTable 4: Average accuracy and F1 scores based on the presence and trainability of $P$   \n\n<table><tr><td>P init.</td><td>Trainable</td><td>Acc (%)</td><td>F1 (%)</td></tr><tr><td rowspan=\"2\">Id.</td><td>X</td><td>71.47</td><td>61.99</td></tr><tr><td>✓</td><td>73.61</td><td>65.44</td></tr><tr><td rowspan=\"2\">Ours</td><td>X</td><td>69.59</td><td>52.57</td></tr><tr><td>✓</td><td>81.67</td><td>77.84</td></tr></table>\n\n<table><tr><td colspan=\"3\">Trainable</td><td colspan=\"2\">Average (%)</td></tr><tr><td>A</td><td>P</td><td>B</td><td>Acc</td><td>F1</td></tr><tr><td>✓</td><td>✗</td><td>✓</td><td>81.39</td><td>77.63</td></tr><tr><td>✓</td><td>✓</td><td>✗</td><td>80.74</td><td>76.57</td></tr><tr><td>✓</td><td>✓</td><td>✓</td><td>81.31</td><td>77.00</td></tr><tr><td>✗</td><td>✓</td><td>✓</td><td>81.67</td><td>77.84</td></tr></table>\n\nTable 6: Performance comparison of different initialization configurations.   \n\n<table><tr><td colspan=\"3\">Initialization</td><td colspan=\"2\">Average (%)</td></tr><tr><td>A</td><td>P</td><td>B</td><td>Acc</td><td>F1</td></tr><tr><td>Ours</td><td>Zero</td><td>Ours</td><td>81.27</td><td>77.30</td></tr><tr><td>Ours</td><td>Kaiming</td><td>Ours</td><td>80.10</td><td>75.58</td></tr><tr><td>Ours</td><td>Ours</td><td>Zero</td><td>81.13</td><td>77.04</td></tr><tr><td>Ours</td><td>Ours</td><td>Kaiming</td><td>81.11</td><td>77.12</td></tr><tr><td>Kaiming</td><td>Ours</td><td>Ours</td><td>81.15</td><td>77.29</td></tr><tr><td>Ours</td><td>Ours</td><td>Ours</td><td>81.67</td><td>77.84</td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.710::sections::5.3",
+      "paper_id": "2025.acl-long.710",
+      "section_number": "5.3",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.710::sections::6",
+      "paper_id": "2025.acl-long.710",
+      "section_number": "6",
+      "section_title": "conclusion",
+      "normalized_section_title": "conclusion",
+      "window_text": "In this paper, we emphasize the need for an efficient, parallel, and effective methodology for domain learning and knowledge exploitation. To address this, we proposed DoMIX, which achieves performance on par with or better than state-of-the-art methods, while demonstrating superior efficiency in terms of training time and GPU memory usage. We validated the efficacy of our method in both the continual DAP setting and the standard LLM fine-tuning setting.\n\nWe hope this work contributes to advancing research on enabling models to generalize effectively across diverse tasks by leveraging pre-trained models, which are abundantly available online, as inspired by the notion of \"standing on the shoulders of giants.\"",
+      "rule_tier": "soft_skip",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.710::appendix::B",
+      "paper_id": "2025.acl-long.710",
+      "section_number": "B",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "window_text": "This section provides a detailed explanation of the experimental setup. All experiments were conducted using four NVIDIA A100 GPUs with 80GB of memory each.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.710::appendix::C",
+      "paper_id": "2025.acl-long.710",
+      "section_number": "C",
+      "section_title": "details of experiments",
+      "normalized_section_title": "details of experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.710::appendix::C.1",
+      "paper_id": "2025.acl-long.710",
+      "section_number": "C.1",
+      "section_title": "details of the motivation experiment",
+      "normalized_section_title": "details of the motivation experiment",
+      "window_text": "The exact domain names presented in Figure 1, in the same order, are listed in Table 1. The DAP stage follows the same procedure as Separate LoRA in Table 1. Fine-tuning is conducted using full finetuning, with hyperparameters specified in Table 11.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.710::appendix::C.2",
+      "paper_id": "2025.acl-long.710",
+      "section_number": "C.2",
+      "section_title": "details of gpu memory overhead according to the number of domains",
+      "normalized_section_title": "details of gpu memory overhead according to the number of domains",
+      "window_text": "In Table 2, we report the number of trainable parameters and the GPU memory usage during end-task fine-tuning for various settings. As shown, although GPU memory usage increases linearly with the number of domains, the growth is minimal. This implies that DoMIX can scale to more domains without significant overhead.\n\nFigure 5 visualizes this trend and includes an extrapolated estimate of memory usage as the number of domains increases. The dotted gray line indicates the GPU memory usage of standard LoRA with rank 48. Note that this rank corresponds to the total parameter size of DoMIX when using 6 domains with rank 8 each—excluding the bridge matrix. Despite having a similar number of trainable parameters, DoMIX consumes significantly less GPU memory due to its partially frozen structure and selective training. The extrapolated red line shows that only when scaling to around 30 domains does DoMIX reach the same memory usage as standard LoRA ( $r = 48$ ), highlighting its strong scalability and memory efficiency.\n\nThis scalability is possible because DoMIX freezes the input-side LoRA matrices (A) and selectively trains only the necessary components, thereby minimizing memory overhead per added domain.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.710::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "This section provides a detailed explanation of the experimental setup. All experiments were conducted using four NVIDIA A100 GPUs with 80GB of memory each.",
+      "section_number": "B",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.710::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "B",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "evidence": "This section provides a detailed explanation of the experimental setup. All experiments were conducted using four NVIDIA A100 GPUs with 80GB of memory each.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.710::sections::1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "1",
+      "section_title": "introduction",
+      "evidence": "Large Language Models (LLMs) (Devlin et al., 2019; Liu et al., 2019; Brown et al., 2020; Touvron et al., 2023; Achiam et al., 2023; Team et al., 2024; AI@Meta, 2024) have demonstrated exceptional performance across various tasks, including sentiment classification (Devlin et al., 2019; Liu et al., 2019), commonsense reasoning (Sap et al., 2020), arithmetic reasoning (Brown et al., 2020; Wei et al., 2022), and natural language understanding (Wang et al., 2018). This success is attributed to a training strategy involving two steps—pre-training and finetuning—which has now become standard practice.\n\nMoreover, instead of directly fine-tuning on the end task, conducting additional pre-training on\n\nunlabeled domain-specific datasets related to the end task, followed by fine-tuning on the end-task datasets, has been shown to be far more effective (Gururangan et al., 2020; Xu et al., 2019; Ke et al., 2022b). This training framework is known as Domain-Adaptive Pre-training (DAP). Furthermore, Ke et al. (2021a,b,c, 2022a,b, 2023) have extended the DAP setting to a continual DAP setting, arguing that in real-world scenarios, there is a need for a framework that incrementally incorporates knowledge from newly obtained domain datasets into a foundation model.\n\nHowever, existing continual DAP methods (Ke et al., 2021a,b,c, 2022a,b, 2023) and traditional continual learning methods (Kirkpatrick et al., 2017; Serra et al., 2018; Buzzega et al., 2020), which can be applied to continual DAP, lack efficiency in domain knowledge accumulation, incurring high computational costs due to the need to prevent catastrophic forgetting while integrating new domain knowledge. This inefficiency hinders their application in real-world scenarios, especially when managing large datasets. Moreover, these methods are limited to settings where datasets arrive incrementally, whereas real-world data are often obtained simultaneously through multiple channels. Due to the nature of sequential methods, where training on new data depends on previously processed data, they are sensitive to the order in which data are processed, as we will show in Section 5.1.3. Therefore, we argue that a new training framework is needed to enable efficient, parallel accumulation of domain knowledge.\n\nFurthermore, the continual DAP methods (Kirkpatrick et al., 2017; Serra et al., 2018; Buzzega et al., 2020; Ke et al., 2021a,b,c, 2022a,b, 2023) lack the ability to exploit appropriate domain knowledge for a specific task. This is because they accumulate all domain knowledge, especially general knowledge, into a single model and fine-tune this model to any target task. The essence of DAP\n\nis to provide appropriate model for each target task but continual DAP does not satisfy the essence by providing a same model for any target task. Knowledge contained within unlabeled domain corpora is valuable not only for its general natural language understanding but also for its specialized, domain-specific knowledge. However, existing continual DAP methods compromise the specialization of each domain by merging them into a single model.\n\nAs a result, we propose a new training framework based on LoRA (Hu et al., 2022), a representative parameter-efficient fine-tuning (PEFT) method. For knowledge accumulation, we preserve the specialization of each domain by separately storing domain knowledge in distinct LoRA modules. For knowledge exploitation, we concatenate the domain-specific LoRA modules at each layer and introduce a square bridge module—diagonally initialized for effective integration—while partially freezing the LoRA modules. This design efficiently and effectively leverages the accumulated domain knowledge for the end task. Our contributions are as follows:\n\n- We propose a novel knowledge accumulation and exploitation framework based on LoRA, where domain knowledge is saved separately and flexibly exploited for target tasks.   \n- In the continual DAP scenario, we demonstrate superior performance compared to state-of-the-art continual DAP methods, while reducing pre-training time by $58\\%$ , GPU memory usage during pre-training by $87\\%$ , and GPU memory usage during end-task finetuning by $37\\%$ .   \n- We also extend our method to a standard LLM fine-tuning scenario, achieving superior performance while reducing training time by $36\\%$ and memory usage by $18\\%$ compared to the state-of-the-art PEFT method."
+    },
+    {
+      "source_window_id": "2025.acl-long.710::sections::2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "2",
+      "section_title": "related work",
+      "evidence": "Continual Domain-Adaptive Pre-training. Performing pre-training on domain-specific datasets related to the end task—a process known as domain-adaptive pre-training (DAP)—has proven effective (Alsentzer et al., 2019; Gururangan et al., 2020; Lee et al., 2020; Xu et al., 2019; Sun et al., 2019). Building on this idea, the continual DAP setting has emerged, applying the concept of continual learning (CL) (Kirkpatrick et al., 2017; Serra\n\n![](images/ff6442541b4ba6fdde1151475a635b15d4180600b1e35b44bd30887ab7b3c4a6.jpg)  \nFigure 1: Cross-domain transferability of domain-adaptive pre-training. Each cell $(i,j)$ shows the end-task performance when using domain-adaptive pretraining on domain $i$ and fine-tuning on task $j$ .\n\net al., 2018; Buzzega et al., 2020; Liang and Li, 2024) to DAP, with the goal of constructing a single model that incrementally incorporates domain knowledge (Ke et al., 2022b, 2023). However, previous work often underestimates the computational and memory overheads required to prevent catastrophic forgetting and preserve general knowledge, thereby limiting real-world applicability. In contrast, we improve the efficiency of both pretraining and fine-tuning, reducing training time and GPU memory usage without compromising performance. Our method builds on insights from Liang and Li (2024), which demonstrated that freezing specific weights constrains model updates to the corresponding subspace, as detailed in Section 4.2.\n\nParameter-Efficient Fine-Tuning. Parameter-Efficient Fine-Tuning (PEFT) (Houlsby et al., 2019; Pfeiffer et al., 2020; He et al., 2022; Lester et al., 2021; Li and Liang, 2021; Hu et al., 2022) has emerged as a promising approach to fine-tune LLMs with significantly reduced memory and computational costs. In this paper, we focus on LoRA (Hu et al., 2022), which has become a standard PEFT method. Several LoRA variants have been proposed to improve its effectiveness (Liu et al., 2024; Si et al., 2025; Wu et al., 2024; Kopiczko et al., 2024). Our method shares similarities with Wu et al. (2024) in introducing additional modules within the LoRA architecture, but differs in initialization strategy and overall objective, as discussed in Section 5.3.3."
+    },
+    {
+      "source_window_id": "2025.acl-long.710::sections::4.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "preliminaries",
+      "evidence": "In this section, we briefly explain LoRA (Hu et al., 2022), a PEFT method that adapts pre-trained models by introducing low-rank learnable matrices to approximate full weight updates. LoRA keeps the original model weights frozen and updates only the residual weights, represented as:\n\n$$\nW ^ {\\prime} = W + \\Delta W, \\quad \\Delta W = B A,\n$$\n\nin which $W \\in \\mathbb{R}^{m \\times n}$ represents the frozen original model weights, $\\Delta W$ is the learnable residual weight, and $A \\in \\mathbb{R}^{r \\times n}$ and $B \\in \\mathbb{R}^{m \\times r}$ are low-rank matrices with rank $r \\ll \\min(m, n)$ . By decomposing $\\Delta W$ into the product of $A$ and $B$ , LoRA significantly reduces the number of trainable parameters while maintaining competitive performance."
+    },
+    {
+      "source_window_id": "2025.acl-long.710::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiments",
+      "evidence": "We demonstrate the efficiency and effectiveness of our method across various experimental settings, including continual DAP scenarios and standard LLM fine-tuning with multiple PEFT methods. In addition, we provide extensive ablation studies to verify the underlying intuitions of our approach."
+    },
+    {
+      "source_window_id": "2025.acl-long.710::sections::5.1.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.1.2",
+      "section_title": "baselines",
+      "evidence": "For the domain-adaptive pre-training stage, we compare our method against three Non-CL baselines and four CL baselines. RoBERTa refers to the foundation model without DAP. Separate LoRA trains a distinct LoRA module on each domain dataset independently. Joint LoRA trains a single LoRA module across all domain datasets simultaneously. NCL (Naive Continual Learning) trains a single model as new domain data arrive, without any specialized mechanism for mitigating forgetting. EWC (Kirkpatrick et al., 2017) is a representative CL method that regularizes changes in parameters deemed important for previously learned domains, thus reducing catastrophic forgetting. DAS (Ke et al., 2023) is a state-of-the-art continual DAP method that employs soft-masking, contrastive loss, and distillation to effectively accumulate domain knowledge without forgetting. KD (Hinton, 2015) applies knowledge distillation whenever new domain data arrive, transferring knowledge from the previous model to the updated model.\n\nUsing the pre-trained models derived from these baselines, we then fine-tune each model on the end tasks with three strategies: full fine-tuning, LoRA-based fine-tuning, and our proposed approach, DoMIX. To elaborate on DoMIX, we first apply Separate LoRA during the domain-adaptive pretraining stage and then utilize the DoMIX framework during end-task fine-tuning."
+    },
+    {
+      "source_window_id": "2025.acl-long.710::sections::5.1.3",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.1.3",
+      "section_title": "results",
+      "evidence": "Performance. In Table 1, we observe that DoMIX achieves the best average performance. Specifically, ours show the better performance than Seperate LoRA with LoRA finetuning and fullfinetuning. This results suggest that our fientuning method exploits several domain knowledges appropriately so that it can improve the performance.\n\nEfficiency. The performance of DoMIX is noteworthy given its efficiency. In the right two plots of Figure 3, we present the peak GPU memory usage and training time during the DAP stage. Our method demonstrates significantly lower memory usage and training time, reducing memory usage by $87\\%$ and training time by $58\\%$ compared to\n\nTable 1: Comparison of Accuracy and F1 Scores (micro-F1 for PubMed, following Gururangan et al. (2020); Dery et al. (2022); Beltagy et al. (2019), and macro-F1 for other domains) across different pre-training and fine-tuning methods. $\\checkmark$ : Indicates that the method requires a domain ID during end-task fine-tuning. Bold values represent the best scores in each column.   \n\n<table><tr><td>Pretrain</td><td>Finetune</td><td>Domain ID</td><td colspan=\"2\">Restaurant</td><td colspan=\"2\">ACL</td><td colspan=\"2\">AI</td><td colspan=\"2\">Phone</td><td>PubMed</td><td colspan=\"2\">Camera</td><td colspan=\"2\">Average</td></tr><tr><td></td><td></td><td></td><td>Acc</td><td>F1</td><td>Acc</td><td>F1</td><td>Acc</td><td>F1</td><td>Acc</td><td>F1</td><td>F1</td><td>Acc</td><td>F1</td><td>Acc</td><td>F1</td></tr><tr><td rowspan=\"2\">RoBERTa</td><td>Full</td><td rowspan=\"2\">-</td><td>86.67</td><td>79.25</td><td>72.52</td><td>68.71</td><td>76.13</td><td>70.08</td><td>86.26</td><td>83.84</td><td>72.20</td><td>89.73</td><td>83.84</td><td>80.59</td><td>76.32</td></tr><tr><td>LoRA</td><td>86.17</td><td>78.60</td><td>69.52</td><td>63.33</td><td>74.15</td><td>66.51</td><td>86.94</td><td>85.15</td><td>72.40</td><td>90.70</td><td>86.10</td><td>79.98</td><td>75.35</td></tr><tr><td rowspan=\"2\">Seperate LoRA</td><td>Full</td><td rowspan=\"2\">✓</td><td>87.75</td><td>81.07</td><td>73.82</td><td>69.95</td><td>78.29</td><td>72.72</td><td>85.15</td><td>82.35</td><td>72.52</td><td>90.93</td><td>86.37</td><td>81.41</td><td>77.50</td></tr><tr><td>LoRA</td><td>86.75</td><td>79.24</td><td>72.33</td><td>66.98</td><td>77.20</td><td>70.92</td><td>87.65</td><td>85.79</td><td>72.50</td><td>92.57</td><td>89.16</td><td>81.50</td><td>77.43</td></tr><tr><td rowspan=\"2\">Joint LoRA</td><td>Full</td><td rowspan=\"2\">X</td><td>87.31</td><td>80.51</td><td>73.82</td><td>69.91</td><td>78.48</td><td>72.93</td><td>84.77</td><td>81.69</td><td>72.48</td><td>89.95</td><td>84.32</td><td>81.14</td><td>76.97</td></tr><tr><td>LoRA</td><td>86.63</td><td>79.43</td><td>71.43</td><td>66.25</td><td>76.66</td><td>69.88</td><td>85.37</td><td>82.48</td><td>72.15</td><td>91.05</td><td>86.62</td><td>80.55</td><td>76.13</td></tr><tr><td rowspan=\"2\">NCL</td><td>Full</td><td rowspan=\"2\">X</td><td>87.56</td><td>80.87</td><td>74.74</td><td>70.82</td><td>78.28</td><td>72.25</td><td>85.51</td><td>82.96</td><td>72.89</td><td>89.94</td><td>84.42</td><td>81.49</td><td>77.37</td></tr><tr><td>LoRA</td><td>86.38</td><td>78.69</td><td>72.09</td><td>66.59</td><td>76.58</td><td>69.50</td><td>86.35</td><td>84.20</td><td>72.63</td><td>93.10</td><td>89.76</td><td>81.19</td><td>76.90</td></tr><tr><td rowspan=\"2\">EWC</td><td>Full</td><td rowspan=\"2\">X</td><td>87.33</td><td>80.42</td><td>73.95</td><td>69.94</td><td>79.28</td><td>73.91</td><td>85.55</td><td>82.92</td><td>72.96</td><td>89.82</td><td>83.94</td><td>81.48</td><td>77.35</td></tr><tr><td>LoRA</td><td>87.38</td><td>80.32</td><td>72.27</td><td>66.99</td><td>76.91</td><td>70.00</td><td>86.43</td><td>84.37</td><td>72.27</td><td>91.62</td><td>87.25</td><td>81.15</td><td>76.87</td></tr><tr><td rowspan=\"2\">KD</td><td>Full</td><td rowspan=\"2\">X</td><td>87.27</td><td>80.41</td><td>74.31</td><td>70.11</td><td>78.20</td><td>72.33</td><td>85.99</td><td>83.69</td><td>73.04</td><td>90.96</td><td>86.08</td><td>81.63</td><td>77.61</td></tr><tr><td>LoRA</td><td>87.18</td><td>80.21</td><td>72.55</td><td>67.63</td><td>76.29</td><td>69.19</td><td>86.68</td><td>84.88</td><td>72.97</td><td>91.78</td><td>87.86</td><td>81.24</td><td>77.12</td></tr><tr><td rowspan=\"2\">DAS</td><td>Full</td><td rowspan=\"2\">X</td><td>87.57</td><td>80.90</td><td>74.47</td><td>70.52</td><td>78.72</td><td>72.85</td><td>85.40</td><td>82.82</td><td>72.99</td><td>89.98</td><td>84.47</td><td>81.52</td><td>77.43</td></tr><tr><td>LoRA</td><td>87.44</td><td>80.62</td><td>72.02</td><td>66.37</td><td>76.33</td><td>68.75</td><td>86.48</td><td>84.38</td><td>72.27</td><td>91.55</td><td>87.28</td><td>81.01</td><td>76.61</td></tr><tr><td>Seperate LoRA</td><td>DoMIX (Ours)</td><td>X</td><td>86.67</td><td>79.30</td><td>72.97</td><td>69.10</td><td>79.11</td><td>74.01</td><td>87.12</td><td>85.23</td><td>73.61</td><td>90.54</td><td>85.79</td><td>81.67</td><td>77.84</td></tr></table>\n\n![](images/3b20cfca07357ac318b3d32811bda1cf20471a516a21adbaf0db1f065a97b759.jpg)\n\n![](images/b92ca2929a467f2f3fc7b95826506d3a6d2decdf286e7d87880e9fe8d77d3ec1.jpg)\n\n![](images/ef0f8ddee3c7068985aaa018f02d57cd045e659c801f08876b5158ed0bbe5ebe.jpg)\n\n![](images/b22c10a10a93886c8095bf3926a7b9235d4ba0a0630c384dbef7a93e88d3a2c2.jpg)  \nFigure 3: Left: Variance comparison of average accuracy and F1 scores. Right: Memory usage and training time costs during the DAP stage.\n\nTable 2: Comparison of trainable parameters and GPU memory usage during end-task fine-tuning.   \n\n<table><tr><td>Finetune Method</td><td># of Domains</td><td># of Params (vs Full)</td><td>GPU Mem.</td></tr><tr><td>Full Finetuning</td><td>-</td><td>124.06M (100%)</td><td>6,253MiB</td></tr><tr><td>LoRA (r = 48)</td><td>-</td><td>11.28M (9.09%)</td><td>5,076MiB</td></tr><tr><td></td><td>1</td><td>0.67M (0.54%)</td><td>4,063MiB</td></tr><tr><td></td><td>2</td><td>1.35M (1.09%)</td><td>4,093MiB</td></tr><tr><td>DoMIX (Ours)</td><td>3</td><td>2.03M (1.64%)</td><td>4,123MiB</td></tr><tr><td>(r = 8 per domain)</td><td>4</td><td>2.73M (2.20%)</td><td>4,173MiB</td></tr><tr><td></td><td>5</td><td>3.43M (2.76%)</td><td>4,217MiB</td></tr><tr><td></td><td>6</td><td>4.15M (3.35%)</td><td>4,235MiB</td></tr></table>\n\nDAS, which is known as a state-of-the-art (SOTA) method in continual DAP scenario. However, in our experiments, DAS does not achieve SOTA performance due to the extensive evaluation of robustness across six domain orders.\n\nIn the end-task fine-tuning stage, Table 2 shows the number of trainable parameters and the corresponding memory usage. DoMIX (last row) requires less than half the trainable parameters compared to LoRA $(r = 48)$ tuning, which has the\n\nsame LoRA size as ours, due to the freezing of the $A$ module. Furthermore, DoMIX requires only $3.3\\%$ of the trainable parameters compared to full fine-tuning, resulting in a $37\\%$ reduction in peak GPU memory usage. While it may be a concern that the number of parameters of DoMIX increases linearly with the number of utilized domains, Table 2 demonstrates that this results in only a small overhead in memory usage for each added domain module. Further explanations are provided in Appendix C.2.\n\nRobustness. As shown in the left two plots of Figure 3, DoMIX is not affected by variations in the domain sequence. In these plots, the error bars indicate the standard deviation computed over six values—each representing the average performance across six end tasks under a specific domain order. Specifically, for each of six randomly sampled domain orders, we perform continual domain-adaptive pre-training, then fine-tune the resulting model on all six end tasks. We then compute a sin\n\ngle average performance score per domain order, resulting in six such scores in total. The standard deviation across these six average scores is visualized using error bars. As illustrated, all continual methods exhibit large variance across domain orders, indicating their sensitivity to the order in which data are presented. This characteristic is critical in real-world scenarios, where the sequence of data cannot be predetermined. In contrast, DoMIX demonstrates robust performance regardless of the domain sequence, as it does not rely on previously seen domains."
+    },
+    {
+      "source_window_id": "2025.acl-long.710::sections::5.2.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.2.1",
+      "section_title": "baselines",
+      "evidence": "We primarily compare our method against LoRA and its variants. DoRA (Liu et al., 2024) achieves state-of-the-art results in this setting by decomposing weights into magnitude and direction. LoRA-Dash (Si et al., 2025) identifies task-specific directions in an initial stage to enhance performance. MoSLoRA (Wu et al., 2024) introduces a mixer matrix to utilize multiple subspaces during finetuning. Although MoSLoRA is closely related to our method, our approach differs by inserting a bridge matrix to appropriately exploit domain knowledge. We employ an intuitive initialization strategy, rather than random initialization, and adopt a different training procedure by freezing part of the modules. In addition to LoRA-based methods, we also compare our approach with non-LoRA PEFT techniques. AdapterH (Houlsby et al., 2019)\n\ninserts a fully connected (FC) layer after both the attention and FFN layers, while AdapterP (Pfeiffer et al., 2020) inserts an FC layer only after the self-attention layer. Parallel Adapter (He et al., 2022) introduces parallel learnable modules into the layers of the backbone model."
+    },
+    {
+      "source_window_id": "2025.acl-long.710::sections::5.2.3",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.2.3",
+      "section_title": "results",
+      "evidence": "DoMIX either matches the state-of-the-art or achieves the best average performance across all settings. Specifically, it matches DoRA, the state-of-the-art method, at rank 16 on LLaMA3-8B, and outperforms all baselines at rank 32 on LLaMA3-8B and rank 16 on Gema2-9B. This result is notable given that DoMIX requires substantially fewer computational resources—reducing GPU memory usage by $18\\%$ and training time by $36\\%$ —compared to DoRA (Liu et al., 2024). The training time of DoMIX is the sum of the training time for LoRA on Math10k and the training time for DoMIX on Common-sense170k, which amounts to $0.5\\mathrm{h} + 8.7\\mathrm{h}$ for LLaMA3-8B and $0.8\\mathrm{h} + 13.5\\mathrm{h}$ for Gema2-9B.\n\nWe also compared DoMIX with two cases: training from a LoRA module pre-trained on the Math10k dataset, referred to as LoRA (from Math LoRA), and training a LoRA module on a joint dataset (Math10k and Common-sense170k), referred to as LoRA (with Joint Dataset). DoMIX demonstrates significantly better performance $(+2.29\\%)$ p and $+3.17\\%$ p, respectively), for LLaMA3-8B at rank 16, suggesting that DoMIX is an effective framework for exploiting domain knowledge.\n\nTable 3: Accuracy comparison on commonsense reasoning tasks using LLaMA3-8B and Gemma2-9B. \"Mem.\" denotes peak GPU memory usage during training. Bold numbers indicate the best performance for each task.\n\nTable 5: Performance comparison of trainable configurations.   \n\n<table><tr><td>Model</td><td>Method</td><td>Rank</td><td>Mem.</td><td>Time</td><td>WinoG.</td><td>OBQA</td><td>SIQA</td><td>ARC-e</td><td>BoolQ</td><td>ARC-c</td><td>PIQA</td><td>HellaS.</td><td>Avg.</td></tr><tr><td rowspan=\"13\">LLaMA3-8B</td><td>AdapterP</td><td>-</td><td>43.4G</td><td>7.0h</td><td>81.69</td><td>81.60</td><td>78.10</td><td>82.03</td><td>68.38</td><td>69.97</td><td>83.08</td><td>90.48</td><td>79.41</td></tr><tr><td>AdapterH</td><td>-</td><td>48.3G</td><td>8.0h</td><td>75.77</td><td>73.80</td><td>76.15</td><td>73.19</td><td>65.44</td><td>58.96</td><td>80.25</td><td>76.69</td><td>72.53</td></tr><tr><td>Parallel</td><td>-</td><td>48.4G</td><td>7.7h</td><td>80.74</td><td>75.40</td><td>78.25</td><td>79.04</td><td>67.65</td><td>64.93</td><td>82.97</td><td>88.71</td><td>77.21</td></tr><tr><td>LoRA</td><td>16</td><td>54.5G</td><td>8.7h</td><td>84.61</td><td>83.60</td><td>79.58</td><td>87.29</td><td>71.16</td><td>75.09</td><td>86.18</td><td>93.97</td><td>82.68</td></tr><tr><td>LoRA-Dash</td><td>16</td><td>74.8G</td><td>13.4h</td><td>87.37</td><td>86.00</td><td>79.17</td><td>89.52</td><td>72.72</td><td>76.96</td><td>87.21</td><td>94.65</td><td>84.20</td></tr><tr><td>MoSLoRA</td><td>16</td><td>54.5G</td><td>8.7h</td><td>86.19</td><td>84.40</td><td>80.50</td><td>89.56</td><td>68.56</td><td>79.95</td><td>88.36</td><td>95.25</td><td>84.10</td></tr><tr><td>DoRA</td><td>16</td><td>66.5G</td><td>14.3h</td><td>85.64</td><td>85.80</td><td>80.30</td><td>90.66</td><td>74.95</td><td>79.52</td><td>89.34</td><td>95.52</td><td>85.22</td></tr><tr><td>LoRA (from Math LoRA)</td><td>16</td><td>54.5G</td><td>9.2h</td><td>84.69</td><td>85.00</td><td>79.84</td><td>86.32</td><td>72.05</td><td>75.17</td><td>86.56</td><td>93.84</td><td>82.93</td></tr><tr><td>LoRA (with Joint Dataset)</td><td>16</td><td>54.5G</td><td>9.2h</td><td>85.40</td><td>84.00</td><td>80.99</td><td>86.78</td><td>64.43</td><td>74.66</td><td>87.05</td><td>94.02</td><td>82.05</td></tr><tr><td>DoMIX (+ Math LoRA)</td><td>16</td><td>54.5G</td><td>9.2h</td><td>85.95</td><td>85.80</td><td>80.25</td><td>91.04</td><td>73.94</td><td>80.55</td><td>88.36</td><td>95.85</td><td>85.22</td></tr><tr><td>LoRA</td><td>32</td><td>54.6G</td><td>8.7h</td><td>82.95</td><td>81.00</td><td>79.53</td><td>85.10</td><td>69.85</td><td>70.73</td><td>85.85</td><td>92.00</td><td>80.88</td></tr><tr><td>DoRA</td><td>32</td><td>66.6G</td><td>14.3h</td><td>87.92</td><td>86.60</td><td>80.96</td><td>90.45</td><td>73.73</td><td>77.82</td><td>88.74</td><td>95.63</td><td>85.23</td></tr><tr><td>DoMIX (+ Math LoRA)</td><td>32</td><td>54.6G</td><td>9.2h</td><td>86.35</td><td>85.20</td><td>79.63</td><td>91.08</td><td>74.77</td><td>80.72</td><td>89.12</td><td>95.84</td><td>85.34</td></tr><tr><td rowspan=\"4\">Gemma2-9B</td><td>LoRA</td><td>16</td><td>51.8G</td><td>13.5h</td><td>87.69</td><td>90.00</td><td>81.78</td><td>92.89</td><td>75.44</td><td>84.30</td><td>89.72</td><td>95.58</td><td>87.17</td></tr><tr><td>DoRA</td><td>16</td><td>60.3G</td><td>21.3h</td><td>88.24</td><td>91.20</td><td>82.14</td><td>95.20</td><td>78.13</td><td>87.71</td><td>90.48</td><td>96.62</td><td>88.72</td></tr><tr><td>LoRA (with Joint Dataset)</td><td>16</td><td>51.8G</td><td>14.3h</td><td>89.11</td><td>88.20</td><td>81.42</td><td>93.10</td><td>75.72</td><td>82.76</td><td>90.21</td><td>95.31</td><td>86.98</td></tr><tr><td>DoMIX (+ Math LoRA)</td><td>16</td><td>51.8G</td><td>14.3h</td><td>90.37</td><td>92.80</td><td>82.40</td><td>96.00</td><td>77.61</td><td>88.74</td><td>91.51</td><td>96.93</td><td>89.55</td></tr></table>\n\nTable 4: Average accuracy and F1 scores based on the presence and trainability of $P$   \n\n<table><tr><td>P init.</td><td>Trainable</td><td>Acc (%)</td><td>F1 (%)</td></tr><tr><td rowspan=\"2\">Id.</td><td>X</td><td>71.47</td><td>61.99</td></tr><tr><td>✓</td><td>73.61</td><td>65.44</td></tr><tr><td rowspan=\"2\">Ours</td><td>X</td><td>69.59</td><td>52.57</td></tr><tr><td>✓</td><td>81.67</td><td>77.84</td></tr></table>\n\n<table><tr><td colspan=\"3\">Trainable</td><td colspan=\"2\">Average (%)</td></tr><tr><td>A</td><td>P</td><td>B</td><td>Acc</td><td>F1</td></tr><tr><td>✓</td><td>✗</td><td>✓</td><td>81.39</td><td>77.63</td></tr><tr><td>✓</td><td>✓</td><td>✗</td><td>80.74</td><td>76.57</td></tr><tr><td>✓</td><td>✓</td><td>✓</td><td>81.31</td><td>77.00</td></tr><tr><td>✗</td><td>✓</td><td>✓</td><td>81.67</td><td>77.84</td></tr></table>\n\nTable 6: Performance comparison of different initialization configurations.   \n\n<table><tr><td colspan=\"3\">Initialization</td><td colspan=\"2\">Average (%)</td></tr><tr><td>A</td><td>P</td><td>B</td><td>Acc</td><td>F1</td></tr><tr><td>Ours</td><td>Zero</td><td>Ours</td><td>81.27</td><td>77.30</td></tr><tr><td>Ours</td><td>Kaiming</td><td>Ours</td><td>80.10</td><td>75.58</td></tr><tr><td>Ours</td><td>Ours</td><td>Zero</td><td>81.13</td><td>77.04</td></tr><tr><td>Ours</td><td>Ours</td><td>Kaiming</td><td>81.11</td><td>77.12</td></tr><tr><td>Kaiming</td><td>Ours</td><td>Ours</td><td>81.15</td><td>77.29</td></tr><tr><td>Ours</td><td>Ours</td><td>Ours</td><td>81.67</td><td>77.84</td></tr></table>"
+    },
+    {
+      "source_window_id": "2025.acl-long.710::sections::5.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.3",
+      "section_title": "ablation studies",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.710::sections::6",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6",
+      "section_title": "conclusion",
+      "evidence": "In this paper, we emphasize the need for an efficient, parallel, and effective methodology for domain learning and knowledge exploitation. To address this, we proposed DoMIX, which achieves performance on par with or better than state-of-the-art methods, while demonstrating superior efficiency in terms of training time and GPU memory usage. We validated the efficacy of our method in both the continual DAP setting and the standard LLM fine-tuning setting.\n\nWe hope this work contributes to advancing research on enabling models to generalize effectively across diverse tasks by leveraging pre-trained models, which are abundantly available online, as inspired by the notion of \"standing on the shoulders of giants.\""
+    },
+    {
+      "source_window_id": "2025.acl-long.710::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "details of experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.710::appendix::C.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C.1",
+      "section_title": "details of the motivation experiment",
+      "evidence": "The exact domain names presented in Figure 1, in the same order, are listed in Table 1. The DAP stage follows the same procedure as Separate LoRA in Table 1. Fine-tuning is conducted using full finetuning, with hyperparameters specified in Table 11."
+    },
+    {
+      "source_window_id": "2025.acl-long.710::appendix::C.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C.2",
+      "section_title": "details of gpu memory overhead according to the number of domains",
+      "evidence": "In Table 2, we report the number of trainable parameters and the GPU memory usage during end-task fine-tuning for various settings. As shown, although GPU memory usage increases linearly with the number of domains, the growth is minimal. This implies that DoMIX can scale to more domains without significant overhead.\n\nFigure 5 visualizes this trend and includes an extrapolated estimate of memory usage as the number of domains increases. The dotted gray line indicates the GPU memory usage of standard LoRA with rank 48. Note that this rank corresponds to the total parameter size of DoMIX when using 6 domains with rank 8 each—excluding the bridge matrix. Despite having a similar number of trainable parameters, DoMIX consumes significantly less GPU memory due to its partially frozen structure and selective training. The extrapolated red line shows that only when scaling to around 30 domains does DoMIX reach the same memory usage as standard LoRA ( $r = 48$ ), highlighting its strong scalability and memory efficiency.\n\nThis scalability is possible because DoMIX freezes the input-side LoRA matrices (A) and selectively trains only the necessary components, thereby minimizing memory overhead per added domain."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 4
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.710\\auto\\full.md",
+    "source_md_sha256": "1d3f204668526db2c3197355bb50218fe02c3c3ee50f52c9e4c42784ac3167f9",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

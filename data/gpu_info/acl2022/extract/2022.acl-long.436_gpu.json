@@ -1,0 +1,141 @@
+{
+  "paper_id": "2022.acl-long.436",
+  "candidate_windows": [
+    {
+      "window_id": "2022.acl-long.436::sections::5",
+      "paper_id": "2022.acl-long.436",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "In this section, we will explain our experimental settings and report the results. We evaluate our model on vulnerability and code clone detection.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.436::sections::5.1",
+      "paper_id": "2022.acl-long.436",
+      "section_number": "5.1",
+      "section_title": "experimental settings",
+      "normalized_section_title": "experimental settings",
+      "window_text": "Data. We collect our pre-training corpus from open-source C and Java projects. We rank Github repositories by the number of stars and focus on the most popular ones. After filtering out forks from existing repositories, we collect the dataset for each language from top-100 repositories. We only consider the“.java” and“.c” files for Java and C repositories respectively, and we further remove comments and empty lines from these files. The corresponding datasets for Java and C are of size of 992MB and 865MB, respectively. Our datasets are significantly smaller than existing pre-training models (Feng et al., 2020; Ahmad et al., 2021; Guo\n\net al., 2021). For example, while CodeBERT and GraphCodeBERT are trained on 20GB data, we used an order of magnitude less data. Details of our datasets and the comparison can be found in Appendix Table 5.\n\nModels. To study the different design choices, we train four variations of DISCO. (i) $\\mathbf{MLM} + \\mathbf{CLR}^{\\pm} + \\mathbf{NT - MLM}$ is trained by all three tasks with hard negative samples. (ii) $\\mathbf{MLM} + \\mathbf{CLR}^{\\pm}$ . The input of this model only considers the source code sequence and ignores the AST-type sequence. This model helps us understand the impact of NT-MLM. (iii) $\\mathbf{MLM} + \\mathbf{CLR}^{+}$ . This variant evaluates the effectiveness of hard negative code samples, by contrasting its performance with $\\mathbf{MLM} + \\mathbf{CLR}^{\\pm}$ . (iv) MLM. This is the baseline trained with only MLM objective. We provide detailed model configuration in Appendix A.4 to ensure the reproducibility.\n\nBaselines. We consider two types of baselines: encoder-only pre-trained Transformers and existing deep-learning tools designed for code clone and vulnerability detection. We do not consider encoder-decoder pre-trained Transformers as baselines, since such generative models always need much more pre-training data and training steps to converge, so it is unfair to compare our model with them. For example, PLBART uses 576G source code for pre-training, while we only use less than 1G. Based on the data size. As future work, we plan to pre-train the model on much larger datasets.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.436::appendix::A",
+      "paper_id": "2022.acl-long.436",
+      "section_number": "A",
+      "section_title": "appendix",
+      "normalized_section_title": "appendix",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.436::appendix::A.4",
+      "paper_id": "2022.acl-long.436",
+      "section_number": "A.4",
+      "section_title": "configuration",
+      "normalized_section_title": "configuration",
+      "window_text": "DISCO is built based on a stack of 12 layers transformer encoder with 12 attention heads and 768 hidden sizes. The model is implemented with PyTorch-1.9.0 and Huggingface-transformer-4.12.3 $^{2}$ . Longer sequences are disproportionately expensive so we follow the original BERT design by pre-training the model with short sequence length for first $70\\%$ steps and long sequence length for the rest $30\\%$ steps to learn the positional embeddings. DISCO is trained with Java SMALL and C SMALL for 24 hours in total with two 32GB NVIDIA Tesla V100 GPUs, using batch size of 128 with max sequence length of 256 tokens and batch\n\nTable 6: Common Weakness Enumeration (CWE) types covered by our bug injection heuristic   \n\n<table><tr><td>Operation</td><td>Potential CWE types</td></tr><tr><td>Misuse of Data Type</td><td>CWE-190: Integer overflowCWE-191: Integer UnderflowCWE-680: Integer Overflow to Buffer OverflowCWE-686: Function Call With Incorrect Argument TypeCWE-704: Incorrect Type Conversion or CastCWE-843: Access of Resource Using Incompatible Type</td></tr><tr><td>Misuse of Pointer</td><td>CWE-476: NULL Pointer DereferenceCWE-824: Access of Uninitialized PointerCWE-825: Expired Pointer Dereference</td></tr><tr><td>Change of Conditional Statements</td><td>CWE-120: Buffer OverflowCWE-121: Stack-based Buffer overflowCWE-122: Heap-based Buffer overflowCWE-124: Buffer UnderflowCWE-125: Out-of-bounds ReadCWE-126: Buffer Over-readCWE-129: Improper Validation of Array IndexCWE-787: Out-of-bounds WriteCWE-788: Access of Memory Location After End of BufferCWE-823: Use of Out-of-range Pointer Offset</td></tr><tr><td>Misuse of Values</td><td>CWE-369: Divide By ZeroCWE-456: Missing Initialization of a VariableCWE-457: Use of Uninitialized VariableCWE-908: Use of Uninitialized Resource</td></tr><tr><td>Change of Function Calls</td><td>CWE-683: Function Call With Incorrect Order of ArgumentsCWE-685: Function Call With Incorrect Number of ArgumentsCWE-686: Function Call With Incorrect Argument TypeCWE-687: Function Call With Incorrectly Specified Argument ValueCWE-688: Function Call With Incorrect Variable or Reference</td></tr></table>\n\nTable 7: Examples for tokens and their AST node types   \n\n<table><tr><td>token</td><td>node type</td><td>parent node type</td><td>token</td><td>node type</td><td>parent node type</td></tr><tr><td>int</td><td>type</td><td>func-definition</td><td>)</td><td>punctuation</td><td>parenthesized_expr</td></tr><tr><td>foo</td><td>identifier</td><td>func_declarator</td><td>return</td><td>keyword</td><td>return_stmt</td></tr><tr><td>(</td><td>punctuation</td><td>param_list</td><td>(</td><td>punctuation</td><td>parenthesized_expr</td></tr><tr><td>int</td><td>type</td><td>parameter_declaration</td><td>1</td><td>numberLiteral</td><td>parenthesized_expr</td></tr><tr><td>bar</td><td>identifier</td><td>parameter_declaration</td><td>)</td><td>punctuation</td><td>parenthesized_expr</td></tr><tr><td>)</td><td>punctuation</td><td>parameter_list</td><td>;</td><td>punctuation</td><td>return_stmt</td></tr><tr><td>{</td><td>punctuation</td><td>compoundstmt</td><td>else</td><td>keyword</td><td>if_stmt</td></tr><tr><td>if</td><td>keyword</td><td>ifstmt</td><td>return</td><td>keyword</td><td>return_stmt</td></tr><tr><td>(</td><td>punctuation</td><td>parenthesized_expr</td><td>(</td><td>punctuation</td><td>parenthesized_expr</td></tr><tr><td>bar</td><td>identifier</td><td>binary_expr</td><td>0</td><td>numberLiteral</td><td>parenthesized_expr</td></tr><tr><td>&lt;</td><td>operator</td><td>binary_expr</td><td>)</td><td>numberLiteral</td><td>parenthesized_expr</td></tr><tr><td>5</td><td>numberLiteral</td><td>binary_expr</td><td>;</td><td>punctuation</td><td>return_stmt</td></tr><tr><td></td><td></td><td></td><td>}</td><td>punctuation</td><td>compoundstmt</td></tr></table>\n\nTable 8: Details of downstream tasks datasets.   \n\n<table><tr><td>Task</td><td>Dataset</td><td>Language</td><td>Train</td><td>Valid</td><td>Test</td></tr><tr><td rowspan=\"2\">Vulnerability Detection</td><td>Chakraborty et al. (2021)</td><td>C/C++</td><td>15,867</td><td>2,268</td><td>4,535</td></tr><tr><td>Zhou et al. (2019)</td><td>C/C++</td><td>21,854</td><td>2,732</td><td>2,732</td></tr><tr><td rowspan=\"2\">Clone Detection</td><td>Mou et al. (2016)</td><td>C/C++</td><td>32,000</td><td>8,000</td><td>12,000</td></tr><tr><td>Svajlenko et al. (2014)</td><td>Java</td><td>901,028</td><td>415,416</td><td>415,416</td></tr></table>\n\nif((ret $=$ ff_get_buffer(avctx,frame)) $<  0$ ）{ av_log(avctx，AV_LOG_ERROR，STR）; return ret;   \n} Buggy Code\n\n... if $(\\mathrm{ret} = \\mathrm{ff\\_get\\_buffer(\\mathsf{avctx},\\mathsf{frame},0)} <   0)$ { av_log (avctx, AV_LOG_ERROR, STR ) ; return ret ; } Patched Code\n\nFigure 3: An example in REVEAL dataset. The patched code happens to be in the train split and the buggy code is in the test split. During inference, DISCO MLM+CLR $^{\\pm}$ model can correctly predict the buggy code as vulnerable, while MLM+CLR $^{+}$ predicts it as benign.\n\nsize of 64 sequences with max sequence length 512 tokens. DISCO is also trained with C MEDIUM for 3 days, using batch size of 1024 sequences with max sequence length of 256 tokens and batch size of 512 sequences and max sequence length of 512 tokens. We use the Adam optimizer and 1e-4 as the pre-training learning rate. For fine-tuning tasks, we use batch size of 8 and the learning of 8e-6. We train the model with train split and evaluate the model during the training using validation split. We pick the model with best validation performance for testing.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.acl-long.436::appendix::A.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100 32GB",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "DISCO is built based on a stack of 12 layers transformer encoder with 12 attention heads and 768 hidden sizes. The model is implemented with PyTorch-1.9.0 and Huggingface-transformer-4.12.3 $^{2}$ . Longer sequences are disproportionately expensive so we follow the original BERT design by pre-training the model with short sequence length for first $70\\%$ steps and long sequence length for the rest $30\\%$ steps to learn the positional embeddings. DISCO is trained with Java SMALL and C SMALL for 24 hours in total with two 32GB NVIDIA Tesla V100 GPUs, using batch size of 128 with max sequence length of 256 tokens and batch\n\nTable 6: Common Weakness Enumeration (CWE) types covered by our bug injection heuristic   \n\n<table><tr><td>Operation</td><td>Potential CWE types</td></tr><tr><td>Misuse of Data Type</td><td>CWE-190: Integer overflowCWE-191: Integer UnderflowCWE-680: Integer Overflow to Buffer OverflowCWE-686: Function Call With Incorrect Argument TypeCWE-704: Incorrect Type Conversion or CastCWE-843: Access of Resource Using Incompatible Type</td></tr><tr><td>Misuse of Pointer</td><td>CWE-476: NULL Pointer DereferenceCWE-824: Access of Uninitialized PointerCWE-825: Expired Pointer Dereference</td></tr><tr><td>Change of Conditional Statements</td><td>CWE-120: Buffer OverflowCWE-121: Stack-based Buffer overflowCWE-122: Heap-based Buffer overflowCWE-124: Buffer UnderflowCWE-125: Out-of-bounds ReadCWE-126: Buffer Over-readCWE-129: Improper Validation of Array IndexCWE-787: Out-of-bounds WriteCWE-788: Access of Memory Location After End of BufferCWE-823: Use of Out-of-range Pointer Offset</td></tr><tr><td>Misuse of Values</td><td>CWE-369: Divide By ZeroCWE-456: Missing Initialization of a VariableCWE-457: Use of Uninitialized VariableCWE-908: Use of Uninitialized Resource</td></tr><tr><td>Change of Function Calls</td><td>CWE-683: Function Call With Incorrect Order of ArgumentsCWE-685: Function Call With Incorrect Number of ArgumentsCWE-686: Function Call With Incorrect Argument TypeCWE-687: Function Call With Incorrectly Specified Argument ValueCWE-688: Function Call With Incorrect Variable or Reference</td></tr></table>\n\nTable 7: Examples for tokens and their AST node types   \n\n<table><tr><td>token</td><td>node type</td><td>parent node type</td><td>token</td><td>node type</td><td>parent node type</td></tr><tr><td>int</td><td>type</td><td>func-definition</td><td>)</td><td>punctuation</td><td>parenthesized_expr</td></tr><tr><td>foo</td><td>identifier</td><td>func_declarator</td><td>return</td><td>keyword</td><td>return_stmt</td></tr><tr><td>(</td><td>punctuation</td><td>param_list</td><td>(</td><td>punctuation</td><td>parenthesized_expr</td></tr><tr><td>int</td><td>type</td><td>parameter_declaration</td><td>1</td><td>numberLiteral</td><td>parenthesized_expr</td></tr><tr><td>bar</td><td>identifier</td><td>parameter_declaration</td><td>)</td><td>punctuation</td><td>parenthesized_expr</td></tr><tr><td>)</td><td>punctuation</td><td>parameter_list</td><td>;</td><td>punctuation</td><td>return_stmt</td></tr><tr><td>{</td><td>punctuation</td><td>compoundstmt</td><td>else</td><td>keyword</td><td>if_stmt</td></tr><tr><td>if</td><td>keyword</td><td>ifstmt</td><td>return</td><td>keyword</td><td>return_stmt</td></tr><tr><td>(</td><td>punctuation</td><td>parenthesized_expr</td><td>(</td><td>punctuation</td><td>parenthesized_expr</td></tr><tr><td>bar</td><td>identifier</td><td>binary_expr</td><td>0</td><td>numberLiteral</td><td>parenthesized_expr</td></tr><tr><td>&lt;</td><td>operator</td><td>binary_expr</td><td>)</td><td>numberLiteral</td><td>parenthesized_expr</td></tr><tr><td>5</td><td>numberLiteral</td><td>binary_expr</td><td>;</td><td>punctuation</td><td>return_stmt</td></tr><tr><td></td><td></td><td></td><td>}</td><td>punctuation</td><td>compoundstmt</td></tr></table>\n\nTable 8: Details of downstream tasks datasets.   \n\n<table><tr><td>Task</td><td>Dataset</td><td>Language</td><td>Train</td><td>Valid</td><td>Test</td></tr><tr><td rowspan=\"2\">Vulnerability Detection</td><td>Chakraborty et al. (2021)</td><td>C/C++</td><td>15,867</td><td>2,268</td><td>4,535</td></tr><tr><td>Zhou et al. (2019)</td><td>C/C++</td><td>21,854</td><td>2,732</td><td>2,732</td></tr><tr><td rowspan=\"2\">Clone Detection</td><td>Mou et al. (2016)</td><td>C/C++</td><td>32,000</td><td>8,000</td><td>12,000</td></tr><tr><td>Svajlenko et al. (2014)</td><td>Java</td><td>901,028</td><td>415,416</td><td>415,416</td></tr></table>\n\nif((ret $=$ ff_get_buffer(avctx,frame)) $<  0$ ）{ av_log(avctx，AV_LOG_ERROR，STR）; return ret;   \n} Buggy Code\n\n... if $(\\mathrm{ret} = \\mathrm{ff\\_get\\_buffer(\\mathsf{avctx},\\mathsf{frame},0)} <   0)$ { av_log (avctx, AV_LOG_ERROR, STR ) ; return ret ; } Patched Code\n\nFigure 3: An example in REVEAL dataset. The patched code happens to be in the train split and the buggy code is in the test split. During inference, DISCO MLM+CLR $^{\\pm}$ model can correctly predict the buggy code as vulnerable, while MLM+CLR $^{+}$ predicts it as benign.\n\nsize of 64 sequences with max sequence length 512 tokens. DISCO is also trained with C MEDIUM for 3 days, using batch size of 1024 sequences with max sequence length of 256 tokens and batch size of 512 sequences and max sequence length of 512 tokens. We use the Adam optimizer and 1e-4 as the pre-training learning rate. For fine-tuning tasks, we use batch size of 8 and the learning of 8e-6. We train the model with train split and evaluate the model during the training using validation split. We pick the model with best validation performance for testing.",
+      "section_number": "A.4",
+      "section_title": "configuration",
+      "normalized_section_title": "configuration"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.acl-long.436::appendix::A.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100 32GB",
+      "cleaned_hardware_name": "nvidia tesla v100 32gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "A.4",
+      "section_title": "configuration",
+      "normalized_section_title": "configuration",
+      "evidence": "DISCO is built based on a stack of 12 layers transformer encoder with 12 attention heads and 768 hidden sizes. The model is implemented with PyTorch-1.9.0 and Huggingface-transformer-4.12.3 $^{2}$ . Longer sequences are disproportionately expensive so we follow the original BERT design by pre-training the model with short sequence length for first $70\\%$ steps and long sequence length for the rest $30\\%$ steps to learn the positional embeddings. DISCO is trained with Java SMALL and C SMALL for 24 hours in total with two 32GB NVIDIA Tesla V100 GPUs, using batch size of 128 with max sequence length of 256 tokens and batch\n\nTable 6: Common Weakness Enumeration (CWE) types covered by our bug injection heuristic   \n\n<table><tr><td>Operation</td><td>Potential CWE types</td></tr><tr><td>Misuse of Data Type</td><td>CWE-190: Integer overflowCWE-191: Integer UnderflowCWE-680: Integer Overflow to Buffer OverflowCWE-686: Function Call With Incorrect Argument TypeCWE-704: Incorrect Type Conversion or CastCWE-843: Access of Resource Using Incompatible Type</td></tr><tr><td>Misuse of Pointer</td><td>CWE-476: NULL Pointer DereferenceCWE-824: Access of Uninitialized PointerCWE-825: Expired Pointer Dereference</td></tr><tr><td>Change of Conditional Statements</td><td>CWE-120: Buffer OverflowCWE-121: Stack-based Buffer overflowCWE-122: Heap-based Buffer overflowCWE-124: Buffer UnderflowCWE-125: Out-of-bounds ReadCWE-126: Buffer Over-readCWE-129: Improper Validation of Array IndexCWE-787: Out-of-bounds WriteCWE-788: Access of Memory Location After End of BufferCWE-823: Use of Out-of-range Pointer Offset</td></tr><tr><td>Misuse of Values</td><td>CWE-369: Divide By ZeroCWE-456: Missing Initialization of a VariableCWE-457: Use of Uninitialized VariableCWE-908: Use of Uninitialized Resource</td></tr><tr><td>Change of Function Calls</td><td>CWE-683: Function Call With Incorrect Order of ArgumentsCWE-685: Function Call With Incorrect Number of ArgumentsCWE-686: Function Call With Incorrect Argument TypeCWE-687: Function Call With Incorrectly Specified Argument ValueCWE-688: Function Call With Incorrect Variable or Reference</td></tr></table>\n\nTable 7: Examples for tokens and their AST node types   \n\n<table><tr><td>token</td><td>node type</td><td>parent node type</td><td>token</td><td>node type</td><td>parent node type</td></tr><tr><td>int</td><td>type</td><td>func-definition</td><td>)</td><td>punctuation</td><td>parenthesized_expr</td></tr><tr><td>foo</td><td>identifier</td><td>func_declarator</td><td>return</td><td>keyword</td><td>return_stmt</td></tr><tr><td>(</td><td>punctuation</td><td>param_list</td><td>(</td><td>punctuation</td><td>parenthesized_expr</td></tr><tr><td>int</td><td>type</td><td>parameter_declaration</td><td>1</td><td>numberLiteral</td><td>parenthesized_expr</td></tr><tr><td>bar</td><td>identifier</td><td>parameter_declaration</td><td>)</td><td>punctuation</td><td>parenthesized_expr</td></tr><tr><td>)</td><td>punctuation</td><td>parameter_list</td><td>;</td><td>punctuation</td><td>return_stmt</td></tr><tr><td>{</td><td>punctuation</td><td>compoundstmt</td><td>else</td><td>keyword</td><td>if_stmt</td></tr><tr><td>if</td><td>keyword</td><td>ifstmt</td><td>return</td><td>keyword</td><td>return_stmt</td></tr><tr><td>(</td><td>punctuation</td><td>parenthesized_expr</td><td>(</td><td>punctuation</td><td>parenthesized_expr</td></tr><tr><td>bar</td><td>identifier</td><td>binary_expr</td><td>0</td><td>numberLiteral</td><td>parenthesized_expr</td></tr><tr><td>&lt;</td><td>operator</td><td>binary_expr</td><td>)</td><td>numberLiteral</td><td>parenthesized_expr</td></tr><tr><td>5</td><td>numberLiteral</td><td>binary_expr</td><td>;</td><td>punctuation</td><td>return_stmt</td></tr><tr><td></td><td></td><td></td><td>}</td><td>punctuation</td><td>compoundstmt</td></tr></table>\n\nTable 8: Details of downstream tasks datasets.   \n\n<table><tr><td>Task</td><td>Dataset</td><td>Language</td><td>Train</td><td>Valid</td><td>Test</td></tr><tr><td rowspan=\"2\">Vulnerability Detection</td><td>Chakraborty et al. (2021)</td><td>C/C++</td><td>15,867</td><td>2,268</td><td>4,535</td></tr><tr><td>Zhou et al. (2019)</td><td>C/C++</td><td>21,854</td><td>2,732</td><td>2,732</td></tr><tr><td rowspan=\"2\">Clone Detection</td><td>Mou et al. (2016)</td><td>C/C++</td><td>32,000</td><td>8,000</td><td>12,000</td></tr><tr><td>Svajlenko et al. (2014)</td><td>Java</td><td>901,028</td><td>415,416</td><td>415,416</td></tr></table>\n\nif((ret $=$ ff_get_buffer(avctx,frame)) $<  0$ ）{ av_log(avctx，AV_LOG_ERROR，STR）; return ret;   \n} Buggy Code\n\n... if $(\\mathrm{ret} = \\mathrm{ff\\_get\\_buffer(\\mathsf{avctx},\\mathsf{frame},0)} <   0)$ { av_log (avctx, AV_LOG_ERROR, STR ) ; return ret ; } Patched Code\n\nFigure 3: An example in REVEAL dataset. The patched code happens to be in the train split and the buggy code is in the test split. During inference, DISCO MLM+CLR $^{\\pm}$ model can correctly predict the buggy code as vulnerable, while MLM+CLR $^{+}$ predicts it as benign.\n\nsize of 64 sequences with max sequence length 512 tokens. DISCO is also trained with C MEDIUM for 3 days, using batch size of 1024 sequences with max sequence length of 256 tokens and batch size of 512 sequences and max sequence length of 512 tokens. We use the Adam optimizer and 1e-4 as the pre-training learning rate. For fine-tuning tasks, we use batch size of 8 and the learning of 8e-6. We train the model with train split and evaluate the model during the training using validation split. We pick the model with best validation performance for testing.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2022.acl-long.436::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiments",
+      "evidence": "In this section, we will explain our experimental settings and report the results. We evaluate our model on vulnerability and code clone detection."
+    },
+    {
+      "source_window_id": "2022.acl-long.436::sections::5.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.1",
+      "section_title": "experimental settings",
+      "evidence": "Data. We collect our pre-training corpus from open-source C and Java projects. We rank Github repositories by the number of stars and focus on the most popular ones. After filtering out forks from existing repositories, we collect the dataset for each language from top-100 repositories. We only consider the“.java” and“.c” files for Java and C repositories respectively, and we further remove comments and empty lines from these files. The corresponding datasets for Java and C are of size of 992MB and 865MB, respectively. Our datasets are significantly smaller than existing pre-training models (Feng et al., 2020; Ahmad et al., 2021; Guo\n\net al., 2021). For example, while CodeBERT and GraphCodeBERT are trained on 20GB data, we used an order of magnitude less data. Details of our datasets and the comparison can be found in Appendix Table 5.\n\nModels. To study the different design choices, we train four variations of DISCO. (i) $\\mathbf{MLM} + \\mathbf{CLR}^{\\pm} + \\mathbf{NT - MLM}$ is trained by all three tasks with hard negative samples. (ii) $\\mathbf{MLM} + \\mathbf{CLR}^{\\pm}$ . The input of this model only considers the source code sequence and ignores the AST-type sequence. This model helps us understand the impact of NT-MLM. (iii) $\\mathbf{MLM} + \\mathbf{CLR}^{+}$ . This variant evaluates the effectiveness of hard negative code samples, by contrasting its performance with $\\mathbf{MLM} + \\mathbf{CLR}^{\\pm}$ . (iv) MLM. This is the baseline trained with only MLM objective. We provide detailed model configuration in Appendix A.4 to ensure the reproducibility.\n\nBaselines. We consider two types of baselines: encoder-only pre-trained Transformers and existing deep-learning tools designed for code clone and vulnerability detection. We do not consider encoder-decoder pre-trained Transformers as baselines, since such generative models always need much more pre-training data and training steps to converge, so it is unfair to compare our model with them. For example, PLBART uses 576G source code for pre-training, while we only use less than 1G. Based on the data size. As future work, we plan to pre-train the model on much larger datasets."
+    },
+    {
+      "source_window_id": "2022.acl-long.436::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "appendix",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.4"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 32 GB",
+        "num": 2
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2022\\2022.acl-long.436\\auto\\full.md",
+    "source_md_sha256": "4d59334830ddb4e2b180a616dedf678e410ba7290c025c3231cf33f26d0d3636",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

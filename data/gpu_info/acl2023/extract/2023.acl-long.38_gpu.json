@@ -1,0 +1,171 @@
+{
+  "paper_id": "2023.acl-long.38",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.38::sections::5",
+      "paper_id": "2023.acl-long.38",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "Our experiments aim to evaluate whether LEXSYM can improve compositional generalization in downstream models. The main goal of these experiments is to evaluate generality across tasks and data modalities. Evaluation focuses on three diverse classes of language understanding problems: complex, context-dependent computations (Sec. 5.1), large, automatically derived lexicons (Sec. 5.2), and multi-modal data (Sec. 5.3).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.38::appendix::C",
+      "paper_id": "2023.acl-long.38",
+      "section_number": "C",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.38::appendix::C.1",
+      "paper_id": "2023.acl-long.38",
+      "section_number": "C.1",
+      "section_title": "vqvae details",
+      "normalized_section_title": "vqvae details",
+      "window_text": "We use a discrete variational auto-encoder (van den Oord et al., 2017) to encode the images $16 \\times 16$ grids of discrete codes. We used a code-book with $n = 32$ tokens associated with $d = 64$ dimensional\n\n![](images/8103e88f2a656c6b0692080396b6203773571758b0f36f485dbcdadec2d50522.jpg)\n\n![](images/afd08e7ccfd6376615a35d241e21d5504de8f044582cfc451449ebd6ac83c930.jpg)\n\n![](images/083a26cfe25e557a30ed7adb4e351c8e17cb1f0f4b18a8118cf6b186e202b4fd.jpg)\n\n![](images/e1e445f5bd57dbf600dedc097c776d3280699705bae51d7f54a5ce5bd6cab5d2.jpg)  \nFigure 3: Overview of our approach in VQA. We discretize images using a VQVAE (van den Oord et al., 2017) learned from the training data. This discretization represents every image as a sequence of categorical codes. (a) We run a statistical aligner on $(\\mathbf{x}_{\\mathrm{text}},\\mathbf{x}_{\\mathrm{img}})$ pairs to find word-visual token alignments within individual examples, then use these alignments to construct a global lexicon. (b) Each entry in the lexicon is assigned a type based on the context in which it occurs. (c) Next, we find homomorphisms of this lexicon, and use these as data augmentation functions to generate new training examples. (d) Finally, we train a neural sequence model on the augmented dataset.\n\nlearned latent vectors. The original image size (480, 320) is cropped to (440, 300) and resize our images into (128, 128) pixels. The encoder convolutional neural network has three down-sampling layers which output $16 \\times 16 \\times d$ size hidden representations. For encoder and decoder CNN architectures, we follow the implementation provided in a public Pytorch implementation by adding one more up-sampling and down-sampling layer to adjust our image size.\n\nWe use exponential moving average to update latent vectors as in official implementation<sup>6</sup> We train the model on the images of the same training data and did not use any external data.\n\nWe use batch size of 512, and learning rate 0.0003 with the Adam optimizer (Kingma and Ba, 2015). We clip the gradients to 5.0. Hyperparameters were selected by sweeping $d$ over $\\{64, 128\\}$ , image sizes over $\\{128, 144\\}$ , and $n$ over $\\{24, 32, 48\\}$ to maximize the number of aligned tokens in the lexicon. For each experiments in Table 2, we run VQVAE for 4 random seeds and select the codebook that gives the largest IBM model likelihood for training data. Each experiment takes 10 hours in 4 NVIDIA V100 GPUs.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2023.acl-long.38::appendix::C.2",
+      "paper_id": "2023.acl-long.38",
+      "section_number": "C.2",
+      "section_title": "vqa transformer details",
+      "normalized_section_title": "vqa transformer details",
+      "window_text": "The Transformer takes tokenized images $\\boldsymbol{x}_I$ and the question $\\boldsymbol{x}_Q$ and outputs answers as follows:\n\n$$\nc _ {\\mathbf {x} _ {I}} = \\mathrm {V Q V A E} _ {\\text {e n c}} (\\mathbf {x} _ {I})\n$$\n\n$$\ne _ {Q} = W _ {Q} \\mathbf {x} _ {Q} + 1 \\mathrm {D} _ {\\text {p o s i t i o n a l}} (\\mathbf {x} _ {Q})\n$$\n\n$$\ne _ {\\mathbf {x} _ {I}} = W _ {c} c _ {\\mathbf {x} _ {I}} + 2 \\mathrm {D} _ {\\text {p o s i t i o n a l}} \\left(c _ {\\mathbf {x}}\\right) \\tag {4}\n$$\n\n$$\nh = \\mathrm {T r a n s f o r m e r} ([ e _ {Q} e _ {\\mathbf {x} _ {I}} ])\n$$\n\n$$\n\\boldsymbol {x} _ {A} = \\operatorname {a r g m a x} \\operatorname {s o f t m a x} \\left(W _ {\\operatorname {p r o j}} h _ {\\text {s t a r t}}\\right)\n$$\n\nWe follow the hyper-paramters provided in (Popel and Bojar, 2018). Transformers have 4 heads, 512-dimensional hidden vectors (same with embedding sizes) and 10 layers. We provide the dimensions in Eq. 4:\n\n$$\n\\mathbf {x} _ {I}: 3 \\times 1 2 8 \\times 1 2 8\n$$\n\n$$\nc _ {\\mathbf {x} _ {I}}: 3 2 \\times 1 6 \\times 1 6\n$$\n\n$$\nW _ {c}: 5 1 2 \\times 3 2\n$$\n\n$$\ne _ {\\mathbf {x} _ {I}}: 5 1 2 \\times (1 6 \\times 1 6)\n$$\n\n$$\ne _ {Q}: 5 1 2 \\times | V _ {\\text {t e x t}} | \\tag {5}\n$$\n\n$$\nW _ {Q}: 5 1 2 \\times | \\mathcal {V} _ {\\text {t e x t}} |\n$$\n\n$$\nh: 5 1 2 \\times (| Q | + 1 6 \\times 1 6)\n$$\n\n$$\nh _ {\\mathrm {s t a r t}}: 5 1 2 \\times 1\n$$\n\n$$\nW _ {\\text {p r o j}}: 5 1 2 \\times | \\mathcal {V} _ {\\text {t e x t}} |\n$$\n\nModels are trained using the Adam optimizer with and Noam learning rate scheduler (Vaswani et al., 2017) with $lr = 1.0$ and $16k$ warming steps as provided in Popel and Bojar (2018). We use a batch size of 1024 and we train for $200k$ steps,\n\nwhich takes 48 hours on 8 NVIDIA V100 GPUs. In Fig. 3, we provide the sketch of overall pipeline.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.38::appendix::C.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA V100",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "We use a discrete variational auto-encoder (van den Oord et al., 2017) to encode the images $16 \\times 16$ grids of discrete codes. We used a code-book with $n = 32$ tokens associated with $d = 64$ dimensional\n\n![](images/8103e88f2a656c6b0692080396b6203773571758b0f36f485dbcdadec2d50522.jpg)\n\n![](images/afd08e7ccfd6376615a35d241e21d5504de8f044582cfc451449ebd6ac83c930.jpg)\n\n![](images/083a26cfe25e557a30ed7adb4e351c8e17cb1f0f4b18a8118cf6b186e202b4fd.jpg)\n\n![](images/e1e445f5bd57dbf600dedc097c776d3280699705bae51d7f54a5ce5bd6cab5d2.jpg)  \nFigure 3: Overview of our approach in VQA. We discretize images using a VQVAE (van den Oord et al., 2017) learned from the training data. This discretization represents every image as a sequence of categorical codes. (a) We run a statistical aligner on $(\\mathbf{x}_{\\mathrm{text}},\\mathbf{x}_{\\mathrm{img}})$ pairs to find word-visual token alignments within individual examples, then use these alignments to construct a global lexicon. (b) Each entry in the lexicon is assigned a type based on the context in which it occurs. (c) Next, we find homomorphisms of this lexicon, and use these as data augmentation functions to generate new training examples. (d) Finally, we train a neural sequence model on the augmented dataset.\n\nlearned latent vectors. The original image size (480, 320) is cropped to (440, 300) and resize our images into (128, 128) pixels. The encoder convolutional neural network has three down-sampling layers which output $16 \\times 16 \\times d$ size hidden representations. For encoder and decoder CNN architectures, we follow the implementation provided in a public Pytorch implementation by adding one more up-sampling and down-sampling layer to adjust our image size.\n\nWe use exponential moving average to update latent vectors as in official implementation<sup>6</sup> We train the model on the images of the same training data and did not use any external data.\n\nWe use batch size of 512, and learning rate 0.0003 with the Adam optimizer (Kingma and Ba, 2015). We clip the gradients to 5.0. Hyperparameters were selected by sweeping $d$ over $\\{64, 128\\}$ , image sizes over $\\{128, 144\\}$ , and $n$ over $\\{24, 32, 48\\}$ to maximize the number of aligned tokens in the lexicon. For each experiments in Table 2, we run VQVAE for 4 random seeds and select the codebook that gives the largest IBM model likelihood for training data. Each experiment takes 10 hours in 4 NVIDIA V100 GPUs.",
+      "section_number": "C.1",
+      "section_title": "vqvae details",
+      "normalized_section_title": "vqvae details"
+    },
+    {
+      "window_id": "2023.acl-long.38::appendix::C.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA V100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "The Transformer takes tokenized images $\\boldsymbol{x}_I$ and the question $\\boldsymbol{x}_Q$ and outputs answers as follows:\n\n$$\nc _ {\\mathbf {x} _ {I}} = \\mathrm {V Q V A E} _ {\\text {e n c}} (\\mathbf {x} _ {I})\n$$\n\n$$\ne _ {Q} = W _ {Q} \\mathbf {x} _ {Q} + 1 \\mathrm {D} _ {\\text {p o s i t i o n a l}} (\\mathbf {x} _ {Q})\n$$\n\n$$\ne _ {\\mathbf {x} _ {I}} = W _ {c} c _ {\\mathbf {x} _ {I}} + 2 \\mathrm {D} _ {\\text {p o s i t i o n a l}} \\left(c _ {\\mathbf {x}}\\right) \\tag {4}\n$$\n\n$$\nh = \\mathrm {T r a n s f o r m e r} ([ e _ {Q} e _ {\\mathbf {x} _ {I}} ])\n$$\n\n$$\n\\boldsymbol {x} _ {A} = \\operatorname {a r g m a x} \\operatorname {s o f t m a x} \\left(W _ {\\operatorname {p r o j}} h _ {\\text {s t a r t}}\\right)\n$$\n\nWe follow the hyper-paramters provided in (Popel and Bojar, 2018). Transformers have 4 heads, 512-dimensional hidden vectors (same with embedding sizes) and 10 layers. We provide the dimensions in Eq. 4:\n\n$$\n\\mathbf {x} _ {I}: 3 \\times 1 2 8 \\times 1 2 8\n$$\n\n$$\nc _ {\\mathbf {x} _ {I}}: 3 2 \\times 1 6 \\times 1 6\n$$\n\n$$\nW _ {c}: 5 1 2 \\times 3 2\n$$\n\n$$\ne _ {\\mathbf {x} _ {I}}: 5 1 2 \\times (1 6 \\times 1 6)\n$$\n\n$$\ne _ {Q}: 5 1 2 \\times | V _ {\\text {t e x t}} | \\tag {5}\n$$\n\n$$\nW _ {Q}: 5 1 2 \\times | \\mathcal {V} _ {\\text {t e x t}} |\n$$\n\n$$\nh: 5 1 2 \\times (| Q | + 1 6 \\times 1 6)\n$$\n\n$$\nh _ {\\mathrm {s t a r t}}: 5 1 2 \\times 1\n$$\n\n$$\nW _ {\\text {p r o j}}: 5 1 2 \\times | \\mathcal {V} _ {\\text {t e x t}} |\n$$\n\nModels are trained using the Adam optimizer with and Noam learning rate scheduler (Vaswani et al., 2017) with $lr = 1.0$ and $16k$ warming steps as provided in Popel and Bojar (2018). We use a batch size of 1024 and we train for $200k$ steps,\n\nwhich takes 48 hours on 8 NVIDIA V100 GPUs. In Fig. 3, we provide the sketch of overall pipeline.",
+      "section_number": "C.2",
+      "section_title": "vqa transformer details",
+      "normalized_section_title": "vqa transformer details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.38::appendix::C.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA V100",
+      "cleaned_hardware_name": "nvidia v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "C.1",
+      "section_title": "vqvae details",
+      "normalized_section_title": "vqvae details",
+      "evidence": "We use a discrete variational auto-encoder (van den Oord et al., 2017) to encode the images $16 \\times 16$ grids of discrete codes. We used a code-book with $n = 32$ tokens associated with $d = 64$ dimensional\n\n![](images/8103e88f2a656c6b0692080396b6203773571758b0f36f485dbcdadec2d50522.jpg)\n\n![](images/afd08e7ccfd6376615a35d241e21d5504de8f044582cfc451449ebd6ac83c930.jpg)\n\n![](images/083a26cfe25e557a30ed7adb4e351c8e17cb1f0f4b18a8118cf6b186e202b4fd.jpg)\n\n![](images/e1e445f5bd57dbf600dedc097c776d3280699705bae51d7f54a5ce5bd6cab5d2.jpg)  \nFigure 3: Overview of our approach in VQA. We discretize images using a VQVAE (van den Oord et al., 2017) learned from the training data. This discretization represents every image as a sequence of categorical codes. (a) We run a statistical aligner on $(\\mathbf{x}_{\\mathrm{text}},\\mathbf{x}_{\\mathrm{img}})$ pairs to find word-visual token alignments within individual examples, then use these alignments to construct a global lexicon. (b) Each entry in the lexicon is assigned a type based on the context in which it occurs. (c) Next, we find homomorphisms of this lexicon, and use these as data augmentation functions to generate new training examples. (d) Finally, we train a neural sequence model on the augmented dataset.\n\nlearned latent vectors. The original image size (480, 320) is cropped to (440, 300) and resize our images into (128, 128) pixels. The encoder convolutional neural network has three down-sampling layers which output $16 \\times 16 \\times d$ size hidden representations. For encoder and decoder CNN architectures, we follow the implementation provided in a public Pytorch implementation by adding one more up-sampling and down-sampling layer to adjust our image size.\n\nWe use exponential moving average to update latent vectors as in official implementation<sup>6</sup> We train the model on the images of the same training data and did not use any external data.\n\nWe use batch size of 512, and learning rate 0.0003 with the Adam optimizer (Kingma and Ba, 2015). We clip the gradients to 5.0. Hyperparameters were selected by sweeping $d$ over $\\{64, 128\\}$ , image sizes over $\\{128, 144\\}$ , and $n$ over $\\{24, 32, 48\\}$ to maximize the number of aligned tokens in the lexicon. For each experiments in Table 2, we run VQVAE for 4 random seeds and select the codebook that gives the largest IBM model likelihood for training data. Each experiment takes 10 hours in 4 NVIDIA V100 GPUs.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.acl-long.38::appendix::C.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA V100",
+      "cleaned_hardware_name": "nvidia v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "C.2",
+      "section_title": "vqa transformer details",
+      "normalized_section_title": "vqa transformer details",
+      "evidence": "The Transformer takes tokenized images $\\boldsymbol{x}_I$ and the question $\\boldsymbol{x}_Q$ and outputs answers as follows:\n\n$$\nc _ {\\mathbf {x} _ {I}} = \\mathrm {V Q V A E} _ {\\text {e n c}} (\\mathbf {x} _ {I})\n$$\n\n$$\ne _ {Q} = W _ {Q} \\mathbf {x} _ {Q} + 1 \\mathrm {D} _ {\\text {p o s i t i o n a l}} (\\mathbf {x} _ {Q})\n$$\n\n$$\ne _ {\\mathbf {x} _ {I}} = W _ {c} c _ {\\mathbf {x} _ {I}} + 2 \\mathrm {D} _ {\\text {p o s i t i o n a l}} \\left(c _ {\\mathbf {x}}\\right) \\tag {4}\n$$\n\n$$\nh = \\mathrm {T r a n s f o r m e r} ([ e _ {Q} e _ {\\mathbf {x} _ {I}} ])\n$$\n\n$$\n\\boldsymbol {x} _ {A} = \\operatorname {a r g m a x} \\operatorname {s o f t m a x} \\left(W _ {\\operatorname {p r o j}} h _ {\\text {s t a r t}}\\right)\n$$\n\nWe follow the hyper-paramters provided in (Popel and Bojar, 2018). Transformers have 4 heads, 512-dimensional hidden vectors (same with embedding sizes) and 10 layers. We provide the dimensions in Eq. 4:\n\n$$\n\\mathbf {x} _ {I}: 3 \\times 1 2 8 \\times 1 2 8\n$$\n\n$$\nc _ {\\mathbf {x} _ {I}}: 3 2 \\times 1 6 \\times 1 6\n$$\n\n$$\nW _ {c}: 5 1 2 \\times 3 2\n$$\n\n$$\ne _ {\\mathbf {x} _ {I}}: 5 1 2 \\times (1 6 \\times 1 6)\n$$\n\n$$\ne _ {Q}: 5 1 2 \\times | V _ {\\text {t e x t}} | \\tag {5}\n$$\n\n$$\nW _ {Q}: 5 1 2 \\times | \\mathcal {V} _ {\\text {t e x t}} |\n$$\n\n$$\nh: 5 1 2 \\times (| Q | + 1 6 \\times 1 6)\n$$\n\n$$\nh _ {\\mathrm {s t a r t}}: 5 1 2 \\times 1\n$$\n\n$$\nW _ {\\text {p r o j}}: 5 1 2 \\times | \\mathcal {V} _ {\\text {t e x t}} |\n$$\n\nModels are trained using the Adam optimizer with and Noam learning rate scheduler (Vaswani et al., 2017) with $lr = 1.0$ and $16k$ warming steps as provided in Popel and Bojar (2018). We use a batch size of 1024 and we train for $200k$ steps,\n\nwhich takes 48 hours on 8 NVIDIA V100 GPUs. In Fig. 3, we provide the sketch of overall pipeline.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.acl-long.38::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiments",
+      "evidence": "Our experiments aim to evaluate whether LEXSYM can improve compositional generalization in downstream models. The main goal of these experiments is to evaluate generality across tasks and data modalities. Evaluation focuses on three diverse classes of language understanding problems: complex, context-dependent computations (Sec. 5.1), large, automatically derived lexicons (Sec. 5.2), and multi-modal data (Sec. 5.3)."
+    },
+    {
+      "source_window_id": "2023.acl-long.38::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "implementation details",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "C.1",
+      "C.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 4
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2023\\2023.acl-long.38\\auto\\full.md",
+    "source_md_sha256": "4f5ba0cb6623031842369e51034216390b29d8aaeed6d059c874c9efd47220d5",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

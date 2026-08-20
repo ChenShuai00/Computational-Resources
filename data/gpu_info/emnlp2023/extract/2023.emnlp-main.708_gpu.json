@@ -1,0 +1,259 @@
+{
+  "paper_id": "2023.emnlp-main.708",
+  "candidate_windows": [
+    {
+      "window_id": "2023.emnlp-main.708::sections::3",
+      "paper_id": "2023.emnlp-main.708",
+      "section_number": "3",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Datasets. To promote generalization, we train CRYSTAL on 10 datasets (following Liu et al. (2022a)): OpenBookQA (Mihaylov et al., 2018), ARC (easy and hard splits) (Clark et al., 2018), AI2Science (elementary and middle splits) (Clark et al., 2018), CommonsenseQA (Talmor et al., 2019), QASC (Khot et al., 2020), PhysicalIQA (Bisk et al., 2020), SocialIQA (Sap et al., 2019), and Winogrande (Sakaguchi et al., 2020). We use the development set of these datasets to evaluate model performance (i.e., seen evaluation). For unseen evaluation, we use the development set of 15 additional datasets: Com2Sense (Singh et al., 2021), SciQ (Welbl et al., 2017), QuaRel (Tafjord et al., 2019a), QuaRTz (Tafjord et al., 2019b), CycIC, ComVE (Wang et al., 2020), Winograd Schema Challenge (Levesque et al., 2011), COPA (Gordon et al., 2012), NumerSense (Lin et al., 2020), PROST (Aroca-Ouellette et al., 2021), SWAG (Zellers et al., 2018), HellaSwag (Zellers et al., 2019), CODAH (Chen et al., 2019), Story Cloze Test (Mostafazadeh et al., 2016), and $\\alpha$ NLI (Bhagavatula et al., 2020). See Table 9 (appendix) for details. On the training datasets, we get silver knowledge from the davinci version of GPT-3 (Brown et al., 2020), with the few-shot prompts in Liu et al. (2022a).\n\nModels. Similar to Liu et al. (2022a), we initialize CRYSTAL with T5 (Raffel et al., 2020). The value regression head is initialized from scratch at the beginning of stage II training. We experiment with three model sizes: T5-large, T5-3b, and T5-11b. We train models on V100 GPUs (8\n\nfor T5-large, 16 for T5-3b, and 64 for T5-11b), with the Huggingface Transformers and Accelerate libraries (Wolf et al., 2019; Gugger et al., 2022). See Table 10 (appendix) for the complete hyperparameter settings.\n\nBaselines. We primarily compare CRYSTAL with models trained on the same datasets using the standard QA objective (i.e., Equation 1), referred as \"Direct QA\". These models are also based on the pretrained T5 of the three sizes above. Additionally, we compare our model to Rainier (Liu et al., 2022a) and several CoT-distilled models. Among these, fine-tune-CoT (Ho et al., 2022) use zero-shot reasoning chains elicited from text-davinci-002 to finetune smaller variants of GPT-3; SCoTD (Li et al., 2023a) employs a similar distillation strategy, whereas the teacher model is code-davinci-002 and the target model is OPT up to 1.3B parameters; SCOTT (Wang et al., 2023) proposes additional techniques to improve the reasoning integrity, including a contrastive decoding method to elicit more consistent reasoning chains from the teacher model and a counterfactual reasoning method to train the target model, and yet does not enable full bidirectional adaptation between the reasoning process and the final prediction, as our method does. It is worth noting that these CoT-distilled models are often trained on specific datasets, so we only present their reported performance on the datasets they were trained on.\n\nWe also report the existing SOTA performance achieved by non-retrieval methods on each seen dataset. We exclude retrieval-based methods for fair comparison, because CRYSTAL does not rely on retrieval from extra sources.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.708::sections::4.3",
+      "paper_id": "2023.emnlp-main.708",
+      "section_number": "4.3",
+      "section_title": "qualitative examples",
+      "normalized_section_title": "qualitative examples",
+      "window_text": "We present several examples in Table 4 to illustrate the reasoning process of CRYSTAL. In most cases, the introspective reasoning carried out by CRYSTAL leads to more accurate predictions compared to the direct QA model. The knowledge introspected by CRYSTAL often proves to be beneficial in arriving at the correct prediction from human interpretation standpoint. For example, the knowledge \"Cow produce milk\" aids in concluding that \"Nutritious fluid comes from cows\" (with the implicit knowledge that \"Milk is nutritious fluid\"). This showcases how the knowledge-grounded reasoning of CRYSTAL leverages introspected knowledge to reach accurate predictions. However, there are exceptional cases where the knowledge-grounded reasoning fails to incorporate the introspected knowl\n\n<table><tr><td>Method</td><td># trained models</td><td># frozen models</td><td># forwards</td><td># backwards</td><td># optimizer steps</td></tr><tr><td>Rainier</td><td>2</td><td>2</td><td>5 + 2s</td><td>2s</td><td>2s</td></tr><tr><td>CRYSTAL</td><td>1</td><td>1</td><td>4 + s</td><td>s</td><td>s</td></tr></table>\n\nTable 5: Theoretical memory and time consumption of PPO training in CRYSTAL. $s$ is the number of minor steps in each PPO iteration. (In our experiments, we use $s = 4$ .)   \nTable 6: Empirical memory usage and speed of training CRYSTAL (stage II). Experiments are conducted on V100 GPUs. Fully sharded data parallel (FSDP) and bfloat16 mixed precision are enabled.   \n\n<table><tr><td>Model</td><td>Base model</td><td>Trainable params</td><td># GPUs</td><td>Total GPU mem</td><td>PPO training speed</td></tr><tr><td>Rainier</td><td>T5-large</td><td>1.54B</td><td>8</td><td>153 GiB</td><td>10.97 s/it</td></tr><tr><td>CRYSTAL</td><td>T5-large</td><td>770M</td><td>8</td><td>129 GiB</td><td>6.96 s/it</td></tr><tr><td>CRYSTAL</td><td>T5-3b</td><td>3B</td><td>16</td><td>488 GiB</td><td>14.07 s/it</td></tr><tr><td>CRYSTAL</td><td>T5-11b</td><td>11B</td><td>64</td><td>2032 GiB</td><td>60.30 s/it</td></tr></table>\n\nedge. For example, the correct knowledge that \"An anemometer measures wind speed and direction\" is introspected, but CRYSTAL still predicts \"air pressure\" instead of \"wind speed\" as the thing measured by anemometers.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.708::sections::4.4",
+      "paper_id": "2023.emnlp-main.708",
+      "section_number": "4.4",
+      "section_title": "memory and time efficiency",
+      "normalized_section_title": "memory and time efficiency",
+      "window_text": "As mentioned in §2.4, the PPO training in CRYSTAL improves efficiency of the conventional PPO algorithm by model sharing. In this section, through theoretical and empirical analysis, we compare the memory and time consumption of PPO training in CRYSTAL and Rainier (Liu et al., 2022a), which employs the conventional PPO.\n\nPPO in Rainier requires three different models: a policy model, a value model, and a reward model. The policy model is Rainier, while the reward model is a fixed QA model. The value model is a separate model that shares the same architecture as Rainier, with the exception that it has a value regression head instead of a language modeling head. The policy and value models are trained simultaneously, while the reward model remains frozen. Additionally, an initial version of the policy model must be retained (to calculate the KL penalty term). Therefore, a total of four models are stored, with two of them being actively updated. In each PPO iteration, Rainier requires $5 + 2s$ forward passes, $2s$ backward passes, and $2s$ optimizer updates on the model. ( $s$ is the number of minor steps in each PPO iteration.) This involves executing a gradient-less rollout from the policy, one gradient-less forward pass on the value model, another gradient-less forward pass on the initial policy model, two gradient-less forward passes on the reward model, and for each minor step in the\n\niteration, conducting one forward-backward pass and one optimizer update on the policy model and the value model, respectively.\n\nIn contrast to Rainier, PPO on CRYSTAL needs to store only two models: a shared policy/value/reward model which is being actively updated, and an initial version of the policy model (to compute the KL penalty term). In each PPO iteration, CRYSTAL needs $4 + s$ forward passes, $s$ backward passes, and $s$ optimizer updates on the model: a gradient-less rollout from the policy, one gradient-less forward pass on the initial policy model, two gradient-less forward passes on the reward model, plus for each minor step in the iteration, one forward-backward pass and one optimizer update on the policy/value model.\n\nTable 5 summarizes the theoretical memory and time consumption of Rainier and CRYSTAL, and Table 6 reports the empirical memory usage and speed in the stage II training of these models. Compared with Rainier, CRYSTAL has less trainable parameters, consumes less GPU memory, and has faster training speed. The superior memory and time efficiency of CRYSTAL enables training larger models, and a 11b model can be reinforced with 64 V100 GPUs.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2023.emnlp-main.708::appendix::B",
+      "paper_id": "2023.emnlp-main.708",
+      "section_number": "B",
+      "section_title": "more on experimental setup",
+      "normalized_section_title": "more on experimental setup",
+      "window_text": "Table 9 shows the datasets we use for training and evaluation, along with their citations. Table 10 reports the hyperparameters.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.emnlp-main.708::sections::3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Datasets. To promote generalization, we train CRYSTAL on 10 datasets (following Liu et al. (2022a)): OpenBookQA (Mihaylov et al., 2018), ARC (easy and hard splits) (Clark et al., 2018), AI2Science (elementary and middle splits) (Clark et al., 2018), CommonsenseQA (Talmor et al., 2019), QASC (Khot et al., 2020), PhysicalIQA (Bisk et al., 2020), SocialIQA (Sap et al., 2019), and Winogrande (Sakaguchi et al., 2020). We use the development set of these datasets to evaluate model performance (i.e., seen evaluation). For unseen evaluation, we use the development set of 15 additional datasets: Com2Sense (Singh et al., 2021), SciQ (Welbl et al., 2017), QuaRel (Tafjord et al., 2019a), QuaRTz (Tafjord et al., 2019b), CycIC, ComVE (Wang et al., 2020), Winograd Schema Challenge (Levesque et al., 2011), COPA (Gordon et al., 2012), NumerSense (Lin et al., 2020), PROST (Aroca-Ouellette et al., 2021), SWAG (Zellers et al., 2018), HellaSwag (Zellers et al., 2019), CODAH (Chen et al., 2019), Story Cloze Test (Mostafazadeh et al., 2016), and $\\alpha$ NLI (Bhagavatula et al., 2020). See Table 9 (appendix) for details. On the training datasets, we get silver knowledge from the davinci version of GPT-3 (Brown et al., 2020), with the few-shot prompts in Liu et al. (2022a).\n\nModels. Similar to Liu et al. (2022a), we initialize CRYSTAL with T5 (Raffel et al., 2020). The value regression head is initialized from scratch at the beginning of stage II training. We experiment with three model sizes: T5-large, T5-3b, and T5-11b. We train models on V100 GPUs (8\n\nfor T5-large, 16 for T5-3b, and 64 for T5-11b), with the Huggingface Transformers and Accelerate libraries (Wolf et al., 2019; Gugger et al., 2022). See Table 10 (appendix) for the complete hyperparameter settings.\n\nBaselines. We primarily compare CRYSTAL with models trained on the same datasets using the standard QA objective (i.e., Equation 1), referred as \"Direct QA\". These models are also based on the pretrained T5 of the three sizes above. Additionally, we compare our model to Rainier (Liu et al., 2022a) and several CoT-distilled models. Among these, fine-tune-CoT (Ho et al., 2022) use zero-shot reasoning chains elicited from text-davinci-002 to finetune smaller variants of GPT-3; SCoTD (Li et al., 2023a) employs a similar distillation strategy, whereas the teacher model is code-davinci-002 and the target model is OPT up to 1.3B parameters; SCOTT (Wang et al., 2023) proposes additional techniques to improve the reasoning integrity, including a contrastive decoding method to elicit more consistent reasoning chains from the teacher model and a counterfactual reasoning method to train the target model, and yet does not enable full bidirectional adaptation between the reasoning process and the final prediction, as our method does. It is worth noting that these CoT-distilled models are often trained on specific datasets, so we only present their reported performance on the datasets they were trained on.\n\nWe also report the existing SOTA performance achieved by non-retrieval methods on each seen dataset. We exclude retrieval-based methods for fair comparison, because CRYSTAL does not rely on retrieval from extra sources.",
+      "section_number": "3",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup"
+    },
+    {
+      "window_id": "2023.emnlp-main.708::sections::3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "count": 16,
+      "count_text": "16",
+      "evidence": "Datasets. To promote generalization, we train CRYSTAL on 10 datasets (following Liu et al. (2022a)): OpenBookQA (Mihaylov et al., 2018), ARC (easy and hard splits) (Clark et al., 2018), AI2Science (elementary and middle splits) (Clark et al., 2018), CommonsenseQA (Talmor et al., 2019), QASC (Khot et al., 2020), PhysicalIQA (Bisk et al., 2020), SocialIQA (Sap et al., 2019), and Winogrande (Sakaguchi et al., 2020). We use the development set of these datasets to evaluate model performance (i.e., seen evaluation). For unseen evaluation, we use the development set of 15 additional datasets: Com2Sense (Singh et al., 2021), SciQ (Welbl et al., 2017), QuaRel (Tafjord et al., 2019a), QuaRTz (Tafjord et al., 2019b), CycIC, ComVE (Wang et al., 2020), Winograd Schema Challenge (Levesque et al., 2011), COPA (Gordon et al., 2012), NumerSense (Lin et al., 2020), PROST (Aroca-Ouellette et al., 2021), SWAG (Zellers et al., 2018), HellaSwag (Zellers et al., 2019), CODAH (Chen et al., 2019), Story Cloze Test (Mostafazadeh et al., 2016), and $\\alpha$ NLI (Bhagavatula et al., 2020). See Table 9 (appendix) for details. On the training datasets, we get silver knowledge from the davinci version of GPT-3 (Brown et al., 2020), with the few-shot prompts in Liu et al. (2022a).\n\nModels. Similar to Liu et al. (2022a), we initialize CRYSTAL with T5 (Raffel et al., 2020). The value regression head is initialized from scratch at the beginning of stage II training. We experiment with three model sizes: T5-large, T5-3b, and T5-11b. We train models on V100 GPUs (8\n\nfor T5-large, 16 for T5-3b, and 64 for T5-11b), with the Huggingface Transformers and Accelerate libraries (Wolf et al., 2019; Gugger et al., 2022). See Table 10 (appendix) for the complete hyperparameter settings.\n\nBaselines. We primarily compare CRYSTAL with models trained on the same datasets using the standard QA objective (i.e., Equation 1), referred as \"Direct QA\". These models are also based on the pretrained T5 of the three sizes above. Additionally, we compare our model to Rainier (Liu et al., 2022a) and several CoT-distilled models. Among these, fine-tune-CoT (Ho et al., 2022) use zero-shot reasoning chains elicited from text-davinci-002 to finetune smaller variants of GPT-3; SCoTD (Li et al., 2023a) employs a similar distillation strategy, whereas the teacher model is code-davinci-002 and the target model is OPT up to 1.3B parameters; SCOTT (Wang et al., 2023) proposes additional techniques to improve the reasoning integrity, including a contrastive decoding method to elicit more consistent reasoning chains from the teacher model and a counterfactual reasoning method to train the target model, and yet does not enable full bidirectional adaptation between the reasoning process and the final prediction, as our method does. It is worth noting that these CoT-distilled models are often trained on specific datasets, so we only present their reported performance on the datasets they were trained on.\n\nWe also report the existing SOTA performance achieved by non-retrieval methods on each seen dataset. We exclude retrieval-based methods for fair comparison, because CRYSTAL does not rely on retrieval from extra sources.",
+      "section_number": "3",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup"
+    },
+    {
+      "window_id": "2023.emnlp-main.708::sections::3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "count": 64,
+      "count_text": "64",
+      "evidence": "Datasets. To promote generalization, we train CRYSTAL on 10 datasets (following Liu et al. (2022a)): OpenBookQA (Mihaylov et al., 2018), ARC (easy and hard splits) (Clark et al., 2018), AI2Science (elementary and middle splits) (Clark et al., 2018), CommonsenseQA (Talmor et al., 2019), QASC (Khot et al., 2020), PhysicalIQA (Bisk et al., 2020), SocialIQA (Sap et al., 2019), and Winogrande (Sakaguchi et al., 2020). We use the development set of these datasets to evaluate model performance (i.e., seen evaluation). For unseen evaluation, we use the development set of 15 additional datasets: Com2Sense (Singh et al., 2021), SciQ (Welbl et al., 2017), QuaRel (Tafjord et al., 2019a), QuaRTz (Tafjord et al., 2019b), CycIC, ComVE (Wang et al., 2020), Winograd Schema Challenge (Levesque et al., 2011), COPA (Gordon et al., 2012), NumerSense (Lin et al., 2020), PROST (Aroca-Ouellette et al., 2021), SWAG (Zellers et al., 2018), HellaSwag (Zellers et al., 2019), CODAH (Chen et al., 2019), Story Cloze Test (Mostafazadeh et al., 2016), and $\\alpha$ NLI (Bhagavatula et al., 2020). See Table 9 (appendix) for details. On the training datasets, we get silver knowledge from the davinci version of GPT-3 (Brown et al., 2020), with the few-shot prompts in Liu et al. (2022a).\n\nModels. Similar to Liu et al. (2022a), we initialize CRYSTAL with T5 (Raffel et al., 2020). The value regression head is initialized from scratch at the beginning of stage II training. We experiment with three model sizes: T5-large, T5-3b, and T5-11b. We train models on V100 GPUs (8\n\nfor T5-large, 16 for T5-3b, and 64 for T5-11b), with the Huggingface Transformers and Accelerate libraries (Wolf et al., 2019; Gugger et al., 2022). See Table 10 (appendix) for the complete hyperparameter settings.\n\nBaselines. We primarily compare CRYSTAL with models trained on the same datasets using the standard QA objective (i.e., Equation 1), referred as \"Direct QA\". These models are also based on the pretrained T5 of the three sizes above. Additionally, we compare our model to Rainier (Liu et al., 2022a) and several CoT-distilled models. Among these, fine-tune-CoT (Ho et al., 2022) use zero-shot reasoning chains elicited from text-davinci-002 to finetune smaller variants of GPT-3; SCoTD (Li et al., 2023a) employs a similar distillation strategy, whereas the teacher model is code-davinci-002 and the target model is OPT up to 1.3B parameters; SCOTT (Wang et al., 2023) proposes additional techniques to improve the reasoning integrity, including a contrastive decoding method to elicit more consistent reasoning chains from the teacher model and a counterfactual reasoning method to train the target model, and yet does not enable full bidirectional adaptation between the reasoning process and the final prediction, as our method does. It is worth noting that these CoT-distilled models are often trained on specific datasets, so we only present their reported performance on the datasets they were trained on.\n\nWe also report the existing SOTA performance achieved by non-retrieval methods on each seen dataset. We exclude retrieval-based methods for fair comparison, because CRYSTAL does not rely on retrieval from extra sources.",
+      "section_number": "3",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup"
+    },
+    {
+      "window_id": "2023.emnlp-main.708::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "count": null,
+      "count_text": "",
+      "evidence": "We present several examples in Table 4 to illustrate the reasoning process of CRYSTAL. In most cases, the introspective reasoning carried out by CRYSTAL leads to more accurate predictions compared to the direct QA model. The knowledge introspected by CRYSTAL often proves to be beneficial in arriving at the correct prediction from human interpretation standpoint. For example, the knowledge \"Cow produce milk\" aids in concluding that \"Nutritious fluid comes from cows\" (with the implicit knowledge that \"Milk is nutritious fluid\"). This showcases how the knowledge-grounded reasoning of CRYSTAL leverages introspected knowledge to reach accurate predictions. However, there are exceptional cases where the knowledge-grounded reasoning fails to incorporate the introspected knowl\n\n<table><tr><td>Method</td><td># trained models</td><td># frozen models</td><td># forwards</td><td># backwards</td><td># optimizer steps</td></tr><tr><td>Rainier</td><td>2</td><td>2</td><td>5 + 2s</td><td>2s</td><td>2s</td></tr><tr><td>CRYSTAL</td><td>1</td><td>1</td><td>4 + s</td><td>s</td><td>s</td></tr></table>\n\nTable 5: Theoretical memory and time consumption of PPO training in CRYSTAL. $s$ is the number of minor steps in each PPO iteration. (In our experiments, we use $s = 4$ .)   \nTable 6: Empirical memory usage and speed of training CRYSTAL (stage II). Experiments are conducted on V100 GPUs. Fully sharded data parallel (FSDP) and bfloat16 mixed precision are enabled.   \n\n<table><tr><td>Model</td><td>Base model</td><td>Trainable params</td><td># GPUs</td><td>Total GPU mem</td><td>PPO training speed</td></tr><tr><td>Rainier</td><td>T5-large</td><td>1.54B</td><td>8</td><td>153 GiB</td><td>10.97 s/it</td></tr><tr><td>CRYSTAL</td><td>T5-large</td><td>770M</td><td>8</td><td>129 GiB</td><td>6.96 s/it</td></tr><tr><td>CRYSTAL</td><td>T5-3b</td><td>3B</td><td>16</td><td>488 GiB</td><td>14.07 s/it</td></tr><tr><td>CRYSTAL</td><td>T5-11b</td><td>11B</td><td>64</td><td>2032 GiB</td><td>60.30 s/it</td></tr></table>\n\nedge. For example, the correct knowledge that \"An anemometer measures wind speed and direction\" is introspected, but CRYSTAL still predicts \"air pressure\" instead of \"wind speed\" as the thing measured by anemometers.",
+      "section_number": "4.3",
+      "section_title": "qualitative examples",
+      "normalized_section_title": "qualitative examples"
+    },
+    {
+      "window_id": "2023.emnlp-main.708::sections::4.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "count": 64,
+      "count_text": "64",
+      "evidence": "As mentioned in §2.4, the PPO training in CRYSTAL improves efficiency of the conventional PPO algorithm by model sharing. In this section, through theoretical and empirical analysis, we compare the memory and time consumption of PPO training in CRYSTAL and Rainier (Liu et al., 2022a), which employs the conventional PPO.\n\nPPO in Rainier requires three different models: a policy model, a value model, and a reward model. The policy model is Rainier, while the reward model is a fixed QA model. The value model is a separate model that shares the same architecture as Rainier, with the exception that it has a value regression head instead of a language modeling head. The policy and value models are trained simultaneously, while the reward model remains frozen. Additionally, an initial version of the policy model must be retained (to calculate the KL penalty term). Therefore, a total of four models are stored, with two of them being actively updated. In each PPO iteration, Rainier requires $5 + 2s$ forward passes, $2s$ backward passes, and $2s$ optimizer updates on the model. ( $s$ is the number of minor steps in each PPO iteration.) This involves executing a gradient-less rollout from the policy, one gradient-less forward pass on the value model, another gradient-less forward pass on the initial policy model, two gradient-less forward passes on the reward model, and for each minor step in the\n\niteration, conducting one forward-backward pass and one optimizer update on the policy model and the value model, respectively.\n\nIn contrast to Rainier, PPO on CRYSTAL needs to store only two models: a shared policy/value/reward model which is being actively updated, and an initial version of the policy model (to compute the KL penalty term). In each PPO iteration, CRYSTAL needs $4 + s$ forward passes, $s$ backward passes, and $s$ optimizer updates on the model: a gradient-less rollout from the policy, one gradient-less forward pass on the initial policy model, two gradient-less forward passes on the reward model, plus for each minor step in the iteration, one forward-backward pass and one optimizer update on the policy/value model.\n\nTable 5 summarizes the theoretical memory and time consumption of Rainier and CRYSTAL, and Table 6 reports the empirical memory usage and speed in the stage II training of these models. Compared with Rainier, CRYSTAL has less trainable parameters, consumes less GPU memory, and has faster training speed. The superior memory and time efficiency of CRYSTAL enables training larger models, and a 11b model can be reinforced with 64 V100 GPUs.",
+      "section_number": "4.4",
+      "section_title": "memory and time efficiency",
+      "normalized_section_title": "memory and time efficiency"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.emnlp-main.708::sections::3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "cleaned_hardware_name": "v100",
+      "normalized_hardware_name": "V100",
+      "benchmark_hardware_name": null,
+      "count": 8,
+      "count_text": "8",
+      "section_number": "3",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "evidence": "Datasets. To promote generalization, we train CRYSTAL on 10 datasets (following Liu et al. (2022a)): OpenBookQA (Mihaylov et al., 2018), ARC (easy and hard splits) (Clark et al., 2018), AI2Science (elementary and middle splits) (Clark et al., 2018), CommonsenseQA (Talmor et al., 2019), QASC (Khot et al., 2020), PhysicalIQA (Bisk et al., 2020), SocialIQA (Sap et al., 2019), and Winogrande (Sakaguchi et al., 2020). We use the development set of these datasets to evaluate model performance (i.e., seen evaluation). For unseen evaluation, we use the development set of 15 additional datasets: Com2Sense (Singh et al., 2021), SciQ (Welbl et al., 2017), QuaRel (Tafjord et al., 2019a), QuaRTz (Tafjord et al., 2019b), CycIC, ComVE (Wang et al., 2020), Winograd Schema Challenge (Levesque et al., 2011), COPA (Gordon et al., 2012), NumerSense (Lin et al., 2020), PROST (Aroca-Ouellette et al., 2021), SWAG (Zellers et al., 2018), HellaSwag (Zellers et al., 2019), CODAH (Chen et al., 2019), Story Cloze Test (Mostafazadeh et al., 2016), and $\\alpha$ NLI (Bhagavatula et al., 2020). See Table 9 (appendix) for details. On the training datasets, we get silver knowledge from the davinci version of GPT-3 (Brown et al., 2020), with the few-shot prompts in Liu et al. (2022a).\n\nModels. Similar to Liu et al. (2022a), we initialize CRYSTAL with T5 (Raffel et al., 2020). The value regression head is initialized from scratch at the beginning of stage II training. We experiment with three model sizes: T5-large, T5-3b, and T5-11b. We train models on V100 GPUs (8\n\nfor T5-large, 16 for T5-3b, and 64 for T5-11b), with the Huggingface Transformers and Accelerate libraries (Wolf et al., 2019; Gugger et al., 2022). See Table 10 (appendix) for the complete hyperparameter settings.\n\nBaselines. We primarily compare CRYSTAL with models trained on the same datasets using the standard QA objective (i.e., Equation 1), referred as \"Direct QA\". These models are also based on the pretrained T5 of the three sizes above. Additionally, we compare our model to Rainier (Liu et al., 2022a) and several CoT-distilled models. Among these, fine-tune-CoT (Ho et al., 2022) use zero-shot reasoning chains elicited from text-davinci-002 to finetune smaller variants of GPT-3; SCoTD (Li et al., 2023a) employs a similar distillation strategy, whereas the teacher model is code-davinci-002 and the target model is OPT up to 1.3B parameters; SCOTT (Wang et al., 2023) proposes additional techniques to improve the reasoning integrity, including a contrastive decoding method to elicit more consistent reasoning chains from the teacher model and a counterfactual reasoning method to train the target model, and yet does not enable full bidirectional adaptation between the reasoning process and the final prediction, as our method does. It is worth noting that these CoT-distilled models are often trained on specific datasets, so we only present their reported performance on the datasets they were trained on.\n\nWe also report the existing SOTA performance achieved by non-retrieval methods on each seen dataset. We exclude retrieval-based methods for fair comparison, because CRYSTAL does not rely on retrieval from extra sources.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 11,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.emnlp-main.708::sections::3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "cleaned_hardware_name": "v100",
+      "normalized_hardware_name": "V100",
+      "benchmark_hardware_name": null,
+      "count": 16,
+      "count_text": "16",
+      "section_number": "3",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "evidence": "Datasets. To promote generalization, we train CRYSTAL on 10 datasets (following Liu et al. (2022a)): OpenBookQA (Mihaylov et al., 2018), ARC (easy and hard splits) (Clark et al., 2018), AI2Science (elementary and middle splits) (Clark et al., 2018), CommonsenseQA (Talmor et al., 2019), QASC (Khot et al., 2020), PhysicalIQA (Bisk et al., 2020), SocialIQA (Sap et al., 2019), and Winogrande (Sakaguchi et al., 2020). We use the development set of these datasets to evaluate model performance (i.e., seen evaluation). For unseen evaluation, we use the development set of 15 additional datasets: Com2Sense (Singh et al., 2021), SciQ (Welbl et al., 2017), QuaRel (Tafjord et al., 2019a), QuaRTz (Tafjord et al., 2019b), CycIC, ComVE (Wang et al., 2020), Winograd Schema Challenge (Levesque et al., 2011), COPA (Gordon et al., 2012), NumerSense (Lin et al., 2020), PROST (Aroca-Ouellette et al., 2021), SWAG (Zellers et al., 2018), HellaSwag (Zellers et al., 2019), CODAH (Chen et al., 2019), Story Cloze Test (Mostafazadeh et al., 2016), and $\\alpha$ NLI (Bhagavatula et al., 2020). See Table 9 (appendix) for details. On the training datasets, we get silver knowledge from the davinci version of GPT-3 (Brown et al., 2020), with the few-shot prompts in Liu et al. (2022a).\n\nModels. Similar to Liu et al. (2022a), we initialize CRYSTAL with T5 (Raffel et al., 2020). The value regression head is initialized from scratch at the beginning of stage II training. We experiment with three model sizes: T5-large, T5-3b, and T5-11b. We train models on V100 GPUs (8\n\nfor T5-large, 16 for T5-3b, and 64 for T5-11b), with the Huggingface Transformers and Accelerate libraries (Wolf et al., 2019; Gugger et al., 2022). See Table 10 (appendix) for the complete hyperparameter settings.\n\nBaselines. We primarily compare CRYSTAL with models trained on the same datasets using the standard QA objective (i.e., Equation 1), referred as \"Direct QA\". These models are also based on the pretrained T5 of the three sizes above. Additionally, we compare our model to Rainier (Liu et al., 2022a) and several CoT-distilled models. Among these, fine-tune-CoT (Ho et al., 2022) use zero-shot reasoning chains elicited from text-davinci-002 to finetune smaller variants of GPT-3; SCoTD (Li et al., 2023a) employs a similar distillation strategy, whereas the teacher model is code-davinci-002 and the target model is OPT up to 1.3B parameters; SCOTT (Wang et al., 2023) proposes additional techniques to improve the reasoning integrity, including a contrastive decoding method to elicit more consistent reasoning chains from the teacher model and a counterfactual reasoning method to train the target model, and yet does not enable full bidirectional adaptation between the reasoning process and the final prediction, as our method does. It is worth noting that these CoT-distilled models are often trained on specific datasets, so we only present their reported performance on the datasets they were trained on.\n\nWe also report the existing SOTA performance achieved by non-retrieval methods on each seen dataset. We exclude retrieval-based methods for fair comparison, because CRYSTAL does not rely on retrieval from extra sources.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 11,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.emnlp-main.708::sections::3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "cleaned_hardware_name": "v100",
+      "normalized_hardware_name": "V100",
+      "benchmark_hardware_name": null,
+      "count": 64,
+      "count_text": "64",
+      "section_number": "3",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "evidence": "Datasets. To promote generalization, we train CRYSTAL on 10 datasets (following Liu et al. (2022a)): OpenBookQA (Mihaylov et al., 2018), ARC (easy and hard splits) (Clark et al., 2018), AI2Science (elementary and middle splits) (Clark et al., 2018), CommonsenseQA (Talmor et al., 2019), QASC (Khot et al., 2020), PhysicalIQA (Bisk et al., 2020), SocialIQA (Sap et al., 2019), and Winogrande (Sakaguchi et al., 2020). We use the development set of these datasets to evaluate model performance (i.e., seen evaluation). For unseen evaluation, we use the development set of 15 additional datasets: Com2Sense (Singh et al., 2021), SciQ (Welbl et al., 2017), QuaRel (Tafjord et al., 2019a), QuaRTz (Tafjord et al., 2019b), CycIC, ComVE (Wang et al., 2020), Winograd Schema Challenge (Levesque et al., 2011), COPA (Gordon et al., 2012), NumerSense (Lin et al., 2020), PROST (Aroca-Ouellette et al., 2021), SWAG (Zellers et al., 2018), HellaSwag (Zellers et al., 2019), CODAH (Chen et al., 2019), Story Cloze Test (Mostafazadeh et al., 2016), and $\\alpha$ NLI (Bhagavatula et al., 2020). See Table 9 (appendix) for details. On the training datasets, we get silver knowledge from the davinci version of GPT-3 (Brown et al., 2020), with the few-shot prompts in Liu et al. (2022a).\n\nModels. Similar to Liu et al. (2022a), we initialize CRYSTAL with T5 (Raffel et al., 2020). The value regression head is initialized from scratch at the beginning of stage II training. We experiment with three model sizes: T5-large, T5-3b, and T5-11b. We train models on V100 GPUs (8\n\nfor T5-large, 16 for T5-3b, and 64 for T5-11b), with the Huggingface Transformers and Accelerate libraries (Wolf et al., 2019; Gugger et al., 2022). See Table 10 (appendix) for the complete hyperparameter settings.\n\nBaselines. We primarily compare CRYSTAL with models trained on the same datasets using the standard QA objective (i.e., Equation 1), referred as \"Direct QA\". These models are also based on the pretrained T5 of the three sizes above. Additionally, we compare our model to Rainier (Liu et al., 2022a) and several CoT-distilled models. Among these, fine-tune-CoT (Ho et al., 2022) use zero-shot reasoning chains elicited from text-davinci-002 to finetune smaller variants of GPT-3; SCoTD (Li et al., 2023a) employs a similar distillation strategy, whereas the teacher model is code-davinci-002 and the target model is OPT up to 1.3B parameters; SCOTT (Wang et al., 2023) proposes additional techniques to improve the reasoning integrity, including a contrastive decoding method to elicit more consistent reasoning chains from the teacher model and a counterfactual reasoning method to train the target model, and yet does not enable full bidirectional adaptation between the reasoning process and the final prediction, as our method does. It is worth noting that these CoT-distilled models are often trained on specific datasets, so we only present their reported performance on the datasets they were trained on.\n\nWe also report the existing SOTA performance achieved by non-retrieval methods on each seen dataset. We exclude retrieval-based methods for fair comparison, because CRYSTAL does not rely on retrieval from extra sources.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 11,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.emnlp-main.708::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "cleaned_hardware_name": "v100",
+      "normalized_hardware_name": "V100",
+      "benchmark_hardware_name": null,
+      "count": null,
+      "count_text": "",
+      "section_number": "4.3",
+      "section_title": "qualitative examples",
+      "normalized_section_title": "qualitative examples",
+      "evidence": "We present several examples in Table 4 to illustrate the reasoning process of CRYSTAL. In most cases, the introspective reasoning carried out by CRYSTAL leads to more accurate predictions compared to the direct QA model. The knowledge introspected by CRYSTAL often proves to be beneficial in arriving at the correct prediction from human interpretation standpoint. For example, the knowledge \"Cow produce milk\" aids in concluding that \"Nutritious fluid comes from cows\" (with the implicit knowledge that \"Milk is nutritious fluid\"). This showcases how the knowledge-grounded reasoning of CRYSTAL leverages introspected knowledge to reach accurate predictions. However, there are exceptional cases where the knowledge-grounded reasoning fails to incorporate the introspected knowl\n\n<table><tr><td>Method</td><td># trained models</td><td># frozen models</td><td># forwards</td><td># backwards</td><td># optimizer steps</td></tr><tr><td>Rainier</td><td>2</td><td>2</td><td>5 + 2s</td><td>2s</td><td>2s</td></tr><tr><td>CRYSTAL</td><td>1</td><td>1</td><td>4 + s</td><td>s</td><td>s</td></tr></table>\n\nTable 5: Theoretical memory and time consumption of PPO training in CRYSTAL. $s$ is the number of minor steps in each PPO iteration. (In our experiments, we use $s = 4$ .)   \nTable 6: Empirical memory usage and speed of training CRYSTAL (stage II). Experiments are conducted on V100 GPUs. Fully sharded data parallel (FSDP) and bfloat16 mixed precision are enabled.   \n\n<table><tr><td>Model</td><td>Base model</td><td>Trainable params</td><td># GPUs</td><td>Total GPU mem</td><td>PPO training speed</td></tr><tr><td>Rainier</td><td>T5-large</td><td>1.54B</td><td>8</td><td>153 GiB</td><td>10.97 s/it</td></tr><tr><td>CRYSTAL</td><td>T5-large</td><td>770M</td><td>8</td><td>129 GiB</td><td>6.96 s/it</td></tr><tr><td>CRYSTAL</td><td>T5-3b</td><td>3B</td><td>16</td><td>488 GiB</td><td>14.07 s/it</td></tr><tr><td>CRYSTAL</td><td>T5-11b</td><td>11B</td><td>64</td><td>2032 GiB</td><td>60.30 s/it</td></tr></table>\n\nedge. For example, the correct knowledge that \"An anemometer measures wind speed and direction\" is introspected, but CRYSTAL still predicts \"air pressure\" instead of \"wind speed\" as the thing measured by anemometers.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 11,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.emnlp-main.708::sections::4.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "cleaned_hardware_name": "v100",
+      "normalized_hardware_name": "V100",
+      "benchmark_hardware_name": null,
+      "count": 64,
+      "count_text": "64",
+      "section_number": "4.4",
+      "section_title": "memory and time efficiency",
+      "normalized_section_title": "memory and time efficiency",
+      "evidence": "As mentioned in §2.4, the PPO training in CRYSTAL improves efficiency of the conventional PPO algorithm by model sharing. In this section, through theoretical and empirical analysis, we compare the memory and time consumption of PPO training in CRYSTAL and Rainier (Liu et al., 2022a), which employs the conventional PPO.\n\nPPO in Rainier requires three different models: a policy model, a value model, and a reward model. The policy model is Rainier, while the reward model is a fixed QA model. The value model is a separate model that shares the same architecture as Rainier, with the exception that it has a value regression head instead of a language modeling head. The policy and value models are trained simultaneously, while the reward model remains frozen. Additionally, an initial version of the policy model must be retained (to calculate the KL penalty term). Therefore, a total of four models are stored, with two of them being actively updated. In each PPO iteration, Rainier requires $5 + 2s$ forward passes, $2s$ backward passes, and $2s$ optimizer updates on the model. ( $s$ is the number of minor steps in each PPO iteration.) This involves executing a gradient-less rollout from the policy, one gradient-less forward pass on the value model, another gradient-less forward pass on the initial policy model, two gradient-less forward passes on the reward model, and for each minor step in the\n\niteration, conducting one forward-backward pass and one optimizer update on the policy model and the value model, respectively.\n\nIn contrast to Rainier, PPO on CRYSTAL needs to store only two models: a shared policy/value/reward model which is being actively updated, and an initial version of the policy model (to compute the KL penalty term). In each PPO iteration, CRYSTAL needs $4 + s$ forward passes, $s$ backward passes, and $s$ optimizer updates on the model: a gradient-less rollout from the policy, one gradient-less forward pass on the initial policy model, two gradient-less forward passes on the reward model, plus for each minor step in the iteration, one forward-backward pass and one optimizer update on the policy/value model.\n\nTable 5 summarizes the theoretical memory and time consumption of Rainier and CRYSTAL, and Table 6 reports the empirical memory usage and speed in the stage II training of these models. Compared with Rainier, CRYSTAL has less trainable parameters, consumes less GPU memory, and has faster training speed. The superior memory and time efficiency of CRYSTAL enables training larger models, and a 11b model can be reinforced with 64 V100 GPUs.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 11,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "3",
+      "4.3",
+      "4.4"
+    ],
+    "pred": [
+      {
+        "name": "V100",
+        "num": 8
+      },
+      {
+        "name": "V100",
+        "num": 16
+      },
+      {
+        "name": "V100",
+        "num": 64
+      },
+      {
+        "name": "V100",
+        "num": null
+      },
+      {
+        "name": "V100",
+        "num": 64
+      }
+    ]
+  }
+}

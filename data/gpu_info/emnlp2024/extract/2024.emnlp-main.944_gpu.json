@@ -1,0 +1,394 @@
+{
+  "paper_id": "2024.emnlp-main.944",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.944::sections::2",
+      "paper_id": "2024.emnlp-main.944",
+      "section_number": "2",
+      "section_title": "large language and vision assistants",
+      "normalized_section_title": "large language and vision assistants",
+      "window_text": "Architecture. The LLaVA framework (Figure 2) employs a pre-trained Vision Transformer (ViT) (Dosovitskiy et al., 2021) as its vision encoder. Input images are resized and divided into patches of size $n \\times (p_h \\times p_w \\times c)$ , where $n = (h / p_h) \\times (w / p_w)$ , with $h$ and $w$ representing the resized image size, and $p_h$ and $p_w$ denoting the patch size, which are hyperparameters. Here, $c = 3$ denotes the number of channels, typically for RGB images. These patches are processed by the encoder to generate embeddings $\\{\\mathbf{z}_i \\in \\mathbb{R}^d\\}$ , where $d$ is the embedding dimension of the encoder and also a hyperparameter. These embeddings are then mapped to the input space of the language model via a Multi-Layer Perceptron (MLP) before being fed into the model. Optionally, the AnyRes mechanism (Liu et al., 2024c) can be applied, allowing for processing of larger images by first segmenting images into $m$ parts to better capture local features. Simultaneously, the entire image is processed to extract global features. Both global and local features are sequentially fed into the language model, allowing it to utilize comprehensive image information. Therefore, the total token count becomes $(1 + m) \\times n$ . See Liu et al. (2024c) for more details. However, this approach poses a computational challenge due to the increased token count.\n\nTraining Objectives and Datasets. The model is trained to minimize Cross-Entropy (CE) loss. During pre-training (alignment phase), it generates captions for images, with CE loss computed on the text. In the instruct tuning stage, given an image, question, and answer, the loss is computed on the answer text. The LLaVA-1.5 dataset (Liu et al., 2024b) is widely used and this study aims to further enhance the dataset. More details are in Section 4.\n\nTable 1: Inference latency and memory costs for LLaVA models. Tested with NVIDIA V100 GPUs.   \n\n<table><tr><td>Model</td><td>Token Usage (#tok)</td><td>s/img</td><td>Memory (GB)</td></tr><tr><td>LLaVA-1.5-7B</td><td>576</td><td>0.46</td><td>15</td></tr><tr><td>LLaVA-1.5-13B</td><td>576</td><td>0.66</td><td>27</td></tr><tr><td>LLaVA-NeXT-7B</td><td>approx. 1.7–2.9K</td><td>1.01</td><td>20</td></tr><tr><td>LLaVA-NeXT-13B</td><td>approx. 1.7–2.9K</td><td>1.78</td><td>40</td></tr><tr><td>LLaVA-NeXT-34B</td><td>approx. 1.7–2.9K</td><td>4.00</td><td>88</td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.944::sections::3.2",
+      "paper_id": "2024.emnlp-main.944",
+      "section_number": "3.2",
+      "section_title": "benchmarking baseline models",
+      "normalized_section_title": "benchmarking baseline models",
+      "window_text": "Table 1 shows resource usage during inference for LLaVA and LLaVA-NeXT models, evaluated on the DocVQA and ChartQA test sets (Mathew et al., 2021; Masry et al., 2022). The LLaVA-1.5 models demonstrate manageable computational costs, operable on a single V100 GPU. However, LLaVA-NeXT models, with up to 2.9K tokens, present significant challenges. Testing on an NVIDIA V100 32GB reveals that LLaVA-NeXT-13/34B cannot be accommodated on a single GPU. These findings emphasize the challenges of larger models, especially in resource-constrained environments.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2024.emnlp-main.944::sections::4.3",
+      "paper_id": "2024.emnlp-main.944",
+      "section_number": "4.3",
+      "section_title": "developing an enhanced vision encoder with weight averaging",
+      "normalized_section_title": "developing an enhanced vision encoder with weight averaging",
+      "window_text": "To improve visually-situated text comprehension, we develop a new vision encoder optimized specifically for reading text within images. Table 2 presents ablation studies on various vision encoder configurations. Initially, we find that merely unfreezing the vision encoder during VLM training does not lead to notable performance improvements (C2). Next, we implement a two-step approach: (1) We first unfreeze the vision encoder and train it on a small scale VLM (1B is used) using text-centric datasets such as OCR-IDL (Biten et al., 2023). This training emphasizes the Text Reading task (Kim et al., 2022), where the model reads text embedded within images, allowing the vision en\n\ncoder to adjust and enhance its text recognition capabilities. (2) Subsequently, we extract the enhanced vision encoder, denoted as REncoder, from this text-centric VLM. Note that, the text-centric VLM used to derive the REncoder is not utilized in later stages. When training a VLM with the newly obtained REncoder, we observe significant improvements in text-centric tasks (C3), although its performance on general image tasks diminishes.\n\nNow we have two specialized encoders: the original CLIP for general tasks and the REncoder. Drawing inspiration from previous work on Weight Averaging (Wortsman et al., 2022), we experiment with averaging the weights of the original encoder and the REncoder. Interestingly, this approach yields promising results (C4). Furthermore, by slightly adjusting the weight averaging ratios to favor the REncoder, we achieve marginally better performance on text-centric tasks (C7).\n\nTo further enhance robustness, we train 12 REncoders with different random seeds and then average their weights, a practice inspired by Wortzman et al. (2022). This averaging process, taking approximately 1.7 days on 8 V100 GPUs per phase, yields an encoder that substantially improves text comprehension while maintaining general capabilities (C5). More training details are in Appendix C.\n\nIn summary, the core idea is simple. We (1) unfreeze the encoder and train a small VLM for text reading tasks, and retrieve the specialized encoder, and (2) make it robust to various tasks by applying weight averaging. Finally, the produced vision encoder is used to build an efficient language and vision assistant, ELVA. Our new ELVA-Encoder (C5) brings substantial enhancements in text-centric tasks compared to the original base (C1). While there is still a reduction in general image performance compared to merely training LLaVA-1.5 on our data (C6), understanding the trade-offs in C6 is key to fully appreciating the balance we achieve. We effectively balance overall performance and computational cost within the scope of CLIP-Base parameters (88M). The ELVA-Encoder configurations demonstrate notable success overall, as shown in Table 2 and Figure 3.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2024.emnlp-main.944::sections::6.3",
+      "paper_id": "2024.emnlp-main.944",
+      "section_number": "6.3",
+      "section_title": "discussion on memory and time costs",
+      "normalized_section_title": "discussion on memory and time costs",
+      "window_text": "We evaluate latency for ChartQA and DocVQA, as these tasks relate closely to real-world document information extraction scenarios and offer user-centric metrics. Multiple-choice evaluations like SD-I are less indicative of actual user scenarios. Benchmarks requiring longer answers, such as LLaVA-Bench, show inconsistent results due to varied answer lengths across models. Consequently, we focus on ChartQA and DocVQA for latency assessments but also include SD-I and LLaVA-Bench results in Figure 5. These findings indicate ELVA maintains promising latency across varied contexts.\n\nWhile this study primarily focuses on inference time costs, training costs are equally important for practitioners. Despite handling large datasets, our lightweight vision encoding ensures high training throughput. With training time costs 1.32 to 1.78 times that of LLaVA-NeXT, we find this a fair tradeoff for the gains in efficiency and performance. Our approach remains competitive and more resource-efficient compared to several contemporary models. For detailed analysis, please refer to Appendix A.\n\nRegarding memory usage, practical deployment often uses quantization (Dettmers et al., 2023), significantly reducing memory costs. For instance, the LLaVA-NeXT-13B model originally requires two V100 GPUs but can run on a single V100 with quantization, albeit with more latency and some performance loss. Despite these drawbacks, quantization shows promise and will likely improve. Our ELVA models, built for efficiency, complement these advancements, promising even greater value when combined with quantization techniques.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.944::appendix::A.1",
+      "paper_id": "2024.emnlp-main.944",
+      "section_number": "A.1",
+      "section_title": "model training cost and data efficiency",
+      "normalized_section_title": "model training cost and data efficiency",
+      "window_text": "Table 8 provides a detailed analysis of the training costs associated with different model sizes of ELVA, using 8 NVIDIA A100 80GB GPUs. According to estimates from the official LLaVA-NeXT blog<sup>3</sup>, our models take approximately 1.32 to 1.78 times longer to train. The blog reports that it takes 20 hours to train a 7B model with 8 A100 GPUs and 24 hours for a 13B model using 16 A100 GPUs. While training times can vary depending on the testing environment, our data shows that ELVA's training duration results in a moderate increase that remains within reasonable expectations.\n\nThis observation becomes clearer when ELVA is compared to other contemporary, data-intensive models. For instance, Qwen-VL (Bai et al., 2024) requires 1.4B data points for pretraining and 50M data points for instruction tuning, whereas ELVA\n\nTable 8: Training times for various model sizes on 8 A100 GPUs.   \n\n<table><tr><td>Base Model</td><td>Alignment Time</td><td>Instruct Tuning Time</td><td>Total Time</td></tr><tr><td>Llama-160M</td><td>0.5 hours</td><td>3.5 hours</td><td>4 hours</td></tr><tr><td>Tiny-Vicuna-1B</td><td>1.5 hours</td><td>6 hours</td><td>7.5 hours</td></tr><tr><td>Phi3-3.8B</td><td>4.5 hours</td><td>16.5 hours</td><td>21 hours</td></tr><tr><td>Vicuna-7B</td><td>6.5 hours</td><td>29 hours</td><td>35.5 hours</td></tr><tr><td>Vicuna-13B</td><td>11 hours</td><td>52.5 hours</td><td>63.5 hours</td></tr></table>\n\ndemonstrates a more moderate yet effective use of resources. Similarly, models such as Shikra (Chen et al., 2023a), Idefics2 (Laurençon et al., 2024b), and InternLM-XComposer2-4KHD (Dong et al., 2024) illustrate varying scales of resource utilization, with Shikra using 600K data points for alignment and 5.5M for instruction tuning, Idefics2 achieving results with over 1B data points, and InternLM-XComposer2-4KHD demonstrating scalability with a massive dataset and more than 8K input tokens.\n\nOur observations in Section 4.3 further reinforce the argument for ELVA's efficiency. Despite the extended data, LLaVA-1.5 failed to surpass the overall score we achieved with ELVA (C5 vs. C6), corroborating the efficiency and effectiveness of ELVA. Furthermore, it is crucial to highlight the importance of inference cost. Models aiming for reduced inference costs often face expensive training costs and challenges in maintaining instruction-following capabilities across varied response lengths (Dai et al., 2023; Liu et al., 2024b; Laurençon et al., 2024b). Thus, ELVA emerges as a quick, lightweight, and cost-effective alternative within LLaVA-like simple architectures.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2024.emnlp-main.944::appendix::B",
+      "paper_id": "2024.emnlp-main.944",
+      "section_number": "B",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.944::appendix::B.1",
+      "paper_id": "2024.emnlp-main.944",
+      "section_number": "B.1",
+      "section_title": "software and hardware setup",
+      "normalized_section_title": "software and hardware setup",
+      "window_text": "Our experiments are based on the official codebase<sup>5</sup> of LLaVA (Liu et al., 2023b). We utilize NVIDIA V100 32GB and A100 80GB GPUs for the computations. Ablation studies are conducted on V100 GPUs, whereas the final configuration models run on A100 GPUs. We do not observe any significant performance difference based on the type of GPU\n\nTable 12: Curated dataset from LLaVA-1.5. Dataset proportions are shown. RefCOCO and VG are not used in the ablation studies.   \n\n<table><tr><td>Dataset</td><td># Samples</td></tr><tr><td>LLaVA</td><td>157,712</td></tr><tr><td>SG40k</td><td>40,688</td></tr><tr><td>VQA-v2</td><td>82,783</td></tr><tr><td>GQA</td><td>72,140</td></tr><tr><td>OKVQA</td><td>8,998</td></tr><tr><td>OCRVQA</td><td>80,000</td></tr><tr><td>A-OKVQA</td><td>66,160</td></tr><tr><td>TextCaps</td><td>21,953</td></tr><tr><td>RefCOCO</td><td>48,447</td></tr><tr><td>VG</td><td>86,417</td></tr></table>\n\nused. However, training on V100 GPUs is approximately 2 to 3 times slower per step compared to A100 GPUs. Although our codebase is based on LLaVA, to ensure better reproducibility, we will release the scripts used for training our models and any necessary code modifications as open-source.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.944::appendix::B.2",
+      "paper_id": "2024.emnlp-main.944",
+      "section_number": "B.2",
+      "section_title": "datasets and hyperparameters",
+      "normalized_section_title": "datasets and hyperparameters",
+      "window_text": "Curated Dataset from LLaVA-1.5. Table 12 provides detailed quantities of the subsets within the dataset<sup>6</sup>.\n\nCurated Dataset from ELVA. Table 13 lists the datasets in ELVA's final configuration. Meanwhile, for the alignment phase, we use the alignment datasets from LLaVA (Liu et al., 2023b) and LLaVAR (Zhang et al., 2023), which consist of 558K and 422K samples respectively.\n\nHyperparameters. Table 14 and Table 15 provide the hyperparameters used during the alignment and instruction tuning stages, noting that smaller models benefit from larger learning rates. In the final model training configuration, we employ the data and sampling ratios outlined in Table 13 and train the model for 11K steps. Calculating the exact number of unique images is complex due to overlap across datasets; however, we estimate using approximately 1M unique images. LLaVA-NeXT reported using 760K samples<sup>7</sup>, and our use represents a modest increase. Furthermore, as we leverage multiple curated datasets with slightly different questions on the same images, we consider a synthetic epoch to consist of 1.4M examples. Thus, with a batch size of 128, we complete 11K steps (1.4M / 128).\n\nTable 13: Overview of datasets used in the final data configuration. All datasets are open-source and freely accessible. Datasets marked with * are subsets curated by Laurençon et al. (2024b), with only selected portions adopted in this work. † indicates that each question-answer pair is considered as a single sample. Datasets marked with ‡ had a large volume of data, hence, only partial images were randomly sampled.   \n\n<table><tr><td>Dataset</td><td># Samples</td><td>Sampling Ratio %</td></tr><tr><td>LLaVA-1.5-Set (See Table 12)</td><td>665,298</td><td>46.49</td></tr><tr><td>Vision-Flan-Set (Xu et al., 2024)</td><td>186,103</td><td>12.99</td></tr><tr><td>WikiArt (Chen et al., 2023b)</td><td>500</td><td>0.03</td></tr><tr><td>Celebrity (Chen et al., 2023b)</td><td>498</td><td>0.03</td></tr><tr><td>Landmark (Chen et al., 2023b)</td><td>500</td><td>0.03</td></tr><tr><td>Share-TextVQA (Chen et al., 2023b)</td><td>500</td><td>0.03</td></tr><tr><td>DocVQA (Mathew et al., 2021)</td><td>11,480</td><td>1.60</td></tr><tr><td>ChartQA (Masry et al., 2022)</td><td>18,317</td><td>2.56</td></tr><tr><td>*Cauldron-Set-A12D</td><td>2,434</td><td>0.17</td></tr><tr><td>*Cauldron-Set-Chart2Text</td><td>26,961</td><td>1.88</td></tr><tr><td>*Cauldron-Set-Diagram-Image-to-Text</td><td>300</td><td>0.02</td></tr><tr><td>*Cauldron-Set-HITAB</td><td>2,500</td><td>0.17</td></tr><tr><td>*Cauldron-Set-IAM</td><td>5,663</td><td>0.40</td></tr><tr><td>*Cauldron-Set-RenderedText</td><td>10,000</td><td>0.70</td></tr><tr><td>*Cauldron-Set-Robut-SQA</td><td>8,514</td><td>0.59</td></tr><tr><td>*Cauldron-Set-Robut-WTQ</td><td>38,246</td><td>2.67</td></tr><tr><td>*Cauldron-Set-ScienceQA</td><td>4,976</td><td>0.35</td></tr><tr><td>*Cauldron-Set-Screen2words</td><td>15,730</td><td>1.10</td></tr><tr><td>*Cauldron-Set-STVQA</td><td>17,247</td><td>1.20</td></tr><tr><td>*Cauldron-Set-TabMWP</td><td>22,722</td><td>1.59</td></tr><tr><td>*Cauldron-Set-InfoVQA</td><td>2,118</td><td>0.15</td></tr><tr><td>*Cauldron-Set-TQA</td><td>1,493</td><td>0.10</td></tr><tr><td>CORD-Instruct (Proposed in this work, §5.2)</td><td>680</td><td>0.05</td></tr><tr><td>VisualMRC (Tanaka et al., 2021)</td><td>7,959</td><td>0.56</td></tr><tr><td>LLaVAR-Inst (Zhang et al., 2023)</td><td>19,732</td><td>1.38</td></tr><tr><td>DocReason (Hu et al., 2024)</td><td>25,877</td><td>1.81</td></tr><tr><td>DocVQA-single†</td><td>44,815</td><td>9.38</td></tr><tr><td>ChartQA-single†</td><td>28,068</td><td>5.88</td></tr><tr><td>Layout-en-sampled‡ (Kim et al., 2023a)</td><td>50,000</td><td>3.49</td></tr><tr><td>DVQA-sampled‡ (Kafle et al., 2018)</td><td>10,000</td><td>0.70</td></tr><tr><td>MMC-Chart-sampled‡ (Liu et al., 2024a)</td><td>10,000</td><td>0.70</td></tr><tr><td>ScreenQA-sampled‡ (Hsiao et al., 2024)</td><td>10,000</td><td>0.70</td></tr><tr><td>LRV-Chart-sampled‡ (Liu et al., 2023a)</td><td>6,746</td><td>0.47</td></tr></table>\n\nFor ablation studies, we exclude datasets like VG, RefCOCO, and Vision-Flan to minimize costs, resulting in 9K training steps. Additionally, we find that the 0.2B model converges more slowly, so we extend its instruct tuning to twice the number of steps compared to the other models (1B to 13B). This increased number of steps is applied solely to the 0.2B scale.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.944::appendix::C",
+      "paper_id": "2024.emnlp-main.944",
+      "section_number": "C",
+      "section_title": "details on elva-encoder training",
+      "normalized_section_title": "details on elva-encoder training",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.944::appendix::C.1",
+      "paper_id": "2024.emnlp-main.944",
+      "section_number": "C.1",
+      "section_title": "dataset and hyperparameters",
+      "normalized_section_title": "dataset and hyperparameters",
+      "window_text": "Our primary training focus is on text reading tasks, aimed at enhancing the vision encoder's text recog\n\nTable 16: Configurations for 12 REncoder trainings. The table shows batch size, learning rate, and weight decay. All other hyperparameters are essentially identical to those in §B.2.   \n\n<table><tr><td>Batch Size</td><td>Learning Rate (LR)</td><td>Weight Decay</td></tr><tr><td>128</td><td>5e-5</td><td>1e-3</td></tr><tr><td>128</td><td>6e-5</td><td>1e-3</td></tr><tr><td>128</td><td>7e-5</td><td>1e-3</td></tr><tr><td>128</td><td>8e-5</td><td>1e-3</td></tr><tr><td>256</td><td>5e-5</td><td>1e-3</td></tr><tr><td>256</td><td>6e-5</td><td>1e-3</td></tr><tr><td>256</td><td>7e-5</td><td>1e-3</td></tr><tr><td>256</td><td>8e-5</td><td>1e-3</td></tr><tr><td>512</td><td>5e-5</td><td>0.0</td></tr><tr><td>512</td><td>6e-5</td><td>0.0</td></tr><tr><td>512</td><td>7e-5</td><td>0.0</td></tr><tr><td>512</td><td>8e-5</td><td>0.0</td></tr></table>\n\nnition capabilities. The training datasets include OCR-IDL (Biten et al., 2023) (837,922 samples), $\\mathrm{PDFA}^9$ (1,048,569 samples), as well as the alignment sets from LLaVA (Liu et al., 2023b) and LLaVAR (Zhang et al., 2023). We employ duplicate sampling, treating 3.5M samples as a synthetic epoch, completing one epoch as detailed in Table 16. This process is repeated to produce 12 distinct REncoder variants. With the selected 1B model scale, each training session requires approximately 1.7 days using 8 V100 GPUs.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.944::sections::3.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA V100 32GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Table 1 shows resource usage during inference for LLaVA and LLaVA-NeXT models, evaluated on the DocVQA and ChartQA test sets (Mathew et al., 2021; Masry et al., 2022). The LLaVA-1.5 models demonstrate manageable computational costs, operable on a single V100 GPU. However, LLaVA-NeXT models, with up to 2.9K tokens, present significant challenges. Testing on an NVIDIA V100 32GB reveals that LLaVA-NeXT-13/34B cannot be accommodated on a single GPU. These findings emphasize the challenges of larger models, especially in resource-constrained environments.",
+      "section_number": "3.2",
+      "section_title": "benchmarking baseline models",
+      "normalized_section_title": "benchmarking baseline models"
+    },
+    {
+      "window_id": "2024.emnlp-main.944::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Table 8 provides a detailed analysis of the training costs associated with different model sizes of ELVA, using 8 NVIDIA A100 80GB GPUs. According to estimates from the official LLaVA-NeXT blog<sup>3</sup>, our models take approximately 1.32 to 1.78 times longer to train. The blog reports that it takes 20 hours to train a 7B model with 8 A100 GPUs and 24 hours for a 13B model using 16 A100 GPUs. While training times can vary depending on the testing environment, our data shows that ELVA's training duration results in a moderate increase that remains within reasonable expectations.\n\nThis observation becomes clearer when ELVA is compared to other contemporary, data-intensive models. For instance, Qwen-VL (Bai et al., 2024) requires 1.4B data points for pretraining and 50M data points for instruction tuning, whereas ELVA\n\nTable 8: Training times for various model sizes on 8 A100 GPUs.   \n\n<table><tr><td>Base Model</td><td>Alignment Time</td><td>Instruct Tuning Time</td><td>Total Time</td></tr><tr><td>Llama-160M</td><td>0.5 hours</td><td>3.5 hours</td><td>4 hours</td></tr><tr><td>Tiny-Vicuna-1B</td><td>1.5 hours</td><td>6 hours</td><td>7.5 hours</td></tr><tr><td>Phi3-3.8B</td><td>4.5 hours</td><td>16.5 hours</td><td>21 hours</td></tr><tr><td>Vicuna-7B</td><td>6.5 hours</td><td>29 hours</td><td>35.5 hours</td></tr><tr><td>Vicuna-13B</td><td>11 hours</td><td>52.5 hours</td><td>63.5 hours</td></tr></table>\n\ndemonstrates a more moderate yet effective use of resources. Similarly, models such as Shikra (Chen et al., 2023a), Idefics2 (Laurençon et al., 2024b), and InternLM-XComposer2-4KHD (Dong et al., 2024) illustrate varying scales of resource utilization, with Shikra using 600K data points for alignment and 5.5M for instruction tuning, Idefics2 achieving results with over 1B data points, and InternLM-XComposer2-4KHD demonstrating scalability with a massive dataset and more than 8K input tokens.\n\nOur observations in Section 4.3 further reinforce the argument for ELVA's efficiency. Despite the extended data, LLaVA-1.5 failed to surpass the overall score we achieved with ELVA (C5 vs. C6), corroborating the efficiency and effectiveness of ELVA. Furthermore, it is crucial to highlight the importance of inference cost. Models aiming for reduced inference costs often face expensive training costs and challenges in maintaining instruction-following capabilities across varied response lengths (Dai et al., 2023; Liu et al., 2024b; Laurençon et al., 2024b). Thus, ELVA emerges as a quick, lightweight, and cost-effective alternative within LLaVA-like simple architectures.",
+      "section_number": "A.1",
+      "section_title": "model training cost and data efficiency",
+      "normalized_section_title": "model training cost and data efficiency"
+    },
+    {
+      "window_id": "2024.emnlp-main.944::appendix::B.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA V100 32GB",
+      "count": null,
+      "count_text": "",
+      "evidence": "Our experiments are based on the official codebase<sup>5</sup> of LLaVA (Liu et al., 2023b). We utilize NVIDIA V100 32GB and A100 80GB GPUs for the computations. Ablation studies are conducted on V100 GPUs, whereas the final configuration models run on A100 GPUs. We do not observe any significant performance difference based on the type of GPU\n\nTable 12: Curated dataset from LLaVA-1.5. Dataset proportions are shown. RefCOCO and VG are not used in the ablation studies.   \n\n<table><tr><td>Dataset</td><td># Samples</td></tr><tr><td>LLaVA</td><td>157,712</td></tr><tr><td>SG40k</td><td>40,688</td></tr><tr><td>VQA-v2</td><td>82,783</td></tr><tr><td>GQA</td><td>72,140</td></tr><tr><td>OKVQA</td><td>8,998</td></tr><tr><td>OCRVQA</td><td>80,000</td></tr><tr><td>A-OKVQA</td><td>66,160</td></tr><tr><td>TextCaps</td><td>21,953</td></tr><tr><td>RefCOCO</td><td>48,447</td></tr><tr><td>VG</td><td>86,417</td></tr></table>\n\nused. However, training on V100 GPUs is approximately 2 to 3 times slower per step compared to A100 GPUs. Although our codebase is based on LLaVA, to ensure better reproducibility, we will release the scripts used for training our models and any necessary code modifications as open-source.",
+      "section_number": "B.1",
+      "section_title": "software and hardware setup",
+      "normalized_section_title": "software and hardware setup"
+    },
+    {
+      "window_id": "2024.emnlp-main.944::appendix::B.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80GB",
+      "count": null,
+      "count_text": "",
+      "evidence": "Our experiments are based on the official codebase<sup>5</sup> of LLaVA (Liu et al., 2023b). We utilize NVIDIA V100 32GB and A100 80GB GPUs for the computations. Ablation studies are conducted on V100 GPUs, whereas the final configuration models run on A100 GPUs. We do not observe any significant performance difference based on the type of GPU\n\nTable 12: Curated dataset from LLaVA-1.5. Dataset proportions are shown. RefCOCO and VG are not used in the ablation studies.   \n\n<table><tr><td>Dataset</td><td># Samples</td></tr><tr><td>LLaVA</td><td>157,712</td></tr><tr><td>SG40k</td><td>40,688</td></tr><tr><td>VQA-v2</td><td>82,783</td></tr><tr><td>GQA</td><td>72,140</td></tr><tr><td>OKVQA</td><td>8,998</td></tr><tr><td>OCRVQA</td><td>80,000</td></tr><tr><td>A-OKVQA</td><td>66,160</td></tr><tr><td>TextCaps</td><td>21,953</td></tr><tr><td>RefCOCO</td><td>48,447</td></tr><tr><td>VG</td><td>86,417</td></tr></table>\n\nused. However, training on V100 GPUs is approximately 2 to 3 times slower per step compared to A100 GPUs. Although our codebase is based on LLaVA, to ensure better reproducibility, we will release the scripts used for training our models and any necessary code modifications as open-source.",
+      "section_number": "B.1",
+      "section_title": "software and hardware setup",
+      "normalized_section_title": "software and hardware setup"
+    },
+    {
+      "window_id": "2024.emnlp-main.944::appendix::C.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Our primary training focus is on text reading tasks, aimed at enhancing the vision encoder's text recog\n\nTable 16: Configurations for 12 REncoder trainings. The table shows batch size, learning rate, and weight decay. All other hyperparameters are essentially identical to those in §B.2.   \n\n<table><tr><td>Batch Size</td><td>Learning Rate (LR)</td><td>Weight Decay</td></tr><tr><td>128</td><td>5e-5</td><td>1e-3</td></tr><tr><td>128</td><td>6e-5</td><td>1e-3</td></tr><tr><td>128</td><td>7e-5</td><td>1e-3</td></tr><tr><td>128</td><td>8e-5</td><td>1e-3</td></tr><tr><td>256</td><td>5e-5</td><td>1e-3</td></tr><tr><td>256</td><td>6e-5</td><td>1e-3</td></tr><tr><td>256</td><td>7e-5</td><td>1e-3</td></tr><tr><td>256</td><td>8e-5</td><td>1e-3</td></tr><tr><td>512</td><td>5e-5</td><td>0.0</td></tr><tr><td>512</td><td>6e-5</td><td>0.0</td></tr><tr><td>512</td><td>7e-5</td><td>0.0</td></tr><tr><td>512</td><td>8e-5</td><td>0.0</td></tr></table>\n\nnition capabilities. The training datasets include OCR-IDL (Biten et al., 2023) (837,922 samples), $\\mathrm{PDFA}^9$ (1,048,569 samples), as well as the alignment sets from LLaVA (Liu et al., 2023b) and LLaVAR (Zhang et al., 2023). We employ duplicate sampling, treating 3.5M samples as a synthetic epoch, completing one epoch as detailed in Table 16. This process is repeated to produce 12 distinct REncoder variants. With the selected 1B model scale, each training session requires approximately 1.7 days using 8 V100 GPUs.",
+      "section_number": "C.1",
+      "section_title": "dataset and hyperparameters",
+      "normalized_section_title": "dataset and hyperparameters"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.944::sections::3.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA V100 32GB",
+      "cleaned_hardware_name": "nvidia v100 32gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "3.2",
+      "section_title": "benchmarking baseline models",
+      "normalized_section_title": "benchmarking baseline models",
+      "evidence": "Table 1 shows resource usage during inference for LLaVA and LLaVA-NeXT models, evaluated on the DocVQA and ChartQA test sets (Mathew et al., 2021; Masry et al., 2022). The LLaVA-1.5 models demonstrate manageable computational costs, operable on a single V100 GPU. However, LLaVA-NeXT models, with up to 2.9K tokens, present significant challenges. Testing on an NVIDIA V100 32GB reveals that LLaVA-NeXT-13/34B cannot be accommodated on a single GPU. These findings emphasize the challenges of larger models, especially in resource-constrained environments.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.emnlp-main.944::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": null,
+      "count": 8,
+      "count_text": "8",
+      "section_number": "A.1",
+      "section_title": "model training cost and data efficiency",
+      "normalized_section_title": "model training cost and data efficiency",
+      "evidence": "Table 8 provides a detailed analysis of the training costs associated with different model sizes of ELVA, using 8 NVIDIA A100 80GB GPUs. According to estimates from the official LLaVA-NeXT blog<sup>3</sup>, our models take approximately 1.32 to 1.78 times longer to train. The blog reports that it takes 20 hours to train a 7B model with 8 A100 GPUs and 24 hours for a 13B model using 16 A100 GPUs. While training times can vary depending on the testing environment, our data shows that ELVA's training duration results in a moderate increase that remains within reasonable expectations.\n\nThis observation becomes clearer when ELVA is compared to other contemporary, data-intensive models. For instance, Qwen-VL (Bai et al., 2024) requires 1.4B data points for pretraining and 50M data points for instruction tuning, whereas ELVA\n\nTable 8: Training times for various model sizes on 8 A100 GPUs.   \n\n<table><tr><td>Base Model</td><td>Alignment Time</td><td>Instruct Tuning Time</td><td>Total Time</td></tr><tr><td>Llama-160M</td><td>0.5 hours</td><td>3.5 hours</td><td>4 hours</td></tr><tr><td>Tiny-Vicuna-1B</td><td>1.5 hours</td><td>6 hours</td><td>7.5 hours</td></tr><tr><td>Phi3-3.8B</td><td>4.5 hours</td><td>16.5 hours</td><td>21 hours</td></tr><tr><td>Vicuna-7B</td><td>6.5 hours</td><td>29 hours</td><td>35.5 hours</td></tr><tr><td>Vicuna-13B</td><td>11 hours</td><td>52.5 hours</td><td>63.5 hours</td></tr></table>\n\ndemonstrates a more moderate yet effective use of resources. Similarly, models such as Shikra (Chen et al., 2023a), Idefics2 (Laurençon et al., 2024b), and InternLM-XComposer2-4KHD (Dong et al., 2024) illustrate varying scales of resource utilization, with Shikra using 600K data points for alignment and 5.5M for instruction tuning, Idefics2 achieving results with over 1B data points, and InternLM-XComposer2-4KHD demonstrating scalability with a massive dataset and more than 8K input tokens.\n\nOur observations in Section 4.3 further reinforce the argument for ELVA's efficiency. Despite the extended data, LLaVA-1.5 failed to surpass the overall score we achieved with ELVA (C5 vs. C6), corroborating the efficiency and effectiveness of ELVA. Furthermore, it is crucial to highlight the importance of inference cost. Models aiming for reduced inference costs often face expensive training costs and challenges in maintaining instruction-following capabilities across varied response lengths (Dai et al., 2023; Liu et al., 2024b; Laurençon et al., 2024b). Thus, ELVA emerges as a quick, lightweight, and cost-effective alternative within LLaVA-like simple architectures.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.emnlp-main.944::appendix::B.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA V100 32GB",
+      "cleaned_hardware_name": "nvidia v100 32gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "count": null,
+      "count_text": "",
+      "section_number": "B.1",
+      "section_title": "software and hardware setup",
+      "normalized_section_title": "software and hardware setup",
+      "evidence": "Our experiments are based on the official codebase<sup>5</sup> of LLaVA (Liu et al., 2023b). We utilize NVIDIA V100 32GB and A100 80GB GPUs for the computations. Ablation studies are conducted on V100 GPUs, whereas the final configuration models run on A100 GPUs. We do not observe any significant performance difference based on the type of GPU\n\nTable 12: Curated dataset from LLaVA-1.5. Dataset proportions are shown. RefCOCO and VG are not used in the ablation studies.   \n\n<table><tr><td>Dataset</td><td># Samples</td></tr><tr><td>LLaVA</td><td>157,712</td></tr><tr><td>SG40k</td><td>40,688</td></tr><tr><td>VQA-v2</td><td>82,783</td></tr><tr><td>GQA</td><td>72,140</td></tr><tr><td>OKVQA</td><td>8,998</td></tr><tr><td>OCRVQA</td><td>80,000</td></tr><tr><td>A-OKVQA</td><td>66,160</td></tr><tr><td>TextCaps</td><td>21,953</td></tr><tr><td>RefCOCO</td><td>48,447</td></tr><tr><td>VG</td><td>86,417</td></tr></table>\n\nused. However, training on V100 GPUs is approximately 2 to 3 times slower per step compared to A100 GPUs. Although our codebase is based on LLaVA, to ensure better reproducibility, we will release the scripts used for training our models and any necessary code modifications as open-source.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.emnlp-main.944::appendix::B.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80GB",
+      "cleaned_hardware_name": "a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": null,
+      "count": null,
+      "count_text": "",
+      "section_number": "B.1",
+      "section_title": "software and hardware setup",
+      "normalized_section_title": "software and hardware setup",
+      "evidence": "Our experiments are based on the official codebase<sup>5</sup> of LLaVA (Liu et al., 2023b). We utilize NVIDIA V100 32GB and A100 80GB GPUs for the computations. Ablation studies are conducted on V100 GPUs, whereas the final configuration models run on A100 GPUs. We do not observe any significant performance difference based on the type of GPU\n\nTable 12: Curated dataset from LLaVA-1.5. Dataset proportions are shown. RefCOCO and VG are not used in the ablation studies.   \n\n<table><tr><td>Dataset</td><td># Samples</td></tr><tr><td>LLaVA</td><td>157,712</td></tr><tr><td>SG40k</td><td>40,688</td></tr><tr><td>VQA-v2</td><td>82,783</td></tr><tr><td>GQA</td><td>72,140</td></tr><tr><td>OKVQA</td><td>8,998</td></tr><tr><td>OCRVQA</td><td>80,000</td></tr><tr><td>A-OKVQA</td><td>66,160</td></tr><tr><td>TextCaps</td><td>21,953</td></tr><tr><td>RefCOCO</td><td>48,447</td></tr><tr><td>VG</td><td>86,417</td></tr></table>\n\nused. However, training on V100 GPUs is approximately 2 to 3 times slower per step compared to A100 GPUs. Although our codebase is based on LLaVA, to ensure better reproducibility, we will release the scripts used for training our models and any necessary code modifications as open-source.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.emnlp-main.944::appendix::C.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "cleaned_hardware_name": "v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "C.1",
+      "section_title": "dataset and hyperparameters",
+      "normalized_section_title": "dataset and hyperparameters",
+      "evidence": "Our primary training focus is on text reading tasks, aimed at enhancing the vision encoder's text recog\n\nTable 16: Configurations for 12 REncoder trainings. The table shows batch size, learning rate, and weight decay. All other hyperparameters are essentially identical to those in §B.2.   \n\n<table><tr><td>Batch Size</td><td>Learning Rate (LR)</td><td>Weight Decay</td></tr><tr><td>128</td><td>5e-5</td><td>1e-3</td></tr><tr><td>128</td><td>6e-5</td><td>1e-3</td></tr><tr><td>128</td><td>7e-5</td><td>1e-3</td></tr><tr><td>128</td><td>8e-5</td><td>1e-3</td></tr><tr><td>256</td><td>5e-5</td><td>1e-3</td></tr><tr><td>256</td><td>6e-5</td><td>1e-3</td></tr><tr><td>256</td><td>7e-5</td><td>1e-3</td></tr><tr><td>256</td><td>8e-5</td><td>1e-3</td></tr><tr><td>512</td><td>5e-5</td><td>0.0</td></tr><tr><td>512</td><td>6e-5</td><td>0.0</td></tr><tr><td>512</td><td>7e-5</td><td>0.0</td></tr><tr><td>512</td><td>8e-5</td><td>0.0</td></tr></table>\n\nnition capabilities. The training datasets include OCR-IDL (Biten et al., 2023) (837,922 samples), $\\mathrm{PDFA}^9$ (1,048,569 samples), as well as the alignment sets from LLaVA (Liu et al., 2023b) and LLaVAR (Zhang et al., 2023). We employ duplicate sampling, treating 3.5M samples as a synthetic epoch, completing one epoch as detailed in Table 16. This process is repeated to produce 12 distinct REncoder variants. With the selected 1B model scale, each training session requires approximately 1.7 days using 8 V100 GPUs.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.emnlp-main.944::sections::2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "2",
+      "section_title": "large language and vision assistants",
+      "evidence": "Architecture. The LLaVA framework (Figure 2) employs a pre-trained Vision Transformer (ViT) (Dosovitskiy et al., 2021) as its vision encoder. Input images are resized and divided into patches of size $n \\times (p_h \\times p_w \\times c)$ , where $n = (h / p_h) \\times (w / p_w)$ , with $h$ and $w$ representing the resized image size, and $p_h$ and $p_w$ denoting the patch size, which are hyperparameters. Here, $c = 3$ denotes the number of channels, typically for RGB images. These patches are processed by the encoder to generate embeddings $\\{\\mathbf{z}_i \\in \\mathbb{R}^d\\}$ , where $d$ is the embedding dimension of the encoder and also a hyperparameter. These embeddings are then mapped to the input space of the language model via a Multi-Layer Perceptron (MLP) before being fed into the model. Optionally, the AnyRes mechanism (Liu et al., 2024c) can be applied, allowing for processing of larger images by first segmenting images into $m$ parts to better capture local features. Simultaneously, the entire image is processed to extract global features. Both global and local features are sequentially fed into the language model, allowing it to utilize comprehensive image information. Therefore, the total token count becomes $(1 + m) \\times n$ . See Liu et al. (2024c) for more details. However, this approach poses a computational challenge due to the increased token count.\n\nTraining Objectives and Datasets. The model is trained to minimize Cross-Entropy (CE) loss. During pre-training (alignment phase), it generates captions for images, with CE loss computed on the text. In the instruct tuning stage, given an image, question, and answer, the loss is computed on the answer text. The LLaVA-1.5 dataset (Liu et al., 2024b) is widely used and this study aims to further enhance the dataset. More details are in Section 4.\n\nTable 1: Inference latency and memory costs for LLaVA models. Tested with NVIDIA V100 GPUs.   \n\n<table><tr><td>Model</td><td>Token Usage (#tok)</td><td>s/img</td><td>Memory (GB)</td></tr><tr><td>LLaVA-1.5-7B</td><td>576</td><td>0.46</td><td>15</td></tr><tr><td>LLaVA-1.5-13B</td><td>576</td><td>0.66</td><td>27</td></tr><tr><td>LLaVA-NeXT-7B</td><td>approx. 1.7–2.9K</td><td>1.01</td><td>20</td></tr><tr><td>LLaVA-NeXT-13B</td><td>approx. 1.7–2.9K</td><td>1.78</td><td>40</td></tr><tr><td>LLaVA-NeXT-34B</td><td>approx. 1.7–2.9K</td><td>4.00</td><td>88</td></tr></table>"
+    },
+    {
+      "source_window_id": "2024.emnlp-main.944::sections::4.3",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.3",
+      "section_title": "developing an enhanced vision encoder with weight averaging",
+      "evidence": "To improve visually-situated text comprehension, we develop a new vision encoder optimized specifically for reading text within images. Table 2 presents ablation studies on various vision encoder configurations. Initially, we find that merely unfreezing the vision encoder during VLM training does not lead to notable performance improvements (C2). Next, we implement a two-step approach: (1) We first unfreeze the vision encoder and train it on a small scale VLM (1B is used) using text-centric datasets such as OCR-IDL (Biten et al., 2023). This training emphasizes the Text Reading task (Kim et al., 2022), where the model reads text embedded within images, allowing the vision en\n\ncoder to adjust and enhance its text recognition capabilities. (2) Subsequently, we extract the enhanced vision encoder, denoted as REncoder, from this text-centric VLM. Note that, the text-centric VLM used to derive the REncoder is not utilized in later stages. When training a VLM with the newly obtained REncoder, we observe significant improvements in text-centric tasks (C3), although its performance on general image tasks diminishes.\n\nNow we have two specialized encoders: the original CLIP for general tasks and the REncoder. Drawing inspiration from previous work on Weight Averaging (Wortsman et al., 2022), we experiment with averaging the weights of the original encoder and the REncoder. Interestingly, this approach yields promising results (C4). Furthermore, by slightly adjusting the weight averaging ratios to favor the REncoder, we achieve marginally better performance on text-centric tasks (C7).\n\nTo further enhance robustness, we train 12 REncoders with different random seeds and then average their weights, a practice inspired by Wortzman et al. (2022). This averaging process, taking approximately 1.7 days on 8 V100 GPUs per phase, yields an encoder that substantially improves text comprehension while maintaining general capabilities (C5). More training details are in Appendix C.\n\nIn summary, the core idea is simple. We (1) unfreeze the encoder and train a small VLM for text reading tasks, and retrieve the specialized encoder, and (2) make it robust to various tasks by applying weight averaging. Finally, the produced vision encoder is used to build an efficient language and vision assistant, ELVA. Our new ELVA-Encoder (C5) brings substantial enhancements in text-centric tasks compared to the original base (C1). While there is still a reduction in general image performance compared to merely training LLaVA-1.5 on our data (C6), understanding the trade-offs in C6 is key to fully appreciating the balance we achieve. We effectively balance overall performance and computational cost within the scope of CLIP-Base parameters (88M). The ELVA-Encoder configurations demonstrate notable success overall, as shown in Table 2 and Figure 3."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.944::sections::6.3",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6.3",
+      "section_title": "discussion on memory and time costs",
+      "evidence": "We evaluate latency for ChartQA and DocVQA, as these tasks relate closely to real-world document information extraction scenarios and offer user-centric metrics. Multiple-choice evaluations like SD-I are less indicative of actual user scenarios. Benchmarks requiring longer answers, such as LLaVA-Bench, show inconsistent results due to varied answer lengths across models. Consequently, we focus on ChartQA and DocVQA for latency assessments but also include SD-I and LLaVA-Bench results in Figure 5. These findings indicate ELVA maintains promising latency across varied contexts.\n\nWhile this study primarily focuses on inference time costs, training costs are equally important for practitioners. Despite handling large datasets, our lightweight vision encoding ensures high training throughput. With training time costs 1.32 to 1.78 times that of LLaVA-NeXT, we find this a fair tradeoff for the gains in efficiency and performance. Our approach remains competitive and more resource-efficient compared to several contemporary models. For detailed analysis, please refer to Appendix A.\n\nRegarding memory usage, practical deployment often uses quantization (Dettmers et al., 2023), significantly reducing memory costs. For instance, the LLaVA-NeXT-13B model originally requires two V100 GPUs but can run on a single V100 with quantization, albeit with more latency and some performance loss. Despite these drawbacks, quantization shows promise and will likely improve. Our ELVA models, built for efficiency, complement these advancements, promising even greater value when combined with quantization techniques."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.944::appendix::B",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B",
+      "section_title": "experimental details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.944::appendix::B.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B.2",
+      "section_title": "datasets and hyperparameters",
+      "evidence": "Curated Dataset from LLaVA-1.5. Table 12 provides detailed quantities of the subsets within the dataset<sup>6</sup>.\n\nCurated Dataset from ELVA. Table 13 lists the datasets in ELVA's final configuration. Meanwhile, for the alignment phase, we use the alignment datasets from LLaVA (Liu et al., 2023b) and LLaVAR (Zhang et al., 2023), which consist of 558K and 422K samples respectively.\n\nHyperparameters. Table 14 and Table 15 provide the hyperparameters used during the alignment and instruction tuning stages, noting that smaller models benefit from larger learning rates. In the final model training configuration, we employ the data and sampling ratios outlined in Table 13 and train the model for 11K steps. Calculating the exact number of unique images is complex due to overlap across datasets; however, we estimate using approximately 1M unique images. LLaVA-NeXT reported using 760K samples<sup>7</sup>, and our use represents a modest increase. Furthermore, as we leverage multiple curated datasets with slightly different questions on the same images, we consider a synthetic epoch to consist of 1.4M examples. Thus, with a batch size of 128, we complete 11K steps (1.4M / 128).\n\nTable 13: Overview of datasets used in the final data configuration. All datasets are open-source and freely accessible. Datasets marked with * are subsets curated by Laurençon et al. (2024b), with only selected portions adopted in this work. † indicates that each question-answer pair is considered as a single sample. Datasets marked with ‡ had a large volume of data, hence, only partial images were randomly sampled.   \n\n<table><tr><td>Dataset</td><td># Samples</td><td>Sampling Ratio %</td></tr><tr><td>LLaVA-1.5-Set (See Table 12)</td><td>665,298</td><td>46.49</td></tr><tr><td>Vision-Flan-Set (Xu et al., 2024)</td><td>186,103</td><td>12.99</td></tr><tr><td>WikiArt (Chen et al., 2023b)</td><td>500</td><td>0.03</td></tr><tr><td>Celebrity (Chen et al., 2023b)</td><td>498</td><td>0.03</td></tr><tr><td>Landmark (Chen et al., 2023b)</td><td>500</td><td>0.03</td></tr><tr><td>Share-TextVQA (Chen et al., 2023b)</td><td>500</td><td>0.03</td></tr><tr><td>DocVQA (Mathew et al., 2021)</td><td>11,480</td><td>1.60</td></tr><tr><td>ChartQA (Masry et al., 2022)</td><td>18,317</td><td>2.56</td></tr><tr><td>*Cauldron-Set-A12D</td><td>2,434</td><td>0.17</td></tr><tr><td>*Cauldron-Set-Chart2Text</td><td>26,961</td><td>1.88</td></tr><tr><td>*Cauldron-Set-Diagram-Image-to-Text</td><td>300</td><td>0.02</td></tr><tr><td>*Cauldron-Set-HITAB</td><td>2,500</td><td>0.17</td></tr><tr><td>*Cauldron-Set-IAM</td><td>5,663</td><td>0.40</td></tr><tr><td>*Cauldron-Set-RenderedText</td><td>10,000</td><td>0.70</td></tr><tr><td>*Cauldron-Set-Robut-SQA</td><td>8,514</td><td>0.59</td></tr><tr><td>*Cauldron-Set-Robut-WTQ</td><td>38,246</td><td>2.67</td></tr><tr><td>*Cauldron-Set-ScienceQA</td><td>4,976</td><td>0.35</td></tr><tr><td>*Cauldron-Set-Screen2words</td><td>15,730</td><td>1.10</td></tr><tr><td>*Cauldron-Set-STVQA</td><td>17,247</td><td>1.20</td></tr><tr><td>*Cauldron-Set-TabMWP</td><td>22,722</td><td>1.59</td></tr><tr><td>*Cauldron-Set-InfoVQA</td><td>2,118</td><td>0.15</td></tr><tr><td>*Cauldron-Set-TQA</td><td>1,493</td><td>0.10</td></tr><tr><td>CORD-Instruct (Proposed in this work, §5.2)</td><td>680</td><td>0.05</td></tr><tr><td>VisualMRC (Tanaka et al., 2021)</td><td>7,959</td><td>0.56</td></tr><tr><td>LLaVAR-Inst (Zhang et al., 2023)</td><td>19,732</td><td>1.38</td></tr><tr><td>DocReason (Hu et al., 2024)</td><td>25,877</td><td>1.81</td></tr><tr><td>DocVQA-single†</td><td>44,815</td><td>9.38</td></tr><tr><td>ChartQA-single†</td><td>28,068</td><td>5.88</td></tr><tr><td>Layout-en-sampled‡ (Kim et al., 2023a)</td><td>50,000</td><td>3.49</td></tr><tr><td>DVQA-sampled‡ (Kafle et al., 2018)</td><td>10,000</td><td>0.70</td></tr><tr><td>MMC-Chart-sampled‡ (Liu et al., 2024a)</td><td>10,000</td><td>0.70</td></tr><tr><td>ScreenQA-sampled‡ (Hsiao et al., 2024)</td><td>10,000</td><td>0.70</td></tr><tr><td>LRV-Chart-sampled‡ (Liu et al., 2023a)</td><td>6,746</td><td>0.47</td></tr></table>\n\nFor ablation studies, we exclude datasets like VG, RefCOCO, and Vision-Flan to minimize costs, resulting in 9K training steps. Additionally, we find that the 0.2B model converges more slowly, so we extend its instruct tuning to twice the number of steps compared to the other models (1B to 13B). This increased number of steps is applied solely to the 0.2B scale."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.944::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "details on elva-encoder training",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "3.2",
+      "A.1",
+      "B.1",
+      "C.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 32 GB",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 8
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 32 GB",
+        "num": null
+      },
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": null
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2024\\2024.emnlp-main.944\\auto\\full.md",
+    "source_md_sha256": "15d14032a3a494351f2ef16617c8cde2b8f5f645fd1815fab472aa8f286ea73a",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "749fdb433714bfa003499fb1c90f58c9bb6de4daf647bf52f54e32986186b91c"
+  }
+}

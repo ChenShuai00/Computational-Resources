@@ -1,0 +1,229 @@
+{
+  "paper_id": "2021.acl-long.381",
+  "candidate_windows": [
+    {
+      "window_id": "2021.acl-long.381::sections::3.2",
+      "paper_id": "2021.acl-long.381",
+      "section_number": "3.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "WARP is implemented in the AllenNLP framework. For all the GLUE benchmark tasks we use the roberta-large (Liu et al., 2019) model from the PyTorch implementation of huggingface transformers (Wolf et al., 2020) library. For the few-shot experiments, we use albert-xxlarge-v2 in order to directly compare to iPET (Schick and Schütze, 2021b). For the GLUE and SuperGLUE tasks we use dataset loaders and metrics implementations from the huggingface datasets library.\n\nThe prompt tokens are initialized either with word embeddings of [MASK] or similar to the vectors from the word embedding layer. For the answer prompts, we use the masked language model head, which usually consists of a feedforward network and a decoder on top of it, where the weights of the decoder are shared with the word embeddings used for the input. We calculate the softmax over the verbalizer tokens [V_1], ... [V_C].\n\nWe choose the Adam optimizer with a slanted triangular schedule for the learning rate with $6\\%$ warm-up steps and train for 10-20 epochs on each task. Each batch consists of examples containing at most 1024 tokens and 8 examples.\n\nIn order to speed up the training, we disable the dropout of the pretrained language model. All the experiments are performed on two Titan Vs and two RTX 3080 GPUs, with mixed precision training. In practice, WARP is 2.5-3 times faster than regular fine-tuning and 2 times slower than frozen-features experiments in terms of epoch duration with the same batch sizes.\n\nDetails about the hyperparameters can be found in the Supplementary material.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2021.acl-long.381::sections::5.1",
+      "paper_id": "2021.acl-long.381",
+      "section_number": "5.1",
+      "section_title": "setup",
+      "normalized_section_title": "setup",
+      "window_text": "For our few-shot experiments we build WARP on top of ALBERT (Lan et al., 2020), the same pretrained model used by PET and iPET. To initialize WARP prompts, we use the same Prompt-Verbalizer Patterns (PVP) from Schick and Schütze (2021b): the embeddings for [P_1], [P_2]... [P_N] are initialized with PVP's prompt token embeddings, and embeddings for [V_1], [V_2]... [V_C] are initialized with verbalizer token embeddings for their corre\n\nsponding classes. Unlike roberta-large, the alberta-xxlarge-v2 uses word embeddings of size 128 (8 times smaller than RoBERTa).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.381::sections::6",
+      "paper_id": "2021.acl-long.381",
+      "section_number": "6",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.381::sections::acknowledgments",
+      "paper_id": "2021.acl-long.381",
+      "section_number": "",
+      "section_title": "acknowledgments",
+      "normalized_section_title": "acknowledgments",
+      "window_text": "This work is based in part on research sponsored by Air Force Research Laboratory (AFRL) under agreement number FA8750-19-1-1000. The U.S. Government is authorized to reproduce and distribute reprints for Government purposes notwithstanding any copyright notation therein. The views and conclusions contained herein are those of the authors and should not be interpreted as necessarily representing the official policies or endorsements, either expressed or implied, of Air Force Laboratory, DARPA or the U.S. Government.\n\nThe work was supported by the RA Science Committee, in the frames of the research project No. 20TTAT-AIa024. Most experiments were performed on GPUs donated by NVIDIA.",
+      "rule_tier": "hard_skip_override",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.381::appendix::A",
+      "paper_id": "2021.acl-long.381",
+      "section_number": "A",
+      "section_title": "hyperparameters",
+      "normalized_section_title": "hyperparameters",
+      "window_text": "For each of the tasks, we performed hyperparameter search in the following space:\n\n- Learning rate is chosen from the set $\\{10^{-2}, 3 \\cdot 10^{-3}, 10^{-3}, 3 \\cdot 10^{-4}, 10^{-4}, 3 \\cdot 10^{-5}\\}$ ,   \n- Number of epochs is chosen as either 10 or 20. This determines the behavior of the slanted triangular learning rate scheduler.   \n- Initialization is performed either with the embedding of the [MASK] token, or randomly initialized from a normal distribution, with the mean and variance taken from the matrix of RoBERTa's word embeddings.\n\nThe hyperparameter search took roughly 4 days on two Titan V GPUs. The final choices for each task are shown in Table 5. Initialization with [MASK] performed better than the random initialization.\n\nWe disable all dropouts inside Transformer. We use huggingface implementation of AdamW optimizer with weight decay disabled. The gradient is normalized to the value 1.0. For the batch sampling we use bucketing with padding noise of 0.1. In order to use the device memory more effectively, we also set maximum number of tokens per batch to 2048. The maximum sequence length is truncated to 512 tokens. We enable mixed precision and pad all sequence lengths to the multiples of 8 for the effective usage of TensorCores<sup>8</sup>.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2021.acl-long.381::sections::3.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Titan V",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "WARP is implemented in the AllenNLP framework. For all the GLUE benchmark tasks we use the roberta-large (Liu et al., 2019) model from the PyTorch implementation of huggingface transformers (Wolf et al., 2020) library. For the few-shot experiments, we use albert-xxlarge-v2 in order to directly compare to iPET (Schick and Schütze, 2021b). For the GLUE and SuperGLUE tasks we use dataset loaders and metrics implementations from the huggingface datasets library.\n\nThe prompt tokens are initialized either with word embeddings of [MASK] or similar to the vectors from the word embedding layer. For the answer prompts, we use the masked language model head, which usually consists of a feedforward network and a decoder on top of it, where the weights of the decoder are shared with the word embeddings used for the input. We calculate the softmax over the verbalizer tokens [V_1], ... [V_C].\n\nWe choose the Adam optimizer with a slanted triangular schedule for the learning rate with $6\\%$ warm-up steps and train for 10-20 epochs on each task. Each batch consists of examples containing at most 1024 tokens and 8 examples.\n\nIn order to speed up the training, we disable the dropout of the pretrained language model. All the experiments are performed on two Titan Vs and two RTX 3080 GPUs, with mixed precision training. In practice, WARP is 2.5-3 times faster than regular fine-tuning and 2 times slower than frozen-features experiments in terms of epoch duration with the same batch sizes.\n\nDetails about the hyperparameters can be found in the Supplementary material.",
+      "section_number": "3.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    },
+    {
+      "window_id": "2021.acl-long.381::sections::3.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 3080",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "WARP is implemented in the AllenNLP framework. For all the GLUE benchmark tasks we use the roberta-large (Liu et al., 2019) model from the PyTorch implementation of huggingface transformers (Wolf et al., 2020) library. For the few-shot experiments, we use albert-xxlarge-v2 in order to directly compare to iPET (Schick and Schütze, 2021b). For the GLUE and SuperGLUE tasks we use dataset loaders and metrics implementations from the huggingface datasets library.\n\nThe prompt tokens are initialized either with word embeddings of [MASK] or similar to the vectors from the word embedding layer. For the answer prompts, we use the masked language model head, which usually consists of a feedforward network and a decoder on top of it, where the weights of the decoder are shared with the word embeddings used for the input. We calculate the softmax over the verbalizer tokens [V_1], ... [V_C].\n\nWe choose the Adam optimizer with a slanted triangular schedule for the learning rate with $6\\%$ warm-up steps and train for 10-20 epochs on each task. Each batch consists of examples containing at most 1024 tokens and 8 examples.\n\nIn order to speed up the training, we disable the dropout of the pretrained language model. All the experiments are performed on two Titan Vs and two RTX 3080 GPUs, with mixed precision training. In practice, WARP is 2.5-3 times faster than regular fine-tuning and 2 times slower than frozen-features experiments in terms of epoch duration with the same batch sizes.\n\nDetails about the hyperparameters can be found in the Supplementary material.",
+      "section_number": "3.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    },
+    {
+      "window_id": "2021.acl-long.381::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Titan V",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "For each of the tasks, we performed hyperparameter search in the following space:\n\n- Learning rate is chosen from the set $\\{10^{-2}, 3 \\cdot 10^{-3}, 10^{-3}, 3 \\cdot 10^{-4}, 10^{-4}, 3 \\cdot 10^{-5}\\}$ ,   \n- Number of epochs is chosen as either 10 or 20. This determines the behavior of the slanted triangular learning rate scheduler.   \n- Initialization is performed either with the embedding of the [MASK] token, or randomly initialized from a normal distribution, with the mean and variance taken from the matrix of RoBERTa's word embeddings.\n\nThe hyperparameter search took roughly 4 days on two Titan V GPUs. The final choices for each task are shown in Table 5. Initialization with [MASK] performed better than the random initialization.\n\nWe disable all dropouts inside Transformer. We use huggingface implementation of AdamW optimizer with weight decay disabled. The gradient is normalized to the value 1.0. For the batch sampling we use bucketing with padding noise of 0.1. In order to use the device memory more effectively, we also set maximum number of tokens per batch to 2048. The maximum sequence length is truncated to 512 tokens. We enable mixed precision and pad all sequence lengths to the multiples of 8 for the effective usage of TensorCores<sup>8</sup>.",
+      "section_number": "A",
+      "section_title": "hyperparameters",
+      "normalized_section_title": "hyperparameters"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2021.acl-long.381::sections::3.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Titan V",
+      "cleaned_hardware_name": "titan v",
+      "normalized_hardware_name": "NVIDIA Titan V",
+      "benchmark_hardware_name": "NVIDIA Titan V",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "3.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "WARP is implemented in the AllenNLP framework. For all the GLUE benchmark tasks we use the roberta-large (Liu et al., 2019) model from the PyTorch implementation of huggingface transformers (Wolf et al., 2020) library. For the few-shot experiments, we use albert-xxlarge-v2 in order to directly compare to iPET (Schick and Schütze, 2021b). For the GLUE and SuperGLUE tasks we use dataset loaders and metrics implementations from the huggingface datasets library.\n\nThe prompt tokens are initialized either with word embeddings of [MASK] or similar to the vectors from the word embedding layer. For the answer prompts, we use the masked language model head, which usually consists of a feedforward network and a decoder on top of it, where the weights of the decoder are shared with the word embeddings used for the input. We calculate the softmax over the verbalizer tokens [V_1], ... [V_C].\n\nWe choose the Adam optimizer with a slanted triangular schedule for the learning rate with $6\\%$ warm-up steps and train for 10-20 epochs on each task. Each batch consists of examples containing at most 1024 tokens and 8 examples.\n\nIn order to speed up the training, we disable the dropout of the pretrained language model. All the experiments are performed on two Titan Vs and two RTX 3080 GPUs, with mixed precision training. In practice, WARP is 2.5-3 times faster than regular fine-tuning and 2 times slower than frozen-features experiments in terms of epoch duration with the same batch sizes.\n\nDetails about the hyperparameters can be found in the Supplementary material.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2021.acl-long.381::sections::3.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 3080",
+      "cleaned_hardware_name": "rtx 3080",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 3080",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 3080",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "3.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "WARP is implemented in the AllenNLP framework. For all the GLUE benchmark tasks we use the roberta-large (Liu et al., 2019) model from the PyTorch implementation of huggingface transformers (Wolf et al., 2020) library. For the few-shot experiments, we use albert-xxlarge-v2 in order to directly compare to iPET (Schick and Schütze, 2021b). For the GLUE and SuperGLUE tasks we use dataset loaders and metrics implementations from the huggingface datasets library.\n\nThe prompt tokens are initialized either with word embeddings of [MASK] or similar to the vectors from the word embedding layer. For the answer prompts, we use the masked language model head, which usually consists of a feedforward network and a decoder on top of it, where the weights of the decoder are shared with the word embeddings used for the input. We calculate the softmax over the verbalizer tokens [V_1], ... [V_C].\n\nWe choose the Adam optimizer with a slanted triangular schedule for the learning rate with $6\\%$ warm-up steps and train for 10-20 epochs on each task. Each batch consists of examples containing at most 1024 tokens and 8 examples.\n\nIn order to speed up the training, we disable the dropout of the pretrained language model. All the experiments are performed on two Titan Vs and two RTX 3080 GPUs, with mixed precision training. In practice, WARP is 2.5-3 times faster than regular fine-tuning and 2 times slower than frozen-features experiments in terms of epoch duration with the same batch sizes.\n\nDetails about the hyperparameters can be found in the Supplementary material.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2021.acl-long.381::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Titan V",
+      "cleaned_hardware_name": "titan v",
+      "normalized_hardware_name": "NVIDIA Titan V",
+      "benchmark_hardware_name": "NVIDIA Titan V",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "A",
+      "section_title": "hyperparameters",
+      "normalized_section_title": "hyperparameters",
+      "evidence": "For each of the tasks, we performed hyperparameter search in the following space:\n\n- Learning rate is chosen from the set $\\{10^{-2}, 3 \\cdot 10^{-3}, 10^{-3}, 3 \\cdot 10^{-4}, 10^{-4}, 3 \\cdot 10^{-5}\\}$ ,   \n- Number of epochs is chosen as either 10 or 20. This determines the behavior of the slanted triangular learning rate scheduler.   \n- Initialization is performed either with the embedding of the [MASK] token, or randomly initialized from a normal distribution, with the mean and variance taken from the matrix of RoBERTa's word embeddings.\n\nThe hyperparameter search took roughly 4 days on two Titan V GPUs. The final choices for each task are shown in Table 5. Initialization with [MASK] performed better than the random initialization.\n\nWe disable all dropouts inside Transformer. We use huggingface implementation of AdamW optimizer with weight decay disabled. The gradient is normalized to the value 1.0. For the batch sampling we use bucketing with padding noise of 0.1. In order to use the device memory more effectively, we also set maximum number of tokens per batch to 2048. The maximum sequence length is truncated to 512 tokens. We enable mixed precision and pad all sequence lengths to the multiples of 8 for the effective usage of TensorCores<sup>8</sup>.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2021.acl-long.381::sections::5.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.1",
+      "section_title": "setup",
+      "evidence": "For our few-shot experiments we build WARP on top of ALBERT (Lan et al., 2020), the same pretrained model used by PET and iPET. To initialize WARP prompts, we use the same Prompt-Verbalizer Patterns (PVP) from Schick and Schütze (2021b): the embeddings for [P_1], [P_2]... [P_N] are initialized with PVP's prompt token embeddings, and embeddings for [V_1], [V_2]... [V_C] are initialized with verbalizer token embeddings for their corre\n\nsponding classes. Unlike roberta-large, the alberta-xxlarge-v2 uses word embeddings of size 128 (8 times smaller than RoBERTa)."
+    },
+    {
+      "source_window_id": "2021.acl-long.381::sections::6",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6",
+      "section_title": "discussion",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2021.acl-long.381::sections::acknowledgments",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "",
+      "section_title": "acknowledgments",
+      "evidence": "This work is based in part on research sponsored by Air Force Research Laboratory (AFRL) under agreement number FA8750-19-1-1000. The U.S. Government is authorized to reproduce and distribute reprints for Government purposes notwithstanding any copyright notation therein. The views and conclusions contained herein are those of the authors and should not be interpreted as necessarily representing the official policies or endorsements, either expressed or implied, of Air Force Laboratory, DARPA or the U.S. Government.\n\nThe work was supported by the RA Science Committee, in the frames of the research project No. 20TTAT-AIa024. Most experiments were performed on GPUs donated by NVIDIA."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "3.2",
+      "A"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Titan V",
+        "num": 2
+      },
+      {
+        "name": "NVIDIA GeForce RTX 3080",
+        "num": 2
+      },
+      {
+        "name": "NVIDIA Titan V",
+        "num": 2
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2021\\2021.acl-long.381\\auto\\full.md",
+    "source_md_sha256": "5416e7d03b7d44fc7ce36d3ac432c7d49cc1057e2212a907f8ed5d80640cca4f",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "a2f4e0f2222ac944a84b28fba08cc5ab0184a6c6ccb3a5a4deb8a7eefc1e4438"
+  }
+}

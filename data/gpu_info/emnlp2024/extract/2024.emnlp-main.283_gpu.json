@@ -1,0 +1,92 @@
+{
+  "paper_id": "2024.emnlp-main.283",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.283::sections::3.2",
+      "paper_id": "2024.emnlp-main.283",
+      "section_number": "3.2",
+      "section_title": "l1 training",
+      "normalized_section_title": "l1 training",
+      "window_text": "We use the CC100 corpus (Conneau et al. 2020; Wenzek et al. 2020), a multilingual common web crawl corpus that covers a set of 100 typologically diverse languages, available under Common Crawl term of use. $^3$ Since our goal is to measure the relationship between LM surprisal and human L2 reading times, the LMs' L1s were chosen based on the L1s of the human participants of the CELER corpus (Berzak et al., 2022, see §3.4.3): Arabic, Chinese (simplified), English, Japanese, Portuguese, and Spanish. We sampled a training set of 100M tokens from each of the L1 subcorpora in CC100.\n\nFor each L1, we first train a tokenizer. We use SentencePieceBPETokenizer from the Hugging Face library (Wolf et al., 2020), available under an Apache License. The SentencePiece algorithm (Kudo and Richardson, 2018) works well with languages not separated by white spaces, and its language-agnostic nature fits our purpose to keep the conditions as close as possible to each other across different L1s. We train each tokenizer on 5M sentences ( $\\approx$ 500MB of data). We set the vocabulary size to 20K, based on the estimate of human L1 vocabulary size that ranges from 17K to 20K\n\ndistinct words (Nation, 2006; Goulden et al., 1990; Zechmeister et al., 1995).\n\nOnce the tokenizer is trained, we then train the model on 4B words, saving the model at every 400M words. We focus our analyses on the first (400M words) and the last (4B words) checkpoints. We consider the 400M variant to be cognitively plausible, based on the estimate that the number of word tokens a person is annually exposed to amounts to 11M words (Hart and Risley, 1995). The 4B variant is by no means comparable to humans in terms of the amount of input; however, this variant is expected to be most predictive of human reading time based on Oh and Schuler (2023a), who find that LMs' predictive power of human reading time peaks after seeing about 2B tokens (and 4B tokens for smaller models). For both conditions, we used an effective batch size of 64 and context length of 256. This resulted in $\\approx 24\\mathrm{K}$ and $\\approx 244\\mathrm{K}$ training steps for each condition, respectively. The training took $\\approx 10$ hours for each L1 on a single RTX A6000 GPU with 48GB vRAM. For the subsequent L2 training, we reuse each of these L1LMs as the starting checkpoint.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.283::appendix::A",
+      "paper_id": "2024.emnlp-main.283",
+      "section_number": "A",
+      "section_title": "hyperparameters",
+      "normalized_section_title": "hyperparameters",
+      "window_text": "Table 2: List of hyperparameters used to train L2LMs.   \n\n<table><tr><td></td><td>L1</td><td>L2</td></tr><tr><td>vocab_size</td><td>20_000</td><td>5_000</td></tr><tr><td>context_length</td><td>256</td><td>256</td></tr><tr><td>train_layers</td><td>all</td><td>[wte.weight, wpe.weight, ln_f.weight, ln_f.bias]</td></tr><tr><td>n_embedding</td><td>192</td><td>192</td></tr><tr><td>n_layer</td><td>2</td><td>2</td></tr><tr><td>n_head</td><td>3</td><td>3</td></tr><tr><td>batch_size</td><td>8</td><td>1</td></tr><tr><td>grad_acc_steps</td><td>8</td><td>8</td></tr><tr><td>weight Decay</td><td>0.1</td><td>0.1</td></tr><tr><td>warmup_steps</td><td>1_000</td><td>30</td></tr><tr><td>lr_scheduler</td><td>cosine</td><td>cosine</td></tr><tr><td>learning_rate</td><td>5e-4</td><td>5e-4</td></tr></table>\n\nTable 2 summarizes the hyperparameters used to train L2LMs. The keys are shortened in the table for readability and for space reasons. Please refer to the config directory in our Github repo to see the exact setup.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.283::appendix::C",
+      "paper_id": "2024.emnlp-main.283",
+      "section_number": "C",
+      "section_title": "training steps and l2lm $\\delta$ ll",
+      "normalized_section_title": "training steps and l2lm $\\delta$ ll",
+      "window_text": "Figure 9 summarizes each L2LM's predictive power of each L1 group's L2 English reading time\n\nat every 3M tokens they saw in the L2 training phase. Because L2 perplexity was monotonically decreasing in relation to L2 training amount (see Figure 2), Figure 6 looks similar in shape to Figure 9, which summarized the trajectory of $\\Delta$ LL as a function of L2 perplexity. We find a few general patterns.\n\nFirst, comparing the L2LMs trained on 400M words in the L1 (top) and those trained on 4B words in the L1 (top), even though the L2 input and size are identical, the development of the predictive power seems to be different. When L2LMs are exposed to 4B words during the L1 training phase, with very few exceptions, L2 exposure does not improve L2LMs' predictive power, as observed in the almost monotonically decreasing trend in all 6 plots in the bottom half of Figure 9.\n\nSecond, when L2LMs are exposed to 400M words during the L1 training, L2 exposure sometimes improves the predictive power, for some combinations of L2LMs' L1s and human L1s (e.g., the Spanish L2LM predicting L2 English reading time of Spanish, Portuguese, and Chinese speakers).\n\nLastly, it is worth noting that this overall downward trend in the development of predictive power stands in sharp contrast to the monotonically upward trend in BLiMP performance (left half of Table 1; see §4.2), where L2 exposure always led to higher BLiMP performance, regardless of the number of words L2LMs have seen during the L1 training phase (400M and 4B). This suggests that, with the decoder blocks frozen and only embedding and output layers left trainable, L2LMs adapted to the English inputs during the L2 training phase by learning to distinguish likely and unlikely (grammatical and ungrammatical) sequences of inputs, using novel strategies that seem to deviate from both humans and regular LMs.\n\n![](images/f340595dd64ff36dd0d847f3d5e0d6d7a12ddbc153fe9336640e3dd54689d715.jpg)  \nHuman L1   \nFigure 9: L2LMs' $\\Delta$ LL on CELER corpus at every 3M tokens during the L2 training phase. Each line represents an L2LM trained on the L1 of the corresponding color for 400M tokens (top) and 4B tokens (bottom), respectively. Human L1s are indicated on the x-axis.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.283::sections::3.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX A6000 48GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We use the CC100 corpus (Conneau et al. 2020; Wenzek et al. 2020), a multilingual common web crawl corpus that covers a set of 100 typologically diverse languages, available under Common Crawl term of use. $^3$ Since our goal is to measure the relationship between LM surprisal and human L2 reading times, the LMs' L1s were chosen based on the L1s of the human participants of the CELER corpus (Berzak et al., 2022, see §3.4.3): Arabic, Chinese (simplified), English, Japanese, Portuguese, and Spanish. We sampled a training set of 100M tokens from each of the L1 subcorpora in CC100.\n\nFor each L1, we first train a tokenizer. We use SentencePieceBPETokenizer from the Hugging Face library (Wolf et al., 2020), available under an Apache License. The SentencePiece algorithm (Kudo and Richardson, 2018) works well with languages not separated by white spaces, and its language-agnostic nature fits our purpose to keep the conditions as close as possible to each other across different L1s. We train each tokenizer on 5M sentences ( $\\approx$ 500MB of data). We set the vocabulary size to 20K, based on the estimate of human L1 vocabulary size that ranges from 17K to 20K\n\ndistinct words (Nation, 2006; Goulden et al., 1990; Zechmeister et al., 1995).\n\nOnce the tokenizer is trained, we then train the model on 4B words, saving the model at every 400M words. We focus our analyses on the first (400M words) and the last (4B words) checkpoints. We consider the 400M variant to be cognitively plausible, based on the estimate that the number of word tokens a person is annually exposed to amounts to 11M words (Hart and Risley, 1995). The 4B variant is by no means comparable to humans in terms of the amount of input; however, this variant is expected to be most predictive of human reading time based on Oh and Schuler (2023a), who find that LMs' predictive power of human reading time peaks after seeing about 2B tokens (and 4B tokens for smaller models). For both conditions, we used an effective batch size of 64 and context length of 256. This resulted in $\\approx 24\\mathrm{K}$ and $\\approx 244\\mathrm{K}$ training steps for each condition, respectively. The training took $\\approx 10$ hours for each L1 on a single RTX A6000 GPU with 48GB vRAM. For the subsequent L2 training, we reuse each of these L1LMs as the starting checkpoint.",
+      "section_number": "3.2",
+      "section_title": "l1 training",
+      "normalized_section_title": "l1 training"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.283::sections::3.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX A6000 48GB",
+      "cleaned_hardware_name": "rtx a6000 48gb",
+      "normalized_hardware_name": "RTX A6000 48GB",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "3.2",
+      "section_title": "l1 training",
+      "normalized_section_title": "l1 training",
+      "evidence": "We use the CC100 corpus (Conneau et al. 2020; Wenzek et al. 2020), a multilingual common web crawl corpus that covers a set of 100 typologically diverse languages, available under Common Crawl term of use. $^3$ Since our goal is to measure the relationship between LM surprisal and human L2 reading times, the LMs' L1s were chosen based on the L1s of the human participants of the CELER corpus (Berzak et al., 2022, see §3.4.3): Arabic, Chinese (simplified), English, Japanese, Portuguese, and Spanish. We sampled a training set of 100M tokens from each of the L1 subcorpora in CC100.\n\nFor each L1, we first train a tokenizer. We use SentencePieceBPETokenizer from the Hugging Face library (Wolf et al., 2020), available under an Apache License. The SentencePiece algorithm (Kudo and Richardson, 2018) works well with languages not separated by white spaces, and its language-agnostic nature fits our purpose to keep the conditions as close as possible to each other across different L1s. We train each tokenizer on 5M sentences ( $\\approx$ 500MB of data). We set the vocabulary size to 20K, based on the estimate of human L1 vocabulary size that ranges from 17K to 20K\n\ndistinct words (Nation, 2006; Goulden et al., 1990; Zechmeister et al., 1995).\n\nOnce the tokenizer is trained, we then train the model on 4B words, saving the model at every 400M words. We focus our analyses on the first (400M words) and the last (4B words) checkpoints. We consider the 400M variant to be cognitively plausible, based on the estimate that the number of word tokens a person is annually exposed to amounts to 11M words (Hart and Risley, 1995). The 4B variant is by no means comparable to humans in terms of the amount of input; however, this variant is expected to be most predictive of human reading time based on Oh and Schuler (2023a), who find that LMs' predictive power of human reading time peaks after seeing about 2B tokens (and 4B tokens for smaller models). For both conditions, we used an effective batch size of 64 and context length of 256. This resulted in $\\approx 24\\mathrm{K}$ and $\\approx 244\\mathrm{K}$ training steps for each condition, respectively. The training took $\\approx 10$ hours for each L1 on a single RTX A6000 GPU with 48GB vRAM. For the subsequent L2 training, we reuse each of these L1LMs as the starting checkpoint.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched"
+    }
+  ],
+  "review_flags": [],
+  "pred_result": {
+    "sec": [
+      "3.2"
+    ],
+    "pred": [
+      {
+        "name": "RTX A6000 48GB",
+        "num": 1
+      }
+    ]
+  }
+}

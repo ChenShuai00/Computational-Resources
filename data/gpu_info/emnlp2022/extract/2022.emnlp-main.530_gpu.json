@@ -1,0 +1,96 @@
+{
+  "paper_id": "2022.emnlp-main.530",
+  "candidate_windows": [
+    {
+      "window_id": "2022.emnlp-main.530::sections::4.2",
+      "paper_id": "2022.emnlp-main.530",
+      "section_number": "4.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "We extract 2048D RestNet-152 (He et al., 2016) and 2304 SlowFast (Feichtenhofer et al., 2019) features at 3 FPS and max pooling on frame features every 1.5 seconds. Each video feature is normalized by its L2-norm and concatenated for the final video feature. We extract the textual features via 12-layer pre-trained RoBERTa (Liu et al., 2019). Note that we fine-tune RoBERTa using only subtitles in TVR train-split with MLM objective, except the queries. As for subtitle-based moment sampling, we set the $l_{min}$ and $l_{max}$ to 2 and 5 respectively. We sample 130K temporal moments and each video has an average of 7 temporal moments. Each temporal moment has two pseudo queries, therefore 260K pseudo queries are generated. We train our model in an unsupervised setting with 87K pseudo queries of the same size as TVR train-split for 50 epochs with the batch size set to 128. For the supervised setting, we train our model with 260K pseudo queries and annotated queries in TVR train\n\nsplit over 70 epochs and set the same batch size as above.\n\nAll our experiments are run on a single Quadro RTX 8000. Our video-language model is optimized with AdamW and set the initial learning rate to $1.0 \\times 10^{-4}$ . The objective function of our model follows Zhang et al. (2021).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.530::appendix::A.1",
+      "paper_id": "2022.emnlp-main.530",
+      "section_number": "A.1",
+      "section_title": "re-implementation of verbbert",
+      "normalized_section_title": "re-implementation of verbbert",
+      "window_text": "Nam et al. (2021) proposed VerbBERT to predict the verbs from contextual nouns. We collect the dataset from the corpus that describes a person's action. Then we only select sentences that contain the word 'person' and extract only nouns and verbs from the sentences. In this step, about 10,000 sentences are remain.\n\nFor training, we randomly split the train and test dataset with a ratio of 9:1. We fine-tune the pretrained RoBERTa model using the above sentences with MLM objective. After 20 epochs, there is no further improvement of perplexity, so we stop training as more epochs might cause over-fitting (see Figure 5). For a given sentence \"person [mask] bicycle\", VerbBERT will predict '[mask]' as 'ride'. To generate a pseudo query (simplified sentence) for TVR dataset, we predict the verb from detected objects and replace the 'person' with a character name. We visualize the generated simplified sentence in Figure 6.\n\n![](images/d21feff272e8d314988c258f2fa36514f613660eae0845daa9ce22c9c27e1b87.jpg)  \nFigure 5: Evaluation (Left) and Loss (Right) result of VerbBERT. We use Perplexity for the evaluation metric. (epoch 1: Orange, epoch 5: Burgundy, epoch 20:Blue epoch 50: Cyan)\n\n![](images/6edab95b40d038a2a4091c961c9b95c151ea7bd1d8c9787c76e3c81f8170acf1.jpg)  \nFigure 6: Example sample of generated simplified sentence on TVR dataset.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.530::appendix::A.5",
+      "paper_id": "2022.emnlp-main.530",
+      "section_number": "A.5",
+      "section_title": "experiment on the various size of pseudo query dataset",
+      "normalized_section_title": "experiment on the various size of pseudo query dataset",
+      "window_text": "To investigate the quality of pseudo queries, we train the model on pseudo queries with different scales. We construct these subsets such that larger subsets include the smaller ones. We report AveR VCMR score (the average of R@1, 5,10, IoU=0.5) as the metric to evaluate model performance.\n\nAs shown in Figure 9, the performance increases in proportion to the scale of pseudo query dataset. However, we observed that there is no significant increase in performance after a certain point.\n\n(a)   \n![](images/fd03b48eac32c84f0633b3a9957d146db6ca649445107cb8dc045c4cc37799fc.jpg)  \nHaeyoung1:I am back.   \nJeongsuk: Oh wow, our new bride has arrived.   \nDeogi: You must be hungry, right? Get some chopsticks and come here to join us.Pseudo Query Timestamp [29s,36s] Deogi, Haeyoung1 and Jeongsuk are talking together. A man and woman sitting at a table with bottles of wine. (visual)\n\nHaeyoung1 is back. Deogi, Kyungsuk and Jeongsuk invite him to join them. (textual)\n\n(c)   \n![](images/ed905b872270363a60cf4de879a086db64fd9a85c27bf2c6da59808633170fc8.jpg)  \nHaeyoung1: It's a hundred times better not to marry instead of marrying then splitting up later!   \nHaeyoung1: We wouldn't have been able to live together for a long time anyway! Deogi: If you weren't going to marry him, then why did you bring him home? Deogi: How could you do this? It's such an embarrassment!   \nHaeyoung1: Seriously! Then should I torture to myself and live with him?Pseudo Query Timestamp [64s,83s] Haeyoung1 and Deogi are talking together. A woman in a gray and white striped shirt. (visual)\n\nHaeyoung1 and Taejin decided not to get married and live together. Deogi is shocked that she brought him home. (textual)\n\n(b)   \n![](images/c8e21a8fcb01ffeca143f85c31ec2503c085a3ef327588942d475a4ff875a389.jpg)  \nKyungsu: Due to unfortunate circumstances, our daughter, Haeyoung's wedding ceremony has been cancelled.   \nKyungsu: Yes? It just ended up that way. I'm sorry.   \nDeogi: Crazy wench. Oh, crazy wench.   \nKyungsu: Yes. Yes, that's right.Pseudo Query Timestamp [0s,33s] Deogi and Kyungsu are talking together. A person sitting at a table with a laptop. (visual)\n\nHaeyoung's wedding has been cancelled. (textual)\n\n(d)   \n![](images/a97cca7d8193c225443baf40ea1c2b38fcc9d8bbe6a5bfb658c82b680cad9853.jpg)  \nSukyung: Do we only sell rice?   \nHaeyoung: Rice is at the core of Korean food.   \nSukyung: How many times do I have to tell you that rice isn't enough for us to reclaim   \nI first place in business ranking?   \nSukyung: Rice... stop focusing on the rice.   \nSukyung: This morning on my way to work, I heard that I have a new nickname.Pseudo Query Timestamp [10s,40s] Sukyung and Haeyoung1 are talking together. A woman wearing glasses looking at a tablet. (visual)\n\nHaeyoung1 wants Sukyung to stop focusing on rice and focus on other things. (textual)\n\n![](images/b71ff60721aaaab0bb8ec938d7053573d7fdc77f6681649aefe2a695fdeed5b3.jpg)  \nFigure 7: Four visualization example of pseudo queries on DramaQA dataset. All of the generated pseudo queries sufficiently describe the temporal moment of the video. In Figure7-(c), textual pseudo query well describe about the situation of Haeyoung1 and Taejin weddings are canceled.\n\n![](images/9297a39a02ed4ccfa8c153a0675669dbd733b3c9a36e47d9a325e35461caf742.jpg)  \nFigure 8: Statistics of the generated pseudo queries.\n\nTable 7: Ablation study on effect of speaker's name in the visual pseudo query. “(w/o s)” means that trained with visual pseudo queries which do not contain the speaker's name.   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"3\">VCMR</td></tr><tr><td>R@1</td><td>R@10</td><td>R@100</td></tr><tr><td>VPQ (w/o s)</td><td>0.62</td><td>2.4</td><td>6.83</td></tr><tr><td>VPQ</td><td>0.73</td><td>2.57</td><td>7.61</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.emnlp-main.530::sections::4.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Quadro RTX 8000",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We extract 2048D RestNet-152 (He et al., 2016) and 2304 SlowFast (Feichtenhofer et al., 2019) features at 3 FPS and max pooling on frame features every 1.5 seconds. Each video feature is normalized by its L2-norm and concatenated for the final video feature. We extract the textual features via 12-layer pre-trained RoBERTa (Liu et al., 2019). Note that we fine-tune RoBERTa using only subtitles in TVR train-split with MLM objective, except the queries. As for subtitle-based moment sampling, we set the $l_{min}$ and $l_{max}$ to 2 and 5 respectively. We sample 130K temporal moments and each video has an average of 7 temporal moments. Each temporal moment has two pseudo queries, therefore 260K pseudo queries are generated. We train our model in an unsupervised setting with 87K pseudo queries of the same size as TVR train-split for 50 epochs with the batch size set to 128. For the supervised setting, we train our model with 260K pseudo queries and annotated queries in TVR train\n\nsplit over 70 epochs and set the same batch size as above.\n\nAll our experiments are run on a single Quadro RTX 8000. Our video-language model is optimized with AdamW and set the initial learning rate to $1.0 \\times 10^{-4}$ . The objective function of our model follows Zhang et al. (2021).",
+      "section_number": "4.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.emnlp-main.530::sections::4.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Quadro RTX 8000",
+      "cleaned_hardware_name": "quadro rtx 8000",
+      "normalized_hardware_name": "NVIDIA Quadro RTX 8000",
+      "benchmark_hardware_name": "NVIDIA Quadro RTX 8000",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "4.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "We extract 2048D RestNet-152 (He et al., 2016) and 2304 SlowFast (Feichtenhofer et al., 2019) features at 3 FPS and max pooling on frame features every 1.5 seconds. Each video feature is normalized by its L2-norm and concatenated for the final video feature. We extract the textual features via 12-layer pre-trained RoBERTa (Liu et al., 2019). Note that we fine-tune RoBERTa using only subtitles in TVR train-split with MLM objective, except the queries. As for subtitle-based moment sampling, we set the $l_{min}$ and $l_{max}$ to 2 and 5 respectively. We sample 130K temporal moments and each video has an average of 7 temporal moments. Each temporal moment has two pseudo queries, therefore 260K pseudo queries are generated. We train our model in an unsupervised setting with 87K pseudo queries of the same size as TVR train-split for 50 epochs with the batch size set to 128. For the supervised setting, we train our model with 260K pseudo queries and annotated queries in TVR train\n\nsplit over 70 epochs and set the same batch size as above.\n\nAll our experiments are run on a single Quadro RTX 8000. Our video-language model is optimized with AdamW and set the initial learning rate to $1.0 \\times 10^{-4}$ . The objective function of our model follows Zhang et al. (2021).",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Quadro RTX 8000",
+        "num": 1
+      }
+    ]
+  }
+}

@@ -1,0 +1,133 @@
+{
+  "paper_id": "2022.emnlp-main.768",
+  "candidate_windows": [
+    {
+      "window_id": "2022.emnlp-main.768::sections::5",
+      "paper_id": "2022.emnlp-main.768",
+      "section_number": "5",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "In the following study, we investigate whether neural networks, and in particular state-of-the-art transformer-based language models (Devlin et al., 2019) can learn to perform satisfiability checks on examples representing the selected fragments. First, we investigate whether they can do so in principle, by optimising and evaluating classifiers on training and evaluation data drawn from the same distribution. Second, in an attempt to understand whether they reliably learn the underlying logical principles that govern (un-)satisfiability, we evaluate their generalisation capabilities on out-of-distribution evaluation data. We do so by altering various parameters of the training and evaluation data generation to control the structure of the generated problem instances.\n\nMore specifically, we cast the problem of determining satisfiability as binary text classification and conduct experiments with three transformer based language models, RoBERTa, XLnet and Electra (Liu et al., 2019; Yang et al., 2019; Clark et al., 2020a).which are further described in the Appendix. We employ pre-trained language models because initial experiments showed that these tend to converge faster compared to training from scratch, despite the fact that their pre-training objectives bears little similarity to the task at hand. Following Devlin et al. (2019), we represent each problem in plain English text prepended by the special [CLS] token as input to the language model. The text is embedded using the language model, and the embedding of the [CLS] token, as output by the final layer of the language model, is projected into a two-dimensional space, representing the odds of the problem being satisfiable. During inference, we pick the highest logit as the model's prediction and during training we minimise the cross-entropy loss between the logits and the expected class, thus optimising the parameters of the language model to produce the expected prediction conditioned on the input. We keep the choice of hyper-parameters (detailed in Appendix) consistent across experiments.\n\nTable 2: Accuracy of optimised models trained on random examples consisting of 15 to 30 sentences (s) and evaluated on longer random problem instances.   \n\n<table><tr><td>Problem size</td><td>S+</td><td>R</td><td>Sr</td><td>Srn</td><td>R+</td></tr><tr><td>15 ≤ s ≤ 30</td><td>76</td><td>93</td><td>94</td><td>80</td><td>74</td></tr><tr><td>30 ≤ s ≤ 40I</td><td>64</td><td>89</td><td>94</td><td>82</td><td>72</td></tr><tr><td>40 ≤ s ≤ 45</td><td>63</td><td>86</td><td>-</td><td>-</td><td>71</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.768::appendix::A",
+      "paper_id": "2022.emnlp-main.768",
+      "section_number": "A",
+      "section_title": "additional details on the experimental setup",
+      "normalized_section_title": "additional details on the experimental setup",
+      "window_text": "Regarding models, We choose RoBERTa, Electra and XLnet as representatives of \"BERTology\" as they all employ different pretraining objectives to obtain the contextualised representations. We do not perform explicit hyperparemeter optimisation for each of the models for each of the datasets, as we are not invested in finding a best performing model, but rather, we are concerned with more general questions about the learnability of the presented problems. We find that our obtained results are similar, and in this regard we expect results to be similar for other transformer-based approaches, as their performance stems from the amount of pre-training data and language model size, rather than architectural choices (Raffel et al., 2020). Finally, investigating multiple models (e.g. more transformer models or hyperparemeter optimisation) increases the amount of computation and thus the carbon footprint (Strubell et al., 2019), which we deem unnecessary given the research questions.\n\nAs both data generation and model optimisation are stochastic processes, we are concerned with the impact of chance on the results of our experiments. To investigate whether model convergence is impacted, we optimise five models on $\\mathcal{R}$ datasets generated from different random seeds. For model performance, we evaluate one optimised model on five different $\\mathcal{R}$ evaluation sets. The results are summarised in Table 5: the variance of evaluation scores is negligible, while for optimisation, the influence of randomness is more noticeable. The presented loss variance translates to differences in accuracy of up to 2 percent points.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.768::appendix::B",
+      "paper_id": "2022.emnlp-main.768",
+      "section_number": "B",
+      "section_title": "additional training details",
+      "normalized_section_title": "additional training details",
+      "window_text": "We implement the training and inference in PyTorch 1.10.0 (Paszke et al., 2017). We use the pre-trained language models available in the transformers library. We train the roberta\n\n$^{2}$ https://github.com/huggingface/transformers   \nTable 5: Impact of randomness in the data generation process on model optimisation (first row) and on model performance (second row).   \n\n<table><tr><td>Experiment</td><td>Metric</td><td>Mean</td><td>Std. dev.</td></tr><tr><td>train stability</td><td>Loss</td><td>0.07696</td><td>0.008</td></tr><tr><td>eval stability</td><td>Accuracy</td><td>0.953</td><td>0.0013</td></tr></table>\n\n![](images/301544caead6ba3c2d58c0484fdc725d082b64117205e2931e6ce9021b8dd42d.jpg)  \nFigure 3: Proof length distribution.\n\nmodel on an Nvidia V100 GPU with 16 GB of RAM. to keep a consistent set of hyperparameters, We train the XLNet models on an Nvidia A100 GPU with 80GB of RAM since these models do not support gradient checkpointing, and the chosen batch size results in large $(\\geq 16\\mathrm{GB})$ memory requirements during training.\n\nWe fix the random seed to maintain deterministic behaviour and the hyper-parameters used for training all models are\n\n- Batch size: relying on gradient checkpointing, we are able to set the batch size to 56.   \n- Learning Rate: We schedule the learning rate to linearly warm up from zero to $4 \\cdot 10^{-6}$ , linearly decaying it to zero, as it was found to perform best across all fragments. We use the ADAM optimiser with the default parameters $\\epsilon = 1 \\times 10^{-8}, \\beta_{1} = 0.99$ and $\\beta_{2} = 0.999$ . Note that this comparatively low learning rate prohibits us from using mixed precision optimisation.   \n- Train Epochs: We train the models for 6 epochs on all fragments to maintain the same training budget.   \n- Maximal sequence length: As the input length varies for different fragments, we ensure that the sequence lengths are set in a way that allows to embed. In practice this varies from 288 to 432 tokens. Note that padding input sequences to max length does not impact the training procedure as the padding tokens are not attended to when calculating the embedding of the [CLS] input token (nor for any other input tokens).\n\nTable 6: Accuracy of RoBERTa models evaluated on all fragments. Grey results denote generalisation performance to harder fragments.   \n\n<table><tr><td colspan=\"2\">Evaluated on ↓</td><td colspan=\"5\">Trained on →</td></tr><tr><td colspan=\"2\">maj. class</td><td>S+</td><td>R</td><td>Sr</td><td>Srn</td><td>R+</td></tr><tr><td>S+</td><td>54</td><td>86</td><td>61</td><td>61</td><td>55</td><td>70</td></tr><tr><td>R</td><td>52</td><td>79</td><td>95</td><td>78</td><td>54</td><td>85</td></tr><tr><td>Sr</td><td>55</td><td>45</td><td>48</td><td>96</td><td>90</td><td>49</td></tr><tr><td>Srn</td><td>53</td><td>47</td><td>50</td><td>78</td><td>91</td><td>48</td></tr><tr><td>R+</td><td>53</td><td>73</td><td>63</td><td>60</td><td>55</td><td>79</td></tr></table>\n\nWe find this setting works well for all conducted experiments, thus we keep the same set of hyperparameters to maintain comparability. To replicate our experiments, please see the separately supplied code.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.emnlp-main.768::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia V100 16GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We implement the training and inference in PyTorch 1.10.0 (Paszke et al., 2017). We use the pre-trained language models available in the transformers library. We train the roberta\n\n$^{2}$ https://github.com/huggingface/transformers   \nTable 5: Impact of randomness in the data generation process on model optimisation (first row) and on model performance (second row).   \n\n<table><tr><td>Experiment</td><td>Metric</td><td>Mean</td><td>Std. dev.</td></tr><tr><td>train stability</td><td>Loss</td><td>0.07696</td><td>0.008</td></tr><tr><td>eval stability</td><td>Accuracy</td><td>0.953</td><td>0.0013</td></tr></table>\n\n![](images/301544caead6ba3c2d58c0484fdc725d082b64117205e2931e6ce9021b8dd42d.jpg)  \nFigure 3: Proof length distribution.\n\nmodel on an Nvidia V100 GPU with 16 GB of RAM. to keep a consistent set of hyperparameters, We train the XLNet models on an Nvidia A100 GPU with 80GB of RAM since these models do not support gradient checkpointing, and the chosen batch size results in large $(\\geq 16\\mathrm{GB})$ memory requirements during training.\n\nWe fix the random seed to maintain deterministic behaviour and the hyper-parameters used for training all models are\n\n- Batch size: relying on gradient checkpointing, we are able to set the batch size to 56.   \n- Learning Rate: We schedule the learning rate to linearly warm up from zero to $4 \\cdot 10^{-6}$ , linearly decaying it to zero, as it was found to perform best across all fragments. We use the ADAM optimiser with the default parameters $\\epsilon = 1 \\times 10^{-8}, \\beta_{1} = 0.99$ and $\\beta_{2} = 0.999$ . Note that this comparatively low learning rate prohibits us from using mixed precision optimisation.   \n- Train Epochs: We train the models for 6 epochs on all fragments to maintain the same training budget.   \n- Maximal sequence length: As the input length varies for different fragments, we ensure that the sequence lengths are set in a way that allows to embed. In practice this varies from 288 to 432 tokens. Note that padding input sequences to max length does not impact the training procedure as the padding tokens are not attended to when calculating the embedding of the [CLS] input token (nor for any other input tokens).\n\nTable 6: Accuracy of RoBERTa models evaluated on all fragments. Grey results denote generalisation performance to harder fragments.   \n\n<table><tr><td colspan=\"2\">Evaluated on ↓</td><td colspan=\"5\">Trained on →</td></tr><tr><td colspan=\"2\">maj. class</td><td>S+</td><td>R</td><td>Sr</td><td>Srn</td><td>R+</td></tr><tr><td>S+</td><td>54</td><td>86</td><td>61</td><td>61</td><td>55</td><td>70</td></tr><tr><td>R</td><td>52</td><td>79</td><td>95</td><td>78</td><td>54</td><td>85</td></tr><tr><td>Sr</td><td>55</td><td>45</td><td>48</td><td>96</td><td>90</td><td>49</td></tr><tr><td>Srn</td><td>53</td><td>47</td><td>50</td><td>78</td><td>91</td><td>48</td></tr><tr><td>R+</td><td>53</td><td>73</td><td>63</td><td>60</td><td>55</td><td>79</td></tr></table>\n\nWe find this setting works well for all conducted experiments, thus we keep the same set of hyperparameters to maintain comparability. To replicate our experiments, please see the separately supplied code.",
+      "section_number": "B",
+      "section_title": "additional training details",
+      "normalized_section_title": "additional training details"
+    },
+    {
+      "window_id": "2022.emnlp-main.768::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We implement the training and inference in PyTorch 1.10.0 (Paszke et al., 2017). We use the pre-trained language models available in the transformers library. We train the roberta\n\n$^{2}$ https://github.com/huggingface/transformers   \nTable 5: Impact of randomness in the data generation process on model optimisation (first row) and on model performance (second row).   \n\n<table><tr><td>Experiment</td><td>Metric</td><td>Mean</td><td>Std. dev.</td></tr><tr><td>train stability</td><td>Loss</td><td>0.07696</td><td>0.008</td></tr><tr><td>eval stability</td><td>Accuracy</td><td>0.953</td><td>0.0013</td></tr></table>\n\n![](images/301544caead6ba3c2d58c0484fdc725d082b64117205e2931e6ce9021b8dd42d.jpg)  \nFigure 3: Proof length distribution.\n\nmodel on an Nvidia V100 GPU with 16 GB of RAM. to keep a consistent set of hyperparameters, We train the XLNet models on an Nvidia A100 GPU with 80GB of RAM since these models do not support gradient checkpointing, and the chosen batch size results in large $(\\geq 16\\mathrm{GB})$ memory requirements during training.\n\nWe fix the random seed to maintain deterministic behaviour and the hyper-parameters used for training all models are\n\n- Batch size: relying on gradient checkpointing, we are able to set the batch size to 56.   \n- Learning Rate: We schedule the learning rate to linearly warm up from zero to $4 \\cdot 10^{-6}$ , linearly decaying it to zero, as it was found to perform best across all fragments. We use the ADAM optimiser with the default parameters $\\epsilon = 1 \\times 10^{-8}, \\beta_{1} = 0.99$ and $\\beta_{2} = 0.999$ . Note that this comparatively low learning rate prohibits us from using mixed precision optimisation.   \n- Train Epochs: We train the models for 6 epochs on all fragments to maintain the same training budget.   \n- Maximal sequence length: As the input length varies for different fragments, we ensure that the sequence lengths are set in a way that allows to embed. In practice this varies from 288 to 432 tokens. Note that padding input sequences to max length does not impact the training procedure as the padding tokens are not attended to when calculating the embedding of the [CLS] input token (nor for any other input tokens).\n\nTable 6: Accuracy of RoBERTa models evaluated on all fragments. Grey results denote generalisation performance to harder fragments.   \n\n<table><tr><td colspan=\"2\">Evaluated on ↓</td><td colspan=\"5\">Trained on →</td></tr><tr><td colspan=\"2\">maj. class</td><td>S+</td><td>R</td><td>Sr</td><td>Srn</td><td>R+</td></tr><tr><td>S+</td><td>54</td><td>86</td><td>61</td><td>61</td><td>55</td><td>70</td></tr><tr><td>R</td><td>52</td><td>79</td><td>95</td><td>78</td><td>54</td><td>85</td></tr><tr><td>Sr</td><td>55</td><td>45</td><td>48</td><td>96</td><td>90</td><td>49</td></tr><tr><td>Srn</td><td>53</td><td>47</td><td>50</td><td>78</td><td>91</td><td>48</td></tr><tr><td>R+</td><td>53</td><td>73</td><td>63</td><td>60</td><td>55</td><td>79</td></tr></table>\n\nWe find this setting works well for all conducted experiments, thus we keep the same set of hyperparameters to maintain comparability. To replicate our experiments, please see the separately supplied code.",
+      "section_number": "B",
+      "section_title": "additional training details",
+      "normalized_section_title": "additional training details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.emnlp-main.768::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia V100 16GB",
+      "cleaned_hardware_name": "nvidia v100 16gb",
+      "normalized_hardware_name": "Nvidia V100 16GB",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "B",
+      "section_title": "additional training details",
+      "normalized_section_title": "additional training details",
+      "evidence": "We implement the training and inference in PyTorch 1.10.0 (Paszke et al., 2017). We use the pre-trained language models available in the transformers library. We train the roberta\n\n$^{2}$ https://github.com/huggingface/transformers   \nTable 5: Impact of randomness in the data generation process on model optimisation (first row) and on model performance (second row).   \n\n<table><tr><td>Experiment</td><td>Metric</td><td>Mean</td><td>Std. dev.</td></tr><tr><td>train stability</td><td>Loss</td><td>0.07696</td><td>0.008</td></tr><tr><td>eval stability</td><td>Accuracy</td><td>0.953</td><td>0.0013</td></tr></table>\n\n![](images/301544caead6ba3c2d58c0484fdc725d082b64117205e2931e6ce9021b8dd42d.jpg)  \nFigure 3: Proof length distribution.\n\nmodel on an Nvidia V100 GPU with 16 GB of RAM. to keep a consistent set of hyperparameters, We train the XLNet models on an Nvidia A100 GPU with 80GB of RAM since these models do not support gradient checkpointing, and the chosen batch size results in large $(\\geq 16\\mathrm{GB})$ memory requirements during training.\n\nWe fix the random seed to maintain deterministic behaviour and the hyper-parameters used for training all models are\n\n- Batch size: relying on gradient checkpointing, we are able to set the batch size to 56.   \n- Learning Rate: We schedule the learning rate to linearly warm up from zero to $4 \\cdot 10^{-6}$ , linearly decaying it to zero, as it was found to perform best across all fragments. We use the ADAM optimiser with the default parameters $\\epsilon = 1 \\times 10^{-8}, \\beta_{1} = 0.99$ and $\\beta_{2} = 0.999$ . Note that this comparatively low learning rate prohibits us from using mixed precision optimisation.   \n- Train Epochs: We train the models for 6 epochs on all fragments to maintain the same training budget.   \n- Maximal sequence length: As the input length varies for different fragments, we ensure that the sequence lengths are set in a way that allows to embed. In practice this varies from 288 to 432 tokens. Note that padding input sequences to max length does not impact the training procedure as the padding tokens are not attended to when calculating the embedding of the [CLS] input token (nor for any other input tokens).\n\nTable 6: Accuracy of RoBERTa models evaluated on all fragments. Grey results denote generalisation performance to harder fragments.   \n\n<table><tr><td colspan=\"2\">Evaluated on ↓</td><td colspan=\"5\">Trained on →</td></tr><tr><td colspan=\"2\">maj. class</td><td>S+</td><td>R</td><td>Sr</td><td>Srn</td><td>R+</td></tr><tr><td>S+</td><td>54</td><td>86</td><td>61</td><td>61</td><td>55</td><td>70</td></tr><tr><td>R</td><td>52</td><td>79</td><td>95</td><td>78</td><td>54</td><td>85</td></tr><tr><td>Sr</td><td>55</td><td>45</td><td>48</td><td>96</td><td>90</td><td>49</td></tr><tr><td>Srn</td><td>53</td><td>47</td><td>50</td><td>78</td><td>91</td><td>48</td></tr><tr><td>R+</td><td>53</td><td>73</td><td>63</td><td>60</td><td>55</td><td>79</td></tr></table>\n\nWe find this setting works well for all conducted experiments, thus we keep the same set of hyperparameters to maintain comparability. To replicate our experiments, please see the separately supplied code.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2022.emnlp-main.768::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A100 80GB",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "B",
+      "section_title": "additional training details",
+      "normalized_section_title": "additional training details",
+      "evidence": "We implement the training and inference in PyTorch 1.10.0 (Paszke et al., 2017). We use the pre-trained language models available in the transformers library. We train the roberta\n\n$^{2}$ https://github.com/huggingface/transformers   \nTable 5: Impact of randomness in the data generation process on model optimisation (first row) and on model performance (second row).   \n\n<table><tr><td>Experiment</td><td>Metric</td><td>Mean</td><td>Std. dev.</td></tr><tr><td>train stability</td><td>Loss</td><td>0.07696</td><td>0.008</td></tr><tr><td>eval stability</td><td>Accuracy</td><td>0.953</td><td>0.0013</td></tr></table>\n\n![](images/301544caead6ba3c2d58c0484fdc725d082b64117205e2931e6ce9021b8dd42d.jpg)  \nFigure 3: Proof length distribution.\n\nmodel on an Nvidia V100 GPU with 16 GB of RAM. to keep a consistent set of hyperparameters, We train the XLNet models on an Nvidia A100 GPU with 80GB of RAM since these models do not support gradient checkpointing, and the chosen batch size results in large $(\\geq 16\\mathrm{GB})$ memory requirements during training.\n\nWe fix the random seed to maintain deterministic behaviour and the hyper-parameters used for training all models are\n\n- Batch size: relying on gradient checkpointing, we are able to set the batch size to 56.   \n- Learning Rate: We schedule the learning rate to linearly warm up from zero to $4 \\cdot 10^{-6}$ , linearly decaying it to zero, as it was found to perform best across all fragments. We use the ADAM optimiser with the default parameters $\\epsilon = 1 \\times 10^{-8}, \\beta_{1} = 0.99$ and $\\beta_{2} = 0.999$ . Note that this comparatively low learning rate prohibits us from using mixed precision optimisation.   \n- Train Epochs: We train the models for 6 epochs on all fragments to maintain the same training budget.   \n- Maximal sequence length: As the input length varies for different fragments, we ensure that the sequence lengths are set in a way that allows to embed. In practice this varies from 288 to 432 tokens. Note that padding input sequences to max length does not impact the training procedure as the padding tokens are not attended to when calculating the embedding of the [CLS] input token (nor for any other input tokens).\n\nTable 6: Accuracy of RoBERTa models evaluated on all fragments. Grey results denote generalisation performance to harder fragments.   \n\n<table><tr><td colspan=\"2\">Evaluated on ↓</td><td colspan=\"5\">Trained on →</td></tr><tr><td colspan=\"2\">maj. class</td><td>S+</td><td>R</td><td>Sr</td><td>Srn</td><td>R+</td></tr><tr><td>S+</td><td>54</td><td>86</td><td>61</td><td>61</td><td>55</td><td>70</td></tr><tr><td>R</td><td>52</td><td>79</td><td>95</td><td>78</td><td>54</td><td>85</td></tr><tr><td>Sr</td><td>55</td><td>45</td><td>48</td><td>96</td><td>90</td><td>49</td></tr><tr><td>Srn</td><td>53</td><td>47</td><td>50</td><td>78</td><td>91</td><td>48</td></tr><tr><td>R+</td><td>53</td><td>73</td><td>63</td><td>60</td><td>55</td><td>79</td></tr></table>\n\nWe find this setting works well for all conducted experiments, thus we keep the same set of hyperparameters to maintain comparability. To replicate our experiments, please see the separately supplied code.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "Nvidia V100 16GB",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 1
+      }
+    ]
+  }
+}

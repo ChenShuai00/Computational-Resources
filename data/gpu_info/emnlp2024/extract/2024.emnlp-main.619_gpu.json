@@ -1,0 +1,192 @@
+{
+  "paper_id": "2024.emnlp-main.619",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.619::sections::4",
+      "paper_id": "2024.emnlp-main.619",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.619::sections::4.1",
+      "paper_id": "2024.emnlp-main.619",
+      "section_number": "4.1",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "Datasets. We evaluate our method on three widely-adopted datasets: Phoenix-2014 (P-2014) (Koller et al., 2015), Phoenix-2014T (P-2014T) (Camgoz et al., 2018), and CSL-Daily (CSL) (Zhou et al., 2021). $P - 2014$ is a German sign language dataset consisting of 5,672/540/629 samples in the training, development (dev), and test set, respectively, with a vocabulary size of 1,081 glosses. $P - 2014T$ is an extension of P-2014, which consists of 1,066 glosses and 7,096/519/642 samples in the training, dev, and test set. CSL is the latest Chinese sign language dataset with a vocabulary size of 2,000 glosses. There are 18,401/1,077/1,176 samples in its training, dev, and test set.\n\nEvaluation Metrics. Following (Chen et al., 2022), we use word error rate (WER), which measures the dissimilarity between the prediction and the GT, as the evaluation metric for CSLR. A lower WER indicates better performance. For SLT, we report BLEU-4 scores computed by SacreBLEU (v1.4.2) (Post, 2018).\n\nTraining. Our ISLR model is trained with an effic\n\n![](images/f4aeba6601a7574444e19800ef6a699770469d88c5721b5f4d9b9cdd580139f8.jpg)  \nFigure 4: Boosting an offline model with our online model. A lightweight adapter fuses the features of two well-trained CSLR models, one offline and one online. The parameters of both CSLR models remain frozen.\n\ntive batch size of $4 \\times 6$ (4 glosses and 6 instances per gloss), for 100 epochs. We use a cosine annealing schedule and an Adam optimizer (Kingma and Ba, 2015) with a weight decay of $1e^{-3}$ and an initial learning rate of $6e^{-4}$ . When fine-tuning the adapter network and classification head, we use a smaller learning rate of $1e^{-4}$ and fewer epochs of 40. We set $\\lambda = 0.5$ .\n\nInference. Online inference is implemented using a sliding window approach. We set $W = 16$ , $S = 1$ , $B = 7$ in Alg. 2. For both offline inference and CTC-based online inference, a CTC decoder with a beam width of 5 is used following (Chen et al., 2022). More details and studies on hyperparameters are available in the appendix.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.619::sections::4.3",
+      "paper_id": "2024.emnlp-main.619",
+      "section_number": "4.3",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "window_text": "Unless otherwise specified, all ablation studies are conducted on P-2014T.\n\nLatency and Memory Cost. Offline models are hampered by high latency and substantial memory requirements. As Tab. 4 illustrates, we quantitatively compare our method against both offline and online TwoStream-SLR models concerning latency and memory costs. Following prior research in online speech recognition (Strimel et al., 2023; Shi et al., 2021), we categorize latency into two types: algorithmic latency (AL) and window processing latency (WPL). AL refers to the minimum theoretical delay necessary for generating a prediction, which directly correlates with the window size. In contrast, WPL denotes the actual time required to produce a prediction for a specific window input. These evaluations are conducted using a single Nvidia V100 GPU. The findings highlight that, in comparison to the offline TwoStream model, our online model achieves a significant reduction in AL by approximately $92\\%$ and lowers memory costs by $66\\%$ . Additionally, our approach significantly surpasses the online TwoStream-SLR in performance using the same window size. A demo is available in the supplementary materials.\n\nEffects of Major Components. In Tab. 5, we examine the effect of each major component by progressively adding them to our baseline ISLR model. This baseline model is trained only on pseudo GT $\\{(s)\\}$ without the background class, using a single objective function $\\mathcal{L}_{ce}^{I}$ , achieving a WER of $62.9\\%$\n\nTable 5: Ablation studies for the major components. Each row employs the post-processing. BG: background; Aug.: augmentation; Samp.: sampling; Sal.: saliency.   \n\n<table><tr><td>BG Class</td><td>Sign Aug.</td><td>Gloss-Level Training G-L Samp.</td><td>G-L Loss</td><td>Sal. Loss</td><td>Dev↓</td><td>Test↓</td></tr><tr><td></td><td></td><td></td><td></td><td></td><td>62.6</td><td>62.9</td></tr><tr><td>✓</td><td></td><td></td><td></td><td></td><td>49.1</td><td>48.4</td></tr><tr><td>✓</td><td>✓</td><td></td><td></td><td></td><td>24.4</td><td>24.4</td></tr><tr><td>✓</td><td>✓</td><td>✓</td><td></td><td></td><td>22.7</td><td>23.4</td></tr><tr><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td></td><td>22.4</td><td>22.6</td></tr><tr><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>22.2</td><td>22.1</td></tr></table>\n\nTable 6: Study on sign segmentor.   \n\n<table><tr><td>Method</td><td>Accuracy↑</td><td>Dev↓</td><td>Test↓</td></tr><tr><td>Equal Partitions</td><td>14.4</td><td>92.6</td><td>92.3</td></tr><tr><td>CTC Forced Alignment</td><td>93.4</td><td>22.2</td><td>22.1</td></tr></table>\n\non the test set. Then, we introduce the background class into the training, resulting in a significant WER reduction of $14.5\\%$ . The largest performance gain comes from sign augmentation: the model trained on both pseudo GT and augmented signs $\\{\\{s\\} \\cup \\{\\hat{s}\\}\\}$ outperforms the model trained only on $\\{s\\}$ , reducing the WER by $24.0\\%$ . Next, our gloss-level training strategy, which uses: 1) a gloss-level sampling strategy that randomly selects $M$ glosses, each comprising $K$ instances; 2) an improved objective function $\\mathcal{L}_{ce}^{I} + \\mathcal{L}_{ce}^{G}$ , further decreases the WER to $22.6\\%$ . At last, adding the saliency loss will lead to the final test WER of $22.1\\%$ with negligible extra costs.\n\nSign Segmentor. We segment isolated signs from continuous videos to build a dictionary for ISLR model training. It is infeasible to directly evaluate its quality due to the lack of frame-level annotations. As an alternative, we invite an expert signer to conduct a human evaluation on the isolated signs of 100 randomly picked glosses in P-2014T. The signer needs to judge whether each sign is correctly categorized. As shown in Tab. 6, our default sign segmentor that uses the CTC forced alignment algorithm can lead to an accuracy of $93.4\\%$ . To better validate its significance, we implement a baseline sign segmentor that equally partitions each continuous sign video according to the number of glosses. The isolated signs obtained in this way suffer from low accuracy $(14.4\\%)$ , resulting in a much worse online CSLR performance $(>90\\%$ WER) than our default strategy.\n\nSign Augmentation. As described in Sec. 3.1, we augment each segmented isolated sign $s$ (pseudo\n\nTable 7: Study on sign augmentation strategies.   \n\n<table><tr><td>Strategy</td><td>Threshold</td><td>Dev↓</td><td>Test↓</td></tr><tr><td>IoU</td><td>0.5</td><td>27.4</td><td>27.1</td></tr><tr><td>IoU</td><td>0.3</td><td>23.4</td><td>23.6</td></tr><tr><td>Center</td><td>N/A</td><td>22.2</td><td>22.1</td></tr></table>\n\nTable 8: Study on fusion weight $\\lambda$ .   \n\n<table><tr><td>λ</td><td>1.0</td><td>0.7</td><td>0.5</td><td>0.3</td><td>0.0</td></tr><tr><td>Dev↓</td><td>20.5</td><td>17.3</td><td>17.2</td><td>17.4</td><td>17.7</td></tr><tr><td>Test↓</td><td>20.8</td><td>18.7</td><td>18.6</td><td>18.6</td><td>19.3</td></tr></table>\n\nground truth) by generating a collection of video clips $\\{\\hat{s}\\}$ around it. These clips are centered within the duration of $s$ . We compare our default strategy with an alternative that employs an intersection-over-union (IoU) criterion (Shou et al., 2016) to generate augmented sign clips. In this IoU-based strategy, clips $\\{\\hat{s}\\}$ are selected if they meet the condition $\\mathrm{IoU}(s,\\hat{s})\\geq \\gamma$ , where $\\gamma$ is a predefined threshold. As shown in Tab. 7, the IoU-based strategy is sensitive to the threshold variation: a large threshold may result in insufficient augmented signs, particularly for short isolated signs. In contrast, our default strategy does not rely on a predefined threshold and considers each isolated sign $s$ equally.\n\nFeature Fusion. In Tab. 8, we study the fusion weight $\\lambda$ , when combining the features produced by our online model with an adapter network and the offline model (i.e., TwoStream-SLR (Chen et al., 2022)) to boost offline recognition (see Sec. 3.4). Setting $\\lambda = 0.0$ degenerates the integrated model to the offline TwoStream-SLR model, whereas $\\lambda = 1.0$ indicates that only the features encoded by the online model are used. Note that when $\\lambda = 1.0$ , the fused model is trained using the original ISLR model (whose parameters are frozen), the adapter network, and the classification head, under the supervision of the CTC loss. Thus, the resulting model performs (20.5/20.8% WER on dev/test set) better than its online counterpart (22.2/22.1% WER on dev/test set), as it considers more contexts during training. We empirically set $\\lambda = 0.5$ . More ablation studies are available in Sec. B.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.619::appendix::A",
+      "paper_id": "2024.emnlp-main.619",
+      "section_number": "A",
+      "section_title": "more implementation details",
+      "normalized_section_title": "more implementation details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.619::appendix::A.4",
+      "paper_id": "2024.emnlp-main.619",
+      "section_number": "A.4",
+      "section_title": "training details",
+      "normalized_section_title": "training details",
+      "window_text": "ISLR Model. We train our ISLR model for 100 epochs with an effective batch size of $4 \\times 6$ , which means that 4 glosses and 6 instances for each gloss are sampled. For data augmentation, we use spatial cropping with a range of [0.7-1.0] and temporal cropping. Both RGB videos and heatmap sequences undergo identical augmentations to maintain spatial and temporal consistency. We employ a cosine annealing schedule and an Adam optimizer (Kingma and Ba, 2015) with a weight decay of $1e - 3$ and an initial learning rate of $6e - 4$ . Label smoothing is applied with a factor of 0.2. All models are trained on $8 \\times$ Nvidia V100 GPUs.\n\nWait- $k$ Gloss-to-Text Network. To facilitate online sign language translation, we train an additional gloss-to-text network using the wait- $k$ policy\n\nTable 9: Comparison with the state-of-the-art ISLR method, NLA-SLR (Zuo et al., 2023), in the online CSLR context.   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"2\">P-2014</td><td colspan=\"2\">P-2014T</td></tr><tr><td>Dev↓</td><td>Test↓</td><td>Dev↓</td><td>Test↓</td></tr><tr><td>NLA-SLR</td><td>34.2</td><td>33.7</td><td>32.9</td><td>33.4</td></tr><tr><td>Ours</td><td>22.6</td><td>22.1</td><td>22.2</td><td>22.1</td></tr></table>\n\n(Ma et al., 2019), setting $k = 2$ as suggested in (Yin et al., 2021). We employ the mBART architecture (Liu et al., 2020) for this network, owing to its proven effectiveness in gloss-to-text translation (Chen et al., 2022). The implementation of the wait- $k$ policy strictly adheres to the guidelines in (Ma et al., 2019), involving the application of causal masking. The network undergoes training for 80 epochs, starting with an initial learning rate of $1e - 5$ . To prevent overfitting, we incorporate dropout with a rate of 0.3 and use label smoothing with a factor of 0.2.\n\nBoosting Offline Model. Our online model can boost the performance of offline models with an adapter, as shown in Fig. 4 of the main paper. When fine-tuning the adapter network and the classification head, we adopt a smaller learning rate of $1e - 4$ and fewer epochs of 40, and the weight $\\lambda = 0.5$ . We adopt the CTC loss (Graves et al., 2006) as our objective function. Eq. 2 computes the probability of a single alignment path $\\theta$ . The CTC loss is applied across the set of all feasible alignment paths $\\mathcal{S}(\\pmb{g})$ in relation to the ground truth $\\pmb{g}$ :\n\n$$\n\\mathcal {L} _ {c t c} = - \\log \\sum_ {\\boldsymbol {\\theta} \\in S (\\boldsymbol {g})} p (\\boldsymbol {\\theta} | \\boldsymbol {V}). \\tag {9}\n$$",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.619::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia V100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Unless otherwise specified, all ablation studies are conducted on P-2014T.\n\nLatency and Memory Cost. Offline models are hampered by high latency and substantial memory requirements. As Tab. 4 illustrates, we quantitatively compare our method against both offline and online TwoStream-SLR models concerning latency and memory costs. Following prior research in online speech recognition (Strimel et al., 2023; Shi et al., 2021), we categorize latency into two types: algorithmic latency (AL) and window processing latency (WPL). AL refers to the minimum theoretical delay necessary for generating a prediction, which directly correlates with the window size. In contrast, WPL denotes the actual time required to produce a prediction for a specific window input. These evaluations are conducted using a single Nvidia V100 GPU. The findings highlight that, in comparison to the offline TwoStream model, our online model achieves a significant reduction in AL by approximately $92\\%$ and lowers memory costs by $66\\%$ . Additionally, our approach significantly surpasses the online TwoStream-SLR in performance using the same window size. A demo is available in the supplementary materials.\n\nEffects of Major Components. In Tab. 5, we examine the effect of each major component by progressively adding them to our baseline ISLR model. This baseline model is trained only on pseudo GT $\\{(s)\\}$ without the background class, using a single objective function $\\mathcal{L}_{ce}^{I}$ , achieving a WER of $62.9\\%$\n\nTable 5: Ablation studies for the major components. Each row employs the post-processing. BG: background; Aug.: augmentation; Samp.: sampling; Sal.: saliency.   \n\n<table><tr><td>BG Class</td><td>Sign Aug.</td><td>Gloss-Level Training G-L Samp.</td><td>G-L Loss</td><td>Sal. Loss</td><td>Dev↓</td><td>Test↓</td></tr><tr><td></td><td></td><td></td><td></td><td></td><td>62.6</td><td>62.9</td></tr><tr><td>✓</td><td></td><td></td><td></td><td></td><td>49.1</td><td>48.4</td></tr><tr><td>✓</td><td>✓</td><td></td><td></td><td></td><td>24.4</td><td>24.4</td></tr><tr><td>✓</td><td>✓</td><td>✓</td><td></td><td></td><td>22.7</td><td>23.4</td></tr><tr><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td></td><td>22.4</td><td>22.6</td></tr><tr><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>22.2</td><td>22.1</td></tr></table>\n\nTable 6: Study on sign segmentor.   \n\n<table><tr><td>Method</td><td>Accuracy↑</td><td>Dev↓</td><td>Test↓</td></tr><tr><td>Equal Partitions</td><td>14.4</td><td>92.6</td><td>92.3</td></tr><tr><td>CTC Forced Alignment</td><td>93.4</td><td>22.2</td><td>22.1</td></tr></table>\n\non the test set. Then, we introduce the background class into the training, resulting in a significant WER reduction of $14.5\\%$ . The largest performance gain comes from sign augmentation: the model trained on both pseudo GT and augmented signs $\\{\\{s\\} \\cup \\{\\hat{s}\\}\\}$ outperforms the model trained only on $\\{s\\}$ , reducing the WER by $24.0\\%$ . Next, our gloss-level training strategy, which uses: 1) a gloss-level sampling strategy that randomly selects $M$ glosses, each comprising $K$ instances; 2) an improved objective function $\\mathcal{L}_{ce}^{I} + \\mathcal{L}_{ce}^{G}$ , further decreases the WER to $22.6\\%$ . At last, adding the saliency loss will lead to the final test WER of $22.1\\%$ with negligible extra costs.\n\nSign Segmentor. We segment isolated signs from continuous videos to build a dictionary for ISLR model training. It is infeasible to directly evaluate its quality due to the lack of frame-level annotations. As an alternative, we invite an expert signer to conduct a human evaluation on the isolated signs of 100 randomly picked glosses in P-2014T. The signer needs to judge whether each sign is correctly categorized. As shown in Tab. 6, our default sign segmentor that uses the CTC forced alignment algorithm can lead to an accuracy of $93.4\\%$ . To better validate its significance, we implement a baseline sign segmentor that equally partitions each continuous sign video according to the number of glosses. The isolated signs obtained in this way suffer from low accuracy $(14.4\\%)$ , resulting in a much worse online CSLR performance $(>90\\%$ WER) than our default strategy.\n\nSign Augmentation. As described in Sec. 3.1, we augment each segmented isolated sign $s$ (pseudo\n\nTable 7: Study on sign augmentation strategies.   \n\n<table><tr><td>Strategy</td><td>Threshold</td><td>Dev↓</td><td>Test↓</td></tr><tr><td>IoU</td><td>0.5</td><td>27.4</td><td>27.1</td></tr><tr><td>IoU</td><td>0.3</td><td>23.4</td><td>23.6</td></tr><tr><td>Center</td><td>N/A</td><td>22.2</td><td>22.1</td></tr></table>\n\nTable 8: Study on fusion weight $\\lambda$ .   \n\n<table><tr><td>λ</td><td>1.0</td><td>0.7</td><td>0.5</td><td>0.3</td><td>0.0</td></tr><tr><td>Dev↓</td><td>20.5</td><td>17.3</td><td>17.2</td><td>17.4</td><td>17.7</td></tr><tr><td>Test↓</td><td>20.8</td><td>18.7</td><td>18.6</td><td>18.6</td><td>19.3</td></tr></table>\n\nground truth) by generating a collection of video clips $\\{\\hat{s}\\}$ around it. These clips are centered within the duration of $s$ . We compare our default strategy with an alternative that employs an intersection-over-union (IoU) criterion (Shou et al., 2016) to generate augmented sign clips. In this IoU-based strategy, clips $\\{\\hat{s}\\}$ are selected if they meet the condition $\\mathrm{IoU}(s,\\hat{s})\\geq \\gamma$ , where $\\gamma$ is a predefined threshold. As shown in Tab. 7, the IoU-based strategy is sensitive to the threshold variation: a large threshold may result in insufficient augmented signs, particularly for short isolated signs. In contrast, our default strategy does not rely on a predefined threshold and considers each isolated sign $s$ equally.\n\nFeature Fusion. In Tab. 8, we study the fusion weight $\\lambda$ , when combining the features produced by our online model with an adapter network and the offline model (i.e., TwoStream-SLR (Chen et al., 2022)) to boost offline recognition (see Sec. 3.4). Setting $\\lambda = 0.0$ degenerates the integrated model to the offline TwoStream-SLR model, whereas $\\lambda = 1.0$ indicates that only the features encoded by the online model are used. Note that when $\\lambda = 1.0$ , the fused model is trained using the original ISLR model (whose parameters are frozen), the adapter network, and the classification head, under the supervision of the CTC loss. Thus, the resulting model performs (20.5/20.8% WER on dev/test set) better than its online counterpart (22.2/22.1% WER on dev/test set), as it considers more contexts during training. We empirically set $\\lambda = 0.5$ . More ablation studies are available in Sec. B.",
+      "section_number": "4.3",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies"
+    },
+    {
+      "window_id": "2024.emnlp-main.619::appendix::A.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia V100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "ISLR Model. We train our ISLR model for 100 epochs with an effective batch size of $4 \\times 6$ , which means that 4 glosses and 6 instances for each gloss are sampled. For data augmentation, we use spatial cropping with a range of [0.7-1.0] and temporal cropping. Both RGB videos and heatmap sequences undergo identical augmentations to maintain spatial and temporal consistency. We employ a cosine annealing schedule and an Adam optimizer (Kingma and Ba, 2015) with a weight decay of $1e - 3$ and an initial learning rate of $6e - 4$ . Label smoothing is applied with a factor of 0.2. All models are trained on $8 \\times$ Nvidia V100 GPUs.\n\nWait- $k$ Gloss-to-Text Network. To facilitate online sign language translation, we train an additional gloss-to-text network using the wait- $k$ policy\n\nTable 9: Comparison with the state-of-the-art ISLR method, NLA-SLR (Zuo et al., 2023), in the online CSLR context.   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"2\">P-2014</td><td colspan=\"2\">P-2014T</td></tr><tr><td>Dev↓</td><td>Test↓</td><td>Dev↓</td><td>Test↓</td></tr><tr><td>NLA-SLR</td><td>34.2</td><td>33.7</td><td>32.9</td><td>33.4</td></tr><tr><td>Ours</td><td>22.6</td><td>22.1</td><td>22.2</td><td>22.1</td></tr></table>\n\n(Ma et al., 2019), setting $k = 2$ as suggested in (Yin et al., 2021). We employ the mBART architecture (Liu et al., 2020) for this network, owing to its proven effectiveness in gloss-to-text translation (Chen et al., 2022). The implementation of the wait- $k$ policy strictly adheres to the guidelines in (Ma et al., 2019), involving the application of causal masking. The network undergoes training for 80 epochs, starting with an initial learning rate of $1e - 5$ . To prevent overfitting, we incorporate dropout with a rate of 0.3 and use label smoothing with a factor of 0.2.\n\nBoosting Offline Model. Our online model can boost the performance of offline models with an adapter, as shown in Fig. 4 of the main paper. When fine-tuning the adapter network and the classification head, we adopt a smaller learning rate of $1e - 4$ and fewer epochs of 40, and the weight $\\lambda = 0.5$ . We adopt the CTC loss (Graves et al., 2006) as our objective function. Eq. 2 computes the probability of a single alignment path $\\theta$ . The CTC loss is applied across the set of all feasible alignment paths $\\mathcal{S}(\\pmb{g})$ in relation to the ground truth $\\pmb{g}$ :\n\n$$\n\\mathcal {L} _ {c t c} = - \\log \\sum_ {\\boldsymbol {\\theta} \\in S (\\boldsymbol {g})} p (\\boldsymbol {\\theta} | \\boldsymbol {V}). \\tag {9}\n$$",
+      "section_number": "A.4",
+      "section_title": "training details",
+      "normalized_section_title": "training details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.619::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia V100",
+      "cleaned_hardware_name": "nvidia v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "4.3",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "evidence": "Unless otherwise specified, all ablation studies are conducted on P-2014T.\n\nLatency and Memory Cost. Offline models are hampered by high latency and substantial memory requirements. As Tab. 4 illustrates, we quantitatively compare our method against both offline and online TwoStream-SLR models concerning latency and memory costs. Following prior research in online speech recognition (Strimel et al., 2023; Shi et al., 2021), we categorize latency into two types: algorithmic latency (AL) and window processing latency (WPL). AL refers to the minimum theoretical delay necessary for generating a prediction, which directly correlates with the window size. In contrast, WPL denotes the actual time required to produce a prediction for a specific window input. These evaluations are conducted using a single Nvidia V100 GPU. The findings highlight that, in comparison to the offline TwoStream model, our online model achieves a significant reduction in AL by approximately $92\\%$ and lowers memory costs by $66\\%$ . Additionally, our approach significantly surpasses the online TwoStream-SLR in performance using the same window size. A demo is available in the supplementary materials.\n\nEffects of Major Components. In Tab. 5, we examine the effect of each major component by progressively adding them to our baseline ISLR model. This baseline model is trained only on pseudo GT $\\{(s)\\}$ without the background class, using a single objective function $\\mathcal{L}_{ce}^{I}$ , achieving a WER of $62.9\\%$\n\nTable 5: Ablation studies for the major components. Each row employs the post-processing. BG: background; Aug.: augmentation; Samp.: sampling; Sal.: saliency.   \n\n<table><tr><td>BG Class</td><td>Sign Aug.</td><td>Gloss-Level Training G-L Samp.</td><td>G-L Loss</td><td>Sal. Loss</td><td>Dev↓</td><td>Test↓</td></tr><tr><td></td><td></td><td></td><td></td><td></td><td>62.6</td><td>62.9</td></tr><tr><td>✓</td><td></td><td></td><td></td><td></td><td>49.1</td><td>48.4</td></tr><tr><td>✓</td><td>✓</td><td></td><td></td><td></td><td>24.4</td><td>24.4</td></tr><tr><td>✓</td><td>✓</td><td>✓</td><td></td><td></td><td>22.7</td><td>23.4</td></tr><tr><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td></td><td>22.4</td><td>22.6</td></tr><tr><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>✓</td><td>22.2</td><td>22.1</td></tr></table>\n\nTable 6: Study on sign segmentor.   \n\n<table><tr><td>Method</td><td>Accuracy↑</td><td>Dev↓</td><td>Test↓</td></tr><tr><td>Equal Partitions</td><td>14.4</td><td>92.6</td><td>92.3</td></tr><tr><td>CTC Forced Alignment</td><td>93.4</td><td>22.2</td><td>22.1</td></tr></table>\n\non the test set. Then, we introduce the background class into the training, resulting in a significant WER reduction of $14.5\\%$ . The largest performance gain comes from sign augmentation: the model trained on both pseudo GT and augmented signs $\\{\\{s\\} \\cup \\{\\hat{s}\\}\\}$ outperforms the model trained only on $\\{s\\}$ , reducing the WER by $24.0\\%$ . Next, our gloss-level training strategy, which uses: 1) a gloss-level sampling strategy that randomly selects $M$ glosses, each comprising $K$ instances; 2) an improved objective function $\\mathcal{L}_{ce}^{I} + \\mathcal{L}_{ce}^{G}$ , further decreases the WER to $22.6\\%$ . At last, adding the saliency loss will lead to the final test WER of $22.1\\%$ with negligible extra costs.\n\nSign Segmentor. We segment isolated signs from continuous videos to build a dictionary for ISLR model training. It is infeasible to directly evaluate its quality due to the lack of frame-level annotations. As an alternative, we invite an expert signer to conduct a human evaluation on the isolated signs of 100 randomly picked glosses in P-2014T. The signer needs to judge whether each sign is correctly categorized. As shown in Tab. 6, our default sign segmentor that uses the CTC forced alignment algorithm can lead to an accuracy of $93.4\\%$ . To better validate its significance, we implement a baseline sign segmentor that equally partitions each continuous sign video according to the number of glosses. The isolated signs obtained in this way suffer from low accuracy $(14.4\\%)$ , resulting in a much worse online CSLR performance $(>90\\%$ WER) than our default strategy.\n\nSign Augmentation. As described in Sec. 3.1, we augment each segmented isolated sign $s$ (pseudo\n\nTable 7: Study on sign augmentation strategies.   \n\n<table><tr><td>Strategy</td><td>Threshold</td><td>Dev↓</td><td>Test↓</td></tr><tr><td>IoU</td><td>0.5</td><td>27.4</td><td>27.1</td></tr><tr><td>IoU</td><td>0.3</td><td>23.4</td><td>23.6</td></tr><tr><td>Center</td><td>N/A</td><td>22.2</td><td>22.1</td></tr></table>\n\nTable 8: Study on fusion weight $\\lambda$ .   \n\n<table><tr><td>λ</td><td>1.0</td><td>0.7</td><td>0.5</td><td>0.3</td><td>0.0</td></tr><tr><td>Dev↓</td><td>20.5</td><td>17.3</td><td>17.2</td><td>17.4</td><td>17.7</td></tr><tr><td>Test↓</td><td>20.8</td><td>18.7</td><td>18.6</td><td>18.6</td><td>19.3</td></tr></table>\n\nground truth) by generating a collection of video clips $\\{\\hat{s}\\}$ around it. These clips are centered within the duration of $s$ . We compare our default strategy with an alternative that employs an intersection-over-union (IoU) criterion (Shou et al., 2016) to generate augmented sign clips. In this IoU-based strategy, clips $\\{\\hat{s}\\}$ are selected if they meet the condition $\\mathrm{IoU}(s,\\hat{s})\\geq \\gamma$ , where $\\gamma$ is a predefined threshold. As shown in Tab. 7, the IoU-based strategy is sensitive to the threshold variation: a large threshold may result in insufficient augmented signs, particularly for short isolated signs. In contrast, our default strategy does not rely on a predefined threshold and considers each isolated sign $s$ equally.\n\nFeature Fusion. In Tab. 8, we study the fusion weight $\\lambda$ , when combining the features produced by our online model with an adapter network and the offline model (i.e., TwoStream-SLR (Chen et al., 2022)) to boost offline recognition (see Sec. 3.4). Setting $\\lambda = 0.0$ degenerates the integrated model to the offline TwoStream-SLR model, whereas $\\lambda = 1.0$ indicates that only the features encoded by the online model are used. Note that when $\\lambda = 1.0$ , the fused model is trained using the original ISLR model (whose parameters are frozen), the adapter network, and the classification head, under the supervision of the CTC loss. Thus, the resulting model performs (20.5/20.8% WER on dev/test set) better than its online counterpart (22.2/22.1% WER on dev/test set), as it considers more contexts during training. We empirically set $\\lambda = 0.5$ . More ablation studies are available in Sec. B.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.emnlp-main.619::appendix::A.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia V100",
+      "cleaned_hardware_name": "nvidia v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "A.4",
+      "section_title": "training details",
+      "normalized_section_title": "training details",
+      "evidence": "ISLR Model. We train our ISLR model for 100 epochs with an effective batch size of $4 \\times 6$ , which means that 4 glosses and 6 instances for each gloss are sampled. For data augmentation, we use spatial cropping with a range of [0.7-1.0] and temporal cropping. Both RGB videos and heatmap sequences undergo identical augmentations to maintain spatial and temporal consistency. We employ a cosine annealing schedule and an Adam optimizer (Kingma and Ba, 2015) with a weight decay of $1e - 3$ and an initial learning rate of $6e - 4$ . Label smoothing is applied with a factor of 0.2. All models are trained on $8 \\times$ Nvidia V100 GPUs.\n\nWait- $k$ Gloss-to-Text Network. To facilitate online sign language translation, we train an additional gloss-to-text network using the wait- $k$ policy\n\nTable 9: Comparison with the state-of-the-art ISLR method, NLA-SLR (Zuo et al., 2023), in the online CSLR context.   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"2\">P-2014</td><td colspan=\"2\">P-2014T</td></tr><tr><td>Dev↓</td><td>Test↓</td><td>Dev↓</td><td>Test↓</td></tr><tr><td>NLA-SLR</td><td>34.2</td><td>33.7</td><td>32.9</td><td>33.4</td></tr><tr><td>Ours</td><td>22.6</td><td>22.1</td><td>22.2</td><td>22.1</td></tr></table>\n\n(Ma et al., 2019), setting $k = 2$ as suggested in (Yin et al., 2021). We employ the mBART architecture (Liu et al., 2020) for this network, owing to its proven effectiveness in gloss-to-text translation (Chen et al., 2022). The implementation of the wait- $k$ policy strictly adheres to the guidelines in (Ma et al., 2019), involving the application of causal masking. The network undergoes training for 80 epochs, starting with an initial learning rate of $1e - 5$ . To prevent overfitting, we incorporate dropout with a rate of 0.3 and use label smoothing with a factor of 0.2.\n\nBoosting Offline Model. Our online model can boost the performance of offline models with an adapter, as shown in Fig. 4 of the main paper. When fine-tuning the adapter network and the classification head, we adopt a smaller learning rate of $1e - 4$ and fewer epochs of 40, and the weight $\\lambda = 0.5$ . We adopt the CTC loss (Graves et al., 2006) as our objective function. Eq. 2 computes the probability of a single alignment path $\\theta$ . The CTC loss is applied across the set of all feasible alignment paths $\\mathcal{S}(\\pmb{g})$ in relation to the ground truth $\\pmb{g}$ :\n\n$$\n\\mathcal {L} _ {c t c} = - \\log \\sum_ {\\boldsymbol {\\theta} \\in S (\\boldsymbol {g})} p (\\boldsymbol {\\theta} | \\boldsymbol {V}). \\tag {9}\n$$",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.emnlp-main.619::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.619::sections::4.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "implementation details",
+      "evidence": "Datasets. We evaluate our method on three widely-adopted datasets: Phoenix-2014 (P-2014) (Koller et al., 2015), Phoenix-2014T (P-2014T) (Camgoz et al., 2018), and CSL-Daily (CSL) (Zhou et al., 2021). $P - 2014$ is a German sign language dataset consisting of 5,672/540/629 samples in the training, development (dev), and test set, respectively, with a vocabulary size of 1,081 glosses. $P - 2014T$ is an extension of P-2014, which consists of 1,066 glosses and 7,096/519/642 samples in the training, dev, and test set. CSL is the latest Chinese sign language dataset with a vocabulary size of 2,000 glosses. There are 18,401/1,077/1,176 samples in its training, dev, and test set.\n\nEvaluation Metrics. Following (Chen et al., 2022), we use word error rate (WER), which measures the dissimilarity between the prediction and the GT, as the evaluation metric for CSLR. A lower WER indicates better performance. For SLT, we report BLEU-4 scores computed by SacreBLEU (v1.4.2) (Post, 2018).\n\nTraining. Our ISLR model is trained with an effic\n\n![](images/f4aeba6601a7574444e19800ef6a699770469d88c5721b5f4d9b9cdd580139f8.jpg)  \nFigure 4: Boosting an offline model with our online model. A lightweight adapter fuses the features of two well-trained CSLR models, one offline and one online. The parameters of both CSLR models remain frozen.\n\ntive batch size of $4 \\times 6$ (4 glosses and 6 instances per gloss), for 100 epochs. We use a cosine annealing schedule and an Adam optimizer (Kingma and Ba, 2015) with a weight decay of $1e^{-3}$ and an initial learning rate of $6e^{-4}$ . When fine-tuning the adapter network and classification head, we use a smaller learning rate of $1e^{-4}$ and fewer epochs of 40. We set $\\lambda = 0.5$ .\n\nInference. Online inference is implemented using a sliding window approach. We set $W = 16$ , $S = 1$ , $B = 7$ in Alg. 2. For both offline inference and CTC-based online inference, a CTC decoder with a beam width of 5 is used following (Chen et al., 2022). More details and studies on hyperparameters are available in the appendix."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.619::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "more implementation details",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.3",
+      "A.4"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2024\\2024.emnlp-main.619\\auto\\full.md",
+    "source_md_sha256": "eec0544ffa8a0ca37f2f1b66a7092be4a076214a698b014485e4883c78c4760a",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "749fdb433714bfa003499fb1c90f58c9bb6de4daf647bf52f54e32986186b91c"
+  }
+}

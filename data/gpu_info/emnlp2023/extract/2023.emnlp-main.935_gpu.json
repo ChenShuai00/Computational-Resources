@@ -1,0 +1,109 @@
+{
+  "paper_id": "2023.emnlp-main.935",
+  "candidate_windows": [
+    {
+      "window_id": "2023.emnlp-main.935::sections::5.3",
+      "paper_id": "2023.emnlp-main.935",
+      "section_number": "5.3",
+      "section_title": "experimental settings",
+      "normalized_section_title": "experimental settings",
+      "window_text": "As a model of word embeddings, we used word2vec $^{2}$ (Mikolov et al., 2013), Glove $^{3}$ (Pennington et al., 2014), and fastText $^{4}$ (Bojanowski et al., 2017; Mikolov et al., 2018). These pretrained models are publicly available, including versions trained on different corpora. In this experiment, we used five different pretrained models as shown in Table 1. All of these word vectors were 300-dimensional. Derived from the model and corpus, we denote the five word embeddings as word2vec, Glove(crawl), Glove(wiki), fastText(crawl), and fastText(wiki), respectively.\n\nWe denote the concatenated word vectors and the concatenated word vectors with PCA as Concat and Concat(PCA) respectively. Concat had 1500 dimensions and we reduced Concat(PCA) from 1500 to 300 dimensions by PCA. Before using PCA, we\n\nTable 1: Pretrained word embeddings used in the real experiment.   \n\n<table><tr><td>Model</td><td>Corpus</td><td>Vocabulary</td><td>Vector length</td></tr><tr><td>word2vec</td><td>Google News</td><td>3M</td><td>300</td></tr><tr><td rowspan=\"2\">Glove</td><td>Common Crawl</td><td>2.2M</td><td>300</td></tr><tr><td>Wikipedia 2014 + Gigaword 5</td><td>400K</td><td>300</td></tr><tr><td>fastText</td><td>Common Crawl</td><td>2M</td><td>300</td></tr><tr><td>(w/o subword)</td><td>Wikipedia 2017, UMBC webbase corpus and statmt.org news</td><td>1M</td><td>300</td></tr></table>\n\nfirst standardized word vectors. We used TSW with three trees for the evaluation of baseline methods: Concat, Concat (PCA), and five word embeddings.\n\nAs the hyperparameters, we decided the number of index-pair set $\\Omega$ to 10000, and the candidate values of $\\eta$ to [0.01, 0.05, 0.1, 0.5, 1.0]. For $\\Omega$ , we randomly selected 10000 pairs of documents from the training dataset. Because we considered a problem setting in which we cannot use the labels of the distribution in training, we did not perform any validation for $\\eta$ and instead determined the best value based on the experimental results for each $\\eta$ .\n\nWe implemented Quadtree, Clustertree, and TSW with reference to the public implementation of Yamada et al. (2022). Also, we used the public implementation of Petrovich et al. (2022) for FROT and set all hyperparameters to the default ones of this implementation. Besides, we used the public implementation for $k$ -NN without validation of $k$ . We evaluated all methods using Intel Xeon CPU E5-2690 v4 (2.60GHz).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.935::appendix::D",
+      "paper_id": "2023.emnlp-main.935",
+      "section_number": "D",
+      "section_title": "additional experimental results",
+      "normalized_section_title": "additional experimental results",
+      "window_text": "We show additional experimental results of document classification in Figure 4.\n\n![](images/191841a6b9bf2efc0f8bb702d96a1fd7eeb5aa13f823c6f276c5efb5c46b6a4a.jpg)\n\n![](images/8f0da989605ee46d1bf89796c8d99b6f2ea2028f01b41384e2e17132ed42de52.jpg)  \nFigure 4: The test error rates in the $k$ -NN of our proposed method for each $\\eta$ . We write the mean of five splits and the standard deviation in parentheses.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.935::appendix::E.1",
+      "paper_id": "2023.emnlp-main.935",
+      "section_number": "E.1",
+      "section_title": "inference time",
+      "normalized_section_title": "inference time",
+      "window_text": "First, we discuss the computational time of measuring between distributions. We compared TWD-GFS (Quadtree and Clustertree) with Wasserstein distance solved by the Sinkhorn algorithm (Cuturei, 2013) and existing feature-robust methods that include FROT (Petrovich et al., 2022) and SRW (Paty and Cuturi, 2019). We used a matrix-form formulation proposed in (Takezawa et al., 2021) for TWD and implemented Quadtree and Clustertree with reference to the public implementation<sup>8</sup> of Yamada et al. (2022). We used the Python optimal transport (POT) package<sup>9</sup> for the Sinkhorn algorithm. We used the public implementation of Petrovich et al. (2022) for FROT<sup>10</sup> and Paty and Cuturi (2019) for SRW<sup>11</sup>. Both SRW and FROT alternately solve optimal transport problems and feature selection optimization problems, and we used the Sinkhorn algorithm as their inner solver of optimal transport problems. As a word embedding, we used 1500-dimensional vectors concatenating five word embeddings as well as used in document classification tasks. We gave five word embeddings as feature groups to TWD-GFS and FROT and set a subspace dimension of SRW to 300. We evaluated all methods on NVIDIA RTX A6000 GPU.\n\nWe show the average computational time to compare 500 documents with one document for all datasets in Figure 5. We randomly sampled pairs of one document and 500 documents 50 times and measured the average computational time. We wrote a time relative to TWD-GFS with Quadtree above each bar. We show the same results separately for each method in Figure 6 to facilitate understanding of the differences for datasets in each method. Figure 5 shows that the computational time of TWD-GFS is almost the same whether Quadtree or Clustertree is used and faster than other methods on all datasets. FROT and SRW are much slower than TWD-GFS, so we confirmed that applying existing feature-robust methods with the Sinkhorn algorithm to a large dataset is difficult. In particular, SRW is very slow because it uses an eigenvalue decomposition as its inner solver for dimensionality reduction. Figure 6 shows there are slight differences in the computational time depending on datasets in each method. The computational time of TWD-GFS depends on the number of all unique words (BOW) in each dataset and that of the other methods depends on the number of unique words in a document. We confirmed the similar tendency in Figure 6. For example, because RECIDE has the smallest BOW dimension and many words in one document, TWD-GFS on RECIDE requires a low computational time and the other methods on it require a relatively high computational time.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.935::appendix::E.2",
+      "paper_id": "2023.emnlp-main.935",
+      "section_number": "E.2",
+      "section_title": "training time",
+      "normalized_section_title": "training time",
+      "window_text": "Second, we discuss the computational time of tree construction and training (calculating TWD) for TWD-GFS. We call Step 1 of Algorithm 1 as tree construction, and Step 2 as training. We used the\n\nsame experimental settings as in Section 5 and recorded the computational time on one of the five splits of training and test data. The results of Quadtree and Clustertree are shown in Table 5 and Table 6, respectively. The computational time for training is small because the calculation of TWD is fast. On the other hand, the computational time for tree construction seems large at first glance, but it is reasonable because we can reuse constructed trees for inference while we need to make a cost matrix for every inference in other methods.\n\nNext, we discuss how the computational time of tree construction and training scales different datasets and feature groups. As shown in Table 5 and Table 6, the whole training time is reasonable even when dealing with large datasets, such as AMAZON. Though the cost of tree construction, which is a large part of the whole training time, depends on the BOW dimension of the dataset, we can apply our proposed approach to large datasets in practical scenarios. On the other hand, the computational time for tree construction is proportionate to the number of feature groups. Therefore, TWD-GFS may face difficulties when confronted with an extensive number of feature groups, as highlighted in the Limitations section. Exploring alternative approaches for constructing trees that are not dependent on the number of feature groups is identified as a potential avenue for future research.\n\n![](images/207748096af733042362d1950b93789caad96bd212ddfb5276cff143b225f21c.jpg)  \nFigure 5: The average computational time to compare 500 documents with one document. The time relative to TWD-GFS with Quadtree is written above each bar.\n\n![](images/5be18b1b6ba2bc25f92980305bef659ddb7c91b0ace09eba9b06f626cb72b526.jpg)\n\n![](images/12c24d960099e226483560c18c9829a686ab9d6bb1016374af08801b7376b54f.jpg)\n\n![](images/8e4e9eb7db958e4de23ef146ee9d2d3703e6216527676e6d7444970589171c6d.jpg)\n\n![](images/eb60c78eac083ebd2d8eba623033fa83f2269c3fc39420872d0ff1d3cfe0fd44.jpg)\n\n![](images/e1c393c355f0ed4d0fe9c213819e4fa83dddc28bc1f90d3f0d473fa4685d6143.jpg)  \nFigure 6: The average computational time to compare 500 documents with one document separately for each method. The values are the same as in Figure 5.\n\nTable 5: The computational time [seconds] for tree construction and training for Quadtree.   \n\n<table><tr><td></td><td>BBCSPORT</td><td>TWITTER</td><td>AMAZON</td><td>CLASSIC</td><td>RECIPE</td></tr><tr><td>Tree construction</td><td>82.0</td><td>32.7</td><td>293.1</td><td>144.0</td><td>36.5</td></tr><tr><td>Training</td><td>4.4</td><td>1.8</td><td>3.1</td><td>2.6</td><td>3.0</td></tr><tr><td>Tree const. + Training</td><td>86.4</td><td>34.5</td><td>296.2</td><td>146.6</td><td>39.5</td></tr></table>\n\nTable 6: The computational time [seconds] for tree construction and training for Clustertree.   \n\n<table><tr><td></td><td>BBCSPORT</td><td>TWITTER</td><td>AMAZON</td><td>CLASSIC</td><td>RECIPCE</td></tr><tr><td>Tree construction</td><td>48.4</td><td>23.4</td><td>139.3</td><td>84.2</td><td>25.1</td></tr><tr><td>Training</td><td>4.6</td><td>1.8</td><td>3.1</td><td>2.6</td><td>2.7</td></tr><tr><td>Tree const. + Training</td><td>53.0</td><td>25.2</td><td>142.4</td><td>86.8</td><td>27.8</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.emnlp-main.935::appendix::E.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX A6000",
+      "count": null,
+      "count_text": "",
+      "evidence": "First, we discuss the computational time of measuring between distributions. We compared TWD-GFS (Quadtree and Clustertree) with Wasserstein distance solved by the Sinkhorn algorithm (Cuturei, 2013) and existing feature-robust methods that include FROT (Petrovich et al., 2022) and SRW (Paty and Cuturi, 2019). We used a matrix-form formulation proposed in (Takezawa et al., 2021) for TWD and implemented Quadtree and Clustertree with reference to the public implementation<sup>8</sup> of Yamada et al. (2022). We used the Python optimal transport (POT) package<sup>9</sup> for the Sinkhorn algorithm. We used the public implementation of Petrovich et al. (2022) for FROT<sup>10</sup> and Paty and Cuturi (2019) for SRW<sup>11</sup>. Both SRW and FROT alternately solve optimal transport problems and feature selection optimization problems, and we used the Sinkhorn algorithm as their inner solver of optimal transport problems. As a word embedding, we used 1500-dimensional vectors concatenating five word embeddings as well as used in document classification tasks. We gave five word embeddings as feature groups to TWD-GFS and FROT and set a subspace dimension of SRW to 300. We evaluated all methods on NVIDIA RTX A6000 GPU.\n\nWe show the average computational time to compare 500 documents with one document for all datasets in Figure 5. We randomly sampled pairs of one document and 500 documents 50 times and measured the average computational time. We wrote a time relative to TWD-GFS with Quadtree above each bar. We show the same results separately for each method in Figure 6 to facilitate understanding of the differences for datasets in each method. Figure 5 shows that the computational time of TWD-GFS is almost the same whether Quadtree or Clustertree is used and faster than other methods on all datasets. FROT and SRW are much slower than TWD-GFS, so we confirmed that applying existing feature-robust methods with the Sinkhorn algorithm to a large dataset is difficult. In particular, SRW is very slow because it uses an eigenvalue decomposition as its inner solver for dimensionality reduction. Figure 6 shows there are slight differences in the computational time depending on datasets in each method. The computational time of TWD-GFS depends on the number of all unique words (BOW) in each dataset and that of the other methods depends on the number of unique words in a document. We confirmed the similar tendency in Figure 6. For example, because RECIDE has the smallest BOW dimension and many words in one document, TWD-GFS on RECIDE requires a low computational time and the other methods on it require a relatively high computational time.",
+      "section_number": "E.1",
+      "section_title": "inference time",
+      "normalized_section_title": "inference time"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.emnlp-main.935::appendix::E.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX A6000",
+      "cleaned_hardware_name": "nvidia rtx a6000",
+      "normalized_hardware_name": "NVIDIA RTX A6000",
+      "benchmark_hardware_name": "NVIDIA RTX A6000",
+      "count": null,
+      "count_text": "",
+      "section_number": "E.1",
+      "section_title": "inference time",
+      "normalized_section_title": "inference time",
+      "evidence": "First, we discuss the computational time of measuring between distributions. We compared TWD-GFS (Quadtree and Clustertree) with Wasserstein distance solved by the Sinkhorn algorithm (Cuturei, 2013) and existing feature-robust methods that include FROT (Petrovich et al., 2022) and SRW (Paty and Cuturi, 2019). We used a matrix-form formulation proposed in (Takezawa et al., 2021) for TWD and implemented Quadtree and Clustertree with reference to the public implementation<sup>8</sup> of Yamada et al. (2022). We used the Python optimal transport (POT) package<sup>9</sup> for the Sinkhorn algorithm. We used the public implementation of Petrovich et al. (2022) for FROT<sup>10</sup> and Paty and Cuturi (2019) for SRW<sup>11</sup>. Both SRW and FROT alternately solve optimal transport problems and feature selection optimization problems, and we used the Sinkhorn algorithm as their inner solver of optimal transport problems. As a word embedding, we used 1500-dimensional vectors concatenating five word embeddings as well as used in document classification tasks. We gave five word embeddings as feature groups to TWD-GFS and FROT and set a subspace dimension of SRW to 300. We evaluated all methods on NVIDIA RTX A6000 GPU.\n\nWe show the average computational time to compare 500 documents with one document for all datasets in Figure 5. We randomly sampled pairs of one document and 500 documents 50 times and measured the average computational time. We wrote a time relative to TWD-GFS with Quadtree above each bar. We show the same results separately for each method in Figure 6 to facilitate understanding of the differences for datasets in each method. Figure 5 shows that the computational time of TWD-GFS is almost the same whether Quadtree or Clustertree is used and faster than other methods on all datasets. FROT and SRW are much slower than TWD-GFS, so we confirmed that applying existing feature-robust methods with the Sinkhorn algorithm to a large dataset is difficult. In particular, SRW is very slow because it uses an eigenvalue decomposition as its inner solver for dimensionality reduction. Figure 6 shows there are slight differences in the computational time depending on datasets in each method. The computational time of TWD-GFS depends on the number of all unique words (BOW) in each dataset and that of the other methods depends on the number of unique words in a document. We confirmed the similar tendency in Figure 6. For example, because RECIDE has the smallest BOW dimension and many words in one document, TWD-GFS on RECIDE requires a low computational time and the other methods on it require a relatively high computational time.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "E.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA RTX A6000",
+        "num": null
+      }
+    ]
+  }
+}

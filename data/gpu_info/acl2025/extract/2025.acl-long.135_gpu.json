@@ -1,0 +1,234 @@
+{
+  "paper_id": "2025.acl-long.135",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.135::sections::3.1",
+      "paper_id": "2025.acl-long.135",
+      "section_number": "3.1",
+      "section_title": "gigaspeech 2 raw: automated crawling and transcription",
+      "normalized_section_title": "gigaspeech 2 raw: automated crawling and transcription",
+      "window_text": "Audio Collection Due to the scarcity of human-labeled data in low-resource languages, our dataset\n\nis collected with a focus solely on the audio content, irrespective of the existence or quality of corresponding text pairs. This strategy allows for leveraging a broader range of audio data. Given the scarcity and uneven distribution of resources for low-resource languages, we strategically crawl videos from YouTube channels based on two key considerations. First, prioritizing mainstream and popular channels helps ensure consistent domain characteristics and higher audio quality. Such content is widely viewed, and its creators are generally more mindful of ethical and legal considerations prior to publishing. Second, channels with huge differences in topics and content formats are less likely to have speaker overlap, which simplifies subsequent data partitioning. The data collection process starts by manually defining categories of interest. The selected topics include Agriculture, Art, Business, Climate, Culture, Economics, Education, Entertainment, Health, History, Literature, Music,\n\n![](images/30097a31abfb9e41ffb588e862e7029a24e752ba592f5e3d20a4a73e76a01dfe.jpg)  \nFigure 1: Automated construction pipeline of GigaSpeech 2, comprising (1) audio collection, (2) dataset partitioning, (3) automated transcription with Whisper, (4) forced alignment with TorchAudio, (5) transcription normalization, (6) data filtering, and (7) label refinement.\n\nPolitics, Relationships, Shopping, Society, Sport, Technology, and Travel. Alongside multiple topics, various content formats are also considered, including Audiobook, Commentary, Lecture, Monologue, Movie, News, Talk, and Vlog. This broad selection ensures the comprehensiveness of the dataset across multiple domains for research and analysis. Once the list of YouTube channels is prepared, we use yt-dlp² toolkit to download all audio files in WebM format. These files are then converted to WAV format with a single channel and resampled at a 16 kHz sampling rate.\n\nCreating TRAIN/DEV/TEST Splits To ensure no speaker overlap between the splits, we manually verify no speaker overlap between different channels and partition the data by allocating different YouTube channels to each subset. The dataset is divided into three distinct subsets: TRAIN, DEV, and TEST. The DEV and TEST sets each contain 10 hours and are manually transcribed by professionals, while the remainder is allocated to the TRAIN set. Table 1 shows the amount of data across these three languages. Detailed analysis of GigaSpeech 2 is illustrated in Appendix A.\n\nTranscription with Whisper Whisper large-v3 model from OpenAI is used to transcribe audio files automatically. For each audio recording, a 30-second segment is selected from the middle to perform language detection by Whisper. Only audiosto that match the target languages are transcribed. Forced Alignment with TorchAudio Although Whisper can generate timestamps, inspection re\n\nveals they are not precise enough. We resort to the model from TorchAudio (Hwang et al., 2023) for forced alignment, which provides reliable alignment for noisy transcriptions, supports efficient processing on GPUs, and handles longer sequences more effectively (Pratap et al., 2024).\n\nText Normalization Text normalization on transcripts involves applying Normalization Form Compatibility Composition (NFKC), converting all characters to uppercase, removing punctuation, and mapping Arabic numerals to corresponding words in the respective languages.\n\nMulti-dimensional Filtering A series of heuristic filtering rules across text and audio modalities are implemented to exclude relatively poor-quality samples. 1) Phrase Filtering: Segments are retained if they only contain characters permitted by the charset of the respective language. 2) Language Confidence Filtering: The language identification (LID) model from fastText (Joulin et al., 2016) is used to filter based on the estimated language confidence score, retaining only segments with confidence scores above a predetermined threshold. This method effectively eliminates meaningless and repetitive segments. Note that language identification based on audio has already been performed before transcription. 3) Audio Duration Filtering: Segments are filtered based on duration, with only those retained within the predetermined minimum and maximum duration thresholds. 4) Balancing: We carefully control the duplication of transcripts\n\ncaused by channel-specific content while preserving natural linguistic patterns.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.135::sections::4",
+      "paper_id": "2025.acl-long.135",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.135::appendix::A.3",
+      "paper_id": "2025.acl-long.135",
+      "section_number": "A.3",
+      "section_title": "duration distribution of training sets",
+      "normalized_section_title": "duration distribution of training sets",
+      "window_text": "The utterance-level duration distribution of the training sets is illustrated in Fig. 3.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.135::appendix::A.4",
+      "paper_id": "2025.acl-long.135",
+      "section_number": "A.4",
+      "section_title": "evaluation of processing time",
+      "normalized_section_title": "evaluation of processing time",
+      "window_text": "The processing times for transcription, forced alignment, filtering, segmentation, and relabeling are measured on an idle single V100 32G GPU machine using a 100-hour subset of Thai audio. The\n\n![](images/a6a79bf7f3b8751eb4b5bc7f5f28384f42c3f615a6ec3f6f91e63be0f3acff95.jpg)  \n(a) th raw\n\n![](images/d23a49f82825655aba06cc8dfaea7140af6d6347f178e3c316cfc57e550528b2.jpg)  \n(c) id raw\n\n![](images/7c82ec21f23d5dd71efcc67a7212a7466e52653c21ce229dc2a306d1571aed52.jpg)  \n(e) vi raw\n\n![](images/c0805574f9a0b84338e476403ebe1def60bfcd322c4efd234b49c9389eba6bce.jpg)  \n(b) th refined\n\n![](images/d67822a845a0b30d1664ff4bca383c8204b22ba424b30d062ce3e0641310c9b6.jpg)  \n(d) id refined\n\n![](images/c088c362bb6410bad8ba28ba9f2fde5cc6664ae31502a4df86839a64ed7e54a6.jpg)  \n(f) vi refined   \nFigure 3: Utterance-level duration (second) distribution of training sets for Thai (th), Indonesian (id), and Vietnamese (vi).\n\nprocessing time and the real-time factor (RTF) are detailed in Table 6.\n\nTable 6: Evaluation of overall processing time and real-time factor (RTF) for each process in the construction of GigaSpeech 2. The processing times for transcription, forced alignment, filtering, segmentation, and relabeling are measured on an idle single V100 32G GPU machine using a 100-hour subset of Thai audio.\n\n<table><tr><td>Process</td><td>Time Consumption</td><td>RTF</td></tr><tr><td>Transcription</td><td>19h 42min 13s</td><td>1.97 × 10-1</td></tr><tr><td>Forced Alignment</td><td>3h 27min 29s</td><td>3.46 × 10-2</td></tr><tr><td>Filter</td><td>3s</td><td>8.00 × 10-6</td></tr><tr><td>Segmentation</td><td>6min 58s</td><td>1.16 × 10-3</td></tr><tr><td>Relabel</td><td>40min 48s</td><td>6.80 × 10-3</td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.135::appendix::B.1",
+      "paper_id": "2025.acl-long.135",
+      "section_number": "B.1",
+      "section_title": "configuration of zipformer",
+      "normalized_section_title": "configuration of zipformer",
+      "window_text": "Two Zipformer-based models are used, following official configurations reported in icefall $^{12}$ . In each Zipformer stack, the hidden dimensions of the first and last feedforward modules are 3/4 and 5/4 of the middle one, respectively. Ahead of the encoder, a convolution subsampling module with a stride of 2 reduces the frame rate to $50\\mathrm{Hz}$ . The input consists of 80-channel FBank features extracted over windows of $25\\mathrm{ms}$ , stripped by $10\\mathrm{ms}$ . The label decoder utilizes a stateless decoder (Ghodsi et al., 2020). 8 V100 32G GPUs are used for training. Detailed configurations are provided in Table 7.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.acl-long.135::appendix::B.2",
+      "paper_id": "2025.acl-long.135",
+      "section_number": "B.2",
+      "section_title": "configuration of conformer",
+      "normalized_section_title": "configuration of conformer",
+      "window_text": "A Conformer-based model is developed adhering to the official configurations outlined in ESPnet<sup>13</sup>.\n\nTable 7: Configuration of Zipformer at two different scales   \n\n<table><tr><td></td><td>Zipformer-M</td><td>Zipformer-L</td></tr><tr><td colspan=\"3\">Encoder</td></tr><tr><td>number of stacks</td><td colspan=\"2\">6</td></tr><tr><td>numbers of layers</td><td>2,2,3,4,3,2</td><td>2,2,4,5,4,2</td></tr><tr><td>downsampling factors</td><td colspan=\"2\">1,2,4,8,4,2</td></tr><tr><td>output downsampling factor</td><td colspan=\"2\">2</td></tr><tr><td>embedding dimensions</td><td>192,256,384,512,384,256</td><td>192,256,512,768,512,256</td></tr><tr><td>embedding unmasked dimensions</td><td>192,192,256,256,256,192</td><td>192,192,256,320,256,192</td></tr><tr><td>feedforward dimensions</td><td colspan=\"2\">512,768,1024,1536,1024,768512,768,1536,2048,1536,768</td></tr><tr><td>convolution kernel sizes</td><td colspan=\"2\">31,31,15,15,15,31</td></tr><tr><td>attention heads</td><td colspan=\"2\">4,4,4,8,4,4</td></tr><tr><td>attention query dimension</td><td colspan=\"2\">32</td></tr><tr><td>attention value dimension</td><td colspan=\"2\">12</td></tr><tr><td>positional encoding embedding dimension</td><td colspan=\"2\">48</td></tr><tr><td>projected positional encoding dimension per head</td><td colspan=\"2\">4</td></tr><tr><td colspan=\"3\">Decoder</td></tr><tr><td>embedding dimensions</td><td colspan=\"2\">512</td></tr><tr><td>context size</td><td colspan=\"2\">2</td></tr><tr><td colspan=\"3\">Joiner</td></tr><tr><td>embedding dimensions</td><td colspan=\"2\">512</td></tr><tr><td colspan=\"3\">Criterion</td></tr><tr><td>use ctc head</td><td colspan=\"2\">false</td></tr><tr><td>use transducer head</td><td colspan=\"2\">true</td></tr><tr><td>pruned range</td><td colspan=\"2\">5</td></tr><tr><td>loss smoothing lm scale</td><td colspan=\"2\">0.25</td></tr><tr><td>loss smoothing am scale</td><td colspan=\"2\">0.0</td></tr><tr><td>simple loss scale</td><td colspan=\"2\">0.5</td></tr><tr><td>simple loss scale warmup steps</td><td colspan=\"2\">2000</td></tr><tr><td colspan=\"3\">Frontend</td></tr><tr><td>n ft</td><td colspan=\"2\">512</td></tr><tr><td>hop length</td><td colspan=\"2\">256</td></tr><tr><td>feature dimension</td><td colspan=\"2\">80</td></tr><tr><td colspan=\"3\">Training</td></tr><tr><td>use amp</td><td colspan=\"2\">true</td></tr><tr><td>max epochs</td><td colspan=\"2\">30</td></tr><tr><td>max duration per batch</td><td colspan=\"2\">1000</td></tr><tr><td>ref duration</td><td colspan=\"2\">600</td></tr><tr><td>seed</td><td colspan=\"2\">42</td></tr><tr><td colspan=\"3\">Optimization</td></tr><tr><td>optimizer</td><td colspan=\"2\">scaledadam</td></tr><tr><td>base learning rate</td><td colspan=\"2\">0.045</td></tr><tr><td>seed</td><td colspan=\"2\">42</td></tr><tr><td colspan=\"3\">Scheduler</td></tr><tr><td>)scheduler</td><td colspan=\"2\">eden</td></tr><tr><td>lr batches</td><td colspan=\"2\">7500</td></tr><tr><td>lr epochs</td><td colspan=\"2\">10000 / training set hours</td></tr><tr><td>warmup batches</td><td colspan=\"2\">500</td></tr><tr><td>warmup starting lr</td><td colspan=\"2\">0.5</td></tr><tr><td colspan=\"3\">SpecAugment</td></tr><tr><td>time warping factor</td><td colspan=\"2\">80</td></tr><tr><td>number of time masks</td><td colspan=\"2\">10</td></tr><tr><td>time mask maximum width</td><td colspan=\"2\">100</td></tr><tr><td>number of frequency masks</td><td colspan=\"2\">2</td></tr><tr><td>frequency mask width range</td><td colspan=\"2\">0 - 27</td></tr></table>\n\nThe model comprises an encoder that employs the Conformer architecture and a decoder that leverages the Transformer architecture. Moreover, the parameters for both the encoder and decoder components, the optimization process, the scheduling mechanism, and SpecAugment settings are carefully designed to ensure a comprehensive and efficient model setup. 4 A100 80G GPUs are used for training. The specifics of these configurations are detailed in Table 9.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.acl-long.135::appendix::C",
+      "paper_id": "2025.acl-long.135",
+      "section_number": "C",
+      "section_title": "ablation study on noisy student training",
+      "normalized_section_title": "ablation study on noisy student training",
+      "window_text": "Based on the ablation study of our proposed NST on the evaluation sets in Table 8, we can analyze the effects of different iterations and their impact on performance:\n\n1) Relabeling the data during the transition from iteration 2 to 3 is crucial for improving performance (Sys.1 vs. Sys.2).   \n2) Larger augmentation applied in our NST process may hurt the performance (Sys.1 vs. Sys.3).\n\nThese findings suggest that careful consideration\n\nTable 8: Ablation study of NST on GigaSpeech 2 Thai, evaluated across various evaluation sets, including GigaSpeech 2 DEV and TEST, Common Voice 17.0 TEST, and FLEURS TEST.   \n\n<table><tr><td rowspan=\"2\">NST method</td><td colspan=\"4\">CER</td></tr><tr><td colspan=\"2\">GigaSpeech 2 DEV TEST</td><td>Common Voice TEST</td><td>FLEURS TEST</td></tr><tr><td>Sys. 1 (Tab. 2, iter 2 → iter 3)</td><td>10.47</td><td>12.38</td><td>4.63</td><td>10.96</td></tr><tr><td>Sys. 2 (Tab. 2, iter 2 → iter 3, without relabeling)</td><td>10.77+2.9%</td><td>12.90+4.2%</td><td>5.23+13.0%</td><td>10.72-2.2%</td></tr><tr><td>Sys. 3 (Tab. 2, iter 2 → iter 3, larger augmentation)</td><td>10.65+1.7%</td><td>12.81+3.5%</td><td>5.36+15.8%</td><td>10.86-0.9%</td></tr></table>\n\nTable 9: Configuration of Conformer at the large scale.   \n\n<table><tr><td rowspan=\"2\">Encoder</td><td colspan=\"3\">Conformer-L</td></tr><tr><td colspan=\"3\">Criterion</td></tr><tr><td>attention head</td><td>8</td><td>ctc weight</td><td>0.3</td></tr><tr><td>numbers of blocks</td><td>12</td><td>label smoothing</td><td>0.1</td></tr><tr><td>linear unit</td><td>2048</td><td>length normalized</td><td>false</td></tr><tr><td>dropout rate</td><td>0.1</td><td>Frontend</td><td></td></tr><tr><td>positional dropout rate</td><td>0.1</td><td>n ft</td><td>512</td></tr><tr><td>attention dropout rate</td><td>0.1</td><td>hop length</td><td>256</td></tr><tr><td>input layer</td><td>conv2d</td><td>Training</td><td></td></tr><tr><td>normalize before</td><td>true</td><td>use amp</td><td>true</td></tr><tr><td>macaron style</td><td>true</td><td>gradient accumulation</td><td>4</td></tr><tr><td>relative position type</td><td>latest</td><td>max epochs</td><td>20</td></tr><tr><td>position encoding layer</td><td>rel_pos</td><td>Optimization</td><td></td></tr><tr><td>self-attention layer</td><td>rel_selfattn</td><td>optimizer</td><td>adam</td></tr><tr><td>activation type</td><td>swish</td><td>learning rate</td><td>0.0025</td></tr><tr><td>use cnn module</td><td>true</td><td>weight decay</td><td>0.000001</td></tr><tr><td>cnn module kernel</td><td>31</td><td>Scheduler</td><td></td></tr><tr><td>Decoder</td><td></td><td>Scheduler</td><td>warmuplr</td></tr><tr><td>attention heads</td><td>8</td><td>warmup steps</td><td>40000</td></tr><tr><td>linear units</td><td>2048</td><td>SpecAugment</td><td></td></tr><tr><td>number of blocks</td><td>6</td><td>time warp window</td><td>5</td></tr><tr><td>dropout rate</td><td>0.1</td><td>frequency mask width range</td><td>0 - 27</td></tr><tr><td>positional dropout rate</td><td>0.1</td><td>number of frequency masks</td><td>2</td></tr><tr><td>self-attention dropout rate</td><td>0.1</td><td>time mask width ratio range</td><td>0.0 - 0.05</td></tr><tr><td>source attention dropout rate</td><td>0.1</td><td>number of time masks</td><td>10</td></tr></table>\n\nof the relabeling and augmentation strategies is crucial for optimizing the performance of the NST model across different evaluation sets and domains.\n\nTable 10: ASR performance of Whisper Medium with/without fine-tuning on GigaSpeech 2 Thai, tested on GigaSpeech 2 TEST and Common Voice 17.0 TEST   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"2\">CER</td></tr><tr><td>GigaSpeech 2</td><td>Common Voice</td></tr><tr><td>Whisper medium</td><td>37.55</td><td>16.41</td></tr><tr><td>+ GigaSpeech 2 Thai fine-tuned</td><td>14.15-62.3%</td><td>6.92-57.8%</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.135::appendix::A.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100 32G",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "The processing times for transcription, forced alignment, filtering, segmentation, and relabeling are measured on an idle single V100 32G GPU machine using a 100-hour subset of Thai audio. The\n\n![](images/a6a79bf7f3b8751eb4b5bc7f5f28384f42c3f615a6ec3f6f91e63be0f3acff95.jpg)  \n(a) th raw\n\n![](images/d23a49f82825655aba06cc8dfaea7140af6d6347f178e3c316cfc57e550528b2.jpg)  \n(c) id raw\n\n![](images/7c82ec21f23d5dd71efcc67a7212a7466e52653c21ce229dc2a306d1571aed52.jpg)  \n(e) vi raw\n\n![](images/c0805574f9a0b84338e476403ebe1def60bfcd322c4efd234b49c9389eba6bce.jpg)  \n(b) th refined\n\n![](images/d67822a845a0b30d1664ff4bca383c8204b22ba424b30d062ce3e0641310c9b6.jpg)  \n(d) id refined\n\n![](images/c088c362bb6410bad8ba28ba9f2fde5cc6664ae31502a4df86839a64ed7e54a6.jpg)  \n(f) vi refined   \nFigure 3: Utterance-level duration (second) distribution of training sets for Thai (th), Indonesian (id), and Vietnamese (vi).\n\nprocessing time and the real-time factor (RTF) are detailed in Table 6.\n\nTable 6: Evaluation of overall processing time and real-time factor (RTF) for each process in the construction of GigaSpeech 2. The processing times for transcription, forced alignment, filtering, segmentation, and relabeling are measured on an idle single V100 32G GPU machine using a 100-hour subset of Thai audio.\n\n<table><tr><td>Process</td><td>Time Consumption</td><td>RTF</td></tr><tr><td>Transcription</td><td>19h 42min 13s</td><td>1.97 × 10-1</td></tr><tr><td>Forced Alignment</td><td>3h 27min 29s</td><td>3.46 × 10-2</td></tr><tr><td>Filter</td><td>3s</td><td>8.00 × 10-6</td></tr><tr><td>Segmentation</td><td>6min 58s</td><td>1.16 × 10-3</td></tr><tr><td>Relabel</td><td>40min 48s</td><td>6.80 × 10-3</td></tr></table>",
+      "section_number": "A.4",
+      "section_title": "evaluation of processing time",
+      "normalized_section_title": "evaluation of processing time"
+    },
+    {
+      "window_id": "2025.acl-long.135::appendix::B.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100 32G",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Two Zipformer-based models are used, following official configurations reported in icefall $^{12}$ . In each Zipformer stack, the hidden dimensions of the first and last feedforward modules are 3/4 and 5/4 of the middle one, respectively. Ahead of the encoder, a convolution subsampling module with a stride of 2 reduces the frame rate to $50\\mathrm{Hz}$ . The input consists of 80-channel FBank features extracted over windows of $25\\mathrm{ms}$ , stripped by $10\\mathrm{ms}$ . The label decoder utilizes a stateless decoder (Ghodsi et al., 2020). 8 V100 32G GPUs are used for training. Detailed configurations are provided in Table 7.",
+      "section_number": "B.1",
+      "section_title": "configuration of zipformer",
+      "normalized_section_title": "configuration of zipformer"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.135::appendix::A.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100 32G",
+      "cleaned_hardware_name": "v100 32gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.4",
+      "section_title": "evaluation of processing time",
+      "normalized_section_title": "evaluation of processing time",
+      "evidence": "The processing times for transcription, forced alignment, filtering, segmentation, and relabeling are measured on an idle single V100 32G GPU machine using a 100-hour subset of Thai audio. The\n\n![](images/a6a79bf7f3b8751eb4b5bc7f5f28384f42c3f615a6ec3f6f91e63be0f3acff95.jpg)  \n(a) th raw\n\n![](images/d23a49f82825655aba06cc8dfaea7140af6d6347f178e3c316cfc57e550528b2.jpg)  \n(c) id raw\n\n![](images/7c82ec21f23d5dd71efcc67a7212a7466e52653c21ce229dc2a306d1571aed52.jpg)  \n(e) vi raw\n\n![](images/c0805574f9a0b84338e476403ebe1def60bfcd322c4efd234b49c9389eba6bce.jpg)  \n(b) th refined\n\n![](images/d67822a845a0b30d1664ff4bca383c8204b22ba424b30d062ce3e0641310c9b6.jpg)  \n(d) id refined\n\n![](images/c088c362bb6410bad8ba28ba9f2fde5cc6664ae31502a4df86839a64ed7e54a6.jpg)  \n(f) vi refined   \nFigure 3: Utterance-level duration (second) distribution of training sets for Thai (th), Indonesian (id), and Vietnamese (vi).\n\nprocessing time and the real-time factor (RTF) are detailed in Table 6.\n\nTable 6: Evaluation of overall processing time and real-time factor (RTF) for each process in the construction of GigaSpeech 2. The processing times for transcription, forced alignment, filtering, segmentation, and relabeling are measured on an idle single V100 32G GPU machine using a 100-hour subset of Thai audio.\n\n<table><tr><td>Process</td><td>Time Consumption</td><td>RTF</td></tr><tr><td>Transcription</td><td>19h 42min 13s</td><td>1.97 × 10-1</td></tr><tr><td>Forced Alignment</td><td>3h 27min 29s</td><td>3.46 × 10-2</td></tr><tr><td>Filter</td><td>3s</td><td>8.00 × 10-6</td></tr><tr><td>Segmentation</td><td>6min 58s</td><td>1.16 × 10-3</td></tr><tr><td>Relabel</td><td>40min 48s</td><td>6.80 × 10-3</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.135::appendix::B.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100 32G",
+      "cleaned_hardware_name": "v100 32gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "B.1",
+      "section_title": "configuration of zipformer",
+      "normalized_section_title": "configuration of zipformer",
+      "evidence": "Two Zipformer-based models are used, following official configurations reported in icefall $^{12}$ . In each Zipformer stack, the hidden dimensions of the first and last feedforward modules are 3/4 and 5/4 of the middle one, respectively. Ahead of the encoder, a convolution subsampling module with a stride of 2 reduces the frame rate to $50\\mathrm{Hz}$ . The input consists of 80-channel FBank features extracted over windows of $25\\mathrm{ms}$ , stripped by $10\\mathrm{ms}$ . The label decoder utilizes a stateless decoder (Ghodsi et al., 2020). 8 V100 32G GPUs are used for training. Detailed configurations are provided in Table 7.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.135::sections::3.1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3.1",
+      "section_title": "gigaspeech 2 raw: automated crawling and transcription",
+      "evidence": "Audio Collection Due to the scarcity of human-labeled data in low-resource languages, our dataset\n\nis collected with a focus solely on the audio content, irrespective of the existence or quality of corresponding text pairs. This strategy allows for leveraging a broader range of audio data. Given the scarcity and uneven distribution of resources for low-resource languages, we strategically crawl videos from YouTube channels based on two key considerations. First, prioritizing mainstream and popular channels helps ensure consistent domain characteristics and higher audio quality. Such content is widely viewed, and its creators are generally more mindful of ethical and legal considerations prior to publishing. Second, channels with huge differences in topics and content formats are less likely to have speaker overlap, which simplifies subsequent data partitioning. The data collection process starts by manually defining categories of interest. The selected topics include Agriculture, Art, Business, Climate, Culture, Economics, Education, Entertainment, Health, History, Literature, Music,\n\n![](images/30097a31abfb9e41ffb588e862e7029a24e752ba592f5e3d20a4a73e76a01dfe.jpg)  \nFigure 1: Automated construction pipeline of GigaSpeech 2, comprising (1) audio collection, (2) dataset partitioning, (3) automated transcription with Whisper, (4) forced alignment with TorchAudio, (5) transcription normalization, (6) data filtering, and (7) label refinement.\n\nPolitics, Relationships, Shopping, Society, Sport, Technology, and Travel. Alongside multiple topics, various content formats are also considered, including Audiobook, Commentary, Lecture, Monologue, Movie, News, Talk, and Vlog. This broad selection ensures the comprehensiveness of the dataset across multiple domains for research and analysis. Once the list of YouTube channels is prepared, we use yt-dlp² toolkit to download all audio files in WebM format. These files are then converted to WAV format with a single channel and resampled at a 16 kHz sampling rate.\n\nCreating TRAIN/DEV/TEST Splits To ensure no speaker overlap between the splits, we manually verify no speaker overlap between different channels and partition the data by allocating different YouTube channels to each subset. The dataset is divided into three distinct subsets: TRAIN, DEV, and TEST. The DEV and TEST sets each contain 10 hours and are manually transcribed by professionals, while the remainder is allocated to the TRAIN set. Table 1 shows the amount of data across these three languages. Detailed analysis of GigaSpeech 2 is illustrated in Appendix A.\n\nTranscription with Whisper Whisper large-v3 model from OpenAI is used to transcribe audio files automatically. For each audio recording, a 30-second segment is selected from the middle to perform language detection by Whisper. Only audiosto that match the target languages are transcribed. Forced Alignment with TorchAudio Although Whisper can generate timestamps, inspection re\n\nveals they are not precise enough. We resort to the model from TorchAudio (Hwang et al., 2023) for forced alignment, which provides reliable alignment for noisy transcriptions, supports efficient processing on GPUs, and handles longer sequences more effectively (Pratap et al., 2024).\n\nText Normalization Text normalization on transcripts involves applying Normalization Form Compatibility Composition (NFKC), converting all characters to uppercase, removing punctuation, and mapping Arabic numerals to corresponding words in the respective languages.\n\nMulti-dimensional Filtering A series of heuristic filtering rules across text and audio modalities are implemented to exclude relatively poor-quality samples. 1) Phrase Filtering: Segments are retained if they only contain characters permitted by the charset of the respective language. 2) Language Confidence Filtering: The language identification (LID) model from fastText (Joulin et al., 2016) is used to filter based on the estimated language confidence score, retaining only segments with confidence scores above a predetermined threshold. This method effectively eliminates meaningless and repetitive segments. Note that language identification based on audio has already been performed before transcription. 3) Audio Duration Filtering: Segments are filtered based on duration, with only those retained within the predetermined minimum and maximum duration thresholds. 4) Balancing: We carefully control the duplication of transcripts\n\ncaused by channel-specific content while preserving natural linguistic patterns."
+    },
+    {
+      "source_window_id": "2025.acl-long.135::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.135::appendix::A.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.3",
+      "section_title": "duration distribution of training sets",
+      "evidence": "The utterance-level duration distribution of the training sets is illustrated in Fig. 3."
+    },
+    {
+      "source_window_id": "2025.acl-long.135::appendix::B.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B.2",
+      "section_title": "configuration of conformer",
+      "evidence": "A Conformer-based model is developed adhering to the official configurations outlined in ESPnet<sup>13</sup>.\n\nTable 7: Configuration of Zipformer at two different scales   \n\n<table><tr><td></td><td>Zipformer-M</td><td>Zipformer-L</td></tr><tr><td colspan=\"3\">Encoder</td></tr><tr><td>number of stacks</td><td colspan=\"2\">6</td></tr><tr><td>numbers of layers</td><td>2,2,3,4,3,2</td><td>2,2,4,5,4,2</td></tr><tr><td>downsampling factors</td><td colspan=\"2\">1,2,4,8,4,2</td></tr><tr><td>output downsampling factor</td><td colspan=\"2\">2</td></tr><tr><td>embedding dimensions</td><td>192,256,384,512,384,256</td><td>192,256,512,768,512,256</td></tr><tr><td>embedding unmasked dimensions</td><td>192,192,256,256,256,192</td><td>192,192,256,320,256,192</td></tr><tr><td>feedforward dimensions</td><td colspan=\"2\">512,768,1024,1536,1024,768512,768,1536,2048,1536,768</td></tr><tr><td>convolution kernel sizes</td><td colspan=\"2\">31,31,15,15,15,31</td></tr><tr><td>attention heads</td><td colspan=\"2\">4,4,4,8,4,4</td></tr><tr><td>attention query dimension</td><td colspan=\"2\">32</td></tr><tr><td>attention value dimension</td><td colspan=\"2\">12</td></tr><tr><td>positional encoding embedding dimension</td><td colspan=\"2\">48</td></tr><tr><td>projected positional encoding dimension per head</td><td colspan=\"2\">4</td></tr><tr><td colspan=\"3\">Decoder</td></tr><tr><td>embedding dimensions</td><td colspan=\"2\">512</td></tr><tr><td>context size</td><td colspan=\"2\">2</td></tr><tr><td colspan=\"3\">Joiner</td></tr><tr><td>embedding dimensions</td><td colspan=\"2\">512</td></tr><tr><td colspan=\"3\">Criterion</td></tr><tr><td>use ctc head</td><td colspan=\"2\">false</td></tr><tr><td>use transducer head</td><td colspan=\"2\">true</td></tr><tr><td>pruned range</td><td colspan=\"2\">5</td></tr><tr><td>loss smoothing lm scale</td><td colspan=\"2\">0.25</td></tr><tr><td>loss smoothing am scale</td><td colspan=\"2\">0.0</td></tr><tr><td>simple loss scale</td><td colspan=\"2\">0.5</td></tr><tr><td>simple loss scale warmup steps</td><td colspan=\"2\">2000</td></tr><tr><td colspan=\"3\">Frontend</td></tr><tr><td>n ft</td><td colspan=\"2\">512</td></tr><tr><td>hop length</td><td colspan=\"2\">256</td></tr><tr><td>feature dimension</td><td colspan=\"2\">80</td></tr><tr><td colspan=\"3\">Training</td></tr><tr><td>use amp</td><td colspan=\"2\">true</td></tr><tr><td>max epochs</td><td colspan=\"2\">30</td></tr><tr><td>max duration per batch</td><td colspan=\"2\">1000</td></tr><tr><td>ref duration</td><td colspan=\"2\">600</td></tr><tr><td>seed</td><td colspan=\"2\">42</td></tr><tr><td colspan=\"3\">Optimization</td></tr><tr><td>optimizer</td><td colspan=\"2\">scaledadam</td></tr><tr><td>base learning rate</td><td colspan=\"2\">0.045</td></tr><tr><td>seed</td><td colspan=\"2\">42</td></tr><tr><td colspan=\"3\">Scheduler</td></tr><tr><td>)scheduler</td><td colspan=\"2\">eden</td></tr><tr><td>lr batches</td><td colspan=\"2\">7500</td></tr><tr><td>lr epochs</td><td colspan=\"2\">10000 / training set hours</td></tr><tr><td>warmup batches</td><td colspan=\"2\">500</td></tr><tr><td>warmup starting lr</td><td colspan=\"2\">0.5</td></tr><tr><td colspan=\"3\">SpecAugment</td></tr><tr><td>time warping factor</td><td colspan=\"2\">80</td></tr><tr><td>number of time masks</td><td colspan=\"2\">10</td></tr><tr><td>time mask maximum width</td><td colspan=\"2\">100</td></tr><tr><td>number of frequency masks</td><td colspan=\"2\">2</td></tr><tr><td>frequency mask width range</td><td colspan=\"2\">0 - 27</td></tr></table>\n\nThe model comprises an encoder that employs the Conformer architecture and a decoder that leverages the Transformer architecture. Moreover, the parameters for both the encoder and decoder components, the optimization process, the scheduling mechanism, and SpecAugment settings are carefully designed to ensure a comprehensive and efficient model setup. 4 A100 80G GPUs are used for training. The specifics of these configurations are detailed in Table 9."
+    },
+    {
+      "source_window_id": "2025.acl-long.135::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "ablation study on noisy student training",
+      "evidence": "Based on the ablation study of our proposed NST on the evaluation sets in Table 8, we can analyze the effects of different iterations and their impact on performance:\n\n1) Relabeling the data during the transition from iteration 2 to 3 is crucial for improving performance (Sys.1 vs. Sys.2).   \n2) Larger augmentation applied in our NST process may hurt the performance (Sys.1 vs. Sys.3).\n\nThese findings suggest that careful consideration\n\nTable 8: Ablation study of NST on GigaSpeech 2 Thai, evaluated across various evaluation sets, including GigaSpeech 2 DEV and TEST, Common Voice 17.0 TEST, and FLEURS TEST.   \n\n<table><tr><td rowspan=\"2\">NST method</td><td colspan=\"4\">CER</td></tr><tr><td colspan=\"2\">GigaSpeech 2 DEV TEST</td><td>Common Voice TEST</td><td>FLEURS TEST</td></tr><tr><td>Sys. 1 (Tab. 2, iter 2 → iter 3)</td><td>10.47</td><td>12.38</td><td>4.63</td><td>10.96</td></tr><tr><td>Sys. 2 (Tab. 2, iter 2 → iter 3, without relabeling)</td><td>10.77+2.9%</td><td>12.90+4.2%</td><td>5.23+13.0%</td><td>10.72-2.2%</td></tr><tr><td>Sys. 3 (Tab. 2, iter 2 → iter 3, larger augmentation)</td><td>10.65+1.7%</td><td>12.81+3.5%</td><td>5.36+15.8%</td><td>10.86-0.9%</td></tr></table>\n\nTable 9: Configuration of Conformer at the large scale.   \n\n<table><tr><td rowspan=\"2\">Encoder</td><td colspan=\"3\">Conformer-L</td></tr><tr><td colspan=\"3\">Criterion</td></tr><tr><td>attention head</td><td>8</td><td>ctc weight</td><td>0.3</td></tr><tr><td>numbers of blocks</td><td>12</td><td>label smoothing</td><td>0.1</td></tr><tr><td>linear unit</td><td>2048</td><td>length normalized</td><td>false</td></tr><tr><td>dropout rate</td><td>0.1</td><td>Frontend</td><td></td></tr><tr><td>positional dropout rate</td><td>0.1</td><td>n ft</td><td>512</td></tr><tr><td>attention dropout rate</td><td>0.1</td><td>hop length</td><td>256</td></tr><tr><td>input layer</td><td>conv2d</td><td>Training</td><td></td></tr><tr><td>normalize before</td><td>true</td><td>use amp</td><td>true</td></tr><tr><td>macaron style</td><td>true</td><td>gradient accumulation</td><td>4</td></tr><tr><td>relative position type</td><td>latest</td><td>max epochs</td><td>20</td></tr><tr><td>position encoding layer</td><td>rel_pos</td><td>Optimization</td><td></td></tr><tr><td>self-attention layer</td><td>rel_selfattn</td><td>optimizer</td><td>adam</td></tr><tr><td>activation type</td><td>swish</td><td>learning rate</td><td>0.0025</td></tr><tr><td>use cnn module</td><td>true</td><td>weight decay</td><td>0.000001</td></tr><tr><td>cnn module kernel</td><td>31</td><td>Scheduler</td><td></td></tr><tr><td>Decoder</td><td></td><td>Scheduler</td><td>warmuplr</td></tr><tr><td>attention heads</td><td>8</td><td>warmup steps</td><td>40000</td></tr><tr><td>linear units</td><td>2048</td><td>SpecAugment</td><td></td></tr><tr><td>number of blocks</td><td>6</td><td>time warp window</td><td>5</td></tr><tr><td>dropout rate</td><td>0.1</td><td>frequency mask width range</td><td>0 - 27</td></tr><tr><td>positional dropout rate</td><td>0.1</td><td>number of frequency masks</td><td>2</td></tr><tr><td>self-attention dropout rate</td><td>0.1</td><td>time mask width ratio range</td><td>0.0 - 0.05</td></tr><tr><td>source attention dropout rate</td><td>0.1</td><td>number of time masks</td><td>10</td></tr></table>\n\nof the relabeling and augmentation strategies is crucial for optimizing the performance of the NST model across different evaluation sets and domains.\n\nTable 10: ASR performance of Whisper Medium with/without fine-tuning on GigaSpeech 2 Thai, tested on GigaSpeech 2 TEST and Common Voice 17.0 TEST   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"2\">CER</td></tr><tr><td>GigaSpeech 2</td><td>Common Voice</td></tr><tr><td>Whisper medium</td><td>37.55</td><td>16.41</td></tr><tr><td>+ GigaSpeech 2 Thai fine-tuned</td><td>14.15-62.3%</td><td>6.92-57.8%</td></tr></table>"
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.4",
+      "B.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 32 GB",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 32 GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.135\\auto\\full.md",
+    "source_md_sha256": "345c927fc8107378977d005a7ab01a56f66fd620b9179072e0b650ac1e931262",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "ad96f3b6ca003898756db958dd17467668c845886fa3f1f835d26a866c8af3f0"
+  }
+}

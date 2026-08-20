@@ -1,0 +1,141 @@
+{
+  "paper_id": "2021.acl-long.209",
+  "candidate_windows": [
+    {
+      "window_id": "2021.acl-long.209::sections::4",
+      "paper_id": "2021.acl-long.209",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.209::sections::4.2",
+      "paper_id": "2021.acl-long.209",
+      "section_number": "4.2",
+      "section_title": "hyperparameters",
+      "normalized_section_title": "hyperparameters",
+      "window_text": "We optimize our model using the Adam optimizer with $\\beta_{1} = 0.75, \\beta_{2} = 0.999$ , and learning rate 0.001. All parameters are initialized with Xavier uniform initialization. We set the dimension of all embeddings to 256 and the ratio of the nonterminal number to the preterminal number to 1:2. Our best model uses 15 nonterminals, 30 preterminals, and $d_{H} = 300$ . We use grid search to tune the nonterminal number (from 5 to 30) and domain size $d_{H}$ of the latent $H$ (from 50 to 500).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.209::sections::4.3",
+      "paper_id": "2021.acl-long.209",
+      "section_number": "4.3",
+      "section_title": "evaluation",
+      "normalized_section_title": "evaluation",
+      "window_text": "We run each model four times with different random seeds and for ten epochs. We train our models on training sentences of length $\\leqslant 40$ with batch size 8 and test them on the whole testing set. For each run, we perform early stopping and select the best model according to the perplexity of the development set. We use two different parsing methods: the variant of CYK algorithm (Eisner and Satta, 1999) and Minimum Bayes-Risk (MBR) decoding (Smith and Eisner, 2006). For constituent grammar induction, we report the means and standard deviations of sentence-level F1 scores. For dependency grammar induction, we report unlabeled directed attachment score (UDAS) and unlabeled undirected attachment score (UUAS).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.209::sections::8",
+      "paper_id": "2021.acl-long.209",
+      "section_number": "8",
+      "section_title": "speed comparison",
+      "normalized_section_title": "speed comparison",
+      "window_text": "In practice, the forward and backward pass of the inside algorithm consumes the majority of the running time in training a N(B)L-PCFG. The existing implementation by Zhu et al. (2020) does not employ efficient parallelization and has a cubic time\n\n![](images/6f7ed2e3f8e1aa7783831e22e3faf6560bb9226755812794841b4b4a291dc893.jpg)  \n(a)\n\n![](images/01df77031ac4ac9f1437779f1445dbba005555f2d96f15e1e6b74391350a83ca.jpg)  \n(b)   \nFigure 2: The change of F1 scores, perplexities with the change of $|H|$ and nonterminal number.\n\nTable 4: Recall on six frequent constituent labels and perplexities of the WSJ test data. $\\dagger$ means that the results are reported by Yang et al. (2021)   \n\n<table><tr><td></td><td>N-PCFG†</td><td>C-PCFG†</td><td>TN-PCFG†</td><td>NL-PCFG</td><td>NBL-PCFG</td></tr><tr><td>NP</td><td>72.3%</td><td>73.6%</td><td>75.4%</td><td>74.0%</td><td>66.2%</td></tr><tr><td>VP</td><td>28.1%</td><td>45.0%</td><td>48.4%</td><td>44.3%</td><td>61.1%</td></tr><tr><td>PP</td><td>73.0%</td><td>71.4%</td><td>67.0%</td><td>68.4%</td><td>77.7%</td></tr><tr><td>SBAR</td><td>53.6%</td><td>54.8%</td><td>50.3%</td><td>49.4%</td><td>63.8%</td></tr><tr><td>ADJP</td><td>40.8%</td><td>44.3%</td><td>53.6%</td><td>55.5%</td><td>59.7%</td></tr><tr><td>ADVP</td><td>43.8%</td><td>61.6%</td><td>59.5%</td><td>57.1%</td><td>59.1%</td></tr><tr><td>Perplexity</td><td>254.3</td><td>196.3</td><td>207.3</td><td>181.2</td><td>161.9</td></tr></table>\n\ncomplexity in the number of nonterminals. We provide an efficient reimplementation (we follow Zhang et al. (2020) to batchify) of the inside algorithm based on Equation 6. We refer to an implementation which caches Term C1-1 as re-impl-1 and refer to an implementation which caches Term C1-2 as re-impl-2.\n\n![](images/a7545d5ea39d8d13c4faf3a805da90d2ee373b56d9176eb861398a77ab4b8bd1.jpg)\n\n![](images/bb426a979075acf057840a6b509f82bcd1c2a7e95e3ee68764e0c128fcbe62b1.jpg)  \nFigure 3: Total time in performing the inside algorithm and automatic differentiation with different sentence lengths and nonterminal numbers.\n\nWe measure the time based on a single forward and backward pass of the inside algorithm with batch size 1 on a single Titan V GPU. Figure 3a illustrates the time with the increase of the sentence length and a fixed nonterminal number of 10. The original implementation of NL-PCFG by Zhu et al. (2020) takes much more time when sentences are long. For example, when sentence length is 40, it needs 6.80s, while our fast implementation takes 0.43s and our NBL-PCFG takes only 0.30s. Figure 3b illustrates the time with the increase of the non\n\nterminal number $m$ and a fixed sentence length of 30. The original implementation runs out of 12GB memory when $m = 30$ . re-impl-2 is faster than re-impl-1 when increasing $m$ as it has a better time complexity in $m$ (quadratic for re-impl-2, cubic for re-impl-1). Our NBL-PCFGs have a linear complexity in $m$ , and as we can see in the figure, our NBL-PCFGs are much faster when $m$ is large.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2021.acl-long.209::sections::8",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Titan V",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "In practice, the forward and backward pass of the inside algorithm consumes the majority of the running time in training a N(B)L-PCFG. The existing implementation by Zhu et al. (2020) does not employ efficient parallelization and has a cubic time\n\n![](images/6f7ed2e3f8e1aa7783831e22e3faf6560bb9226755812794841b4b4a291dc893.jpg)  \n(a)\n\n![](images/01df77031ac4ac9f1437779f1445dbba005555f2d96f15e1e6b74391350a83ca.jpg)  \n(b)   \nFigure 2: The change of F1 scores, perplexities with the change of $|H|$ and nonterminal number.\n\nTable 4: Recall on six frequent constituent labels and perplexities of the WSJ test data. $\\dagger$ means that the results are reported by Yang et al. (2021)   \n\n<table><tr><td></td><td>N-PCFG†</td><td>C-PCFG†</td><td>TN-PCFG†</td><td>NL-PCFG</td><td>NBL-PCFG</td></tr><tr><td>NP</td><td>72.3%</td><td>73.6%</td><td>75.4%</td><td>74.0%</td><td>66.2%</td></tr><tr><td>VP</td><td>28.1%</td><td>45.0%</td><td>48.4%</td><td>44.3%</td><td>61.1%</td></tr><tr><td>PP</td><td>73.0%</td><td>71.4%</td><td>67.0%</td><td>68.4%</td><td>77.7%</td></tr><tr><td>SBAR</td><td>53.6%</td><td>54.8%</td><td>50.3%</td><td>49.4%</td><td>63.8%</td></tr><tr><td>ADJP</td><td>40.8%</td><td>44.3%</td><td>53.6%</td><td>55.5%</td><td>59.7%</td></tr><tr><td>ADVP</td><td>43.8%</td><td>61.6%</td><td>59.5%</td><td>57.1%</td><td>59.1%</td></tr><tr><td>Perplexity</td><td>254.3</td><td>196.3</td><td>207.3</td><td>181.2</td><td>161.9</td></tr></table>\n\ncomplexity in the number of nonterminals. We provide an efficient reimplementation (we follow Zhang et al. (2020) to batchify) of the inside algorithm based on Equation 6. We refer to an implementation which caches Term C1-1 as re-impl-1 and refer to an implementation which caches Term C1-2 as re-impl-2.\n\n![](images/a7545d5ea39d8d13c4faf3a805da90d2ee373b56d9176eb861398a77ab4b8bd1.jpg)\n\n![](images/bb426a979075acf057840a6b509f82bcd1c2a7e95e3ee68764e0c128fcbe62b1.jpg)  \nFigure 3: Total time in performing the inside algorithm and automatic differentiation with different sentence lengths and nonterminal numbers.\n\nWe measure the time based on a single forward and backward pass of the inside algorithm with batch size 1 on a single Titan V GPU. Figure 3a illustrates the time with the increase of the sentence length and a fixed nonterminal number of 10. The original implementation of NL-PCFG by Zhu et al. (2020) takes much more time when sentences are long. For example, when sentence length is 40, it needs 6.80s, while our fast implementation takes 0.43s and our NBL-PCFG takes only 0.30s. Figure 3b illustrates the time with the increase of the non\n\nterminal number $m$ and a fixed sentence length of 30. The original implementation runs out of 12GB memory when $m = 30$ . re-impl-2 is faster than re-impl-1 when increasing $m$ as it has a better time complexity in $m$ (quadratic for re-impl-2, cubic for re-impl-1). Our NBL-PCFGs have a linear complexity in $m$ , and as we can see in the figure, our NBL-PCFGs are much faster when $m$ is large.",
+      "section_number": "8",
+      "section_title": "speed comparison",
+      "normalized_section_title": "speed comparison"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2021.acl-long.209::sections::8",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Titan V",
+      "cleaned_hardware_name": "titan v",
+      "normalized_hardware_name": "NVIDIA Titan V",
+      "benchmark_hardware_name": "NVIDIA Titan V",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "8",
+      "section_title": "speed comparison",
+      "normalized_section_title": "speed comparison",
+      "evidence": "In practice, the forward and backward pass of the inside algorithm consumes the majority of the running time in training a N(B)L-PCFG. The existing implementation by Zhu et al. (2020) does not employ efficient parallelization and has a cubic time\n\n![](images/6f7ed2e3f8e1aa7783831e22e3faf6560bb9226755812794841b4b4a291dc893.jpg)  \n(a)\n\n![](images/01df77031ac4ac9f1437779f1445dbba005555f2d96f15e1e6b74391350a83ca.jpg)  \n(b)   \nFigure 2: The change of F1 scores, perplexities with the change of $|H|$ and nonterminal number.\n\nTable 4: Recall on six frequent constituent labels and perplexities of the WSJ test data. $\\dagger$ means that the results are reported by Yang et al. (2021)   \n\n<table><tr><td></td><td>N-PCFG†</td><td>C-PCFG†</td><td>TN-PCFG†</td><td>NL-PCFG</td><td>NBL-PCFG</td></tr><tr><td>NP</td><td>72.3%</td><td>73.6%</td><td>75.4%</td><td>74.0%</td><td>66.2%</td></tr><tr><td>VP</td><td>28.1%</td><td>45.0%</td><td>48.4%</td><td>44.3%</td><td>61.1%</td></tr><tr><td>PP</td><td>73.0%</td><td>71.4%</td><td>67.0%</td><td>68.4%</td><td>77.7%</td></tr><tr><td>SBAR</td><td>53.6%</td><td>54.8%</td><td>50.3%</td><td>49.4%</td><td>63.8%</td></tr><tr><td>ADJP</td><td>40.8%</td><td>44.3%</td><td>53.6%</td><td>55.5%</td><td>59.7%</td></tr><tr><td>ADVP</td><td>43.8%</td><td>61.6%</td><td>59.5%</td><td>57.1%</td><td>59.1%</td></tr><tr><td>Perplexity</td><td>254.3</td><td>196.3</td><td>207.3</td><td>181.2</td><td>161.9</td></tr></table>\n\ncomplexity in the number of nonterminals. We provide an efficient reimplementation (we follow Zhang et al. (2020) to batchify) of the inside algorithm based on Equation 6. We refer to an implementation which caches Term C1-1 as re-impl-1 and refer to an implementation which caches Term C1-2 as re-impl-2.\n\n![](images/a7545d5ea39d8d13c4faf3a805da90d2ee373b56d9176eb861398a77ab4b8bd1.jpg)\n\n![](images/bb426a979075acf057840a6b509f82bcd1c2a7e95e3ee68764e0c128fcbe62b1.jpg)  \nFigure 3: Total time in performing the inside algorithm and automatic differentiation with different sentence lengths and nonterminal numbers.\n\nWe measure the time based on a single forward and backward pass of the inside algorithm with batch size 1 on a single Titan V GPU. Figure 3a illustrates the time with the increase of the sentence length and a fixed nonterminal number of 10. The original implementation of NL-PCFG by Zhu et al. (2020) takes much more time when sentences are long. For example, when sentence length is 40, it needs 6.80s, while our fast implementation takes 0.43s and our NBL-PCFG takes only 0.30s. Figure 3b illustrates the time with the increase of the non\n\nterminal number $m$ and a fixed sentence length of 30. The original implementation runs out of 12GB memory when $m = 30$ . re-impl-2 is faster than re-impl-1 when increasing $m$ as it has a better time complexity in $m$ (quadratic for re-impl-2, cubic for re-impl-1). Our NBL-PCFGs have a linear complexity in $m$ , and as we can see in the figure, our NBL-PCFGs are much faster when $m$ is large.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2021.acl-long.209::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2021.acl-long.209::sections::4.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2",
+      "section_title": "hyperparameters",
+      "evidence": "We optimize our model using the Adam optimizer with $\\beta_{1} = 0.75, \\beta_{2} = 0.999$ , and learning rate 0.001. All parameters are initialized with Xavier uniform initialization. We set the dimension of all embeddings to 256 and the ratio of the nonterminal number to the preterminal number to 1:2. Our best model uses 15 nonterminals, 30 preterminals, and $d_{H} = 300$ . We use grid search to tune the nonterminal number (from 5 to 30) and domain size $d_{H}$ of the latent $H$ (from 50 to 500)."
+    },
+    {
+      "source_window_id": "2021.acl-long.209::sections::4.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.3",
+      "section_title": "evaluation",
+      "evidence": "We run each model four times with different random seeds and for ten epochs. We train our models on training sentences of length $\\leqslant 40$ with batch size 8 and test them on the whole testing set. For each run, we perform early stopping and select the best model according to the perplexity of the development set. We use two different parsing methods: the variant of CYK algorithm (Eisner and Satta, 1999) and Minimum Bayes-Risk (MBR) decoding (Smith and Eisner, 2006). For constituent grammar induction, we report the means and standard deviations of sentence-level F1 scores. For dependency grammar induction, we report unlabeled directed attachment score (UDAS) and unlabeled undirected attachment score (UUAS)."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "8"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Titan V",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2021\\2021.acl-long.209\\auto\\full.md",
+    "source_md_sha256": "dae2fbe2619f2dfd6207314a71a472ec86a1aae50dd5befe031f7e8373545c9c",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "a2f4e0f2222ac944a84b28fba08cc5ab0184a6c6ccb3a5a4deb8a7eefc1e4438"
+  }
+}

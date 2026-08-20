@@ -1,0 +1,96 @@
+{
+  "paper_id": "2025.acl-long.378",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.378::sections::3",
+      "paper_id": "2025.acl-long.378",
+      "section_number": "3",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "In this section, we detail the experimental setup and results of evaluating LLMs within game environments, and provide analysis of the performance of various LLMs.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.378::sections::3.1.1",
+      "paper_id": "2025.acl-long.378",
+      "section_number": "3.1.1",
+      "section_title": "settings",
+      "normalized_section_title": "settings",
+      "window_text": "The evaluated LLMs can be found in Appendix A. We carry out inference using the default sampling parameters of each LLM. By using the default parameters, we ensure non-deterministic output, introducing more diversity. This allows us to carry out\n\nrepeat LLM head-to-head competitions in which the models are exposed to novel game states and positions, resulting in a more comprehensive evaluation of ability. For each LLM, we set the maximum number of output tokens parameter to 4096 to allow sufficient tokens for reasoning steps.\n\nIn each game environment, we conduct 20 matches between each pair of models, with each LLM playing 10 matches as the first player and 10 as the second to mitigate first-player advantage. We also evaluate a \"Random Player\", which randomly chooses an available move as a baseline for better interpretation of the results.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.378::appendix::H.2",
+      "paper_id": "2025.acl-long.378",
+      "section_number": "H.2",
+      "section_title": "pong",
+      "normalized_section_title": "pong",
+      "window_text": "Prompt for Pong You are an expert in the Atari Pong game. Your task is to control the right paddle to defeat the left opponent. Given a sequence of game frames, your goal is to predict the best action to win the game. The available actions are defined as follows: 0 - Stay Still; 1 - Move Up; 2 - Move Down.Here is some extra information: Ball Position: The X and Y coordinates of the ball on the screen.   \nYour Paddle Position: The Y-coordinate range of the right paddle. The X-coordinate of the right paddle is always 140.  \nOpponent's Paddle Position: The Y-coordinate range of the left paddle. The X-coordinate of the left paddle is always 20.   \nY-coordinate of Lower Wall: 16   \nY-coordinate of Upper Wall: 176\n\nA larger X-coordinate means relatively right-aligned, a larger y-coordinate means relatively higher.\n\nYour strategy is that, if the ball is moving towards the left, simply position your paddle in the middle of the screen. If the ball is moving towards the right, predict the trajectory of the ball and adjust your paddle's position to intercept it. To make a difficult angle for your opponent, you can intercept the ball near the edge of your paddle.\n\nProvide your chosen move. Before making a decision, articulate your internal thinking process. Your performance will be assessed on both the intermediate thinking results and the final decision. Follow the thinking process:\n\n**[Observation]** Observe the moving direction of the ball. Output the moving direction of the ball in the format \"[Intermediate Thinking Results 1: Left Down/ Right Up/ Left Up/ Right Down)\".\n\n**[Thought]** Analyze the trajectory of the ball. Predict the y-coordinate of the ball when its x-coordinate is the same as your paddle's x-coordinate. Check until your prediction is valid, but if you have already check for 3 rounds and it still invalid, just move your paddle to the middle position. Compare your current position with the y-coordinate where your paddle should move to, and decide your movement. Output the y-coordinate of the ball when its x-coordinate is the same as your paddle's x-coordinate in the format \"[Intermediate Thinking Results 2: XXX)\".\n\n**[Action]** Give the action result based on your thought.\n\nHere is an example.\n\nInput:Frame 1 {'ball_x': 71, 'ball_y': 136, 'player_x': 140, 'player_y': [66, 82], 'opponent_x': 20, 'opponent_y': [111, 127],\n\n'upper_bound': 176, 'lower_bound': 16}Frame 2 {'ball_x': 75, 'ball_y': 144, 'player_x': 140, 'player_y': [62, 78], 'opponent_x': 20, 'opponent_y': [117, 133],\n\n'upper_bound': 176, 'lower_bound': 16}Frame 3 {'ball_x': 79, 'ball_y': 152, 'player_x': 140, 'player_y': [59, 75], 'opponent_x': 20, 'opponent_y': [125, 141],\n\n'upper_bound': 176, 'lower_bound': 16}\n\nOutput:\n\n**[Observation]**\n\nBased on the current coordinates of the ball (79, 152), we observe that the ball's $x$ -coordinate is increasing ( $79 > 75 > 71$ ), indicating that the ball is moving towards the right. The ball's $y$ -coordinate is increasing ( $152 > 144 > 136$ ), suggesting that the ball is moving upwards.\n\n[Intermediate Thinking Results 1: Right Up]\n\n**[Thought]**\n\n[Calculate the ball's trajectory]\n\nWe can calculate the trace using the equation $y = mx + b$ . Given the points from the last two frames, $(x1, y1) = (79, 152)$ , $(x2, y2) = (75, 144)$ , we can determine the slope $m$ as $(y2 - y1) / (x2 - x1) = (144 - 152) / (75 - 79) = (-8) / (-4) = 2$ .\n\nThe $y$ -intercept, $b$ , can be found using the equation $b = y1 - mx1 = 152 - 2 \\times 79 = 152 - 158 = -6$ . Therefore, the equation for the trace of the ball is $y = 2x - 6$ . Substitute $x = 140$ into the equation, $y' = 2 \\times 140 - 6 = 280 - 6 = 274$ . [Check]\n\nThe valid y value lies in the range $16 \\leq y \\leq 176$ . But the calculated $y'274 > 176$ , which is invalid. Suggesting the ball's trace will be changed by rebounding.\n\n[Calculate the ball's trajectory]\n\nFrom the last observation, the ball is moving upwards, so it will hit the upper bound and change direction. Now the updated observation of the ball is moving downwards. Substituting $y = 176$ into the equation $y = 2x - 6$ , $x = (176 + 6) / 2 = 182 / 2 = 91$ . After rebounding, the slope $m$ will change to -2. Using the equation $y = -2x + b$ and substituting (91, 176), we can find $b = y + 2x = 176 + 2 * 91 = 176 + 182 = 358$ . Therefore, the equation for the trace of the ball is $y = -2x + 358$ . Substitute $x = 140$ into the equation, $y' = -2 * 140 + 358 = -280 + 358 = 78$ .\n\n[Check]\n\nThe valid y value lies in the range $16 <= \\mathrm{y} <= 176$ . Since $16 <= 78 <= 176$ , it is valid. [Decision]\n\nThe y'-coordinate your paddle should cover is 78. The range of your paddle's y-coordinate is [59, 75]. 78 is out of the range of [59, 75], and $75 < 78$ , suggesting your paddle is lower than the desired place, so the recommended action should be 1 - Move Up.\n\n[Intermediate Thinking Results 2:78]\n\n**[Action]**\n\n1 - Move Up",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.378::appendix::H.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Prompt for Pong You are an expert in the Atari Pong game. Your task is to control the right paddle to defeat the left opponent. Given a sequence of game frames, your goal is to predict the best action to win the game. The available actions are defined as follows: 0 - Stay Still; 1 - Move Up; 2 - Move Down.Here is some extra information: Ball Position: The X and Y coordinates of the ball on the screen.   \nYour Paddle Position: The Y-coordinate range of the right paddle. The X-coordinate of the right paddle is always 140.  \nOpponent's Paddle Position: The Y-coordinate range of the left paddle. The X-coordinate of the left paddle is always 20.   \nY-coordinate of Lower Wall: 16   \nY-coordinate of Upper Wall: 176\n\nA larger X-coordinate means relatively right-aligned, a larger y-coordinate means relatively higher.\n\nYour strategy is that, if the ball is moving towards the left, simply position your paddle in the middle of the screen. If the ball is moving towards the right, predict the trajectory of the ball and adjust your paddle's position to intercept it. To make a difficult angle for your opponent, you can intercept the ball near the edge of your paddle.\n\nProvide your chosen move. Before making a decision, articulate your internal thinking process. Your performance will be assessed on both the intermediate thinking results and the final decision. Follow the thinking process:\n\n**[Observation]** Observe the moving direction of the ball. Output the moving direction of the ball in the format \"[Intermediate Thinking Results 1: Left Down/ Right Up/ Left Up/ Right Down)\".\n\n**[Thought]** Analyze the trajectory of the ball. Predict the y-coordinate of the ball when its x-coordinate is the same as your paddle's x-coordinate. Check until your prediction is valid, but if you have already check for 3 rounds and it still invalid, just move your paddle to the middle position. Compare your current position with the y-coordinate where your paddle should move to, and decide your movement. Output the y-coordinate of the ball when its x-coordinate is the same as your paddle's x-coordinate in the format \"[Intermediate Thinking Results 2: XXX)\".\n\n**[Action]** Give the action result based on your thought.\n\nHere is an example.\n\nInput:Frame 1 {'ball_x': 71, 'ball_y': 136, 'player_x': 140, 'player_y': [66, 82], 'opponent_x': 20, 'opponent_y': [111, 127],\n\n'upper_bound': 176, 'lower_bound': 16}Frame 2 {'ball_x': 75, 'ball_y': 144, 'player_x': 140, 'player_y': [62, 78], 'opponent_x': 20, 'opponent_y': [117, 133],\n\n'upper_bound': 176, 'lower_bound': 16}Frame 3 {'ball_x': 79, 'ball_y': 152, 'player_x': 140, 'player_y': [59, 75], 'opponent_x': 20, 'opponent_y': [125, 141],\n\n'upper_bound': 176, 'lower_bound': 16}\n\nOutput:\n\n**[Observation]**\n\nBased on the current coordinates of the ball (79, 152), we observe that the ball's $x$ -coordinate is increasing ( $79 > 75 > 71$ ), indicating that the ball is moving towards the right. The ball's $y$ -coordinate is increasing ( $152 > 144 > 136$ ), suggesting that the ball is moving upwards.\n\n[Intermediate Thinking Results 1: Right Up]\n\n**[Thought]**\n\n[Calculate the ball's trajectory]\n\nWe can calculate the trace using the equation $y = mx + b$ . Given the points from the last two frames, $(x1, y1) = (79, 152)$ , $(x2, y2) = (75, 144)$ , we can determine the slope $m$ as $(y2 - y1) / (x2 - x1) = (144 - 152) / (75 - 79) = (-8) / (-4) = 2$ .\n\nThe $y$ -intercept, $b$ , can be found using the equation $b = y1 - mx1 = 152 - 2 \\times 79 = 152 - 158 = -6$ . Therefore, the equation for the trace of the ball is $y = 2x - 6$ . Substitute $x = 140$ into the equation, $y' = 2 \\times 140 - 6 = 280 - 6 = 274$ . [Check]\n\nThe valid y value lies in the range $16 \\leq y \\leq 176$ . But the calculated $y'274 > 176$ , which is invalid. Suggesting the ball's trace will be changed by rebounding.\n\n[Calculate the ball's trajectory]\n\nFrom the last observation, the ball is moving upwards, so it will hit the upper bound and change direction. Now the updated observation of the ball is moving downwards. Substituting $y = 176$ into the equation $y = 2x - 6$ , $x = (176 + 6) / 2 = 182 / 2 = 91$ . After rebounding, the slope $m$ will change to -2. Using the equation $y = -2x + b$ and substituting (91, 176), we can find $b = y + 2x = 176 + 2 * 91 = 176 + 182 = 358$ . Therefore, the equation for the trace of the ball is $y = -2x + 358$ . Substitute $x = 140$ into the equation, $y' = -2 * 140 + 358 = -280 + 358 = 78$ .\n\n[Check]\n\nThe valid y value lies in the range $16 <= \\mathrm{y} <= 176$ . Since $16 <= 78 <= 176$ , it is valid. [Decision]\n\nThe y'-coordinate your paddle should cover is 78. The range of your paddle's y-coordinate is [59, 75]. 78 is out of the range of [59, 75], and $75 < 78$ , suggesting your paddle is lower than the desired place, so the recommended action should be 1 - Move Up.\n\n[Intermediate Thinking Results 2:78]\n\n**[Action]**\n\n1 - Move Up",
+      "section_number": "H.2",
+      "section_title": "pong",
+      "normalized_section_title": "pong"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.378::appendix::H.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "H.2",
+      "section_title": "pong",
+      "normalized_section_title": "pong",
+      "evidence": "Prompt for Pong You are an expert in the Atari Pong game. Your task is to control the right paddle to defeat the left opponent. Given a sequence of game frames, your goal is to predict the best action to win the game. The available actions are defined as follows: 0 - Stay Still; 1 - Move Up; 2 - Move Down.Here is some extra information: Ball Position: The X and Y coordinates of the ball on the screen.   \nYour Paddle Position: The Y-coordinate range of the right paddle. The X-coordinate of the right paddle is always 140.  \nOpponent's Paddle Position: The Y-coordinate range of the left paddle. The X-coordinate of the left paddle is always 20.   \nY-coordinate of Lower Wall: 16   \nY-coordinate of Upper Wall: 176\n\nA larger X-coordinate means relatively right-aligned, a larger y-coordinate means relatively higher.\n\nYour strategy is that, if the ball is moving towards the left, simply position your paddle in the middle of the screen. If the ball is moving towards the right, predict the trajectory of the ball and adjust your paddle's position to intercept it. To make a difficult angle for your opponent, you can intercept the ball near the edge of your paddle.\n\nProvide your chosen move. Before making a decision, articulate your internal thinking process. Your performance will be assessed on both the intermediate thinking results and the final decision. Follow the thinking process:\n\n**[Observation]** Observe the moving direction of the ball. Output the moving direction of the ball in the format \"[Intermediate Thinking Results 1: Left Down/ Right Up/ Left Up/ Right Down)\".\n\n**[Thought]** Analyze the trajectory of the ball. Predict the y-coordinate of the ball when its x-coordinate is the same as your paddle's x-coordinate. Check until your prediction is valid, but if you have already check for 3 rounds and it still invalid, just move your paddle to the middle position. Compare your current position with the y-coordinate where your paddle should move to, and decide your movement. Output the y-coordinate of the ball when its x-coordinate is the same as your paddle's x-coordinate in the format \"[Intermediate Thinking Results 2: XXX)\".\n\n**[Action]** Give the action result based on your thought.\n\nHere is an example.\n\nInput:Frame 1 {'ball_x': 71, 'ball_y': 136, 'player_x': 140, 'player_y': [66, 82], 'opponent_x': 20, 'opponent_y': [111, 127],\n\n'upper_bound': 176, 'lower_bound': 16}Frame 2 {'ball_x': 75, 'ball_y': 144, 'player_x': 140, 'player_y': [62, 78], 'opponent_x': 20, 'opponent_y': [117, 133],\n\n'upper_bound': 176, 'lower_bound': 16}Frame 3 {'ball_x': 79, 'ball_y': 152, 'player_x': 140, 'player_y': [59, 75], 'opponent_x': 20, 'opponent_y': [125, 141],\n\n'upper_bound': 176, 'lower_bound': 16}\n\nOutput:\n\n**[Observation]**\n\nBased on the current coordinates of the ball (79, 152), we observe that the ball's $x$ -coordinate is increasing ( $79 > 75 > 71$ ), indicating that the ball is moving towards the right. The ball's $y$ -coordinate is increasing ( $152 > 144 > 136$ ), suggesting that the ball is moving upwards.\n\n[Intermediate Thinking Results 1: Right Up]\n\n**[Thought]**\n\n[Calculate the ball's trajectory]\n\nWe can calculate the trace using the equation $y = mx + b$ . Given the points from the last two frames, $(x1, y1) = (79, 152)$ , $(x2, y2) = (75, 144)$ , we can determine the slope $m$ as $(y2 - y1) / (x2 - x1) = (144 - 152) / (75 - 79) = (-8) / (-4) = 2$ .\n\nThe $y$ -intercept, $b$ , can be found using the equation $b = y1 - mx1 = 152 - 2 \\times 79 = 152 - 158 = -6$ . Therefore, the equation for the trace of the ball is $y = 2x - 6$ . Substitute $x = 140$ into the equation, $y' = 2 \\times 140 - 6 = 280 - 6 = 274$ . [Check]\n\nThe valid y value lies in the range $16 \\leq y \\leq 176$ . But the calculated $y'274 > 176$ , which is invalid. Suggesting the ball's trace will be changed by rebounding.\n\n[Calculate the ball's trajectory]\n\nFrom the last observation, the ball is moving upwards, so it will hit the upper bound and change direction. Now the updated observation of the ball is moving downwards. Substituting $y = 176$ into the equation $y = 2x - 6$ , $x = (176 + 6) / 2 = 182 / 2 = 91$ . After rebounding, the slope $m$ will change to -2. Using the equation $y = -2x + b$ and substituting (91, 176), we can find $b = y + 2x = 176 + 2 * 91 = 176 + 182 = 358$ . Therefore, the equation for the trace of the ball is $y = -2x + 358$ . Substitute $x = 140$ into the equation, $y' = -2 * 140 + 358 = -280 + 358 = 78$ .\n\n[Check]\n\nThe valid y value lies in the range $16 <= \\mathrm{y} <= 176$ . Since $16 <= 78 <= 176$ , it is valid. [Decision]\n\nThe y'-coordinate your paddle should cover is 78. The range of your paddle's y-coordinate is [59, 75]. 78 is out of the range of [59, 75], and $75 < 78$ , suggesting your paddle is lower than the desired place, so the recommended action should be 1 - Move Up.\n\n[Intermediate Thinking Results 2:78]\n\n**[Action]**\n\n1 - Move Up",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "H.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 8
+      }
+    ]
+  }
+}

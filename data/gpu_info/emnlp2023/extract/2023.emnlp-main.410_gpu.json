@@ -1,0 +1,250 @@
+{
+  "paper_id": "2023.emnlp-main.410",
+  "candidate_windows": [
+    {
+      "window_id": "2023.emnlp-main.410::sections::2",
+      "paper_id": "2023.emnlp-main.410",
+      "section_number": "2",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.410::sections::4.5",
+      "paper_id": "2023.emnlp-main.410",
+      "section_number": "4.5",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "We summarize the main conclusions derived from the empirical results presented in this section:\n\n- Naively scaling up BART and T5 is parameterinefficient on KP20k compared to SetTrans.   \n- Domain knowledge is crucial for KPG performance and improves parameter efficiency.   \n- Task-adaptive training with keyphrase or instruction tuning data only significantly improves KPG with in-domain models.   \n- In-domain pre-training and TAPT harm generalization in different ways and data augmentation during fine-tuning is desired.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.410::appendix::C",
+      "paper_id": "2023.emnlp-main.410",
+      "section_number": "C",
+      "section_title": "scibart pre-training details",
+      "normalized_section_title": "scibart pre-training details",
+      "window_text": "Corpus and Data Preprocessing The S2ORC dataset contains over 100M papers from a variety of disciplines (Figure 3). We train on all the titles and abstracts to increase the coverage of different topics. After removing non-English<sup>4</sup> or title-only\n\nentries, we fix wrong Unicode characters, remove emails and URLs, and convert the text to ASCII encoding<sup>5</sup>. The final dataset contains 171.7M documents or 15.4B tokens in total. We reserve 10k documents for validation and 10k for testing and use the rest as training data.\n\nVocabulary Beltagy et al. (2019) suggest that using a domain-specific vocabulary is crucial to downstream in-domain fine-tuning performance. Following their observations, we build a cased BPE vocabulary in the scientific domain using the SentencePiece library on the cleaned training data. We set the vocabulary size to 30K.\n\nTraining For the pre-training objective, we only use text infilling as introduced in Lewis et al. (2020). We mask $30\\%$ of all tokens in each example, with the spans randomly sampled from a Poisson distribution $(\\lambda = 3.5)$ . For $10\\%$ of the spans selected to mask, we replace them with a random token instead of the mask token. We set the maximum sequence length to 512. The model is pre-trained for 250k steps with batch size 2048, learning rate 3e-4, 10k warm-up steps, and polynomial learning rate decay. We use the Adam optimizer for pre-training. Using 8 Nvidia A100 GPUs (40G each), the training took eight days for SciBART-base and twelve days for SciBART-large.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2023.emnlp-main.410::appendix::D",
+      "paper_id": "2023.emnlp-main.410",
+      "section_number": "D",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.410::appendix::D.1",
+      "paper_id": "2023.emnlp-main.410",
+      "section_number": "D.1",
+      "section_title": "keyphrase generation",
+      "normalized_section_title": "keyphrase generation",
+      "window_text": "For keyphrase generation with BART and T5, we use Huggingface Transformers and train for 15 epochs with early stopping. We use learning rate 6e-5, polynomial decay, batcsh size 64, and the AdamW optimizer. To fine-tune SciBART-base and SciBART-large, we use the Translation task provided by fairseq<sup>7</sup> and train for 10 epochs. We use learning rate 3e-5, polynomial decay, and the AdamW optimizer.\n\nWe perform a careful hyperparameter search over the learning rate, learning rate schedule, batch size, and warm-up steps. The corresponding search spaces are $\\{1\\mathrm{e} - 5,3\\mathrm{e} - 5,6\\mathrm{e} - 5,1\\mathrm{e} - 4,3\\mathrm{e} - 4\\}$ , {linear,\n\n![](images/7197f312ddb9409c47aa4ba139ea57e4db67a4acb153747602b763433e45d465.jpg)  \nFigure 3: Domain distribution of the S2ORC dataset.\n\npolynomial}, \\{16, 32, 64, 128\\}, and \\{500, 1000, 2000, 4000\\}. The best hyperparameters are presented in Table 7. For DESEL, we tune the hyperparameters on the validation set of KP20k. the search space for $\\alpha$ is $\\{0.5, 0.73, 0.78, 0.83, 0.88, 0.93, 0.98\\}$ .\n\nThe fine-tuning experiments are run on a local GPU server with RTX 2080 Ti (11G each) and A6000 GPUs (48G each). We use gradient accumulation to achieve the desired batch sizes.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.410::appendix::D.2",
+      "paper_id": "2023.emnlp-main.410",
+      "section_number": "D.2",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "For CopyTrans and SetTrans, we rerun with the original implementations to measure their performance. We use the earliest version of KeyBART available at https://zenodo.org/record/5784384#.Y0eToNLMJcA. For MPRank, we use the implementation from pke<sup>8</sup>.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.emnlp-main.410::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A100 40G",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Corpus and Data Preprocessing The S2ORC dataset contains over 100M papers from a variety of disciplines (Figure 3). We train on all the titles and abstracts to increase the coverage of different topics. After removing non-English<sup>4</sup> or title-only\n\nentries, we fix wrong Unicode characters, remove emails and URLs, and convert the text to ASCII encoding<sup>5</sup>. The final dataset contains 171.7M documents or 15.4B tokens in total. We reserve 10k documents for validation and 10k for testing and use the rest as training data.\n\nVocabulary Beltagy et al. (2019) suggest that using a domain-specific vocabulary is crucial to downstream in-domain fine-tuning performance. Following their observations, we build a cased BPE vocabulary in the scientific domain using the SentencePiece library on the cleaned training data. We set the vocabulary size to 30K.\n\nTraining For the pre-training objective, we only use text infilling as introduced in Lewis et al. (2020). We mask $30\\%$ of all tokens in each example, with the spans randomly sampled from a Poisson distribution $(\\lambda = 3.5)$ . For $10\\%$ of the spans selected to mask, we replace them with a random token instead of the mask token. We set the maximum sequence length to 512. The model is pre-trained for 250k steps with batch size 2048, learning rate 3e-4, 10k warm-up steps, and polynomial learning rate decay. We use the Adam optimizer for pre-training. Using 8 Nvidia A100 GPUs (40G each), the training took eight days for SciBART-base and twelve days for SciBART-large.",
+      "section_number": "C",
+      "section_title": "scibart pre-training details",
+      "normalized_section_title": "scibart pre-training details"
+    },
+    {
+      "window_id": "2023.emnlp-main.410::appendix::D.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 2080 Ti 11G",
+      "count": null,
+      "count_text": "",
+      "evidence": "For keyphrase generation with BART and T5, we use Huggingface Transformers and train for 15 epochs with early stopping. We use learning rate 6e-5, polynomial decay, batcsh size 64, and the AdamW optimizer. To fine-tune SciBART-base and SciBART-large, we use the Translation task provided by fairseq<sup>7</sup> and train for 10 epochs. We use learning rate 3e-5, polynomial decay, and the AdamW optimizer.\n\nWe perform a careful hyperparameter search over the learning rate, learning rate schedule, batch size, and warm-up steps. The corresponding search spaces are $\\{1\\mathrm{e} - 5,3\\mathrm{e} - 5,6\\mathrm{e} - 5,1\\mathrm{e} - 4,3\\mathrm{e} - 4\\}$ , {linear,\n\n![](images/7197f312ddb9409c47aa4ba139ea57e4db67a4acb153747602b763433e45d465.jpg)  \nFigure 3: Domain distribution of the S2ORC dataset.\n\npolynomial}, \\{16, 32, 64, 128\\}, and \\{500, 1000, 2000, 4000\\}. The best hyperparameters are presented in Table 7. For DESEL, we tune the hyperparameters on the validation set of KP20k. the search space for $\\alpha$ is $\\{0.5, 0.73, 0.78, 0.83, 0.88, 0.93, 0.98\\}$ .\n\nThe fine-tuning experiments are run on a local GPU server with RTX 2080 Ti (11G each) and A6000 GPUs (48G each). We use gradient accumulation to achieve the desired batch sizes.",
+      "section_number": "D.1",
+      "section_title": "keyphrase generation",
+      "normalized_section_title": "keyphrase generation"
+    },
+    {
+      "window_id": "2023.emnlp-main.410::appendix::D.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A6000 48G",
+      "count": null,
+      "count_text": "",
+      "evidence": "For keyphrase generation with BART and T5, we use Huggingface Transformers and train for 15 epochs with early stopping. We use learning rate 6e-5, polynomial decay, batcsh size 64, and the AdamW optimizer. To fine-tune SciBART-base and SciBART-large, we use the Translation task provided by fairseq<sup>7</sup> and train for 10 epochs. We use learning rate 3e-5, polynomial decay, and the AdamW optimizer.\n\nWe perform a careful hyperparameter search over the learning rate, learning rate schedule, batch size, and warm-up steps. The corresponding search spaces are $\\{1\\mathrm{e} - 5,3\\mathrm{e} - 5,6\\mathrm{e} - 5,1\\mathrm{e} - 4,3\\mathrm{e} - 4\\}$ , {linear,\n\n![](images/7197f312ddb9409c47aa4ba139ea57e4db67a4acb153747602b763433e45d465.jpg)  \nFigure 3: Domain distribution of the S2ORC dataset.\n\npolynomial}, \\{16, 32, 64, 128\\}, and \\{500, 1000, 2000, 4000\\}. The best hyperparameters are presented in Table 7. For DESEL, we tune the hyperparameters on the validation set of KP20k. the search space for $\\alpha$ is $\\{0.5, 0.73, 0.78, 0.83, 0.88, 0.93, 0.98\\}$ .\n\nThe fine-tuning experiments are run on a local GPU server with RTX 2080 Ti (11G each) and A6000 GPUs (48G each). We use gradient accumulation to achieve the desired batch sizes.",
+      "section_number": "D.1",
+      "section_title": "keyphrase generation",
+      "normalized_section_title": "keyphrase generation"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.emnlp-main.410::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A100 40G",
+      "cleaned_hardware_name": "nvidia a100 40gb",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": null,
+      "count": 8,
+      "count_text": "8",
+      "section_number": "C",
+      "section_title": "scibart pre-training details",
+      "normalized_section_title": "scibart pre-training details",
+      "evidence": "Corpus and Data Preprocessing The S2ORC dataset contains over 100M papers from a variety of disciplines (Figure 3). We train on all the titles and abstracts to increase the coverage of different topics. After removing non-English<sup>4</sup> or title-only\n\nentries, we fix wrong Unicode characters, remove emails and URLs, and convert the text to ASCII encoding<sup>5</sup>. The final dataset contains 171.7M documents or 15.4B tokens in total. We reserve 10k documents for validation and 10k for testing and use the rest as training data.\n\nVocabulary Beltagy et al. (2019) suggest that using a domain-specific vocabulary is crucial to downstream in-domain fine-tuning performance. Following their observations, we build a cased BPE vocabulary in the scientific domain using the SentencePiece library on the cleaned training data. We set the vocabulary size to 30K.\n\nTraining For the pre-training objective, we only use text infilling as introduced in Lewis et al. (2020). We mask $30\\%$ of all tokens in each example, with the spans randomly sampled from a Poisson distribution $(\\lambda = 3.5)$ . For $10\\%$ of the spans selected to mask, we replace them with a random token instead of the mask token. We set the maximum sequence length to 512. The model is pre-trained for 250k steps with batch size 2048, learning rate 3e-4, 10k warm-up steps, and polynomial learning rate decay. We use the Adam optimizer for pre-training. Using 8 Nvidia A100 GPUs (40G each), the training took eight days for SciBART-base and twelve days for SciBART-large.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.emnlp-main.410::appendix::D.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 2080 Ti 11G",
+      "cleaned_hardware_name": "rtx 2080 ti 11gb",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "count": null,
+      "count_text": "",
+      "section_number": "D.1",
+      "section_title": "keyphrase generation",
+      "normalized_section_title": "keyphrase generation",
+      "evidence": "For keyphrase generation with BART and T5, we use Huggingface Transformers and train for 15 epochs with early stopping. We use learning rate 6e-5, polynomial decay, batcsh size 64, and the AdamW optimizer. To fine-tune SciBART-base and SciBART-large, we use the Translation task provided by fairseq<sup>7</sup> and train for 10 epochs. We use learning rate 3e-5, polynomial decay, and the AdamW optimizer.\n\nWe perform a careful hyperparameter search over the learning rate, learning rate schedule, batch size, and warm-up steps. The corresponding search spaces are $\\{1\\mathrm{e} - 5,3\\mathrm{e} - 5,6\\mathrm{e} - 5,1\\mathrm{e} - 4,3\\mathrm{e} - 4\\}$ , {linear,\n\n![](images/7197f312ddb9409c47aa4ba139ea57e4db67a4acb153747602b763433e45d465.jpg)  \nFigure 3: Domain distribution of the S2ORC dataset.\n\npolynomial}, \\{16, 32, 64, 128\\}, and \\{500, 1000, 2000, 4000\\}. The best hyperparameters are presented in Table 7. For DESEL, we tune the hyperparameters on the validation set of KP20k. the search space for $\\alpha$ is $\\{0.5, 0.73, 0.78, 0.83, 0.88, 0.93, 0.98\\}$ .\n\nThe fine-tuning experiments are run on a local GPU server with RTX 2080 Ti (11G each) and A6000 GPUs (48G each). We use gradient accumulation to achieve the desired batch sizes.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized GeForce RTX shorthand rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.emnlp-main.410::appendix::D.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A6000 48G",
+      "cleaned_hardware_name": "a6000 48gb",
+      "normalized_hardware_name": "NVIDIA RTX A6000",
+      "benchmark_hardware_name": "NVIDIA RTX A6000",
+      "count": null,
+      "count_text": "",
+      "section_number": "D.1",
+      "section_title": "keyphrase generation",
+      "normalized_section_title": "keyphrase generation",
+      "evidence": "For keyphrase generation with BART and T5, we use Huggingface Transformers and train for 15 epochs with early stopping. We use learning rate 6e-5, polynomial decay, batcsh size 64, and the AdamW optimizer. To fine-tune SciBART-base and SciBART-large, we use the Translation task provided by fairseq<sup>7</sup> and train for 10 epochs. We use learning rate 3e-5, polynomial decay, and the AdamW optimizer.\n\nWe perform a careful hyperparameter search over the learning rate, learning rate schedule, batch size, and warm-up steps. The corresponding search spaces are $\\{1\\mathrm{e} - 5,3\\mathrm{e} - 5,6\\mathrm{e} - 5,1\\mathrm{e} - 4,3\\mathrm{e} - 4\\}$ , {linear,\n\n![](images/7197f312ddb9409c47aa4ba139ea57e4db67a4acb153747602b763433e45d465.jpg)  \nFigure 3: Domain distribution of the S2ORC dataset.\n\npolynomial}, \\{16, 32, 64, 128\\}, and \\{500, 1000, 2000, 4000\\}. The best hyperparameters are presented in Table 7. For DESEL, we tune the hyperparameters on the validation set of KP20k. the search space for $\\alpha$ is $\\{0.5, 0.73, 0.78, 0.83, 0.88, 0.93, 0.98\\}$ .\n\nThe fine-tuning experiments are run on a local GPU server with RTX 2080 Ti (11G each) and A6000 GPUs (48G each). We use gradient accumulation to achieve the desired batch sizes.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.emnlp-main.410::sections::2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "2",
+      "section_title": "preliminaries",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.emnlp-main.410::sections::4.5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.5",
+      "section_title": "discussion",
+      "evidence": "We summarize the main conclusions derived from the empirical results presented in this section:\n\n- Naively scaling up BART and T5 is parameterinefficient on KP20k compared to SetTrans.   \n- Domain knowledge is crucial for KPG performance and improves parameter efficiency.   \n- Task-adaptive training with keyphrase or instruction tuning data only significantly improves KPG with in-domain models.   \n- In-domain pre-training and TAPT harm generalization in different ways and data augmentation during fine-tuning is desired."
+    },
+    {
+      "source_window_id": "2023.emnlp-main.410::appendix::D",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D",
+      "section_title": "implementation details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.emnlp-main.410::appendix::D.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D.2",
+      "section_title": "baselines",
+      "evidence": "For CopyTrans and SetTrans, we rerun with the original implementations to measure their performance. We use the earliest version of KeyBART available at https://zenodo.org/record/5784384#.Y0eToNLMJcA. For MPRank, we use the implementation from pke<sup>8</sup>."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "C",
+      "D.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 8
+      },
+      {
+        "name": "NVIDIA GeForce RTX 2080 Ti",
+        "num": null
+      },
+      {
+        "name": "NVIDIA RTX A6000",
+        "num": null
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2023\\2023.emnlp-main.410\\auto\\full.md",
+    "source_md_sha256": "34a83e07a2e35af2f32039a6b39d487e05c197a7d3256ed2530a37da0a126b3b",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "44ecc0af216a9e5fe6ff4e8a000ce2b17b722bcc41b386c829c53021783d2d05"
+  }
+}

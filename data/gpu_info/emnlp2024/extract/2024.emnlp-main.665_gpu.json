@@ -1,0 +1,366 @@
+{
+  "paper_id": "2024.emnlp-main.665",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.665::sections::1",
+      "paper_id": "2024.emnlp-main.665",
+      "section_number": "1",
+      "section_title": "introduction",
+      "normalized_section_title": "introduction",
+      "window_text": "Sentence segmentation is defined as the task of identifying boundaries between sentences in a given text. High-quality sentence boundaries are crucial in many NLP tasks and systems since models often expect individual sentences as input (Reimers and Gurevych, 2019, 2020; Liu et al.,\n\n![](images/b6678b9750224d50d36233de26705c562ae0a81b102c78eca367b5dc73b6af9f.jpg)  \nFigure 1: F1 scores and inference time for the prior SoTA (WTP) and our models (SAT and $\\mathrm{SAT}_{+\\mathrm{SM}}$ ), evaluated on the Ersatz sentence segmentation benchmark. We average over all 23 languages and show the average time (10 runs) for variants with different sizes (L = #layers) to segment 1,000 sentences using consumer hardware (1 Nvidia GTX 2080 Ti GPU).\n\n2021; Tiedemann and Thottingal, 2020, inter alia). Further, errors in segmentation can have detrimental effects on downstream task performance, e.g., in machine translation (Minixhofer et al., 2023; Wicks and Post, 2022; Savelka et al., 2017).\n\nExisting sentence segmentation tools predominantly rely on punctuation marks. This limitation renders them impractical for text lacking punctuation. To address this issue, some recent methods aim to overcome this dependency (Honnibal et al., 2020; Minixhofer et al., 2023). Specifically, during the training of their model, WTP (Minixhofer et al., 2023) randomly removes punctuation characters to increase robustness against missing punctuation.\n\nHowever, the performance of WTP as the current state-of-the-art (SoTA) model and all other segmenters is still poor on texts from more challenging domains. This includes, among others, user-generated text such as tweets and highly heterogeneous domains such as lyrics. Segmenting these texts is challenging because of missing and/or extra punctuation, inconsistent spacing, and espe\n\n![](images/a6d290627102464de440aeb8a95943b223deb575ea2461ea661a0f57cd50e14a.jpg)  \nFigure 2: Examples of our model's predictions from (i) ASR output, (ii) multilingual text, and (iii) verse segmentation. (i) shows part of a transcribed TED talk, demonstrating our method is agnostic to punctuation and casing. (ii) is from a Reddit post of German-English translations; existing rule-based systems would segment at nearly every punctuation, and existing neural systems are too reliant on punctuation or need a language code. (iii) shows segmentation of lyrics into verses, showing our model's predictions in a distinct domain.\n\ncially irregular casing. Furthermore, nearly all existing systems, including WTP, require the specification of the texts' language at inference time. This necessitates an additional preprocessing step of language identification, which often proves to be imperfect, particularly with user-generated content (Lui and Baldwin, 2014; Sterner and Teufel, 2023). Moreover, this necessity limits their applicability to code-switching text.\n\nTo address these challenges, we present a sentence segmentation method that does not rely on language codes or punctuation marks, making it universally applicable across a broad range of languages, corpora, and domains. Specifically, we train subword-based multilingual encoder language models (LMs) in a self-supervised way to predict naturally occurring newlines on web-scale text. We then continue training models on sentence-segmented data in a second, supervised stage to further improve sentence segmentation performance.\n\nWe deal with several major issues with previous tools: To ensure robustness against missing punctuation and noise, we propose a set of corruptions, applied randomly to the input during training. Crucially, our method does not rely on language codes. In addition, we mitigate issues observed with short sequences via a novel limited lookahead mechanism. Furthermore, we recognize the variability of sentence boundaries across domains and sentence definitions. To address this, we show how our models can be efficiently adapted to target domains via LoRA (Hu et al., 2022), outperforming previous adaptation methods, especially in data-constrained settings. Further, we improve efficiency by shedding the upper layers of the base model for our default 3-layer models, which segments 1000 sentences in approx. 0.5 seconds on our hardware.\n\nFigure 1 shows that the standard 3-layer version\n\nof SAT outperforms the current open weights state-of-the-art, WTP, while achieving $a \\approx 3x$ reduction in inference time. Overall, we present several innovations that overcome each of the shortcomings of previous methods, culminating in a universal model for sentence segmentation. We provide some examples of our model's predictions in Figure 2.\n\nContributions. 1) We introduce Segment any Text (SAT), an efficient method for sentence segmentation that can reliably segment text across 85 languages regardless of lexical features such as punctuation or casing. 2) We show how our models can be adapted to different domains via data-efficient means, requiring only a minimal set (e.g., 16) of sentence-segmented examples. 3) We train and release SAT models in five sizes, covering 85 languages, and demonstrate state-of-the-art performance across 8 corpora, even outperforming newly introduced strong (open weights) LLM baselines.",
+      "rule_tier": "soft_skip",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.665::sections::4",
+      "paper_id": "2024.emnlp-main.665",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.665::sections::4.1",
+      "paper_id": "2024.emnlp-main.665",
+      "section_number": "4.1",
+      "section_title": "evaluation",
+      "normalized_section_title": "evaluation",
+      "window_text": "To evaluate our method, we compare ground truth and predicted sentence boundaries on the test sets of corpora spanning a diverse set of languages, sources, and domains, $^{2}$ summarized in Table 1.\n\nIn addition, to evaluate how well our method can segment short sequences, we generate nonoverlapping sentence pairs from the datasets categorized as clean text. We additionally simulate a real-time automatic speech recognition (ASR) scenario using transcripts from speeches in 76 lan\n\nguages. We generate sentence pairs in a similar way and remove all punctuation as well as all casing.\n\nWe report character-level F1 scores for the positive (i.e., sentence-ending) labels. For short sequences, we use the proportion of perfectly segmented sequences within a corpus; this is stricter than F1 since any segmentation error results in a score of zero for the entire sequence. For SEPP-NLG, we use the evaluation script and surprise test set provided by the shared task organizers (Tuggener and Aghaebrahimian, 2021), reporting F1 scores on the token level. In our evaluations on clean text across all 85 languages, we run all competitor and baseline systems ourselves. For these results, we test all differences for significance with paired two-tailed permutation tests. We approximate them with $N = 10$ , 000 and set the significance threshold at $\\alpha = 0.05$ . Additional evaluation and dataset details are provided in Appendix A.2.\n\nBaselines. We compare against PySBD and NLTK as representatives of rule-based and unsupervised statistical methods. For supervised methods, we evaluate the punctuation-agnostic SPACYDP and Spacy's multi-language model, SPACYM. We also compare against ERSATZ. Our main comparison is against the current SoTA models: WTP, WTPT, and WTPPUNCT.\n\nLLM-based baselines. To evaluate LLMs, we use 1) Cohere's COMMAND R as a recent LLM with claimed strong multilingual performance, and 2) Meta's LLAMA $3_{8\\mathrm{B}}$ due to its popularity and strong performance. Officially, COMMAND R supports 23 languages, whereas LLAMA $3_{8\\mathrm{B}}$ only supports\n\nTable 2: Mean sentence segmentation F1 scores over OPUS100, UD and Ersatz. For the average, we report macro F1 over languages from all datasets where train and test sets are available. Results are shown using 3-layer variations of all models. Numerically best results are in bold, statistically indistinguishable ones from this best are underlined.   \n\n<table><tr><td>Model</td><td>ar</td><td>cs</td><td>de</td><td>en</td><td>es</td><td>fi</td><td>hi</td><td>ja</td><td>ka</td><td>lv</td><td>pl</td><td>th</td><td>xh</td><td>zh</td><td>81\nlangs</td></tr><tr><td colspan=\"16\">MULTILINGUAL</td></tr><tr><td>SPACYM</td><td>-</td><td>91.1</td><td>84.7</td><td>91.5</td><td>94.5</td><td>93.5</td><td>-</td><td>-</td><td>-</td><td>91.4</td><td>94.0</td><td>-</td><td>-</td><td>-</td><td>-</td></tr><tr><td>ERSATZ</td><td>77.2</td><td>90.9</td><td>87.0</td><td>91.4</td><td>95.1</td><td>93.9</td><td>84.8</td><td>69.3</td><td>-</td><td>91.1</td><td>94.8</td><td>-</td><td>-</td><td>77.2</td><td>-</td></tr><tr><td>LLAMA 38B</td><td>78.2</td><td>93.4</td><td>92.6</td><td>95.2</td><td>96.0</td><td>95.5</td><td>85.6</td><td>64.7</td><td>89.2</td><td>93.0</td><td>96.2</td><td>66.0</td><td>71.7</td><td>82.0</td><td>79.1</td></tr><tr><td>COMMAND R</td><td>58.6</td><td>68.1</td><td>79.1</td><td>84.6</td><td>81.0</td><td>74.1</td><td>72.0</td><td>52.2</td><td>25.6</td><td>74.2</td><td>78.6</td><td>10.6</td><td>56.1</td><td>73.7</td><td>55.6</td></tr><tr><td>SAT</td><td>79.9</td><td>91.7</td><td>90.4</td><td>93.6</td><td>94.0</td><td>94.2</td><td>84.9</td><td>88.6</td><td>75.7</td><td>92.2</td><td>93.7</td><td>68.0</td><td>80.3</td><td>78.0</td><td>84.9</td></tr><tr><td>SAT+SM</td><td>80.7</td><td>95.7</td><td>94.0</td><td>96.5</td><td>97.3</td><td>96.9</td><td>90.3</td><td>88.1</td><td>93.6</td><td>96.1</td><td>97.7</td><td>72.9</td><td>89.6</td><td>88.9</td><td>91.6</td></tr><tr><td colspan=\"16\">MONOLINGUAL</td></tr><tr><td>NLTK</td><td>-</td><td>90.8</td><td>87.1</td><td>92.2</td><td>94.1</td><td>93.9</td><td>-</td><td>-</td><td>-</td><td>-</td><td>94.5</td><td>-</td><td>-</td><td>-</td><td>-</td></tr><tr><td>PYSBD</td><td>37.4</td><td>-</td><td>80.6</td><td>69.6</td><td>56.9</td><td>-</td><td>70.1</td><td>76.1</td><td>-</td><td>-</td><td>49.3</td><td>-</td><td>-</td><td>86.9</td><td>-</td></tr><tr><td>SPACYDP</td><td>-</td><td>-</td><td>89.0</td><td>92.9</td><td>93.5</td><td>94.1</td><td>-</td><td>77.1</td><td>-</td><td>-</td><td>95.3</td><td>-</td><td>-</td><td>87.7</td><td>-</td></tr><tr><td>WTP</td><td>77.3</td><td>91.1</td><td>89.2</td><td>93.9</td><td>93.2</td><td>93.4</td><td>85.0</td><td>72.7</td><td>91.3</td><td>90.4</td><td>93.6</td><td>66.6</td><td>77.2</td><td>90.7</td><td>84.2</td></tr><tr><td>WTPT</td><td>79.9</td><td>92.0</td><td>92.0</td><td>93.5</td><td>94.2</td><td>94.1</td><td>85.2</td><td>85.6</td><td>91.1</td><td>93.1</td><td>93.5</td><td>69.7</td><td>80.7</td><td>89.3</td><td>85.9</td></tr><tr><td>WTPPUNCT</td><td>85.4</td><td>96.4</td><td>95.0</td><td>96.7</td><td>97.4</td><td>97.7</td><td>90.8</td><td>93.1</td><td>92.8</td><td>96.6</td><td>97.5</td><td>71.3</td><td>89.8</td><td>95.5</td><td>91.7</td></tr><tr><td>SAT+LORA</td><td>86.3</td><td>96.2</td><td>95.4</td><td>96.7</td><td>97.7</td><td>97.5</td><td>92.9</td><td>94.4</td><td>93.3</td><td>97.0</td><td>97.7</td><td>73.7</td><td>90.8</td><td>94.9</td><td>93.1</td></tr></table>\n\nTable 3: F1 scores on the surprise test set of the SEPPNLG Shared Task. For comparison, we provide results for the 3 best-performing systems from the Shared Task. We use 12-layer versions of our models.   \n\n<table><tr><td>Model</td><td>en</td><td>de</td><td>fr</td><td>it</td><td>Avg.</td></tr><tr><td>htw+t2k</td><td>77</td><td>82</td><td>76</td><td>75</td><td>78</td></tr><tr><td>OnPoint</td><td>80</td><td>82</td><td>77</td><td>77</td><td>79</td></tr><tr><td>Unbabel</td><td>83</td><td>78</td><td>78</td><td>76</td><td>79</td></tr><tr><td>SAT</td><td>73.4</td><td>79.9</td><td>73.1</td><td>72.9</td><td>74.8</td></tr><tr><td>SAT+SM</td><td>79.7</td><td>84.0</td><td>78.3</td><td>77.1</td><td>79.8</td></tr></table>\n\nEnglish. $^{3}$ We split up each dataset into chunks of 10 sentences to avoid cases where sentences are cut off at critical positions and observed issues with long context lengths. Then, we prepend the prompt to each chunk and let the LLM segment 10 sentences. $^{4}$ Finally, to make evaluation metrics robust to unwanted alterations of the input by the LLM, we apply the Needleman-Wunsch algorithm (NW; Needleman and Wunsch, 1970) to align sentences within each input and output chunk. For the prompt and other implementation details, including alignment via NW, we refer to Appendix A.2.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.665::sections::4.2",
+      "paper_id": "2024.emnlp-main.665",
+      "section_number": "4.2",
+      "section_title": "training setup",
+      "normalized_section_title": "training setup",
+      "window_text": "We train Transformer models operating on subwords, initialized with the weights of XLM-RoBERTa (XLM-R; Conneau et al., 2020). We use a lookahead limit of 48 tokens, which we found to\n\nwork well in practice on text of any length, leading to SAT. We use the mC4 (Raffel et al., 2019) corpus and sample text uniformly from the 85 languages also used by Minixhofer et al. (2023).\n\nTo train $\\mathbf{SAT}_{+}\\mathbf{SM}$ , we continue training SAT on the training set of UD due to its high quality and availability in most of the 85 considered languages. For languages without UD data, we resort to silver-quality data from OPUS100 or NLLB (Costa-jussa et al., 2022), whichever is available.\n\nTo adapt to different user requirements w.r.t. efficiency, we train and release SAT and $\\mathrm{SAT}_{+\\mathrm{SM}}$ models in different sizes from 1-12 layers, where we remove the upper layers for models $< 12$ layers.\n\nFor adaptation via LoRA $(\\mathbf{SAT}_{+\\mathbf{LORA}})$ , we use SAT as a starting point. We use the respective training set using max. 10,000 sentences.\n\nThe full details of the experiment setup regarding the datasets, infrastructure, training, and hyperparameters are provided in Appendix A.2.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.665::sections::6",
+      "paper_id": "2024.emnlp-main.665",
+      "section_number": "6",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "LLMs. Contrary to our expectations, our evaluation results reveal that LLMs generally underperform, particularly in non-English languages. Notably, when using LLMs for sentence segmentation via prompting, each sentence is processed twice – once as part of the input, appended to the prompt, and once within the output. This redundancy leads to inefficient processing, needing to copy the input verbatim to the output, ideally only adding newlines. However, in practice, LLMs are highly prone to alter their input (Barbero et al., 2024). We found this issue to be particularly severe for noisy text and lyrics.<sup>8</sup> This is highly problematic for a specific task requiring input and output characters to remain the same. Still, we tried to address this by using the Needleman-Wunsch sequence alignment algorithm to make pure segmentation performance comparable to other methods.<sup>9</sup>\n\n![](images/89e6ce0ced30a750ac546601faecad9762ddbd175624abbf530865cc85367d6b.jpg)  \nFigure 3: Macro avg. F1 vs. number of sentences used for adaptation, averaged over languages in {OPUS100, UD, Ersatz}. Per-corpus results shown in Appendix A.1.\n\nAiming to improve the segmentation performance of LLMs, we experimented with few-shot prompting. However, this did not yield the desired improvements; in fact, it degraded performance. Additionally, we tested varying the number of input-output sentences. The results of both of these ablation studies are presented in Appendix A.1.\n\nEfficiency. For our method, we rely on XLM-R as the LM backbone. Operating on subwords makes SAT considerably faster than WTP. We compare sentence segmentation performance and time on Erssatz across model sizes from 1-12 layers, illustrated in Figure 1. Additional datasets are shown in Figure 4. The standard 3-layer variations of SAT take $\\approx 0.5$ seconds to segment 1000 sentences on the hardware specified in Appendix A.2, making them 3 times faster than WTP, while also outperforming WTP models in all sizes on Erssatz. Furthermore, for SAT, performance plateaus with sizes $>3$ layers, whereas $\\mathrm{SAT}_{+\\mathrm{SM}}$ continues to improve when scaling up its size, making it by far the best model, despite never being exposed to Erssatz.\n\nFew-shot domain adaptation. We now analyze how many sentences are needed to adapt our domain adaptation method, $\\mathrm{SAT}_{+\\mathrm{LORA}}$ , to a target corpus, and compare it to previous methods. As shown in Figure 3, $\\mathrm{WTP_T}$ and $\\mathrm{WTP_{PUNCT}}$ perform similarly when using 1024 sentences for domain adaptation. However, $\\mathrm{WTP_{PUNCT}}$ fails to outperform the fully self-supervised variation of WTP when $\\leq 32$ sentences are available. In contrast, $\\mathrm{SAT}_{+\\mathrm{LORA}}$ markedly improves upon the self-supervised SAT with only 16 available sentences, and outperforms $\\mathrm{WTP_{PUNCT}}$ by almost $10\\%$ in F1 score, making it substantially more sample-efficient.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.665::sections::acknowledgments",
+      "paper_id": "2024.emnlp-main.665",
+      "section_number": "",
+      "section_title": "acknowledgments",
+      "normalized_section_title": "acknowledgments",
+      "window_text": "This research was funded in whole or in part by the Austrian Science Fund (FWF): https://doi.org/10.55776/P33526, https://doi.org/10.55776/DFH23, https://doi.org/10.55776/C0E12, https://doi.org/10.55776/P36413. In addition, Ivan Vulić and Benjamin Minixhofer have been supported through the Royal Society University Research Fellowship 'Inclusive and Sustainable Language Technology for a Truly Multilingual World' (no 221137) awarded to Ivan Vulić. This research has also been supported with Cloud TPUs from Google's TPU Research Cloud (TRC). This work was also supported by compute credits from a Cohere For AI Research Grant, these grants are designed to support academic partners conducting research with the goal of releasing scientific artifacts and data for good projects. We also thank Simone Teufel for fruitful discussions.",
+      "rule_tier": "hard_skip_override",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.665::appendix::A",
+      "paper_id": "2024.emnlp-main.665",
+      "section_number": "A",
+      "section_title": "appendix",
+      "normalized_section_title": "appendix",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.665::appendix::A.1",
+      "paper_id": "2024.emnlp-main.665",
+      "section_number": "A.1",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "window_text": "Table 7: Effect of various components of our method's variants. We report macro average F1 scores for each domain and use models with the same number of layers for each category of text as in the main text. Only clean text does not apply any corruptions. No pre-training skips the paragraph segmentation stage on web-scale mC4, and thus starts from XLM-R weights. Best per-category results are bold.   \n\n<table><tr><td>Model</td><td>Variation</td><td>Clean Text</td><td>Tweets</td><td>Code Switching</td></tr><tr><td rowspan=\"2\">SAT</td><td>-</td><td>84.9</td><td>78.0</td><td>48.2</td></tr><tr><td>Only clean text</td><td>84.7</td><td>33.5</td><td>16.5</td></tr><tr><td rowspan=\"3\">SAT+SM</td><td>-</td><td>91.6</td><td>75.5</td><td>54.4</td></tr><tr><td>Only clean text</td><td>91.5</td><td>77.2</td><td>10.2</td></tr><tr><td>No pre-training</td><td>89.9</td><td>42.1</td><td>44.0</td></tr><tr><td rowspan=\"2\">SAT+LORA</td><td>-</td><td>93.1</td><td>88.2</td><td>61.7</td></tr><tr><td>No pre-training</td><td>88.4</td><td>74.5</td><td>12.4</td></tr></table>\n\nTable 8: Effect of the web-scale pre-training stage on adaptation to hard domains, averaged over genres/legal categories. @100 corresponds to using a maximum of 100 songs/documents per genre/category for adaptation.   \n\n<table><tr><td rowspan=\"2\">Model</td><td rowspan=\"2\">Variation</td><td colspan=\"2\">Lyrics Corrupted?</td><td colspan=\"2\">Legal Corrupted?</td></tr><tr><td>✓</td><td>X</td><td>✓</td><td>X</td></tr><tr><td rowspan=\"2\">SAT+LORA@100</td><td>-</td><td>60.8</td><td>62.4</td><td>81.1</td><td>93.6</td></tr><tr><td>No pre-training</td><td>20.3</td><td>34.3</td><td>61.2</td><td>79.8</td></tr><tr><td rowspan=\"2\">SAT+LORA</td><td>-</td><td>68.5</td><td>73.8</td><td>83.3</td><td>95.1</td></tr><tr><td>No pre-training</td><td>59.9</td><td>62.1</td><td>82.5</td><td>94.9</td></tr></table>\n\nSAT components. We show the effect of removing different components of our corruption schemes used in SAT and $\\mathrm{SAT}_{+\\mathrm{SM}}$ in Table 7. For SAT, only using clean text even slightly hurts performance on clean text and strongly degrades performance in our more noisy tweets and code-switching evaluations. A similar pattern occurs for $\\mathrm{SAT}_{+\\mathrm{SM}}$ : Only using clean text hurts performance. Moreover, skipping the web-scale pre-training stage (No pretraining) also decreases performance to a large extent, with the difference being particularly large for tweets and code-switching. Finally, for $\\mathrm{SAT}_{+\\mathrm{LORA}}$ , no pre-training similarly degrades performance, with the difference being particularly large in code-switching, where $\\mathrm{SAT}_{+\\mathrm{LORA}}$ is better by $49.3\\%$ absolute F1.\n\nMoreover, Table 8 compares domain adaptation performances via LoRA to models without our web-scale pre-training to SAT models with it. As observed before, no pre-training markedly degrades\n\nperformance in both lyrics and legal data. The difference is especially large in cases where only 100 songs or documents are available, clearly showing that our pre-training stage improves sample-efficiency.\n\nLimited lookahead. We further provide an ablation study on the effect of disabling the limited lookahead mechanism using sentence pairs in Table 9. Without limited lookahead, SAT is outperformed by WTP. On the contrary, with limited lookahead, SAT outperforms WTP by a considerable margin, where the difference is even more pronounced for 12-layer variations. Moreover, $\\mathrm{SAT}_{+\\mathrm{SM}}$ hardly benefits from limited lookahead, justifying our decision to disable it for $\\mathrm{SAT}_{+\\mathrm{SM}}$ .\n\nEffect of model size. Figure 4 shows the effect of scaling up model sizes on OPUS100, UD, and code-switching, respectively. Remarkably, all 3-layer variations of $\\mathrm{SAT}_{+\\mathrm{SM}}$ clearly outperform WTP, despite not relying on language codes and being $\\approx 5x$ faster. The difference is particularly pronounced in code-switching, where even the 1-layer variations of both SAT and $\\mathrm{SAT}_{+\\mathrm{SM}}$ outperform the best variation of WTP. In general, performance continues to increase when further scaling up model sizes up to 12 layers.\n\nTable 9: Proportion of perfectly segmented sequences within additional corpora.   \n\n<table><tr><td>Model</td><td>Layers</td><td>Look-ahead</td><td>OPUS100</td><td>UD</td><td>Ersatz</td><td>TED</td></tr><tr><td rowspan=\"2\">WTP</td><td>3</td><td>∞</td><td>52.4</td><td>80.6</td><td>78.0</td><td>9.8</td></tr><tr><td>12</td><td>∞</td><td>52.8</td><td>77.9</td><td>78.0</td><td>12.6</td></tr><tr><td rowspan=\"4\">SAT</td><td rowspan=\"2\">3</td><td>∞</td><td>4.4</td><td>1.8</td><td>3.5</td><td>1.9</td></tr><tr><td>48</td><td>56.9</td><td>82.4</td><td>82.2</td><td>16.9</td></tr><tr><td rowspan=\"2\">12</td><td>∞</td><td>31.0</td><td>55.0</td><td>55.5</td><td>20.9</td></tr><tr><td>48</td><td>63.3</td><td>85.2</td><td>84.0</td><td>28.8</td></tr><tr><td rowspan=\"4\">SAT+SM</td><td rowspan=\"2\">3</td><td>∞</td><td>72.2</td><td>91.4</td><td>85.9</td><td>29.4</td></tr><tr><td>48</td><td>73.7</td><td>93.1</td><td>85.8</td><td>28.4</td></tr><tr><td rowspan=\"2\">12</td><td>∞</td><td>78.0</td><td>93.5</td><td>92.5</td><td>41.7</td></tr><tr><td>48</td><td>78.6</td><td>93.6</td><td>91.3</td><td>38.3</td></tr></table>\n\nLLMs. Figure 5 shows the effect of few-shot prompting and varying the number of input-output sentences for LLAMA $3_{8\\mathrm{B}}$ and COMMAND R. Contrary to our expectations, in-context learning via few-shot prompting does not improve sentence segmentation performance for both LLMs in consideration. Providing only a single example already degrades performance, and providing more examples further degrades it. Furthermore, increasing the\n\n![](images/671ce402ef463532434283d70974d3fc79ae54410019cc69b0e0f7f6e70f5d2a.jpg)  \n(a) OPUS100\n\n![](images/a4c9c372f13570bf5affaf1c4c228e27c766f5e935a72cc07b00e97bd57e7e71.jpg)  \n(b)UD\n\n![](images/e59d78c93a695271af161da40e6bf348eb120437fa0570471076604173f7ed04.jpg)  \n(c) Code-Switching\n\n![](images/7ff007521cd59ea337a53bc879037682b273ac6a8099b245a6390cde23c34259.jpg)  \nFigure 4: F1 scores and inference time for the prior SoTA (WTP) and our models (SAT and $\\mathrm{SAT}_{+\\mathrm{SM}}$ ), evaluated on additional sentence segmentation benchmarks. We average over all 23 languages and show the average time (10 runs) for variants with different sizes ( $L = \\#$ layers) to segment 1,000 sentences using consumer hardware (1 Nvidia GTX 2080 Ti GPU). Performance on Ersatz is shown in Figure 1.   \n(a) Effect of few-shot prompting.\n\n![](images/ac0575e0240ddfdb63f6c0b8667d0910e3f31c535d616e51a9fee803d9ae8120.jpg)  \n(b) Effect of varying the number of input-output sentences.   \nFigure 5: Ablation study on sentence segmentation performance of LLMs.\n\nnumber of input-output sentences from our favorably low default of 10 results in considerable performance decreases. Notably, when using 80 input-output sentences per chunk, both LLMs achieve F1 scores of only $< 60\\%$ .\n\nA.2 Complete Experiment Details   \nTable 10: Number of train and test sentences from tweets and code-switched text, including their source.   \n\n<table><tr><td rowspan=\"2\">Language</td><td colspan=\"2\">Number of Sentences</td><td rowspan=\"2\">Source</td></tr><tr><td>Train</td><td>Test</td></tr><tr><td>sl</td><td>2728</td><td>2728</td><td>Fišer et al. (2020)</td></tr><tr><td>sr</td><td>1727</td><td>192</td><td>Miličević and Ljubešić (2016)</td></tr><tr><td>es-en</td><td>1335</td><td>1334</td><td>Deuchar (2009)</td></tr><tr><td>en-de</td><td>678</td><td>599</td><td>Osmelak and Wintner (2023)</td></tr><tr><td>tr-de</td><td>578</td><td>805</td><td>Çetinoğlu (2017)</td></tr><tr><td>vi-en</td><td>1360</td><td>1361</td><td>Nguyen and Bryant (2020)</td></tr></table>\n\nDataset details. We give an overview of all used languages and their evaluation dataset sizes for clean text in Table 15. Furthermore, we provide statistics of splits for noisy text and additional domains in Table 10 for tweets and code-switching, Table 11 for lyrics, and Table 12 for legal data.\n\nTable 11: Number of train and test songs per genre.   \n\n<table><tr><td rowspan=\"2\">Repetitiveness</td><td rowspan=\"2\">Genre</td><td colspan=\"2\">Number of Songs</td></tr><tr><td>Train</td><td>Test</td></tr><tr><td rowspan=\"3\">High</td><td>Punk Rock</td><td>778</td><td>190</td></tr><tr><td>Pop Punk</td><td>512</td><td>141</td></tr><tr><td>Country</td><td>2916</td><td>711</td></tr><tr><td rowspan=\"11\">Mid</td><td>Rock</td><td>4611</td><td>1182</td></tr><tr><td>Pop</td><td>3490</td><td>891</td></tr><tr><td>RnB</td><td>3542</td><td>915</td></tr><tr><td>Alternative Rock</td><td>3370</td><td>856</td></tr><tr><td>Alternative Metal</td><td>651</td><td>155</td></tr><tr><td>Soul</td><td>494</td><td>110</td></tr><tr><td>Hard Rock</td><td>1821</td><td>430</td></tr><tr><td>Indie Rock</td><td>1193</td><td>305</td></tr><tr><td>Pop Rock</td><td>1633</td><td>412</td></tr><tr><td>Heavy Metal</td><td>988</td><td>216</td></tr><tr><td>Indie Rock</td><td>1193</td><td>305</td></tr><tr><td rowspan=\"2\">Low</td><td>Southern Hip Hop</td><td>836</td><td>208</td></tr><tr><td>Gangsta Rap</td><td>270</td><td>64</td></tr></table>\n\nIf a given corpus does not provide train and test splits, we set aside 10,000 sentences for testing and keep the rest for training if more than 10,000 sentences are available. If a corpus is smaller, we set aside $50\\%$ for testing and use the rest for adaptation. To train $\\mathrm{SAT}_{+\\mathrm{SM}}$ , if neither UD nor OPUS100 train data is available, we resort to NLLB. This is the case in Cebuano (ceb), Javanese (jv), Mongolian (mn), and Yoruba (yo), where we take 10,000\n\nTable 12: Number of legal train and test documents per category. We discard Portuguese since there is no training data available.   \n\n<table><tr><td rowspan=\"3\">Language</td><td colspan=\"4\">Number of Documents</td></tr><tr><td colspan=\"2\">Laws</td><td colspan=\"2\">Judgements</td></tr><tr><td>Train</td><td>Test</td><td>Train</td><td>Test</td></tr><tr><td>de</td><td>10</td><td>3</td><td>104</td><td>27</td></tr><tr><td>en</td><td>-</td><td>-</td><td>64</td><td>16</td></tr><tr><td>es</td><td>494</td><td>183</td><td>151</td><td>39</td></tr><tr><td>fr</td><td>1672</td><td>459</td><td>252</td><td>63</td></tr><tr><td>it</td><td>2206</td><td>704</td><td>194</td><td>49</td></tr></table>sentences each. To simulate our real-time automatic speech recognition (ASR) scenario, we take publicly available TED talk transcripts in 76 languages, available at opus.nlp1.eu/TED2020/corpus/version/TED2020. We generate non-overlapping sentence pairs as done in other experiments to evaluate performance on short sequences. Additionally, we remove fully lowercase all pairs and all punctuation tokens. We generally derive punctuation tokens with the commonly used Moses tokenizer (Koehn et al., 2007) for languages where it is available. For all other languages, we simply remove all punctuation characters.\n\nMoreover, we observe that used tweets in sl and sr are inconsistent w.r.t. segmenting single emojis. We thus filter out all emojis as a simple preprocessing step. Similarly, we normalize tweets by filtering out words starting with http, #, and @.\n\nComputing infrastructure. We train SAT on a TPUv4 VM with 8 cores, $\\mathrm{SAT}_{+\\mathrm{LORA}}$ on a TPUv3 VM with 1 core, and $\\mathrm{SAT}_{+\\mathrm{SM}}$ using a single A100 GPU. To measure inference time, we use a consumer-grade GPU, the Nvidia GTX 2080 Ti with an AMD EPYC 7402P CPU.\n\nImplementation details. We use the PyTorch (Paszke et al., 2019) and transformers (Wolf et al., 2020) libraries for all experiments. For adaptation via LoRA, we make use of the adapters library (Poth et al., 2023; Pfeiffer et al., 2020) library, a wrapper around the transformers library. Our code and models are released under the MIT License, ensuring open access to the community for further development.\n\nTraining of SAT. We train SAT using a context window of 256 since we observed that it improves performance. During inference, we use the full context size of XLM-R, 512. Moreover, we follow\n\nMinixhofer et al. (2023) and sample paragraphs to ensure that a maximum of $10\\%$ of paragraphs do not end in punctuation (except for Thai, which does not use sentence-ending punctuation). We also sample paragraphs of languages uniformly. We continue training XLM-R on naturally occurring newline symbols for 200k training steps using a batch size of 512. We use a linearly increasing learning rate warmup from 0 to 1e-4, and decay the learning rate to 0 for the remaining 195k steps. We use the AdamW optimizer (Kingma and Ba, 2015). For the auxiliary objective as introduced by Minixhofer et al. (2023), we set the removal probability $p = 0.25$ using the union of the 30 most common punctuation characters in every language. We then take the corresponding tokens as used by XLM-R as labels for the auxiliary objective.\n\nFor models without limited lookahead (cf. Table 9), we follow Minixhofer et al. (2023) and use a threshold of 0.01 for sentence boundary detection. When using limited lookahead, we observe that the optimal threshold increases. We thus use a constant threshold of 0.025 with limited lookahead.\n\nTraining of $\\mathbf{SAT}_{+SM}$ . In our supervised mixture stage, we continue training SAT using the same context window of 256. The training data now consists of sentence-segmented text, and we train $\\mathbf{SAT}_{+SM}$ predicting sentence-ending tokens.\n\nFor each language, we corrupt the data in two ways. In the first, we lowercase and remove all punctuation tokens. This aims to roughly emulate the output of an automatic speech recognition (ASR) system. In the second, we lowercase all text with probability 0.5, remove all punctuation with probability 0.5, duplicate punctuation (e.g., changing! to！！!) with geometric distribution scaling with the number of duplications (i.e., doubling with probability 0.5, tripling with probability 0.25, etc.), and join sentences without a whitespace with probability 0.1 (or with a space for the four languages which do not generally use a whitespace to split sentences, see Table 1.) This aims to emulate user-generated text.\n\nWe generally pack sentences into chunks. For the uncorrupted sentences and sentences corrupted with the first scheme, we pack until each chunk fully fills up the model's context window. For our second corruption scheme, we include $s$ sentences in each block, where $s$ is drawn from the same geometric distribution as used before.\n\nWe train with a batch size of 128, linear learning\n\nrate warmup from 0 to 3e-5 for 500 steps, and linearly decay for another 19,500 steps. We uniformly sample batches of sentences from a single language and evenly sample batches corrupted with one of the three corruption schemes. During inference, we use a constant threshold of 0.25.\n\nTraining of $\\mathrm{SAT}_{+\\mathrm{LORA}}$ . For adaptation via LoRA, we use a learning rate of 3e-4. We train LoRA modules with AdamW for a target domain for 30 epochs, where we linearly warm up the learning rate for the first $10\\%$ of training, followed by a decay to 0 for the remaining training steps. We do not apply early stopping. We apply LoRA to the query and value matrices of the attention block, as well as the intermediate layer of the Transformer, using a rank $r = 16$ and scaling factor $a = 32$ . We noticed this to positively impact performance at a comparably low computational cost. Moreover, similarly to $\\mathrm{WTP_T}$ and $\\mathrm{WTPPUNCT}$ , we additionally tune the classification threshold on the same training data if more than 512 sentences are available. We noticed that this helps performance in such cases. For verse segmentation, we use SAT models without limited lookahead, since, with verses, it is both helpful and desirable to rely on future verses.\n\nLLM details. We use default hyperparameters for both LLAMA $3_{8\\mathrm{B}}$ and COMMAND R. For COMMAND R, We used the Cohere API. This led to some API refusals, particularly for lyrics. We thus only consider chunks that were not refused when calculating metrics. To align input and output chunks using the Needleman-Wunsch sequence alignment algorithm, we use a gap penalty of $-0.5$ , a gap extension penalty of $-0.5$ , a match reward of 1, and a mismatch penalty of $-0.5$ . If no alignment is found, the LLM produced output that strongly deviated from the input chunk. We thus assign no sentence boundaries to the predictions of the LLMs for this input chunk.\n\nWe experiment with several prompts, optimizing performance on the training set, resulting in the following final prompt:General LLM Prompt Separate the following text into sentences by adding a newline between each sentence. Do not modify the text in any way and keep the exact ordering of words! If you modify it, remove or add anything, you get fined $1000 per word. Provide a concise answer without any introduction. Indicate sentence boundaries only via a single newline, no more than this!\n\nWe then append $\\backslash n\\backslash n$ # Input: $\\backslash n\\backslash n$ , followed by the input chunk, followed by $\\backslash n\\backslash n$ # Output: $\\backslash n\\backslash n$ , resulting in the complete input to the LLM.\n\nFor few-shot prompting, we append the prompt with When provided with multiple examples, you are to respond only to the last one. In addition, we indicate chunk $n$ with Input $N$ : and Output $N$ : respectively.\n\nSince it is a highly distinct task, we use the following prompt for verse segmentation:",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.665::sections::1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia GTX 2080 Ti",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Sentence segmentation is defined as the task of identifying boundaries between sentences in a given text. High-quality sentence boundaries are crucial in many NLP tasks and systems since models often expect individual sentences as input (Reimers and Gurevych, 2019, 2020; Liu et al.,\n\n![](images/b6678b9750224d50d36233de26705c562ae0a81b102c78eca367b5dc73b6af9f.jpg)  \nFigure 1: F1 scores and inference time for the prior SoTA (WTP) and our models (SAT and $\\mathrm{SAT}_{+\\mathrm{SM}}$ ), evaluated on the Ersatz sentence segmentation benchmark. We average over all 23 languages and show the average time (10 runs) for variants with different sizes (L = #layers) to segment 1,000 sentences using consumer hardware (1 Nvidia GTX 2080 Ti GPU).\n\n2021; Tiedemann and Thottingal, 2020, inter alia). Further, errors in segmentation can have detrimental effects on downstream task performance, e.g., in machine translation (Minixhofer et al., 2023; Wicks and Post, 2022; Savelka et al., 2017).\n\nExisting sentence segmentation tools predominantly rely on punctuation marks. This limitation renders them impractical for text lacking punctuation. To address this issue, some recent methods aim to overcome this dependency (Honnibal et al., 2020; Minixhofer et al., 2023). Specifically, during the training of their model, WTP (Minixhofer et al., 2023) randomly removes punctuation characters to increase robustness against missing punctuation.\n\nHowever, the performance of WTP as the current state-of-the-art (SoTA) model and all other segmenters is still poor on texts from more challenging domains. This includes, among others, user-generated text such as tweets and highly heterogeneous domains such as lyrics. Segmenting these texts is challenging because of missing and/or extra punctuation, inconsistent spacing, and espe\n\n![](images/a6d290627102464de440aeb8a95943b223deb575ea2461ea661a0f57cd50e14a.jpg)  \nFigure 2: Examples of our model's predictions from (i) ASR output, (ii) multilingual text, and (iii) verse segmentation. (i) shows part of a transcribed TED talk, demonstrating our method is agnostic to punctuation and casing. (ii) is from a Reddit post of German-English translations; existing rule-based systems would segment at nearly every punctuation, and existing neural systems are too reliant on punctuation or need a language code. (iii) shows segmentation of lyrics into verses, showing our model's predictions in a distinct domain.\n\ncially irregular casing. Furthermore, nearly all existing systems, including WTP, require the specification of the texts' language at inference time. This necessitates an additional preprocessing step of language identification, which often proves to be imperfect, particularly with user-generated content (Lui and Baldwin, 2014; Sterner and Teufel, 2023). Moreover, this necessity limits their applicability to code-switching text.\n\nTo address these challenges, we present a sentence segmentation method that does not rely on language codes or punctuation marks, making it universally applicable across a broad range of languages, corpora, and domains. Specifically, we train subword-based multilingual encoder language models (LMs) in a self-supervised way to predict naturally occurring newlines on web-scale text. We then continue training models on sentence-segmented data in a second, supervised stage to further improve sentence segmentation performance.\n\nWe deal with several major issues with previous tools: To ensure robustness against missing punctuation and noise, we propose a set of corruptions, applied randomly to the input during training. Crucially, our method does not rely on language codes. In addition, we mitigate issues observed with short sequences via a novel limited lookahead mechanism. Furthermore, we recognize the variability of sentence boundaries across domains and sentence definitions. To address this, we show how our models can be efficiently adapted to target domains via LoRA (Hu et al., 2022), outperforming previous adaptation methods, especially in data-constrained settings. Further, we improve efficiency by shedding the upper layers of the base model for our default 3-layer models, which segments 1000 sentences in approx. 0.5 seconds on our hardware.\n\nFigure 1 shows that the standard 3-layer version\n\nof SAT outperforms the current open weights state-of-the-art, WTP, while achieving $a \\approx 3x$ reduction in inference time. Overall, we present several innovations that overcome each of the shortcomings of previous methods, culminating in a universal model for sentence segmentation. We provide some examples of our model's predictions in Figure 2.\n\nContributions. 1) We introduce Segment any Text (SAT), an efficient method for sentence segmentation that can reliably segment text across 85 languages regardless of lexical features such as punctuation or casing. 2) We show how our models can be adapted to different domains via data-efficient means, requiring only a minimal set (e.g., 16) of sentence-segmented examples. 3) We train and release SAT models in five sizes, covering 85 languages, and demonstrate state-of-the-art performance across 8 corpora, even outperforming newly introduced strong (open weights) LLM baselines.",
+      "section_number": "1",
+      "section_title": "introduction",
+      "normalized_section_title": "introduction"
+    },
+    {
+      "window_id": "2024.emnlp-main.665::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia GTX 2080 Ti",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We average over all 23 languages and show the average time (10 runs) for variants with different sizes ( $L = \\#$ layers) to segment 1,000 sentences using consumer hardware (1 Nvidia GTX 2080 Ti GPU). We train SAT on a TPUv4 VM with 8 cores, $\\mathrm{SAT}_{+\\mathrm{LORA}}$ on a TPUv3 VM with 1 core, and $\\mathrm{SAT}_{+\\mathrm{SM}}$ using a single A100 GPU. To measure inference time, we use a consumer-grade GPU, the Nvidia GTX 2080 Ti with an AMD EPYC 7402P CPU.",
+      "section_number": "A.1",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies"
+    },
+    {
+      "window_id": "2024.emnlp-main.665::appendix::A.1",
+      "hardware_type": "TPU",
+      "raw_hardware_name": "TPUv4",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "We average over all 23 languages and show the average time (10 runs) for variants with different sizes ( $L = \\#$ layers) to segment 1,000 sentences using consumer hardware (1 Nvidia GTX 2080 Ti GPU). We train SAT on a TPUv4 VM with 8 cores, $\\mathrm{SAT}_{+\\mathrm{LORA}}$ on a TPUv3 VM with 1 core, and $\\mathrm{SAT}_{+\\mathrm{SM}}$ using a single A100 GPU. To measure inference time, we use a consumer-grade GPU, the Nvidia GTX 2080 Ti with an AMD EPYC 7402P CPU.",
+      "section_number": "A.1",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies"
+    },
+    {
+      "window_id": "2024.emnlp-main.665::appendix::A.1",
+      "hardware_type": "TPU",
+      "raw_hardware_name": "TPUv3",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We average over all 23 languages and show the average time (10 runs) for variants with different sizes ( $L = \\#$ layers) to segment 1,000 sentences using consumer hardware (1 Nvidia GTX 2080 Ti GPU). We train SAT on a TPUv4 VM with 8 cores, $\\mathrm{SAT}_{+\\mathrm{LORA}}$ on a TPUv3 VM with 1 core, and $\\mathrm{SAT}_{+\\mathrm{SM}}$ using a single A100 GPU. To measure inference time, we use a consumer-grade GPU, the Nvidia GTX 2080 Ti with an AMD EPYC 7402P CPU.",
+      "section_number": "A.1",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies"
+    },
+    {
+      "window_id": "2024.emnlp-main.665::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We average over all 23 languages and show the average time (10 runs) for variants with different sizes ( $L = \\#$ layers) to segment 1,000 sentences using consumer hardware (1 Nvidia GTX 2080 Ti GPU). We train SAT on a TPUv4 VM with 8 cores, $\\mathrm{SAT}_{+\\mathrm{LORA}}$ on a TPUv3 VM with 1 core, and $\\mathrm{SAT}_{+\\mathrm{SM}}$ using a single A100 GPU. To measure inference time, we use a consumer-grade GPU, the Nvidia GTX 2080 Ti with an AMD EPYC 7402P CPU.",
+      "section_number": "A.1",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.665::sections::1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia GTX 2080 Ti",
+      "cleaned_hardware_name": "nvidia rtx 2080 ti",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "1",
+      "section_title": "introduction",
+      "normalized_section_title": "introduction",
+      "evidence": "Sentence segmentation is defined as the task of identifying boundaries between sentences in a given text. High-quality sentence boundaries are crucial in many NLP tasks and systems since models often expect individual sentences as input (Reimers and Gurevych, 2019, 2020; Liu et al.,\n\n![](images/b6678b9750224d50d36233de26705c562ae0a81b102c78eca367b5dc73b6af9f.jpg)  \nFigure 1: F1 scores and inference time for the prior SoTA (WTP) and our models (SAT and $\\mathrm{SAT}_{+\\mathrm{SM}}$ ), evaluated on the Ersatz sentence segmentation benchmark. We average over all 23 languages and show the average time (10 runs) for variants with different sizes (L = #layers) to segment 1,000 sentences using consumer hardware (1 Nvidia GTX 2080 Ti GPU).\n\n2021; Tiedemann and Thottingal, 2020, inter alia). Further, errors in segmentation can have detrimental effects on downstream task performance, e.g., in machine translation (Minixhofer et al., 2023; Wicks and Post, 2022; Savelka et al., 2017).\n\nExisting sentence segmentation tools predominantly rely on punctuation marks. This limitation renders them impractical for text lacking punctuation. To address this issue, some recent methods aim to overcome this dependency (Honnibal et al., 2020; Minixhofer et al., 2023). Specifically, during the training of their model, WTP (Minixhofer et al., 2023) randomly removes punctuation characters to increase robustness against missing punctuation.\n\nHowever, the performance of WTP as the current state-of-the-art (SoTA) model and all other segmenters is still poor on texts from more challenging domains. This includes, among others, user-generated text such as tweets and highly heterogeneous domains such as lyrics. Segmenting these texts is challenging because of missing and/or extra punctuation, inconsistent spacing, and espe\n\n![](images/a6d290627102464de440aeb8a95943b223deb575ea2461ea661a0f57cd50e14a.jpg)  \nFigure 2: Examples of our model's predictions from (i) ASR output, (ii) multilingual text, and (iii) verse segmentation. (i) shows part of a transcribed TED talk, demonstrating our method is agnostic to punctuation and casing. (ii) is from a Reddit post of German-English translations; existing rule-based systems would segment at nearly every punctuation, and existing neural systems are too reliant on punctuation or need a language code. (iii) shows segmentation of lyrics into verses, showing our model's predictions in a distinct domain.\n\ncially irregular casing. Furthermore, nearly all existing systems, including WTP, require the specification of the texts' language at inference time. This necessitates an additional preprocessing step of language identification, which often proves to be imperfect, particularly with user-generated content (Lui and Baldwin, 2014; Sterner and Teufel, 2023). Moreover, this necessity limits their applicability to code-switching text.\n\nTo address these challenges, we present a sentence segmentation method that does not rely on language codes or punctuation marks, making it universally applicable across a broad range of languages, corpora, and domains. Specifically, we train subword-based multilingual encoder language models (LMs) in a self-supervised way to predict naturally occurring newlines on web-scale text. We then continue training models on sentence-segmented data in a second, supervised stage to further improve sentence segmentation performance.\n\nWe deal with several major issues with previous tools: To ensure robustness against missing punctuation and noise, we propose a set of corruptions, applied randomly to the input during training. Crucially, our method does not rely on language codes. In addition, we mitigate issues observed with short sequences via a novel limited lookahead mechanism. Furthermore, we recognize the variability of sentence boundaries across domains and sentence definitions. To address this, we show how our models can be efficiently adapted to target domains via LoRA (Hu et al., 2022), outperforming previous adaptation methods, especially in data-constrained settings. Further, we improve efficiency by shedding the upper layers of the base model for our default 3-layer models, which segments 1000 sentences in approx. 0.5 seconds on our hardware.\n\nFigure 1 shows that the standard 3-layer version\n\nof SAT outperforms the current open weights state-of-the-art, WTP, while achieving $a \\approx 3x$ reduction in inference time. Overall, we present several innovations that overcome each of the shortcomings of previous methods, culminating in a universal model for sentence segmentation. We provide some examples of our model's predictions in Figure 2.\n\nContributions. 1) We introduce Segment any Text (SAT), an efficient method for sentence segmentation that can reliably segment text across 85 languages regardless of lexical features such as punctuation or casing. 2) We show how our models can be adapted to different domains via data-efficient means, requiring only a minimal set (e.g., 16) of sentence-segmented examples. 3) We train and release SAT models in five sizes, covering 85 languages, and demonstrate state-of-the-art performance across 8 corpora, even outperforming newly introduced strong (open weights) LLM baselines.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized GeForce RTX shorthand rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.emnlp-main.665::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia GTX 2080 Ti",
+      "cleaned_hardware_name": "nvidia rtx 2080 ti",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.1",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "evidence": "We average over all 23 languages and show the average time (10 runs) for variants with different sizes ( $L = \\#$ layers) to segment 1,000 sentences using consumer hardware (1 Nvidia GTX 2080 Ti GPU). We train SAT on a TPUv4 VM with 8 cores, $\\mathrm{SAT}_{+\\mathrm{LORA}}$ on a TPUv3 VM with 1 core, and $\\mathrm{SAT}_{+\\mathrm{SM}}$ using a single A100 GPU. To measure inference time, we use a consumer-grade GPU, the Nvidia GTX 2080 Ti with an AMD EPYC 7402P CPU.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized GeForce RTX shorthand rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.emnlp-main.665::appendix::A.1",
+      "hardware_type": "TPU",
+      "raw_hardware_name": "TPUv4",
+      "cleaned_hardware_name": "tpu v4",
+      "normalized_hardware_name": "Google TPU v4",
+      "benchmark_hardware_name": "Google TPU v4",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "A.1",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "evidence": "We average over all 23 languages and show the average time (10 runs) for variants with different sizes ( $L = \\#$ layers) to segment 1,000 sentences using consumer hardware (1 Nvidia GTX 2080 Ti GPU). We train SAT on a TPUv4 VM with 8 cores, $\\mathrm{SAT}_{+\\mathrm{LORA}}$ on a TPUv3 VM with 1 core, and $\\mathrm{SAT}_{+\\mathrm{SM}}$ using a single A100 GPU. To measure inference time, we use a consumer-grade GPU, the Nvidia GTX 2080 Ti with an AMD EPYC 7402P CPU.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.emnlp-main.665::appendix::A.1",
+      "hardware_type": "TPU",
+      "raw_hardware_name": "TPUv3",
+      "cleaned_hardware_name": "tpu v3",
+      "normalized_hardware_name": "Google TPU v3",
+      "benchmark_hardware_name": "Google TPU v3",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.1",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "evidence": "We average over all 23 languages and show the average time (10 runs) for variants with different sizes ( $L = \\#$ layers) to segment 1,000 sentences using consumer hardware (1 Nvidia GTX 2080 Ti GPU). We train SAT on a TPUv4 VM with 8 cores, $\\mathrm{SAT}_{+\\mathrm{LORA}}$ on a TPUv3 VM with 1 core, and $\\mathrm{SAT}_{+\\mathrm{SM}}$ using a single A100 GPU. To measure inference time, we use a consumer-grade GPU, the Nvidia GTX 2080 Ti with an AMD EPYC 7402P CPU.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.emnlp-main.665::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "cleaned_hardware_name": "a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.1",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "evidence": "We average over all 23 languages and show the average time (10 runs) for variants with different sizes ( $L = \\#$ layers) to segment 1,000 sentences using consumer hardware (1 Nvidia GTX 2080 Ti GPU). We train SAT on a TPUv4 VM with 8 cores, $\\mathrm{SAT}_{+\\mathrm{LORA}}$ on a TPUv3 VM with 1 core, and $\\mathrm{SAT}_{+\\mathrm{SM}}$ using a single A100 GPU. To measure inference time, we use a consumer-grade GPU, the Nvidia GTX 2080 Ti with an AMD EPYC 7402P CPU.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.emnlp-main.665::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.665::sections::4.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "evaluation",
+      "evidence": "To evaluate our method, we compare ground truth and predicted sentence boundaries on the test sets of corpora spanning a diverse set of languages, sources, and domains, $^{2}$ summarized in Table 1.\n\nIn addition, to evaluate how well our method can segment short sequences, we generate nonoverlapping sentence pairs from the datasets categorized as clean text. We additionally simulate a real-time automatic speech recognition (ASR) scenario using transcripts from speeches in 76 lan\n\nguages. We generate sentence pairs in a similar way and remove all punctuation as well as all casing.\n\nWe report character-level F1 scores for the positive (i.e., sentence-ending) labels. For short sequences, we use the proportion of perfectly segmented sequences within a corpus; this is stricter than F1 since any segmentation error results in a score of zero for the entire sequence. For SEPP-NLG, we use the evaluation script and surprise test set provided by the shared task organizers (Tuggener and Aghaebrahimian, 2021), reporting F1 scores on the token level. In our evaluations on clean text across all 85 languages, we run all competitor and baseline systems ourselves. For these results, we test all differences for significance with paired two-tailed permutation tests. We approximate them with $N = 10$ , 000 and set the significance threshold at $\\alpha = 0.05$ . Additional evaluation and dataset details are provided in Appendix A.2.\n\nBaselines. We compare against PySBD and NLTK as representatives of rule-based and unsupervised statistical methods. For supervised methods, we evaluate the punctuation-agnostic SPACYDP and Spacy's multi-language model, SPACYM. We also compare against ERSATZ. Our main comparison is against the current SoTA models: WTP, WTPT, and WTPPUNCT.\n\nLLM-based baselines. To evaluate LLMs, we use 1) Cohere's COMMAND R as a recent LLM with claimed strong multilingual performance, and 2) Meta's LLAMA $3_{8\\mathrm{B}}$ due to its popularity and strong performance. Officially, COMMAND R supports 23 languages, whereas LLAMA $3_{8\\mathrm{B}}$ only supports\n\nTable 2: Mean sentence segmentation F1 scores over OPUS100, UD and Ersatz. For the average, we report macro F1 over languages from all datasets where train and test sets are available. Results are shown using 3-layer variations of all models. Numerically best results are in bold, statistically indistinguishable ones from this best are underlined.   \n\n<table><tr><td>Model</td><td>ar</td><td>cs</td><td>de</td><td>en</td><td>es</td><td>fi</td><td>hi</td><td>ja</td><td>ka</td><td>lv</td><td>pl</td><td>th</td><td>xh</td><td>zh</td><td>81\nlangs</td></tr><tr><td colspan=\"16\">MULTILINGUAL</td></tr><tr><td>SPACYM</td><td>-</td><td>91.1</td><td>84.7</td><td>91.5</td><td>94.5</td><td>93.5</td><td>-</td><td>-</td><td>-</td><td>91.4</td><td>94.0</td><td>-</td><td>-</td><td>-</td><td>-</td></tr><tr><td>ERSATZ</td><td>77.2</td><td>90.9</td><td>87.0</td><td>91.4</td><td>95.1</td><td>93.9</td><td>84.8</td><td>69.3</td><td>-</td><td>91.1</td><td>94.8</td><td>-</td><td>-</td><td>77.2</td><td>-</td></tr><tr><td>LLAMA 38B</td><td>78.2</td><td>93.4</td><td>92.6</td><td>95.2</td><td>96.0</td><td>95.5</td><td>85.6</td><td>64.7</td><td>89.2</td><td>93.0</td><td>96.2</td><td>66.0</td><td>71.7</td><td>82.0</td><td>79.1</td></tr><tr><td>COMMAND R</td><td>58.6</td><td>68.1</td><td>79.1</td><td>84.6</td><td>81.0</td><td>74.1</td><td>72.0</td><td>52.2</td><td>25.6</td><td>74.2</td><td>78.6</td><td>10.6</td><td>56.1</td><td>73.7</td><td>55.6</td></tr><tr><td>SAT</td><td>79.9</td><td>91.7</td><td>90.4</td><td>93.6</td><td>94.0</td><td>94.2</td><td>84.9</td><td>88.6</td><td>75.7</td><td>92.2</td><td>93.7</td><td>68.0</td><td>80.3</td><td>78.0</td><td>84.9</td></tr><tr><td>SAT+SM</td><td>80.7</td><td>95.7</td><td>94.0</td><td>96.5</td><td>97.3</td><td>96.9</td><td>90.3</td><td>88.1</td><td>93.6</td><td>96.1</td><td>97.7</td><td>72.9</td><td>89.6</td><td>88.9</td><td>91.6</td></tr><tr><td colspan=\"16\">MONOLINGUAL</td></tr><tr><td>NLTK</td><td>-</td><td>90.8</td><td>87.1</td><td>92.2</td><td>94.1</td><td>93.9</td><td>-</td><td>-</td><td>-</td><td>-</td><td>94.5</td><td>-</td><td>-</td><td>-</td><td>-</td></tr><tr><td>PYSBD</td><td>37.4</td><td>-</td><td>80.6</td><td>69.6</td><td>56.9</td><td>-</td><td>70.1</td><td>76.1</td><td>-</td><td>-</td><td>49.3</td><td>-</td><td>-</td><td>86.9</td><td>-</td></tr><tr><td>SPACYDP</td><td>-</td><td>-</td><td>89.0</td><td>92.9</td><td>93.5</td><td>94.1</td><td>-</td><td>77.1</td><td>-</td><td>-</td><td>95.3</td><td>-</td><td>-</td><td>87.7</td><td>-</td></tr><tr><td>WTP</td><td>77.3</td><td>91.1</td><td>89.2</td><td>93.9</td><td>93.2</td><td>93.4</td><td>85.0</td><td>72.7</td><td>91.3</td><td>90.4</td><td>93.6</td><td>66.6</td><td>77.2</td><td>90.7</td><td>84.2</td></tr><tr><td>WTPT</td><td>79.9</td><td>92.0</td><td>92.0</td><td>93.5</td><td>94.2</td><td>94.1</td><td>85.2</td><td>85.6</td><td>91.1</td><td>93.1</td><td>93.5</td><td>69.7</td><td>80.7</td><td>89.3</td><td>85.9</td></tr><tr><td>WTPPUNCT</td><td>85.4</td><td>96.4</td><td>95.0</td><td>96.7</td><td>97.4</td><td>97.7</td><td>90.8</td><td>93.1</td><td>92.8</td><td>96.6</td><td>97.5</td><td>71.3</td><td>89.8</td><td>95.5</td><td>91.7</td></tr><tr><td>SAT+LORA</td><td>86.3</td><td>96.2</td><td>95.4</td><td>96.7</td><td>97.7</td><td>97.5</td><td>92.9</td><td>94.4</td><td>93.3</td><td>97.0</td><td>97.7</td><td>73.7</td><td>90.8</td><td>94.9</td><td>93.1</td></tr></table>\n\nTable 3: F1 scores on the surprise test set of the SEPPNLG Shared Task. For comparison, we provide results for the 3 best-performing systems from the Shared Task. We use 12-layer versions of our models.   \n\n<table><tr><td>Model</td><td>en</td><td>de</td><td>fr</td><td>it</td><td>Avg.</td></tr><tr><td>htw+t2k</td><td>77</td><td>82</td><td>76</td><td>75</td><td>78</td></tr><tr><td>OnPoint</td><td>80</td><td>82</td><td>77</td><td>77</td><td>79</td></tr><tr><td>Unbabel</td><td>83</td><td>78</td><td>78</td><td>76</td><td>79</td></tr><tr><td>SAT</td><td>73.4</td><td>79.9</td><td>73.1</td><td>72.9</td><td>74.8</td></tr><tr><td>SAT+SM</td><td>79.7</td><td>84.0</td><td>78.3</td><td>77.1</td><td>79.8</td></tr></table>\n\nEnglish. $^{3}$ We split up each dataset into chunks of 10 sentences to avoid cases where sentences are cut off at critical positions and observed issues with long context lengths. Then, we prepend the prompt to each chunk and let the LLM segment 10 sentences. $^{4}$ Finally, to make evaluation metrics robust to unwanted alterations of the input by the LLM, we apply the Needleman-Wunsch algorithm (NW; Needleman and Wunsch, 1970) to align sentences within each input and output chunk. For the prompt and other implementation details, including alignment via NW, we refer to Appendix A.2."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.665::sections::4.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2",
+      "section_title": "training setup",
+      "evidence": "We train Transformer models operating on subwords, initialized with the weights of XLM-RoBERTa (XLM-R; Conneau et al., 2020). We use a lookahead limit of 48 tokens, which we found to\n\nwork well in practice on text of any length, leading to SAT. We use the mC4 (Raffel et al., 2019) corpus and sample text uniformly from the 85 languages also used by Minixhofer et al. (2023).\n\nTo train $\\mathbf{SAT}_{+}\\mathbf{SM}$ , we continue training SAT on the training set of UD due to its high quality and availability in most of the 85 considered languages. For languages without UD data, we resort to silver-quality data from OPUS100 or NLLB (Costa-jussa et al., 2022), whichever is available.\n\nTo adapt to different user requirements w.r.t. efficiency, we train and release SAT and $\\mathrm{SAT}_{+\\mathrm{SM}}$ models in different sizes from 1-12 layers, where we remove the upper layers for models $< 12$ layers.\n\nFor adaptation via LoRA $(\\mathbf{SAT}_{+\\mathbf{LORA}})$ , we use SAT as a starting point. We use the respective training set using max. 10,000 sentences.\n\nThe full details of the experiment setup regarding the datasets, infrastructure, training, and hyperparameters are provided in Appendix A.2."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.665::sections::6",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6",
+      "section_title": "discussion",
+      "evidence": "LLMs. Contrary to our expectations, our evaluation results reveal that LLMs generally underperform, particularly in non-English languages. Notably, when using LLMs for sentence segmentation via prompting, each sentence is processed twice – once as part of the input, appended to the prompt, and once within the output. This redundancy leads to inefficient processing, needing to copy the input verbatim to the output, ideally only adding newlines. However, in practice, LLMs are highly prone to alter their input (Barbero et al., 2024). We found this issue to be particularly severe for noisy text and lyrics.<sup>8</sup> This is highly problematic for a specific task requiring input and output characters to remain the same. Still, we tried to address this by using the Needleman-Wunsch sequence alignment algorithm to make pure segmentation performance comparable to other methods.<sup>9</sup>\n\n![](images/89e6ce0ced30a750ac546601faecad9762ddbd175624abbf530865cc85367d6b.jpg)  \nFigure 3: Macro avg. F1 vs. number of sentences used for adaptation, averaged over languages in {OPUS100, UD, Ersatz}. Per-corpus results shown in Appendix A.1.\n\nAiming to improve the segmentation performance of LLMs, we experimented with few-shot prompting. However, this did not yield the desired improvements; in fact, it degraded performance. Additionally, we tested varying the number of input-output sentences. The results of both of these ablation studies are presented in Appendix A.1.\n\nEfficiency. For our method, we rely on XLM-R as the LM backbone. Operating on subwords makes SAT considerably faster than WTP. We compare sentence segmentation performance and time on Erssatz across model sizes from 1-12 layers, illustrated in Figure 1. Additional datasets are shown in Figure 4. The standard 3-layer variations of SAT take $\\approx 0.5$ seconds to segment 1000 sentences on the hardware specified in Appendix A.2, making them 3 times faster than WTP, while also outperforming WTP models in all sizes on Erssatz. Furthermore, for SAT, performance plateaus with sizes $>3$ layers, whereas $\\mathrm{SAT}_{+\\mathrm{SM}}$ continues to improve when scaling up its size, making it by far the best model, despite never being exposed to Erssatz.\n\nFew-shot domain adaptation. We now analyze how many sentences are needed to adapt our domain adaptation method, $\\mathrm{SAT}_{+\\mathrm{LORA}}$ , to a target corpus, and compare it to previous methods. As shown in Figure 3, $\\mathrm{WTP_T}$ and $\\mathrm{WTP_{PUNCT}}$ perform similarly when using 1024 sentences for domain adaptation. However, $\\mathrm{WTP_{PUNCT}}$ fails to outperform the fully self-supervised variation of WTP when $\\leq 32$ sentences are available. In contrast, $\\mathrm{SAT}_{+\\mathrm{LORA}}$ markedly improves upon the self-supervised SAT with only 16 available sentences, and outperforms $\\mathrm{WTP_{PUNCT}}$ by almost $10\\%$ in F1 score, making it substantially more sample-efficient."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.665::sections::acknowledgments",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "",
+      "section_title": "acknowledgments",
+      "evidence": "This research was funded in whole or in part by the Austrian Science Fund (FWF): https://doi.org/10.55776/P33526, https://doi.org/10.55776/DFH23, https://doi.org/10.55776/C0E12, https://doi.org/10.55776/P36413. In addition, Ivan Vulić and Benjamin Minixhofer have been supported through the Royal Society University Research Fellowship 'Inclusive and Sustainable Language Technology for a Truly Multilingual World' (no 221137) awarded to Ivan Vulić. This research has also been supported with Cloud TPUs from Google's TPU Research Cloud (TRC). This work was also supported by compute credits from a Cohere For AI Research Grant, these grants are designed to support academic partners conducting research with the goal of releasing scientific artifacts and data for good projects. We also thank Simone Teufel for fruitful discussions."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.665::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "appendix",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "1",
+      "A.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce RTX 2080 Ti",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA GeForce RTX 2080 Ti",
+        "num": 1
+      },
+      {
+        "name": "Google TPU v4",
+        "num": 8
+      },
+      {
+        "name": "Google TPU v3",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2024\\2024.emnlp-main.665\\auto\\full.md",
+    "source_md_sha256": "bfefeb160e741705a3090cf3625e97841c5760f44b77f99fa84bcebfacaa9bb8",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "749fdb433714bfa003499fb1c90f58c9bb6de4daf647bf52f54e32986186b91c"
+  }
+}

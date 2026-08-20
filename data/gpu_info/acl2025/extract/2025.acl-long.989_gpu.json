@@ -1,0 +1,241 @@
+{
+  "paper_id": "2025.acl-long.989",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.989::sections::3",
+      "paper_id": "2025.acl-long.989",
+      "section_number": "3",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "We work with $\\mathrm{X}\\rightarrow \\mathrm{eng}$ MT for 49 languages in six (sub)families.\n\nLanguages and Datasets We include the following language groups and designate one HRL in each: Austronesian (with HRL Indonesian), Indic (Hindi), Turkic (Turkish), Romance (Italian), Arabic (Standard Arabic), and French-related Creole languages (Haitian). (See Table 6 in the Appendix for a full list.) We use Wiki text bitext (Schwenk et al., 2021) in the HRLs as training data; we do not use any CRL bitext. All compared methods use the same amount of total HRL bitext ( $100K$ sentences). We included CRLs per language family according to availability of evaluation data in the FloRes-200 (Team et al., 2022) dataset, maintaining a single script within each family. We use Kreyol-MT evaluation sets for Creole CRLs (absent in FloRes) (Robinson et al., 2024). Our set of CRLs includes languages on a spectrum of relatedness to each HRL, as well as variety of resource levels. Some of the CRLs we include, such as French, are high-resource themselves, while most are low-resource. The Turkic, Austronesian, and Arabic languages we included vary widely in HRL proximity; some have a high degree of mutual intelligibility with the HRL (Azerbaijani, Malay, Saudi\n\nArabic), and some are quite distant (Uzbek, Tagalog, Moroccan Arabic) (Hammarstrom et al., 2024; Nouri and Yangarber, 2014).\n\nBilingual lexicons For each CRL-HRL pair, we use a combination of PanLex (Kamholz et al., 2014), and Swadesh lexicons. We also added Art Dieli's Sicilian-Italian dictionary (Dieli, 2011) and Indic dialect lexicons from Bafna et al. (2024a). However, most of these have little coverage of function words. We therefore additionally used (function word-inclusive) lexicons obtained from performing statistical alignment (Dyer et al., 2013) on FloRes dev data. The Creole CRLs are not included in any of the above lexicon datasets; we used statistically aligned lexicons from JHU Bible translations (McCarthy et al., 2020), available for acf, crs, and mfe. We therefore only report D→M and M↔D results for these three Creole CRLs.\n\nModels We employ two MT models in our experiments: one multilingual supervised seq2seq model, M2M-100-1.2B (Fan et al., 2020); and one\n\nmultilingual instruction-tuned LLM, Aya-23-8B (Aryabumi et al., 2024). We selected these models because they are highly multilingual (supporting all our selected HRLs) but lack support for enough of our CRLs to warrant legitimate evaluation of adaptation to unseen languages. M2M only supports 15 of our 49 selected CRLs, while Aya-23 supports only 4. We selected one seq2seq model and one LLM in order to evaluate our methods in these two settings. We curated translation instructions from our bitexts to fine-tune Aya-23. (See § C.1 for details.) We use LoRA (Hu et al., 2021) for a single epoch for all fine-tuning processes.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.989::sections::5",
+      "paper_id": "2025.acl-long.989",
+      "section_number": "5",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "When does $\\mathsf{M}\\rightarrow \\mathsf{D}$ help? To test our hypotheses that baseline performance and proximity to the HRL interact meaningfully with score improvement, and to understand which circumstances render DialUp more or less effective, we analyze how language features correlate with gains. We computed Spearman's $\\rho$ coefficients between BLEU improvement from $\\mathsf{M}\\rightarrow \\mathsf{D}$ over the off-the-shelf baseline and features indicating both baseline CRL support (off-the-shelf BLEU score, whether the model explicitly supports the CRL, and number of CRL Wikipedia pages $^{11}$ ) and HRL-CRL relatedness (character F-score (Popovic, 2015) between HRL and CRL FloRes dev sets and average token-count ratio in CRL dev lines to HRL dev lines when using the model's HRL tokenizer $^{12}$ ). For\n\n![](images/2d1646b6810e4e765366e872d42fdc7e54c32d5b5d1549d4d4f05b62f203e4de.jpg)  \nFigure 4: Decision trees indicate that the languages benefiting most from adaptation are low-baseline languages with less than 1.75 times HRL token fertility for Aya, and low-baseline languages with more than 24.2 chrF proximity to the HRL.\n\nboth Aya and M2M the only such feature that correlated significantly $(\\mathrm{p} < 0.01)$ was off-the-shelf BLEU, with $\\rho = -0.52$ and $-0.45$ , respectively—indicating a moderate-to-strong negative correlation between baseline performance and improvement from $\\mathsf{M}\\rightarrow \\mathsf{D}$ , as hypothesized in $\\S 4$ .\n\nFurther analysis also suggests that baseline score is more predictive of $\\mathsf{M} \\rightarrow \\mathsf{D}$ success than other features; this is confirmed by random forests fitted over the same features for both models (see decision trees in Figure 4), as well as feature weights from a linear regressor. (See Table 35.)\n\nMeasurements of HRL-CRL relatedness had the second-highest forest feature importance for both models. Though our measurements of HRL-CRL relatedness do not correlate with BLEU score improvement, we suspect there may be a non-linear relationship between dev-set character-F score and method effectiveness. When plotted in Figure 6, the points suggest the contour of a downward-facing parabola, indicating that $\\mathsf{M}\\rightarrow \\mathsf{D}$ is most effective for CRLs that are not too close but not too far from the HRL, as we hypothesized. This has an intuitive interpretation: CRLs that are too close may either already be well-performing, or may not display enough dialectal divergence to benefit from DialUp, whereas CRLs that are too far may have a higher amount of non-cognate divergences from the HRL that DialUp does not help with. However, note that language family is possibly confounded with\n\n![](images/721f0c92c0d7bdf619b55d69b5b279907c1736349315883507cc19b6348d925b.jpg)  \nFigure 5: Gains in BLEU points for different values of $\\theta^p$ (1-dimensional noiser) for Indic languages, with dotted lines showing the performance of M→D-cloud, using the 3-dimensional noiser $\\theta^{p,m,f}$ with default parameters. Tuning only $\\theta^p$ for Indic is competitive with M→D-cloud.\n\ncharacter-F score, with only Austronesian CRLs covering a wide range on our observed contour; it would be difficult to disentangle the effect of language family without many more languages.\n\nSetting $\\theta^{p,m,f}$ -dials Although $\\mathsf{M} \\to \\mathsf{D}$ uses phonological, morphological, and function word noising to model cognate processes in CRLs, the latter two are specialized versions of the phonological noiser, applying it at a fixed high dial to HRL suffixes/function words (Appendix B). We show that this 3-dimensional noiser can be approximated solely by the phonological noiser at a suitable $\\theta^p$ -dial. Setting all other $\\theta^n = 0$ , we sweep over $\\theta^p$ for Indic (Figure 5). We observe that with an optimal $\\theta^p$ , the phonological noiser achieves competitive gains as $\\mathsf{M} \\to \\mathsf{D}$ -cloud, which uses all noisers. Our default $\\mathsf{M} \\to \\mathsf{D}$ $\\theta$ -dials are eminently reasonable, yielding the best possible performance achievable by the above procedure; however, these defaults may be more suited to particular language families than others. Given that tuning $\\theta^{p,m,f}$ in combination is intractable, we therefore recommend simply tuning $\\theta^p$ for a given language family as a good proxy, along with trying our defaults. The above results indicate that model gains from $\\mathsf{M} \\to \\mathsf{D}$ largely arise from learning to decode sound changes in dialects, regardless of their placement in words.\n\n$\\mathsf{M}\\rightarrow \\mathsf{D}$ error analysis Arabic varieties gain less than other groups from $\\mathsf{M}\\rightarrow \\mathsf{D}$ and $\\mathsf{M}\\leftrightarrow \\mathsf{D}$ . This may indicate that our $\\mathsf{M}\\rightarrow \\mathsf{D}$ method does not approximate the Arabic linguistic variation well. Arabic varieties do exhibit phonological differences (which $\\mathsf{M}\\rightarrow \\mathsf{D}$ simulates). However, these are often not expressed in the orthography, making lexical, syntactic, and register differences more prominent differentiators in text. We experimented simulating lexical choice variation in CRLs using HRL\n\nWordNets as part of our artificial language generation method for 5 language families; however, this did not give us significant gains (Appendix E). DialUp in its current form may not be well suited for Arabic. Additionally, we note that FloRes sets are extremely close to standard Arabic, with a mean dev \"dialectness\" score (Keleg et al., 2023) of only $28\\%$ .[13] This may also limit the scope of improvements from DialUp methods on this test set.\n\nFrench-related Creole languages, which also had low baseline scores and small $\\mathsf{M}\\rightarrow \\mathsf{D}$ gains, may have also suffered from genre mismatch (given their heterogenous test sets (Robinson et al., 2024)). We initially hypothesized that their poor performance may be due to the HRL's (Haitian) poor baseline performance with Aya-23. We attempted curriculum training with fine-tuning first on Haitian bitext and then with $\\mathsf{M}\\rightarrow \\mathsf{D}$ ; however this did not materially help. It is still possible that given Haitian's low-resource nature (and its extremely low-resource CRLs), training token frequencies are too low to risk obfuscating them with DialUp noise. We hope future work will find more concrete conclusions on this trend.\n\n$\\mathsf{D} \\rightarrow \\mathsf{M}$ error analysis We investigate why $\\mathsf{D} \\rightarrow \\mathsf{M}$ -func degrades the performance of Romance and Austronesian HRLs, while benefiting several CRLs in these families and Indic. We perform a manual evaluation of 100 words from our function word lexicons for 4 languages from these families (Table 9) $^{14}$ to characterize the extent of noise in the $\\mathsf{D} \\rightarrow \\mathsf{M}$ -func pipeline: a CRL word may be misidentified as a function word (mean function word identification accuracy: $83.6\\%$ ), or it may be mistranslated (mean function word translation accuracy: $56.5\\%$ , general translation accuracy: $59.7\\%$ ). The introduced noise is naturally particularly damaging when the baseline translation is good (as in for many high-resource CRLs). In fact, we find that $\\mathsf{D} \\rightarrow \\mathsf{M}$ swaps hurt for high-resource CRLs even with ideal-case accurate swaps from clean lexicons. On the other hand, for a number of CRLs such as Maithili (mai), we observe that the benefits of making key function words swaps outweighs the negative impact of this noise; we find that even noisy automatically collected lexicons contribute to $\\mathsf{D} \\rightarrow \\mathsf{M}$\n\n![](images/523d38dcb87368fbdd02a645b0f3a922e812fb8c3b648690bd6a2f7df691f00d.jpg)\n\n![](images/219de7cd4f292cb73191bca2c85a7bdac811097f5066c37c21df3c5db18d357c.jpg)  \nFigure 6: CRL-HRL proximity, measured as character F-score between dev sets, plotted against BLEU increase from $\\mathsf{M}\\rightarrow \\mathsf{D}$ , suggests a peak from 20-30 chrF. Arabic varieties are outliers because the FloRes dialectal Arabic sets are unusually close to standard Arabic.\n\nimprovements in some languages (e.g. excluding relatively noisy Bafna et al. (2024a) lexicons results in a drop of 9 BLEU for Maithili with M2M). D→M benefits also depend on the model and HRL: in the case of Haitian, D→M performs well with M2M (yielding +7 BLEU for acf), but degrades baseline performance for Aya-23. This can be explained by the fact that Aya-23 has <10 BLEU performance on Haitian itself, making it unhelpful to switch other CRL words into Haitian; on the other hand, M2M baseline is strong for Haitian but weak for related CRLs, rendering D→M a useful strategy. We therefore recommend D→M for low-baseline CRLs, with a model that performs well on the language family HRL.\n\nNote that $\\mathsf{D} \\rightarrow \\mathsf{M}$ shows small gains for Arabic and Turkic CRLs. This is likely caused by a scarcity of word exchanges, which $\\mathsf{D} \\rightarrow \\mathsf{M}$ relies on for increasing CRL input comprehensibility. In fact, $\\mathsf{D} \\rightarrow \\mathsf{M}$ -func results in only $16.3\\%$ and $15\\%$ of words being swapped for Arabic and Turkic, respectively, compared to $43.1\\%$ for Austronesian, $38.5\\%$ for Romance, and $33.4\\%$ for Indic. (See Appendix F). This is potentially a result of Arabic and Turkic languages' comparatively complex morphology, in addition to above noted issues with Arabic test sets. Grammatical morphemes in these languages are frequently affixes, clitics, or attached to affixes and seldom occur on their own; these will be missed by our whitespace-reliant word-switching technique. Future work can investigate integrating morphological analysis technologies when available into our methods.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.989::appendix::C",
+      "paper_id": "2025.acl-long.989",
+      "section_number": "C",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.989::appendix::E",
+      "paper_id": "2025.acl-long.989",
+      "section_number": "E",
+      "section_title": "variant approaches and hyperparameter exploration",
+      "normalized_section_title": "variant approaches and hyperparameter exploration",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.989::appendix::J",
+      "paper_id": "2025.acl-long.989",
+      "section_number": "J",
+      "section_title": "training and evaluation details",
+      "normalized_section_title": "training and evaluation details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.989::appendix::J.1",
+      "paper_id": "2025.acl-long.989",
+      "section_number": "J.1",
+      "section_title": "compute",
+      "normalized_section_title": "compute",
+      "window_text": "Our noising approaches and baselines require finetuning: we had 2 models x 8 approaches x 6 HRLs $= 96$ finetuning runs. Each experiment required about 3 hours on a single A100, totaling 288 GPU hours.\n\nWe conducted evaluation for 54 languages (49 CRLs + 6 HRLs) x 15 total approaches = 810 evaluation runs. Each evaluation took 30 minutes on a single GTX 1080 machine, totaling 405 GPU hours.\n\nThese calculations do not include development and initial experiments, and ablation studies.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.acl-long.989::appendix::J.2",
+      "paper_id": "2025.acl-long.989",
+      "section_number": "J.2",
+      "section_title": "evaluation",
+      "normalized_section_title": "evaluation",
+      "window_text": "We tested our models on the devtest splits of the FloRes-200 dataset, using BLEU (Hugging-Face evaluate wrapper: mixed case, tokenization with sacrebleu 13a) as well as COMET (Unbabel/wmt22-comet-da).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.989::appendix::J.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "count": null,
+      "count_text": "",
+      "evidence": "Our noising approaches and baselines require finetuning: we had 2 models x 8 approaches x 6 HRLs $= 96$ finetuning runs. Each experiment required about 3 hours on a single A100, totaling 288 GPU hours.\n\nWe conducted evaluation for 54 languages (49 CRLs + 6 HRLs) x 15 total approaches = 810 evaluation runs. Each evaluation took 30 minutes on a single GTX 1080 machine, totaling 405 GPU hours.\n\nThese calculations do not include development and initial experiments, and ablation studies.",
+      "section_number": "J.1",
+      "section_title": "compute",
+      "normalized_section_title": "compute"
+    },
+    {
+      "window_id": "2025.acl-long.989::appendix::J.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GTX 1080",
+      "count": null,
+      "count_text": "",
+      "evidence": "Our noising approaches and baselines require finetuning: we had 2 models x 8 approaches x 6 HRLs $= 96$ finetuning runs. Each experiment required about 3 hours on a single A100, totaling 288 GPU hours.\n\nWe conducted evaluation for 54 languages (49 CRLs + 6 HRLs) x 15 total approaches = 810 evaluation runs. Each evaluation took 30 minutes on a single GTX 1080 machine, totaling 405 GPU hours.\n\nThese calculations do not include development and initial experiments, and ablation studies.",
+      "section_number": "J.1",
+      "section_title": "compute",
+      "normalized_section_title": "compute"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.989::appendix::J.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "cleaned_hardware_name": "a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": null,
+      "count_text": "",
+      "section_number": "J.1",
+      "section_title": "compute",
+      "normalized_section_title": "compute",
+      "evidence": "Our noising approaches and baselines require finetuning: we had 2 models x 8 approaches x 6 HRLs $= 96$ finetuning runs. Each experiment required about 3 hours on a single A100, totaling 288 GPU hours.\n\nWe conducted evaluation for 54 languages (49 CRLs + 6 HRLs) x 15 total approaches = 810 evaluation runs. Each evaluation took 30 minutes on a single GTX 1080 machine, totaling 405 GPU hours.\n\nThese calculations do not include development and initial experiments, and ablation studies.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.989::appendix::J.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GTX 1080",
+      "cleaned_hardware_name": "gtx 1080",
+      "normalized_hardware_name": "NVIDIA GeForce GTX 1080",
+      "benchmark_hardware_name": "NVIDIA GeForce GTX 1080",
+      "count": null,
+      "count_text": "",
+      "section_number": "J.1",
+      "section_title": "compute",
+      "normalized_section_title": "compute",
+      "evidence": "Our noising approaches and baselines require finetuning: we had 2 models x 8 approaches x 6 HRLs $= 96$ finetuning runs. Each experiment required about 3 hours on a single A100, totaling 288 GPU hours.\n\nWe conducted evaluation for 54 languages (49 CRLs + 6 HRLs) x 15 total approaches = 810 evaluation runs. Each evaluation took 30 minutes on a single GTX 1080 machine, totaling 405 GPU hours.\n\nThese calculations do not include development and initial experiments, and ablation studies.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.989::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "experimental setup",
+      "evidence": "We work with $\\mathrm{X}\\rightarrow \\mathrm{eng}$ MT for 49 languages in six (sub)families.\n\nLanguages and Datasets We include the following language groups and designate one HRL in each: Austronesian (with HRL Indonesian), Indic (Hindi), Turkic (Turkish), Romance (Italian), Arabic (Standard Arabic), and French-related Creole languages (Haitian). (See Table 6 in the Appendix for a full list.) We use Wiki text bitext (Schwenk et al., 2021) in the HRLs as training data; we do not use any CRL bitext. All compared methods use the same amount of total HRL bitext ( $100K$ sentences). We included CRLs per language family according to availability of evaluation data in the FloRes-200 (Team et al., 2022) dataset, maintaining a single script within each family. We use Kreyol-MT evaluation sets for Creole CRLs (absent in FloRes) (Robinson et al., 2024). Our set of CRLs includes languages on a spectrum of relatedness to each HRL, as well as variety of resource levels. Some of the CRLs we include, such as French, are high-resource themselves, while most are low-resource. The Turkic, Austronesian, and Arabic languages we included vary widely in HRL proximity; some have a high degree of mutual intelligibility with the HRL (Azerbaijani, Malay, Saudi\n\nArabic), and some are quite distant (Uzbek, Tagalog, Moroccan Arabic) (Hammarstrom et al., 2024; Nouri and Yangarber, 2014).\n\nBilingual lexicons For each CRL-HRL pair, we use a combination of PanLex (Kamholz et al., 2014), and Swadesh lexicons. We also added Art Dieli's Sicilian-Italian dictionary (Dieli, 2011) and Indic dialect lexicons from Bafna et al. (2024a). However, most of these have little coverage of function words. We therefore additionally used (function word-inclusive) lexicons obtained from performing statistical alignment (Dyer et al., 2013) on FloRes dev data. The Creole CRLs are not included in any of the above lexicon datasets; we used statistically aligned lexicons from JHU Bible translations (McCarthy et al., 2020), available for acf, crs, and mfe. We therefore only report D→M and M↔D results for these three Creole CRLs.\n\nModels We employ two MT models in our experiments: one multilingual supervised seq2seq model, M2M-100-1.2B (Fan et al., 2020); and one\n\nmultilingual instruction-tuned LLM, Aya-23-8B (Aryabumi et al., 2024). We selected these models because they are highly multilingual (supporting all our selected HRLs) but lack support for enough of our CRLs to warrant legitimate evaluation of adaptation to unseen languages. M2M only supports 15 of our 49 selected CRLs, while Aya-23 supports only 4. We selected one seq2seq model and one LLM in order to evaluate our methods in these two settings. We curated translation instructions from our bitexts to fine-tune Aya-23. (See § C.1 for details.) We use LoRA (Hu et al., 2021) for a single epoch for all fine-tuning processes."
+    },
+    {
+      "source_window_id": "2025.acl-long.989::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "discussion",
+      "evidence": "When does $\\mathsf{M}\\rightarrow \\mathsf{D}$ help? To test our hypotheses that baseline performance and proximity to the HRL interact meaningfully with score improvement, and to understand which circumstances render DialUp more or less effective, we analyze how language features correlate with gains. We computed Spearman's $\\rho$ coefficients between BLEU improvement from $\\mathsf{M}\\rightarrow \\mathsf{D}$ over the off-the-shelf baseline and features indicating both baseline CRL support (off-the-shelf BLEU score, whether the model explicitly supports the CRL, and number of CRL Wikipedia pages $^{11}$ ) and HRL-CRL relatedness (character F-score (Popovic, 2015) between HRL and CRL FloRes dev sets and average token-count ratio in CRL dev lines to HRL dev lines when using the model's HRL tokenizer $^{12}$ ). For\n\n![](images/2d1646b6810e4e765366e872d42fdc7e54c32d5b5d1549d4d4f05b62f203e4de.jpg)  \nFigure 4: Decision trees indicate that the languages benefiting most from adaptation are low-baseline languages with less than 1.75 times HRL token fertility for Aya, and low-baseline languages with more than 24.2 chrF proximity to the HRL.\n\nboth Aya and M2M the only such feature that correlated significantly $(\\mathrm{p} < 0.01)$ was off-the-shelf BLEU, with $\\rho = -0.52$ and $-0.45$ , respectively—indicating a moderate-to-strong negative correlation between baseline performance and improvement from $\\mathsf{M}\\rightarrow \\mathsf{D}$ , as hypothesized in $\\S 4$ .\n\nFurther analysis also suggests that baseline score is more predictive of $\\mathsf{M} \\rightarrow \\mathsf{D}$ success than other features; this is confirmed by random forests fitted over the same features for both models (see decision trees in Figure 4), as well as feature weights from a linear regressor. (See Table 35.)\n\nMeasurements of HRL-CRL relatedness had the second-highest forest feature importance for both models. Though our measurements of HRL-CRL relatedness do not correlate with BLEU score improvement, we suspect there may be a non-linear relationship between dev-set character-F score and method effectiveness. When plotted in Figure 6, the points suggest the contour of a downward-facing parabola, indicating that $\\mathsf{M}\\rightarrow \\mathsf{D}$ is most effective for CRLs that are not too close but not too far from the HRL, as we hypothesized. This has an intuitive interpretation: CRLs that are too close may either already be well-performing, or may not display enough dialectal divergence to benefit from DialUp, whereas CRLs that are too far may have a higher amount of non-cognate divergences from the HRL that DialUp does not help with. However, note that language family is possibly confounded with\n\n![](images/721f0c92c0d7bdf619b55d69b5b279907c1736349315883507cc19b6348d925b.jpg)  \nFigure 5: Gains in BLEU points for different values of $\\theta^p$ (1-dimensional noiser) for Indic languages, with dotted lines showing the performance of M→D-cloud, using the 3-dimensional noiser $\\theta^{p,m,f}$ with default parameters. Tuning only $\\theta^p$ for Indic is competitive with M→D-cloud.\n\ncharacter-F score, with only Austronesian CRLs covering a wide range on our observed contour; it would be difficult to disentangle the effect of language family without many more languages.\n\nSetting $\\theta^{p,m,f}$ -dials Although $\\mathsf{M} \\to \\mathsf{D}$ uses phonological, morphological, and function word noising to model cognate processes in CRLs, the latter two are specialized versions of the phonological noiser, applying it at a fixed high dial to HRL suffixes/function words (Appendix B). We show that this 3-dimensional noiser can be approximated solely by the phonological noiser at a suitable $\\theta^p$ -dial. Setting all other $\\theta^n = 0$ , we sweep over $\\theta^p$ for Indic (Figure 5). We observe that with an optimal $\\theta^p$ , the phonological noiser achieves competitive gains as $\\mathsf{M} \\to \\mathsf{D}$ -cloud, which uses all noisers. Our default $\\mathsf{M} \\to \\mathsf{D}$ $\\theta$ -dials are eminently reasonable, yielding the best possible performance achievable by the above procedure; however, these defaults may be more suited to particular language families than others. Given that tuning $\\theta^{p,m,f}$ in combination is intractable, we therefore recommend simply tuning $\\theta^p$ for a given language family as a good proxy, along with trying our defaults. The above results indicate that model gains from $\\mathsf{M} \\to \\mathsf{D}$ largely arise from learning to decode sound changes in dialects, regardless of their placement in words.\n\n$\\mathsf{M}\\rightarrow \\mathsf{D}$ error analysis Arabic varieties gain less than other groups from $\\mathsf{M}\\rightarrow \\mathsf{D}$ and $\\mathsf{M}\\leftrightarrow \\mathsf{D}$ . This may indicate that our $\\mathsf{M}\\rightarrow \\mathsf{D}$ method does not approximate the Arabic linguistic variation well. Arabic varieties do exhibit phonological differences (which $\\mathsf{M}\\rightarrow \\mathsf{D}$ simulates). However, these are often not expressed in the orthography, making lexical, syntactic, and register differences more prominent differentiators in text. We experimented simulating lexical choice variation in CRLs using HRL\n\nWordNets as part of our artificial language generation method for 5 language families; however, this did not give us significant gains (Appendix E). DialUp in its current form may not be well suited for Arabic. Additionally, we note that FloRes sets are extremely close to standard Arabic, with a mean dev \"dialectness\" score (Keleg et al., 2023) of only $28\\%$ .[13] This may also limit the scope of improvements from DialUp methods on this test set.\n\nFrench-related Creole languages, which also had low baseline scores and small $\\mathsf{M}\\rightarrow \\mathsf{D}$ gains, may have also suffered from genre mismatch (given their heterogenous test sets (Robinson et al., 2024)). We initially hypothesized that their poor performance may be due to the HRL's (Haitian) poor baseline performance with Aya-23. We attempted curriculum training with fine-tuning first on Haitian bitext and then with $\\mathsf{M}\\rightarrow \\mathsf{D}$ ; however this did not materially help. It is still possible that given Haitian's low-resource nature (and its extremely low-resource CRLs), training token frequencies are too low to risk obfuscating them with DialUp noise. We hope future work will find more concrete conclusions on this trend.\n\n$\\mathsf{D} \\rightarrow \\mathsf{M}$ error analysis We investigate why $\\mathsf{D} \\rightarrow \\mathsf{M}$ -func degrades the performance of Romance and Austronesian HRLs, while benefiting several CRLs in these families and Indic. We perform a manual evaluation of 100 words from our function word lexicons for 4 languages from these families (Table 9) $^{14}$ to characterize the extent of noise in the $\\mathsf{D} \\rightarrow \\mathsf{M}$ -func pipeline: a CRL word may be misidentified as a function word (mean function word identification accuracy: $83.6\\%$ ), or it may be mistranslated (mean function word translation accuracy: $56.5\\%$ , general translation accuracy: $59.7\\%$ ). The introduced noise is naturally particularly damaging when the baseline translation is good (as in for many high-resource CRLs). In fact, we find that $\\mathsf{D} \\rightarrow \\mathsf{M}$ swaps hurt for high-resource CRLs even with ideal-case accurate swaps from clean lexicons. On the other hand, for a number of CRLs such as Maithili (mai), we observe that the benefits of making key function words swaps outweighs the negative impact of this noise; we find that even noisy automatically collected lexicons contribute to $\\mathsf{D} \\rightarrow \\mathsf{M}$\n\n![](images/523d38dcb87368fbdd02a645b0f3a922e812fb8c3b648690bd6a2f7df691f00d.jpg)\n\n![](images/219de7cd4f292cb73191bca2c85a7bdac811097f5066c37c21df3c5db18d357c.jpg)  \nFigure 6: CRL-HRL proximity, measured as character F-score between dev sets, plotted against BLEU increase from $\\mathsf{M}\\rightarrow \\mathsf{D}$ , suggests a peak from 20-30 chrF. Arabic varieties are outliers because the FloRes dialectal Arabic sets are unusually close to standard Arabic.\n\nimprovements in some languages (e.g. excluding relatively noisy Bafna et al. (2024a) lexicons results in a drop of 9 BLEU for Maithili with M2M). D→M benefits also depend on the model and HRL: in the case of Haitian, D→M performs well with M2M (yielding +7 BLEU for acf), but degrades baseline performance for Aya-23. This can be explained by the fact that Aya-23 has <10 BLEU performance on Haitian itself, making it unhelpful to switch other CRL words into Haitian; on the other hand, M2M baseline is strong for Haitian but weak for related CRLs, rendering D→M a useful strategy. We therefore recommend D→M for low-baseline CRLs, with a model that performs well on the language family HRL.\n\nNote that $\\mathsf{D} \\rightarrow \\mathsf{M}$ shows small gains for Arabic and Turkic CRLs. This is likely caused by a scarcity of word exchanges, which $\\mathsf{D} \\rightarrow \\mathsf{M}$ relies on for increasing CRL input comprehensibility. In fact, $\\mathsf{D} \\rightarrow \\mathsf{M}$ -func results in only $16.3\\%$ and $15\\%$ of words being swapped for Arabic and Turkic, respectively, compared to $43.1\\%$ for Austronesian, $38.5\\%$ for Romance, and $33.4\\%$ for Indic. (See Appendix F). This is potentially a result of Arabic and Turkic languages' comparatively complex morphology, in addition to above noted issues with Arabic test sets. Grammatical morphemes in these languages are frequently affixes, clitics, or attached to affixes and seldom occur on their own; these will be missed by our whitespace-reliant word-switching technique. Future work can investigate integrating morphological analysis technologies when available into our methods."
+    },
+    {
+      "source_window_id": "2025.acl-long.989::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "experimental details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.989::appendix::E",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "E",
+      "section_title": "variant approaches and hyperparameter exploration",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.989::appendix::J",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "J",
+      "section_title": "training and evaluation details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.989::appendix::J.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "J.2",
+      "section_title": "evaluation",
+      "evidence": "We tested our models on the devtest splits of the FloRes-200 dataset, using BLEU (Hugging-Face evaluate wrapper: mixed case, tokenization with sacrebleu 13a) as well as COMET (Unbabel/wmt22-comet-da)."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "J.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": null
+      },
+      {
+        "name": "NVIDIA GeForce GTX 1080",
+        "num": null
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.989\\auto\\full.md",
+    "source_md_sha256": "8a2731ab48ef8531eafd067e615c0cf140c36c3394132b24eb45d829a25e7d66",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

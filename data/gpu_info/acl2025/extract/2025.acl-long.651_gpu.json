@@ -1,0 +1,141 @@
+{
+  "paper_id": "2025.acl-long.651",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.651::sections::4.1",
+      "paper_id": "2025.acl-long.651",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Datasets. For the training data, we use the Librispeech, HiFiTTS, and DNS Challenge datasets (Reddy et al., 2020; Dubey et al., 2023), along with internal datasets as original clean speech, totalling approximately 5000 hours. Room impulse responses (RIRs) are sourced from the DNS Challenge datasets. The noise data contains nearly 1000 hours, sourced from DEMAND, ESC-50, DNS Challenge, AEC Challenge (Cutler et al., 2023), and internal datasets.\n\nData augmentation. We utilized dynamic data augmentation during training. For the NS task, the clean audio and noise are randomly selected and mixed with a signal-to-noise Ratio (SNR) ranging from $[-5,20]$ dB. Both clean and noisy signals have a $50\\%$ probability of adding reverberation. In the PLC task, we use a two-state first-order Markov chain to describe the packet loss status of the current frame and the next frame. The transition and hold probabilities for Markov states are selected between 0.05 and 0.95. We directly generate a binary mask sequence and apply it to the clean speech. For the AEC task, we randomly select a real echo signal and its corresponding reference signal from the far-end single talk in the AEC Challenge dataset. The signal-to-echo ratio (SER) ranges from $-15$ dB to $15$ dB. Noise is added with a $20\\%$ chance, and the SNR is between $-5$ dB and $20$ dB. For the Target Speaker Extraction (TSE) task, we select a clean speech segment and its corresponding auxiliary segment for the enrollment speech, while a different\n\nspeaker is chosen for the interference speech. There is a $5\\%$ probability that no interfering speaker is present. Target speech and interfering speech are mixed with an SNR ranging from $[-15, 15]$ dB, with an additional $10\\%$ probability of adding extra noise.\n\nThe audio length for each batch is 8 seconds. Before being fed into the model, the audio is randomly truncated to a length between 4 and 8 seconds to ensure the model's ability to generalize to different audio lengths. During training, the distribution of tasks (NS, PLC, AEC, and TSE) is evenly balanced. Within each batch, the data are of the same task type. Gradient accumulation is enabled to help the model adapt to multi-task learning, with parameter updates occurring every 20 steps.\n\nModel configuration. We use the open-source checkpoints of WavLM-large² and X-codec2³. The LLaMA-based LM comprises 16 LLaMA layers, each with 16 attention heads, a dropout rate of 0.1, a hidden size of 2048, and an intermediate size of 4096. The total number of parameters in the model is approximately 1.07 billion. More details are given in Appendix A.1.\n\nBaseline systems. We evaluate the performance of our LLaSE-G1 with several state-of-the-art (SOTA) models of each subtask, including the winners of the recent signal processing grand challenges (Reddy et al., 2020; Dubey et al., 2023; Cutler et al., 2023; Diener et al., 2024, 2022) for each task. Details of the baseline system and test set for each subtask are provided in Appendix A.\n\nEvaluation Metrics. We use objective metrics to evaluate the performance of the baseline systems and our model. DNSMOS (Reddy et al., 2022) include speech quality (SIG), background noise quality (BAK), and overall quality (OVRL) of the audio. AECMOS (Purin et al., 2022) consists of echo annoyance MOS (EMOS) and other degradation MOS (DMOS). PLCMOS (Diener et al., 2023) is used to assess the quality of audio processed by PLC algorithms. All MOS scores range from 1 to 5, representing audio quality from low to high. SpeechBERTScore (SBS) (Saeki et al., 2024) is also employed to evaluate the semantic similarity between the enhanced audio and the reference audio. Following (Zhang et al., 2025), we use HuBERT-base $^{4}$ model to extract semantic features. For acoustic similarity, we calculate speaker\n\nsimilarity $\\mathrm{SimW}_B$ based on the WavLM-base-sv model to evaluate the performance. Subjective evaluations are also conducted using the Mean Opinion Score (MOS) as the primary metric to assess the model's performance.\n\nInference. For each task, we conduct single and multiple inferences. For multiple inferences, we infer 10 times and take the best result where the model's output is used as the input for the next inference. For the PLC task, we only employ the audio to be processed as input, without the lossy label. For the TSE task, we keep the enrollment audio unchanged during multiple inferences. For the AEC task, we only use the reference audio for the first inference, subsequent inferences are treated as NS tasks. For the SS task, we employ a two-stage inference strategy. First, we separate one speaker from the mixed audio, and then use the first separated speaker's audio as a reference for the second inference stage.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.651::sections::4.2.6",
+      "paper_id": "2025.acl-long.651",
+      "section_number": "4.2.6",
+      "section_title": "semantic and speaker similarity",
+      "normalized_section_title": "semantic and speaker similarity",
+      "window_text": "As shown in Table 7, we compare the semantic and speaker similarity between baseline systems and LLaSE-G1. Notably, TSE and AEC tasks are tested on the blind test sets where ground-truth speech is unavailable. So, we conduct evaluations of NS, PLC, and SS tasks. LLaSE-G1 outperforms generative SE models while getting slightly lower results in SBS, suggesting LLaSE-G1 effectively maintains speech content. Moreover, LLaSE-G1 achieves the highest $\\mathrm{SimW}_B$ in the NS task and\n\ncompetitive $\\mathrm{SimW}_B$ in the PLC and SS tasks, showing superior acoustic preservation capability.\n\nTable 7: Semantic and speaker similarity results on various tasks, using the same test sets from previous subsections. As for the NS task, we report the average result across the No Reverb and With Reverb test sets.   \n\n<table><tr><td>Task</td><td>Model</td><td>Type</td><td>SBS</td><td>SimWB</td></tr><tr><td rowspan=\"5\">NS</td><td>FRCRN</td><td>D</td><td>0.85</td><td>0.980</td></tr><tr><td>AnyEnhance</td><td>G</td><td>0.82</td><td>0.970</td></tr><tr><td>SELM</td><td>G</td><td>0.72</td><td>0.965</td></tr><tr><td>GenSE</td><td>G</td><td>0.78</td><td>0.974</td></tr><tr><td>LLaSE-G1</td><td>G</td><td>0.83</td><td>0.993</td></tr><tr><td rowspan=\"2\">PLC</td><td>BS-PLCNet</td><td>D</td><td>0.95</td><td>0.999</td></tr><tr><td>LLaSE-G1</td><td>G</td><td>0.85</td><td>0.992</td></tr><tr><td rowspan=\"3\">SS</td><td>Sepformer</td><td>D</td><td>0.85</td><td>0.980</td></tr><tr><td>Mossformer2</td><td>D</td><td>0.87</td><td>0.991</td></tr><tr><td>LLaSE-G1</td><td>G</td><td>0.82</td><td>0.988</td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.651::appendix::A",
+      "paper_id": "2025.acl-long.651",
+      "section_number": "A",
+      "section_title": "appendix for experimental set up",
+      "normalized_section_title": "appendix for experimental set up",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.651::appendix::A.1",
+      "paper_id": "2025.acl-long.651",
+      "section_number": "A.1",
+      "section_title": "model configuration",
+      "normalized_section_title": "model configuration",
+      "window_text": "We use the open-source checkpoints of WavLM large and X-codec2. The LLaMA-based LM comprises 16 LLaMA layers, each with 16 attention heads, a dropout rate of 0.1, a hidden size of 2048, and an intermediate size of 4096. The total number of parameters in the model is approximately 1.07 billion, which includes all learnable weights and biases across all layers. The model has 2 input linear layers and 2 output linear layers. The input layer maps the 1024-dimensional WavLM embedding to another 1024-dimensional vector, while the output layer transforms a 2048-dimensional vector into a 65536-dimensional vector, which is the codebook size of Xcodec2.\n\nWe trained the model for 100,000 steps using 4 NVIDIA L40 GPUs, with a batch size of 6 per GPU and the AdamW optimizer. The learning rate is set to 1e-4.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.651::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA L40",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "We use the open-source checkpoints of WavLM large and X-codec2. The LLaMA-based LM comprises 16 LLaMA layers, each with 16 attention heads, a dropout rate of 0.1, a hidden size of 2048, and an intermediate size of 4096. The total number of parameters in the model is approximately 1.07 billion, which includes all learnable weights and biases across all layers. The model has 2 input linear layers and 2 output linear layers. The input layer maps the 1024-dimensional WavLM embedding to another 1024-dimensional vector, while the output layer transforms a 2048-dimensional vector into a 65536-dimensional vector, which is the codebook size of Xcodec2.\n\nWe trained the model for 100,000 steps using 4 NVIDIA L40 GPUs, with a batch size of 6 per GPU and the AdamW optimizer. The learning rate is set to 1e-4.",
+      "section_number": "A.1",
+      "section_title": "model configuration",
+      "normalized_section_title": "model configuration"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.651::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA L40",
+      "cleaned_hardware_name": "nvidia l40",
+      "normalized_hardware_name": "NVIDIA L40",
+      "benchmark_hardware_name": "NVIDIA L40",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "A.1",
+      "section_title": "model configuration",
+      "normalized_section_title": "model configuration",
+      "evidence": "We use the open-source checkpoints of WavLM large and X-codec2. The LLaMA-based LM comprises 16 LLaMA layers, each with 16 attention heads, a dropout rate of 0.1, a hidden size of 2048, and an intermediate size of 4096. The total number of parameters in the model is approximately 1.07 billion, which includes all learnable weights and biases across all layers. The model has 2 input linear layers and 2 output linear layers. The input layer maps the 1024-dimensional WavLM embedding to another 1024-dimensional vector, while the output layer transforms a 2048-dimensional vector into a 65536-dimensional vector, which is the codebook size of Xcodec2.\n\nWe trained the model for 100,000 steps using 4 NVIDIA L40 GPUs, with a batch size of 6 per GPU and the AdamW optimizer. The learning rate is set to 1e-4.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.651::sections::4.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "evidence": "Datasets. For the training data, we use the Librispeech, HiFiTTS, and DNS Challenge datasets (Reddy et al., 2020; Dubey et al., 2023), along with internal datasets as original clean speech, totalling approximately 5000 hours. Room impulse responses (RIRs) are sourced from the DNS Challenge datasets. The noise data contains nearly 1000 hours, sourced from DEMAND, ESC-50, DNS Challenge, AEC Challenge (Cutler et al., 2023), and internal datasets.\n\nData augmentation. We utilized dynamic data augmentation during training. For the NS task, the clean audio and noise are randomly selected and mixed with a signal-to-noise Ratio (SNR) ranging from $[-5,20]$ dB. Both clean and noisy signals have a $50\\%$ probability of adding reverberation. In the PLC task, we use a two-state first-order Markov chain to describe the packet loss status of the current frame and the next frame. The transition and hold probabilities for Markov states are selected between 0.05 and 0.95. We directly generate a binary mask sequence and apply it to the clean speech. For the AEC task, we randomly select a real echo signal and its corresponding reference signal from the far-end single talk in the AEC Challenge dataset. The signal-to-echo ratio (SER) ranges from $-15$ dB to $15$ dB. Noise is added with a $20\\%$ chance, and the SNR is between $-5$ dB and $20$ dB. For the Target Speaker Extraction (TSE) task, we select a clean speech segment and its corresponding auxiliary segment for the enrollment speech, while a different\n\nspeaker is chosen for the interference speech. There is a $5\\%$ probability that no interfering speaker is present. Target speech and interfering speech are mixed with an SNR ranging from $[-15, 15]$ dB, with an additional $10\\%$ probability of adding extra noise.\n\nThe audio length for each batch is 8 seconds. Before being fed into the model, the audio is randomly truncated to a length between 4 and 8 seconds to ensure the model's ability to generalize to different audio lengths. During training, the distribution of tasks (NS, PLC, AEC, and TSE) is evenly balanced. Within each batch, the data are of the same task type. Gradient accumulation is enabled to help the model adapt to multi-task learning, with parameter updates occurring every 20 steps.\n\nModel configuration. We use the open-source checkpoints of WavLM-large² and X-codec2³. The LLaMA-based LM comprises 16 LLaMA layers, each with 16 attention heads, a dropout rate of 0.1, a hidden size of 2048, and an intermediate size of 4096. The total number of parameters in the model is approximately 1.07 billion. More details are given in Appendix A.1.\n\nBaseline systems. We evaluate the performance of our LLaSE-G1 with several state-of-the-art (SOTA) models of each subtask, including the winners of the recent signal processing grand challenges (Reddy et al., 2020; Dubey et al., 2023; Cutler et al., 2023; Diener et al., 2024, 2022) for each task. Details of the baseline system and test set for each subtask are provided in Appendix A.\n\nEvaluation Metrics. We use objective metrics to evaluate the performance of the baseline systems and our model. DNSMOS (Reddy et al., 2022) include speech quality (SIG), background noise quality (BAK), and overall quality (OVRL) of the audio. AECMOS (Purin et al., 2022) consists of echo annoyance MOS (EMOS) and other degradation MOS (DMOS). PLCMOS (Diener et al., 2023) is used to assess the quality of audio processed by PLC algorithms. All MOS scores range from 1 to 5, representing audio quality from low to high. SpeechBERTScore (SBS) (Saeki et al., 2024) is also employed to evaluate the semantic similarity between the enhanced audio and the reference audio. Following (Zhang et al., 2025), we use HuBERT-base $^{4}$ model to extract semantic features. For acoustic similarity, we calculate speaker\n\nsimilarity $\\mathrm{SimW}_B$ based on the WavLM-base-sv model to evaluate the performance. Subjective evaluations are also conducted using the Mean Opinion Score (MOS) as the primary metric to assess the model's performance.\n\nInference. For each task, we conduct single and multiple inferences. For multiple inferences, we infer 10 times and take the best result where the model's output is used as the input for the next inference. For the PLC task, we only employ the audio to be processed as input, without the lossy label. For the TSE task, we keep the enrollment audio unchanged during multiple inferences. For the AEC task, we only use the reference audio for the first inference, subsequent inferences are treated as NS tasks. For the SS task, we employ a two-stage inference strategy. First, we separate one speaker from the mixed audio, and then use the first separated speaker's audio as a reference for the second inference stage."
+    },
+    {
+      "source_window_id": "2025.acl-long.651::sections::4.2.6",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2.6",
+      "section_title": "semantic and speaker similarity",
+      "evidence": "As shown in Table 7, we compare the semantic and speaker similarity between baseline systems and LLaSE-G1. Notably, TSE and AEC tasks are tested on the blind test sets where ground-truth speech is unavailable. So, we conduct evaluations of NS, PLC, and SS tasks. LLaSE-G1 outperforms generative SE models while getting slightly lower results in SBS, suggesting LLaSE-G1 effectively maintains speech content. Moreover, LLaSE-G1 achieves the highest $\\mathrm{SimW}_B$ in the NS task and\n\ncompetitive $\\mathrm{SimW}_B$ in the PLC and SS tasks, showing superior acoustic preservation capability.\n\nTable 7: Semantic and speaker similarity results on various tasks, using the same test sets from previous subsections. As for the NS task, we report the average result across the No Reverb and With Reverb test sets.   \n\n<table><tr><td>Task</td><td>Model</td><td>Type</td><td>SBS</td><td>SimWB</td></tr><tr><td rowspan=\"5\">NS</td><td>FRCRN</td><td>D</td><td>0.85</td><td>0.980</td></tr><tr><td>AnyEnhance</td><td>G</td><td>0.82</td><td>0.970</td></tr><tr><td>SELM</td><td>G</td><td>0.72</td><td>0.965</td></tr><tr><td>GenSE</td><td>G</td><td>0.78</td><td>0.974</td></tr><tr><td>LLaSE-G1</td><td>G</td><td>0.83</td><td>0.993</td></tr><tr><td rowspan=\"2\">PLC</td><td>BS-PLCNet</td><td>D</td><td>0.95</td><td>0.999</td></tr><tr><td>LLaSE-G1</td><td>G</td><td>0.85</td><td>0.992</td></tr><tr><td rowspan=\"3\">SS</td><td>Sepformer</td><td>D</td><td>0.85</td><td>0.980</td></tr><tr><td>Mossformer2</td><td>D</td><td>0.87</td><td>0.991</td></tr><tr><td>LLaSE-G1</td><td>G</td><td>0.82</td><td>0.988</td></tr></table>"
+    },
+    {
+      "source_window_id": "2025.acl-long.651::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "appendix for experimental set up",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA L40",
+        "num": 4
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.651\\auto\\full.md",
+    "source_md_sha256": "0b456f00c8666ceb1e40eaeac372e4afa071d916f5964bc075011e930277102a",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

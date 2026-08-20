@@ -1,0 +1,183 @@
+{
+  "paper_id": "2021.acl-long.199",
+  "candidate_windows": [
+    {
+      "window_id": "2021.acl-long.199::sections::1",
+      "paper_id": "2021.acl-long.199",
+      "section_number": "1",
+      "section_title": "introduction",
+      "normalized_section_title": "introduction",
+      "window_text": "Self-attention based Transformer (Vaswani et al., 2017) effectively overcomes the problem of RNN being difficult to run in parallel, and greatly promotes the development of large-scale pre-training models. The pre-training language models, such as BERT (Devlin et al., 2019), have achieved excellent performance in many natural language processing tasks. With their big success, researchers have also developed pre-training models on multimodal tasks. A series of multimodal pre-training models have been proposed, such as\n\nViLBERT (Lu et al., 2019), LXMERT (Tan and Bansal, 2019), UNITER (Chen et al., 2019) etc., and have achieved excellent results in language-vision multimodal tasks.\n\nHowever, the current pre-training models are normally with large-scale parameters, require huge pre-training data and have very high demands on computational resources. For example, the GPT model (Radford et al., 2018) has 110 Million parameters, GPT-2 (Radford et al., 2019) has 1.5 Billion parameters, and GPT-3 (Brown et al., 2020) has a staggering 175 Billion parameters. The same is true for multimodal pre-trained models. For example, LXMERT (Tan and Bansal, 2019) has 183.5 Million parameters and requires 816 TitanX GPU hours for training on 9.18 Million text-image pairs. The sizes of these models are too huge for them to be deployed in many real-world scenarios. Therefore, the study of lightweight pre-training models, which can achieve similar performances to large-scale models with smaller parameter scales and training costs, is significantly valuable.\n\nThere are some types of work on developing lightweight pre-trained models, including the design of the model structure, quantization, pruning and distillation. For example, ALBERT (Lan et al., 2020) is a lightweight model through structural design such as parameter sharing and parameter decomposition, and achieves better performance than original models; Q8BERT (Zafrir et al., 2019) compresses the model to $1/4$ of the original model but with no more than $1\\%$ performance loss by quantizing 32bit floating point into 8bit; (Michel et al., 2019) used BERT weight pruning to compress the model and found that removing a large number of attention heads would not have a major impact on the model performance; TinyBERT (Jiao et al., 2020) reduced the model size by 7.5 times but with no more than $4\\%$ performance loss by designing a teacher-student distillation model.\n\nAll above works are on language pre-training models, and most of them concern scales of model parameters. There are few works on cutting training data and light weighing multimodal pretraining model. In fact, compared with language model, multimodal pre-training models should deal with data from both language and visual modal, which demand larger amounts of data and more computational resources. Meanwhile, collections of training data are more difficult. Taking for example the size of text-image pairs used for multimodal pre-training, the frequently used MS COCO (Lin et al., 2014) is a high quality dataset with only $0.82\\mathrm{M}$ pairs, while LAIT (Qi et al., 2020) is already a big data with $10\\mathrm{M}$ pairs but with average quality. Therefore, it is significantly valuable to develop lightweight multimodal pre-training models which can make use of limited data efficiently.\n\nExisting research on curriculum learning (Bengio et al., 2009) has shown that imitating the process of human learning by gradually increasing the difficulty of a task from simple to complex in stages helps to make better use of different types of data and effectively improve the performance of learning. Many models (Qi et al., 2020) use as much as data available but few works have been done on how to arrange the tasks for better making use of limited data. We therefore borrow the idea of curriculum learning on training pre-training models. We construct a pre-training process which makes use of data from smaller units to bigger units in stages, and design appropriate pre-training tasks for each corresponding stage.\n\nSpecifically, we propose a new Multi-stage Pretraining (MSP) method. The first pre-training stage is on the token units, where the text input is the category labels of the objects in the images, and the image input is the object features. An Image Features Random Shuffle (IFRS) is designed as a pre-training task for this stage. IFRS randomly shuffles the object features, and the model predicts the original object order based on the text information. The second stage focuses on phrase units. Phrase-level descriptions of the image are input on the text side and image features are input on the image side. A Topic of Image and Text for Phrase (TITP) task is designed for it. The third stage is sentence-based pre-training. Sentence-level captions are input on the text side, and image features are input on the image side. A Topic of Image and Text for Sentence (TITS) task is designed for it. We\n\ntake a Simplified LXMERT (LXMERT-S) which has fewer parameters and less pre-training data as the testbed of our MSP method. Experimental results show that our method achieves comparable performance to the original LXMERT model in downstream tasks.\n\nThe main contributions of our work are as follows: (1) We propose a new MSP method that allows the model to learn different granularities of text-image correspondence information at different stages; (2) For each stage, we design pre-training tasks suitable for that stage, IFRS task for token-based pre-training, TITP task for phrase-based pretraining, and TITS task for sentence-based pretraining; (3) With less pre-trained data $(11.76\\%)$ , fewer model parameters $(45.9\\%)$ , less resource consumption $(25\\%)$ and less training time $(46.57\\%)$ , the performances of downstream tasks are comparable to or even exceed that of the original model.",
+      "rule_tier": "soft_skip",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.199::sections::3",
+      "paper_id": "2021.acl-long.199",
+      "section_number": "3",
+      "section_title": "method",
+      "normalized_section_title": "method",
+      "window_text": "The overall structure of our MSP method is shown in Figure 1. The pre-training process is divided into three stages based on different granularities of text-image correspondence from token, phrase to sentence. We design corresponding pre-training tasks for the three stages.\n\nWe perform the above three-stage pre-training on a simplified model of LXMERT (LXMERT-S). The simplified process of the LXMERT model is shown in Figure 2. The Cross-Modality Encoder of LXMERT-S is identical to the LXMERT. We obtain the Simplified LXMERT (LXMERT-S) by removing the Object-Relationship Encoder and Language Encoder. The image features and text features are directly input to the Cross-Modality Encoder in the LXMERT-S.\n\nBy removing the single modal coding layer in LXMERT, the 12-layer LXMERT is simplified to a 5-layer LXMERT-S. The amounts of parameters in simplified LXMERT-S are only $45.9\\%$ of the original model, and the whole experiment can be completed on a single GPU. The three-stage pretraining method is also fully applicable to other pre-training models.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2021.acl-long.199::sections::4",
+      "paper_id": "2021.acl-long.199",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.199::sections::4.1",
+      "paper_id": "2021.acl-long.199",
+      "section_number": "4.1",
+      "section_title": "pre-training dataset",
+      "normalized_section_title": "pre-training dataset",
+      "window_text": "In this paper, the model is pre-trained using the COCO dataset and part of the VG dataset, and only 1.08M text-image pairs are used, where 0.12M image-text pairs are used in token-based pre-training stage, 0.34M image-text pairs are used in phrase-based pre-training stage, and 0.62M image-text pairs are used in the sentence-based pre-training stage. All datasets we used are also used in initial LXMERT. Table 1 gives a comparison of the pre-training data, model parameters $^2$ and\n\nTable 1: Comparison of parameter size, training data and resource consumption between the model in this paper and some pre-trained models.   \n\n<table><tr><td rowspan=\"2\">model</td><td rowspan=\"2\">parameter</td><td colspan=\"2\">training data</td><td rowspan=\"2\">resource consumption</td></tr><tr><td>text-image pairs</td><td>text corpus</td></tr><tr><td>VL-BERT</td><td>134.8M</td><td>3.3M</td><td>Wikipedia BooksCorpus</td><td>16 V100 GPUs</td></tr><tr><td>Unified VLP</td><td>-</td><td>3.3M</td><td>-</td><td>8 V100 GPUs</td></tr><tr><td>ViLBERT</td><td>218.9M</td><td>3.3M</td><td>-</td><td>8 TitanX GPUs</td></tr><tr><td>LXMERT</td><td>183.5M</td><td>9.18M</td><td>-</td><td>4 TitanX GPUs</td></tr><tr><td>VisualBERT</td><td>85.05M</td><td>1.28M</td><td>-</td><td>-</td></tr><tr><td>ours</td><td>84.3M</td><td>1.08M</td><td>-</td><td>1 TitanX GPUs</td></tr></table>\n\ncomputational resources with other models.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2021.acl-long.199::sections::4.3",
+      "paper_id": "2021.acl-long.199",
+      "section_number": "4.3",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "We compare our model with both single-stream multimodal pre-training models including Unified VLP (Zhou et al., 2020), VisualBERT (Li et al., 2019) and VL-BERT (Su et al., 2020) and two-stream models including ViLBERT (Lu et al., 2019) and LXMERT (Tan and Bansal, 2019).\n\nUnified VLP Unified VLP uses a 12 layers of shared multi-layer transformer network for both encoding and decoding, which differs from many existing methods where the encoder and decoder are implemented using separate models. It conducts pre-training on the Conceptual Captions(CC) (Sharma et al., 2018) which has around 3.3 million image-text pairs, and requires 150 hours of training on the 8x V100 GPUS. Unified VLP includes only the MLM task when processing the comprehension tasks.\n\nVisualBERT VisualBERT contains 12 layers of transformer with 85.05M parameters. It first pretrains on COCO Caption (Lin et al., 2014) with MLM and ITM tasks and then continues pretraining on the target dataset with MLM task. The pre-training data sizes for VisuaBERT on the VQA V2.0 task are shown in Table 1. For different downstream tasks, the second stage of pre-training needs to be re-trained.\n\nVL-BERT VL-BERT contains 12 layers of transformer with 134.8M parameters. It pre-trains on both visual-linguistic and text-only datasets. Samples are randomly drawn from both CC and BooksCorpus (Zhu et al., 2015) & English Wikipedia (at a ratio of 1:1) in each mini-batch. VL-BERT considers ITM to be harmful to downstream tasks and therefore only includes MLM and MOC tasks.\n\nTable 2: LXMERT-S results on VQA V2.0, GQA and NLVR2.   \n\n<table><tr><td rowspan=\"2\">model</td><td colspan=\"2\">VQA V2.0</td><td colspan=\"2\">GQA</td><td colspan=\"2\">NLVR2</td></tr><tr><td>test-dev</td><td>test-standard</td><td>test-dev</td><td>test-standard</td><td>val</td><td>test-p</td></tr><tr><td>Unified VLP</td><td>70.5</td><td>70.7</td><td>-</td><td>-</td><td>-</td><td>-</td></tr><tr><td>ViLBERT</td><td>70.55</td><td>70.92</td><td>-</td><td>-</td><td>-</td><td>-</td></tr><tr><td>VisualBERT</td><td>70.8</td><td>71</td><td>-</td><td>-</td><td>67.4</td><td>67</td></tr><tr><td>VL-BERT</td><td>71.16</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr><tr><td>LXMERT</td><td>72.42</td><td>72.54</td><td>59.8</td><td>60.33</td><td>74.9</td><td>74.5</td></tr><tr><td>ours</td><td>71.1(98.18%)</td><td>71.18(98.13%)</td><td>58.7(98.16%)</td><td>59.12(97.99%)</td><td>74.03(98.84%)</td><td>74.72(↑0.22%)</td></tr></table>\n\nTable 3: LXMERT-S results on Image-Text Retrieval task.   \n\n<table><tr><td rowspan=\"2\">model</td><td colspan=\"3\">IR(zero-shot)</td><td colspan=\"3\">TR(zero-shot)</td><td colspan=\"3\">IR</td><td colspan=\"3\">TR</td></tr><tr><td>R@1</td><td>R@5</td><td>R@10</td><td>R@1</td><td>R@5</td><td>R@10</td><td>R@1</td><td>R@5</td><td>R@10</td><td>R@1</td><td>R@5</td><td>R@10</td></tr><tr><td>ViLBERT</td><td>31.86</td><td>61.12</td><td>72.8</td><td>-</td><td>-</td><td>-</td><td>58.2</td><td>84.9</td><td>91.52</td><td>-</td><td>-</td><td>-</td></tr><tr><td>LXMERT</td><td>24</td><td>47.38</td><td>58.22</td><td>23.6</td><td>51.5</td><td>61.3</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr><tr><td>ours</td><td>42.42</td><td>68.7</td><td>77.92</td><td>49</td><td>75</td><td>81.8</td><td>57.9(99.4%)</td><td>83(97.8%)</td><td>88.7(97.0%)</td><td>64.6</td><td>87.5</td><td>90.4</td></tr></table>\n\nViLBERT ViLBERT extends the popular BERT architecture to a multi-modal two-stream model, processing both visual and textual inputs in separate streams that interact through co-attentional transformer layers. It trains on CC with MLM, MOC and ITM tasks.\n\nLXMERT LXMERT has a large-scale Transformer model that consists of three encoders and a large-scale pre-training data, including MS COCO, Visual Genome, VQA v2.0, GQA and VGQA (Zhu et al., 2016). The pre-training requires 8.5 days on the 4x TitanX GPUS. It also has many pre-training tasks, including MLM, MRFR, MOC, ITM and Image Question Answering (QA) (Tan and Bansal, 2019), and has achieved good results in downstream tasks, especially VQA tasks.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.199::sections::4.4",
+      "paper_id": "2021.acl-long.199",
+      "section_number": "4.4",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "Our Transformer backbone is the same as LXMERT, where each Transformer block has 768 hidden units and 12 attention heads. Image features are extracted by Faster-RCNN (Ren et al., 2015) model (with ResNet-101 (He et al., 2016) backbone) trained on Visual Genome (VG).\n\nDuring pre-training, our model is trained for about 95 hours on 1 TitanX GPU, and takes Adam (Kingma and Ba, 2015) as the optimizer with a learning rate of 1e-5. We train the token-based model for 10 epochs with a batch size of 64, phrase-based model for 20 epochs with a batch size of 128 and sentence-based model for 20 epochs with a batch size of 128.\n\nDuring Fine-tuning, the learning rate of all downstream tasks is 5e-5, and the batch size is 32. We fine-tune 6 epochs for VQA V2.0, 5 epochs for GQA, and 8 epochs for NLVR2 and Image-Text Retrieval tasks.\n\nFor hard samples in ITM_HS task, we retrieve the top 100 most similar images from difficult samples file. For the masking strategies, we randomly mask $15\\%$ tokens, $15\\%$ object features. The codes of our models are available at https://github.com/lttsmn/LXMERT-S.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2021.acl-long.199::sections::4.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "TitanX",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Our Transformer backbone is the same as LXMERT, where each Transformer block has 768 hidden units and 12 attention heads. Image features are extracted by Faster-RCNN (Ren et al., 2015) model (with ResNet-101 (He et al., 2016) backbone) trained on Visual Genome (VG).\n\nDuring pre-training, our model is trained for about 95 hours on 1 TitanX GPU, and takes Adam (Kingma and Ba, 2015) as the optimizer with a learning rate of 1e-5. We train the token-based model for 10 epochs with a batch size of 64, phrase-based model for 20 epochs with a batch size of 128 and sentence-based model for 20 epochs with a batch size of 128.\n\nDuring Fine-tuning, the learning rate of all downstream tasks is 5e-5, and the batch size is 32. We fine-tune 6 epochs for VQA V2.0, 5 epochs for GQA, and 8 epochs for NLVR2 and Image-Text Retrieval tasks.\n\nFor hard samples in ITM_HS task, we retrieve the top 100 most similar images from difficult samples file. For the masking strategies, we randomly mask $15\\%$ tokens, $15\\%$ object features. The codes of our models are available at https://github.com/lttsmn/LXMERT-S.",
+      "section_number": "4.4",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2021.acl-long.199::sections::4.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "TitanX",
+      "cleaned_hardware_name": "titan x",
+      "normalized_hardware_name": "NVIDIA GeForce GTX TITAN X",
+      "benchmark_hardware_name": "NVIDIA GeForce GTX TITAN X",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "4.4",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "Our Transformer backbone is the same as LXMERT, where each Transformer block has 768 hidden units and 12 attention heads. Image features are extracted by Faster-RCNN (Ren et al., 2015) model (with ResNet-101 (He et al., 2016) backbone) trained on Visual Genome (VG).\n\nDuring pre-training, our model is trained for about 95 hours on 1 TitanX GPU, and takes Adam (Kingma and Ba, 2015) as the optimizer with a learning rate of 1e-5. We train the token-based model for 10 epochs with a batch size of 64, phrase-based model for 20 epochs with a batch size of 128 and sentence-based model for 20 epochs with a batch size of 128.\n\nDuring Fine-tuning, the learning rate of all downstream tasks is 5e-5, and the batch size is 32. We fine-tune 6 epochs for VQA V2.0, 5 epochs for GQA, and 8 epochs for NLVR2 and Image-Text Retrieval tasks.\n\nFor hard samples in ITM_HS task, we retrieve the top 100 most similar images from difficult samples file. For the masking strategies, we randomly mask $15\\%$ tokens, $15\\%$ object features. The codes of our models are available at https://github.com/lttsmn/LXMERT-S.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2021.acl-long.199::sections::1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "1",
+      "section_title": "introduction",
+      "evidence": "Self-attention based Transformer (Vaswani et al., 2017) effectively overcomes the problem of RNN being difficult to run in parallel, and greatly promotes the development of large-scale pre-training models. The pre-training language models, such as BERT (Devlin et al., 2019), have achieved excellent performance in many natural language processing tasks. With their big success, researchers have also developed pre-training models on multimodal tasks. A series of multimodal pre-training models have been proposed, such as\n\nViLBERT (Lu et al., 2019), LXMERT (Tan and Bansal, 2019), UNITER (Chen et al., 2019) etc., and have achieved excellent results in language-vision multimodal tasks.\n\nHowever, the current pre-training models are normally with large-scale parameters, require huge pre-training data and have very high demands on computational resources. For example, the GPT model (Radford et al., 2018) has 110 Million parameters, GPT-2 (Radford et al., 2019) has 1.5 Billion parameters, and GPT-3 (Brown et al., 2020) has a staggering 175 Billion parameters. The same is true for multimodal pre-trained models. For example, LXMERT (Tan and Bansal, 2019) has 183.5 Million parameters and requires 816 TitanX GPU hours for training on 9.18 Million text-image pairs. The sizes of these models are too huge for them to be deployed in many real-world scenarios. Therefore, the study of lightweight pre-training models, which can achieve similar performances to large-scale models with smaller parameter scales and training costs, is significantly valuable.\n\nThere are some types of work on developing lightweight pre-trained models, including the design of the model structure, quantization, pruning and distillation. For example, ALBERT (Lan et al., 2020) is a lightweight model through structural design such as parameter sharing and parameter decomposition, and achieves better performance than original models; Q8BERT (Zafrir et al., 2019) compresses the model to $1/4$ of the original model but with no more than $1\\%$ performance loss by quantizing 32bit floating point into 8bit; (Michel et al., 2019) used BERT weight pruning to compress the model and found that removing a large number of attention heads would not have a major impact on the model performance; TinyBERT (Jiao et al., 2020) reduced the model size by 7.5 times but with no more than $4\\%$ performance loss by designing a teacher-student distillation model.\n\nAll above works are on language pre-training models, and most of them concern scales of model parameters. There are few works on cutting training data and light weighing multimodal pretraining model. In fact, compared with language model, multimodal pre-training models should deal with data from both language and visual modal, which demand larger amounts of data and more computational resources. Meanwhile, collections of training data are more difficult. Taking for example the size of text-image pairs used for multimodal pre-training, the frequently used MS COCO (Lin et al., 2014) is a high quality dataset with only $0.82\\mathrm{M}$ pairs, while LAIT (Qi et al., 2020) is already a big data with $10\\mathrm{M}$ pairs but with average quality. Therefore, it is significantly valuable to develop lightweight multimodal pre-training models which can make use of limited data efficiently.\n\nExisting research on curriculum learning (Bengio et al., 2009) has shown that imitating the process of human learning by gradually increasing the difficulty of a task from simple to complex in stages helps to make better use of different types of data and effectively improve the performance of learning. Many models (Qi et al., 2020) use as much as data available but few works have been done on how to arrange the tasks for better making use of limited data. We therefore borrow the idea of curriculum learning on training pre-training models. We construct a pre-training process which makes use of data from smaller units to bigger units in stages, and design appropriate pre-training tasks for each corresponding stage.\n\nSpecifically, we propose a new Multi-stage Pretraining (MSP) method. The first pre-training stage is on the token units, where the text input is the category labels of the objects in the images, and the image input is the object features. An Image Features Random Shuffle (IFRS) is designed as a pre-training task for this stage. IFRS randomly shuffles the object features, and the model predicts the original object order based on the text information. The second stage focuses on phrase units. Phrase-level descriptions of the image are input on the text side and image features are input on the image side. A Topic of Image and Text for Phrase (TITP) task is designed for it. The third stage is sentence-based pre-training. Sentence-level captions are input on the text side, and image features are input on the image side. A Topic of Image and Text for Sentence (TITS) task is designed for it. We\n\ntake a Simplified LXMERT (LXMERT-S) which has fewer parameters and less pre-training data as the testbed of our MSP method. Experimental results show that our method achieves comparable performance to the original LXMERT model in downstream tasks.\n\nThe main contributions of our work are as follows: (1) We propose a new MSP method that allows the model to learn different granularities of text-image correspondence information at different stages; (2) For each stage, we design pre-training tasks suitable for that stage, IFRS task for token-based pre-training, TITP task for phrase-based pretraining, and TITS task for sentence-based pretraining; (3) With less pre-trained data $(11.76\\%)$ , fewer model parameters $(45.9\\%)$ , less resource consumption $(25\\%)$ and less training time $(46.57\\%)$ , the performances of downstream tasks are comparable to or even exceed that of the original model."
+    },
+    {
+      "source_window_id": "2021.acl-long.199::sections::3",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "method",
+      "evidence": "The overall structure of our MSP method is shown in Figure 1. The pre-training process is divided into three stages based on different granularities of text-image correspondence from token, phrase to sentence. We design corresponding pre-training tasks for the three stages.\n\nWe perform the above three-stage pre-training on a simplified model of LXMERT (LXMERT-S). The simplified process of the LXMERT model is shown in Figure 2. The Cross-Modality Encoder of LXMERT-S is identical to the LXMERT. We obtain the Simplified LXMERT (LXMERT-S) by removing the Object-Relationship Encoder and Language Encoder. The image features and text features are directly input to the Cross-Modality Encoder in the LXMERT-S.\n\nBy removing the single modal coding layer in LXMERT, the 12-layer LXMERT is simplified to a 5-layer LXMERT-S. The amounts of parameters in simplified LXMERT-S are only $45.9\\%$ of the original model, and the whole experiment can be completed on a single GPU. The three-stage pretraining method is also fully applicable to other pre-training models."
+    },
+    {
+      "source_window_id": "2021.acl-long.199::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2021.acl-long.199::sections::4.1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "pre-training dataset",
+      "evidence": "In this paper, the model is pre-trained using the COCO dataset and part of the VG dataset, and only 1.08M text-image pairs are used, where 0.12M image-text pairs are used in token-based pre-training stage, 0.34M image-text pairs are used in phrase-based pre-training stage, and 0.62M image-text pairs are used in the sentence-based pre-training stage. All datasets we used are also used in initial LXMERT. Table 1 gives a comparison of the pre-training data, model parameters $^2$ and\n\nTable 1: Comparison of parameter size, training data and resource consumption between the model in this paper and some pre-trained models.   \n\n<table><tr><td rowspan=\"2\">model</td><td rowspan=\"2\">parameter</td><td colspan=\"2\">training data</td><td rowspan=\"2\">resource consumption</td></tr><tr><td>text-image pairs</td><td>text corpus</td></tr><tr><td>VL-BERT</td><td>134.8M</td><td>3.3M</td><td>Wikipedia BooksCorpus</td><td>16 V100 GPUs</td></tr><tr><td>Unified VLP</td><td>-</td><td>3.3M</td><td>-</td><td>8 V100 GPUs</td></tr><tr><td>ViLBERT</td><td>218.9M</td><td>3.3M</td><td>-</td><td>8 TitanX GPUs</td></tr><tr><td>LXMERT</td><td>183.5M</td><td>9.18M</td><td>-</td><td>4 TitanX GPUs</td></tr><tr><td>VisualBERT</td><td>85.05M</td><td>1.28M</td><td>-</td><td>-</td></tr><tr><td>ours</td><td>84.3M</td><td>1.08M</td><td>-</td><td>1 TitanX GPUs</td></tr></table>\n\ncomputational resources with other models."
+    },
+    {
+      "source_window_id": "2021.acl-long.199::sections::4.3",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.3",
+      "section_title": "baselines",
+      "evidence": "We compare our model with both single-stream multimodal pre-training models including Unified VLP (Zhou et al., 2020), VisualBERT (Li et al., 2019) and VL-BERT (Su et al., 2020) and two-stream models including ViLBERT (Lu et al., 2019) and LXMERT (Tan and Bansal, 2019).\n\nUnified VLP Unified VLP uses a 12 layers of shared multi-layer transformer network for both encoding and decoding, which differs from many existing methods where the encoder and decoder are implemented using separate models. It conducts pre-training on the Conceptual Captions(CC) (Sharma et al., 2018) which has around 3.3 million image-text pairs, and requires 150 hours of training on the 8x V100 GPUS. Unified VLP includes only the MLM task when processing the comprehension tasks.\n\nVisualBERT VisualBERT contains 12 layers of transformer with 85.05M parameters. It first pretrains on COCO Caption (Lin et al., 2014) with MLM and ITM tasks and then continues pretraining on the target dataset with MLM task. The pre-training data sizes for VisuaBERT on the VQA V2.0 task are shown in Table 1. For different downstream tasks, the second stage of pre-training needs to be re-trained.\n\nVL-BERT VL-BERT contains 12 layers of transformer with 134.8M parameters. It pre-trains on both visual-linguistic and text-only datasets. Samples are randomly drawn from both CC and BooksCorpus (Zhu et al., 2015) & English Wikipedia (at a ratio of 1:1) in each mini-batch. VL-BERT considers ITM to be harmful to downstream tasks and therefore only includes MLM and MOC tasks.\n\nTable 2: LXMERT-S results on VQA V2.0, GQA and NLVR2.   \n\n<table><tr><td rowspan=\"2\">model</td><td colspan=\"2\">VQA V2.0</td><td colspan=\"2\">GQA</td><td colspan=\"2\">NLVR2</td></tr><tr><td>test-dev</td><td>test-standard</td><td>test-dev</td><td>test-standard</td><td>val</td><td>test-p</td></tr><tr><td>Unified VLP</td><td>70.5</td><td>70.7</td><td>-</td><td>-</td><td>-</td><td>-</td></tr><tr><td>ViLBERT</td><td>70.55</td><td>70.92</td><td>-</td><td>-</td><td>-</td><td>-</td></tr><tr><td>VisualBERT</td><td>70.8</td><td>71</td><td>-</td><td>-</td><td>67.4</td><td>67</td></tr><tr><td>VL-BERT</td><td>71.16</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr><tr><td>LXMERT</td><td>72.42</td><td>72.54</td><td>59.8</td><td>60.33</td><td>74.9</td><td>74.5</td></tr><tr><td>ours</td><td>71.1(98.18%)</td><td>71.18(98.13%)</td><td>58.7(98.16%)</td><td>59.12(97.99%)</td><td>74.03(98.84%)</td><td>74.72(↑0.22%)</td></tr></table>\n\nTable 3: LXMERT-S results on Image-Text Retrieval task.   \n\n<table><tr><td rowspan=\"2\">model</td><td colspan=\"3\">IR(zero-shot)</td><td colspan=\"3\">TR(zero-shot)</td><td colspan=\"3\">IR</td><td colspan=\"3\">TR</td></tr><tr><td>R@1</td><td>R@5</td><td>R@10</td><td>R@1</td><td>R@5</td><td>R@10</td><td>R@1</td><td>R@5</td><td>R@10</td><td>R@1</td><td>R@5</td><td>R@10</td></tr><tr><td>ViLBERT</td><td>31.86</td><td>61.12</td><td>72.8</td><td>-</td><td>-</td><td>-</td><td>58.2</td><td>84.9</td><td>91.52</td><td>-</td><td>-</td><td>-</td></tr><tr><td>LXMERT</td><td>24</td><td>47.38</td><td>58.22</td><td>23.6</td><td>51.5</td><td>61.3</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr><tr><td>ours</td><td>42.42</td><td>68.7</td><td>77.92</td><td>49</td><td>75</td><td>81.8</td><td>57.9(99.4%)</td><td>83(97.8%)</td><td>88.7(97.0%)</td><td>64.6</td><td>87.5</td><td>90.4</td></tr></table>\n\nViLBERT ViLBERT extends the popular BERT architecture to a multi-modal two-stream model, processing both visual and textual inputs in separate streams that interact through co-attentional transformer layers. It trains on CC with MLM, MOC and ITM tasks.\n\nLXMERT LXMERT has a large-scale Transformer model that consists of three encoders and a large-scale pre-training data, including MS COCO, Visual Genome, VQA v2.0, GQA and VGQA (Zhu et al., 2016). The pre-training requires 8.5 days on the 4x TitanX GPUS. It also has many pre-training tasks, including MLM, MRFR, MOC, ITM and Image Question Answering (QA) (Tan and Bansal, 2019), and has achieved good results in downstream tasks, especially VQA tasks."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.4"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce GTX TITAN X",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2021\\2021.acl-long.199\\auto\\full.md",
+    "source_md_sha256": "a101836b00b5b8145654eed99043c8bdadfa76114eee9a4dfd4cc0bbc1f22398",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "a2f4e0f2222ac944a84b28fba08cc5ab0184a6c6ccb3a5a4deb8a7eefc1e4438"
+  }
+}

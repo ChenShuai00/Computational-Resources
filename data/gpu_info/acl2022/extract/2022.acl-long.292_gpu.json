@@ -1,0 +1,283 @@
+{
+  "paper_id": "2022.acl-long.292",
+  "candidate_windows": [
+    {
+      "window_id": "2022.acl-long.292::sections::4",
+      "paper_id": "2022.acl-long.292",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "This section first introduces experimental setup in Sec 4.1, and then presents main experiment results in Sec 4.2. Sec 4.3 conducts ablation study. In\n\nTable 1: Examples of Input View (IV) and Output View (OV) in both tasks.   \n\n<table><tr><td colspan=\"2\">Sequence Labelling</td></tr><tr><td>GT:</td><td>[Org All Fishermen&#x27;s Association] secretary\n[Per N.J. Bose] said the strike would continue indefinitely.</td></tr><tr><td>IV:</td><td>All Fishermen&#x27;s Association and N.J. Bose and strike and indefinitely</td></tr><tr><td>OV:</td><td>Organization and Person</td></tr><tr><td colspan=\"2\">Sentence Classification</td></tr><tr><td>GT:</td><td>The story has its redundancies, and the young actors, not very experienced, are sometimes inexpressive. Negative</td></tr><tr><td>IV:</td><td>redundancies and young actors and experienced and inexpressive</td></tr><tr><td>OV:</td><td>Negative</td></tr></table>\n\nSec 4.4, We compare PromDA and unlabeled data, present diversity analysis and a case study.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.292::sections::4.1",
+      "paper_id": "2022.acl-long.292",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "We conduct experiments on Sentence Classification tasks SST2 (Socher et al., 2013) and RT (Pang and Lee, 2005) and Sequence Labeling tasks CoNLL03 (Tjong Kim Sang and De Meulder, 2003) and Wikiann (Pan et al., 2017). For each benchmark, we conduct shot-10, 20, 50, 100 experiment. In Shot- $K$ , we sample $K$ labeled instances for each output tag from the full training data. We repeatedly experiments 5 times and report the averaged micro-F1. The Baseline model is BERT-BASE model only trained with few-shot training data $\\mathcal{T}$ . Given the newly generated synthetic data $\\mathcal{T}_{LM}$ , we train the same BERT-BASE model using the same set of hyper-parameters. In sequence labeling tasks, we use rule-based data augmentation method SDANER (Dai and Adel, 2020) and MetaST (Wang et al., 2021a), a state-of-the-art self-training method, requiring additional unlabeled in-domain data. For sentence classification tasks, rule-based EDA (Wei and Zou, 2019), Back-Translation (BackT.) and bert-based CBERT methods are used. We adapt LAMBADA (Anaby-Tavor et al., 2020) as a PLM-based method for all tasks.\n\nImplementation Details PromDA is built on the top of the T5-Large model (Raffel et al., 2020). PromDA requires Prompt Pre-training and finetuning with down-stream tasks. In both stages, we use Adafactor optimizer (Shazeer and Stern, 2018) with learning rate 1e-3 and weight decay 1e-5 to train the Soft Prompt parameters. For pre-training,\n\nwe use the realnewslike split in the T5 pre-training corpus C4 as the input. The pre-training batch size is 72 and we pre-train PromDA for 100k steps. We split the realnewslike dataset into train and development split (i.e., 10000 pages). We will check the PPL on the development split every 5,000 steps. We save the model with lowest PPL. When finetuning on the few-shot data $\\mathcal{T}$ , we set the batch size 32 and we train PromDA for 1,000 steps. We only upgrade the fine-tuning step to 5,000 on the shot-50 and shot-100 for Wikiann and CoNLL03. More experiment setup see Section A in the Appendix.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.292::sections::4.4",
+      "paper_id": "2022.acl-long.292",
+      "section_number": "4.4",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "PromDA with T5-Base We verify whether PromDA could work with different pre-trained language models. We replace the T5-Large model with the T5-base model. The new PromDA can also improve the few-shot baseline models by a large margin. On the SST2 shot-10 setup, the NLU model is improved from 66.1 to 76.3 F1 score, which also beats other models presented in Table 3.\n\nPromDA in the high-resource setting To show the advantages of PromDA in the high-resource setting, We replace the few-shot training data with the full training data. We find that PromDA can still improve the baseline model performance. In SST2, after adding syntactic data, the NLU performance is improved from 90.8 to 92.3 F1 score.\n\nImprovement Margin Difference As shown in Table 2 and 3, the improvement margins in the sentence classification tasks (i.e., more than $15\\%$ F1 score) are generally larger than the ones in the sequence labelling tasks (i.e., less than $10\\%$ F1 score). This could because $i$ ) the sequence labelling task is a more fine-grained and knowledge-intensive task than the sentence classification task; $ii$ ) the synthetic data for the sequence labelling tasks includes entity type and boundary, which is more challenging for PLMs to generate, in particular for low-resource settings, compared to the sentence classification task.\n\nPromDA and Unlabeled Data The above experiments are based on the assumption that no unlabeled data is available. In this section, we explore the connection between PromDA and unlabeled data. To incorporate unlabeled data into our NLU\n\nTable 7: Generated synthetic data from our proposed PromDA and other baseline methods. Text chunks in Red are duplicated with the few-shot training data. Text chunks in Blue are the novel words/phrases.   \n\n<table><tr><td colspan=\"2\">Sequence Labeling</td></tr><tr><td>GT:</td><td>It quoted an [Org Interior Ministry] statement as saying [Per Shabir Ahmad Muhammad Jalil] was executed in [Loc Mecca].</td></tr><tr><td>SDANER:</td><td>It, an [Org Interior Ministry] statement as. [Per Mike Lloyd Muhammad Jalil] was , in [Loc Berlin]</td></tr><tr><td>LAMBADA:</td><td>It quoted an [Misc German] newspaper as saying [Per Klaus Kinkel] was killed in [Loc Berlin] plane crash.</td></tr><tr><td>PromDA:</td><td>The [Org AP] quoted the head of [Org the Back of New Zealand] as saying “[Per Noel Davis] said the bank would cut its ties with [Org Bancorp] and [Per Peter Johnson] would be the next to take over.”</td></tr><tr><td>GT:</td><td>[Loc U.S.] embassy officials in [Loc Colombo] were not immediately available to comment on the report.</td></tr><tr><td>SDANER:</td><td>[Loc Mahala] embassy jail in [Loc China] were not immediately available to v on the board.</td></tr><tr><td>LAMBADA:</td><td>[Loc U.S.] embassy officials in [Loc Saudi Arabia] were not immediately available to comment on the report.</td></tr><tr><td>PromDA:</td><td>The [Loc United States] Embassy in [Loc Germany] has not commented on the latest developments</td></tr><tr><td>GT:</td><td>[Org All Fishermen&#x27;s Association] secretary [Per N.J. Bose] said the strike would continue indefinitely and the fishermen would block road and rail traffic if their demands were not met.</td></tr><tr><td>LAMBADA:</td><td>[Org All Fishermen&#x27;s Association] secretary [Per N. Fairbrother] said the strike would continue indefinitely and the fishermen would block road and rail traffic if their demands were not met.</td></tr><tr><td>PromDA:</td><td>[Org FIA] secretary [Per David Davidson] said the [Org World Bank] had offered them about 60 million euros.</td></tr><tr><td>GT:</td><td>[Org Araneta Coliseum], [Loc Quezon City]; [Org University of Akron], [Loc Akron]</td></tr><tr><td>PromDA:</td><td>[Org Memorial Theatre], [Loc Houston, Texas]; [Org University of Louisville], [Loc Louisville]</td></tr><tr><td colspan=\"2\">Sentence Classification</td></tr><tr><td>GT1:</td><td>The story has its redundancies, and the young actors, not very experienced, are sometimes inexpressive. Negative</td></tr><tr><td>GT2:</td><td>Full frontal, which opens today nationwide, could almost be classified as a movie-industry satire, but it lacks the generous inclusiveness that is the genre &#x27;s definitive, if disingenuous, feature. Negative</td></tr><tr><td>LAMBADA:</td><td>The story has its redundancies, the bullying that are the genre&#x27;s definitive, if disingenuous, episodes. Negative</td></tr><tr><td>PromDA:</td><td>Despite their experience, the young actors are sometimes inexpressive because of the redundancies in the story, which may have caused them to feel rushed and out of place. Negative</td></tr><tr><td>GT:</td><td>I could just feel the screenwriter at every moment “tap, tap, tap, tapping away” on this screenplay. Negative</td></tr><tr><td>PromDA:</td><td>Mr. Mcsweeney, the screenwriter, has done a masterful job with a dynamic plot, full of suspense, wit, and humor. Positive</td></tr><tr><td>GT:</td><td>The saigon of 1952 is an uneasy mix of sensual delights and simmering violence, and the quiet american brings us right into the center of that world. Positive</td></tr><tr><td>LAMBADA:</td><td>many of the ladies in blue are very much in love with the saigon of 1952, and many of them are very much in love with the country. Positive</td></tr><tr><td>PromDA:</td><td>The saigon of the ’70s is the antithesis of that, with a sardonic tone and well conceived plot that builds toward a great end. Positive</td></tr></table>\n\nmodels, we apply the classic self-training framework (Scudder, 1965) to the NLU models. Specifically, for each unlabeled instance, we use the NLU models to label it and record the output tags and corresponding likelihood score. The low likelihood score means predictions with less confidence. We rank all unlabeled instances based on the likelihood score and remove instances at the bottom $20\\%$ . Table 6 shows the experiment result of four benchmarks under the shot-10 setting.\n\nThe Effect of Unlabeled Data Domain We design three settings: Unlabeled In-domain Data (UID), Unlabeled Near-domain Data (UND) and Unlabeled General-domain Data (UGD) where\n\nthe unlabeled data come from exactly same, similar and general-purpose domains. We exchange the training data between CoNLL03 and Wikiann, and between SST2 and RT to simulate similar domains. We randomly sample sentences from PLM pre-training corpus to simulate the general-purpose domain. We note that unlabeled data domain has a great impact of the self-training performance. Even a slight domain shift (i.e., UND) delegates the NLU performance by $2.5\\%$ . The performance of NLU models trained with unlabeled data from general-purpose corpus are even $3.2\\%$ lower than the NLU baseline models only trained with few-shot labeled data $\\mathcal{T}$ . Both sequence labeling tasks\n\nand sentence classification tasks follow this trend, but sequence labeling tasks is more sensitive to the unlabeled data domain. Extra human effort is still required, for semi-supervised learning, to select suitable domains to collect unlabeled data.\n\nCombining Unlabeled In-domain Data with PromDA We apply the above self-training algorithm to the final NLU models (PromDA) supported by PromDA with unlabeled in-domain data. The resulting NLU models are further improved, on average, by $2.0\\%$ (w/UID in the last row). More sophisticated semi-supervised learning algorithms may introduce more improvement. This shows that a) synthetic data from PromDA and unlabeled in-domain data provide different information to the NLU models; b) PromDA successfully extracts the embedded knowledge in the PLMs and presents them in the generated synthetic data.\n\nDiversity Analysis In Table 8, we show the diversity of the generated synthetic data from PromDA and other baseline models. We sample 10 new synthetic data from each training instance. We use Novel Mention (number of entity mentions or keywords not appearing in the training data) and Self-BLEU score (Zhu et al., 2018) to measure the diversity. In general, simple generative data augmentation approaches (i.e., BackT. and CBERT) can easily produce Novel Mentions, but their generated synthetic data lacks diversity (relatively low self-BLEU score). The prompt-based learning helps PromDA to produce the most diverse synthetic data with the most Novel Mentions in both benchmarks. Due to the over-fitting issues, LAMBADA produces synthetic data that are less or equal diverse than other baseline approaches. Interestingly, the NLU models trained on these synthetic data achieve the second best performance. This could because LAMBADA coherently generate the whole synthetic sentences, while others reply on the random and/or heuristic rules.\n\nSynthetic Data Case Study Table 7 shows representative examples generated by our proposed PromDA and methods. In the Sequence Labelling example, the rule-based SDANER shuffles the original word order and creates low-quality text. The LAMBADA model generates a new synthetic instance by modifying three text spans in the original training instance (e.g., changing \"statement\" to \"newspaper\"). In contrast, Our PromDA method generates a completely new and reasonable event\n\nTable 8: Diversity Analysis for the generated synthetic data in CoNLL03 and SST2 under the shot-10 settings. NM refers to Novel Mentions.   \n\n<table><tr><td>Model</td><td>NM↑</td><td>Self-B↓</td><td>F1↑</td></tr><tr><td colspan=\"4\">CoNLL03</td></tr><tr><td>SDANER</td><td>141.4</td><td>0.770</td><td>72.9</td></tr><tr><td>LAMBADA</td><td>107.6</td><td>0.761</td><td>75.0</td></tr><tr><td>PromDA</td><td>351</td><td>0.259</td><td>77.5</td></tr><tr><td colspan=\"4\">SST2</td></tr><tr><td>EDA</td><td>59.6</td><td>0.889</td><td>66.7</td></tr><tr><td>BackT.</td><td>101.8</td><td>0.826</td><td>70.0</td></tr><tr><td>CBERT</td><td>127</td><td>0.900</td><td>67.8</td></tr><tr><td>LAMBADA</td><td>51.8</td><td>0.926</td><td>70.6</td></tr><tr><td>PromDA</td><td>276</td><td>0.578</td><td>81.4</td></tr></table>\n\nin a bank, as well as correct and novel geographical locations in the generated synthetic data. Similarly, in the sentence classification tasks, LAMBADA naively combines text chunks from two training instances in the second example. PromDA mentions some keywords in the training data, but adds more information into the output. In another example, PromDA comments on a screenwriter (not appearing in the training data) with a sequence of coherent words. Finally, PromDA successfully moves the topic from the film \"The Saigon of 1952\" to the Saigon in 70s. In summary, PromDA can extract the embedded real-world knowledge from the PLMs and introduces these knowledge into a relatively long sentence in a fluent way.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.292::appendix::A",
+      "paper_id": "2022.acl-long.292",
+      "section_number": "A",
+      "section_title": "experiment details",
+      "normalized_section_title": "experiment details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.292::appendix::A.1",
+      "paper_id": "2022.acl-long.292",
+      "section_number": "A.1",
+      "section_title": "implementation details for nlu model",
+      "normalized_section_title": "implementation details for nlu model",
+      "window_text": "We use BERT-BASE as our NLU models. The Baseline model is only trained with the few-shot training data $\\mathcal{T}$ . Given the newly generated synthetic data, we will train the same NLU model with the same set of hyper-parameters. The only difference between the two NLU models is the training data. To train the BERT-BASE model, we use the Adam optimizer to train the model with learning rate 5e-5 and weight decay 5e-6. We train all NLU models with 4,000 steps and check the validation performance every 400 steps. We use batch size 8.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.292::appendix::A.2",
+      "paper_id": "2022.acl-long.292",
+      "section_number": "A.2",
+      "section_title": "implementation details for compared models",
+      "normalized_section_title": "implementation details for compared models",
+      "window_text": "EDA $^{1}$ and SDANER $^{2}$ are rule-based data augmentation methods. They modify the available training instances via simple rules, including word order shuffle, synonym replace, etc. Since they have released their source code on GitHub, we directly run their source code, without any modification, for our experiments. BackT. first translates the input sentence in language A to language B, and then translates back to language A, which may create new linguistic expressions in the back-translated sentences. We directly use the M2M100 model (Fan et al., 2021), without any fine-tuning, to translate the sentence from English to French and backwards. CBERT (Wu et al., 2019) uses BERT model to replace words in the input sentences. Compared to EDA, the decision is made based on the context information, which should be more accurate. We use the suggested parameters and code released by the authors $^{3}$ . We Implement the LAMBADA model based on its original paper (Anaby-Tavor et al., 2020). The only difference is that, to allow a fair comparison with our proposed PromDA method, we replace its PLMs (i.e., GPT2) with T5-Large model. For LM adaptation, we follow the fine-tuning configuration in its original paper (Lester et al., 2021).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.292::appendix::A.5",
+      "paper_id": "2022.acl-long.292",
+      "section_number": "A.5",
+      "section_title": "computing infrastructure and running time",
+      "normalized_section_title": "computing infrastructure and running time",
+      "window_text": "We use Nvidia A100 and V100 for our experiment. A single A100 or V100 is capable to handle the T5-Large model. In general, it takes around 6-8 hours to generate synthetic data for few-shot training data $\\mathcal{T}$ with 300 - 400 instances.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.292::appendix::B.2",
+      "paper_id": "2022.acl-long.292",
+      "section_number": "B.2",
+      "section_title": "training data for different few-shot settings",
+      "normalized_section_title": "training data for different few-shot settings",
+      "window_text": "Table 9 shows the number of training data in different few-shot settings.\n\nTable 9: The new of training data instances for each benchmark under different shot-k settings.   \n\n<table><tr><td>Shot</td><td>10</td><td>20</td><td>50</td><td>100</td></tr><tr><td>CoNLL03</td><td>40</td><td>80</td><td>200</td><td>400</td></tr><tr><td>Wikiann</td><td>30</td><td>60</td><td>150</td><td>300</td></tr><tr><td>SST2</td><td>20</td><td>40</td><td>100</td><td>200</td></tr><tr><td>RT</td><td>20</td><td>40</td><td>100</td><td>200</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.292::appendix::C",
+      "paper_id": "2022.acl-long.292",
+      "section_number": "C",
+      "section_title": "experiment analysis",
+      "normalized_section_title": "experiment analysis",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.acl-long.292::appendix::A.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We use Nvidia A100 and V100 for our experiment. A single A100 or V100 is capable to handle the T5-Large model. In general, it takes around 6-8 hours to generate synthetic data for few-shot training data $\\mathcal{T}$ with 300 - 400 instances.",
+      "section_number": "A.5",
+      "section_title": "computing infrastructure and running time",
+      "normalized_section_title": "computing infrastructure and running time"
+    },
+    {
+      "window_id": "2022.acl-long.292::appendix::A.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia V100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We use Nvidia A100 and V100 for our experiment. A single A100 or V100 is capable to handle the T5-Large model. In general, it takes around 6-8 hours to generate synthetic data for few-shot training data $\\mathcal{T}$ with 300 - 400 instances.",
+      "section_number": "A.5",
+      "section_title": "computing infrastructure and running time",
+      "normalized_section_title": "computing infrastructure and running time"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.acl-long.292::appendix::A.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.5",
+      "section_title": "computing infrastructure and running time",
+      "normalized_section_title": "computing infrastructure and running time",
+      "evidence": "We use Nvidia A100 and V100 for our experiment. A single A100 or V100 is capable to handle the T5-Large model. In general, it takes around 6-8 hours to generate synthetic data for few-shot training data $\\mathcal{T}$ with 300 - 400 instances.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2022.acl-long.292::appendix::A.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia V100",
+      "cleaned_hardware_name": "nvidia v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.5",
+      "section_title": "computing infrastructure and running time",
+      "normalized_section_title": "computing infrastructure and running time",
+      "evidence": "We use Nvidia A100 and V100 for our experiment. A single A100 or V100 is capable to handle the T5-Large model. In general, it takes around 6-8 hours to generate synthetic data for few-shot training data $\\mathcal{T}$ with 300 - 400 instances.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2022.acl-long.292::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": "This section first introduces experimental setup in Sec 4.1, and then presents main experiment results in Sec 4.2. Sec 4.3 conducts ablation study. In\n\nTable 1: Examples of Input View (IV) and Output View (OV) in both tasks.   \n\n<table><tr><td colspan=\"2\">Sequence Labelling</td></tr><tr><td>GT:</td><td>[Org All Fishermen&#x27;s Association] secretary\n[Per N.J. Bose] said the strike would continue indefinitely.</td></tr><tr><td>IV:</td><td>All Fishermen&#x27;s Association and N.J. Bose and strike and indefinitely</td></tr><tr><td>OV:</td><td>Organization and Person</td></tr><tr><td colspan=\"2\">Sentence Classification</td></tr><tr><td>GT:</td><td>The story has its redundancies, and the young actors, not very experienced, are sometimes inexpressive. Negative</td></tr><tr><td>IV:</td><td>redundancies and young actors and experienced and inexpressive</td></tr><tr><td>OV:</td><td>Negative</td></tr></table>\n\nSec 4.4, We compare PromDA and unlabeled data, present diversity analysis and a case study."
+    },
+    {
+      "source_window_id": "2022.acl-long.292::sections::4.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "evidence": "We conduct experiments on Sentence Classification tasks SST2 (Socher et al., 2013) and RT (Pang and Lee, 2005) and Sequence Labeling tasks CoNLL03 (Tjong Kim Sang and De Meulder, 2003) and Wikiann (Pan et al., 2017). For each benchmark, we conduct shot-10, 20, 50, 100 experiment. In Shot- $K$ , we sample $K$ labeled instances for each output tag from the full training data. We repeatedly experiments 5 times and report the averaged micro-F1. The Baseline model is BERT-BASE model only trained with few-shot training data $\\mathcal{T}$ . Given the newly generated synthetic data $\\mathcal{T}_{LM}$ , we train the same BERT-BASE model using the same set of hyper-parameters. In sequence labeling tasks, we use rule-based data augmentation method SDANER (Dai and Adel, 2020) and MetaST (Wang et al., 2021a), a state-of-the-art self-training method, requiring additional unlabeled in-domain data. For sentence classification tasks, rule-based EDA (Wei and Zou, 2019), Back-Translation (BackT.) and bert-based CBERT methods are used. We adapt LAMBADA (Anaby-Tavor et al., 2020) as a PLM-based method for all tasks.\n\nImplementation Details PromDA is built on the top of the T5-Large model (Raffel et al., 2020). PromDA requires Prompt Pre-training and finetuning with down-stream tasks. In both stages, we use Adafactor optimizer (Shazeer and Stern, 2018) with learning rate 1e-3 and weight decay 1e-5 to train the Soft Prompt parameters. For pre-training,\n\nwe use the realnewslike split in the T5 pre-training corpus C4 as the input. The pre-training batch size is 72 and we pre-train PromDA for 100k steps. We split the realnewslike dataset into train and development split (i.e., 10000 pages). We will check the PPL on the development split every 5,000 steps. We save the model with lowest PPL. When finetuning on the few-shot data $\\mathcal{T}$ , we set the batch size 32 and we train PromDA for 1,000 steps. We only upgrade the fine-tuning step to 5,000 on the shot-50 and shot-100 for Wikiann and CoNLL03. More experiment setup see Section A in the Appendix."
+    },
+    {
+      "source_window_id": "2022.acl-long.292::sections::4.4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.4",
+      "section_title": "discussion",
+      "evidence": "PromDA with T5-Base We verify whether PromDA could work with different pre-trained language models. We replace the T5-Large model with the T5-base model. The new PromDA can also improve the few-shot baseline models by a large margin. On the SST2 shot-10 setup, the NLU model is improved from 66.1 to 76.3 F1 score, which also beats other models presented in Table 3.\n\nPromDA in the high-resource setting To show the advantages of PromDA in the high-resource setting, We replace the few-shot training data with the full training data. We find that PromDA can still improve the baseline model performance. In SST2, after adding syntactic data, the NLU performance is improved from 90.8 to 92.3 F1 score.\n\nImprovement Margin Difference As shown in Table 2 and 3, the improvement margins in the sentence classification tasks (i.e., more than $15\\%$ F1 score) are generally larger than the ones in the sequence labelling tasks (i.e., less than $10\\%$ F1 score). This could because $i$ ) the sequence labelling task is a more fine-grained and knowledge-intensive task than the sentence classification task; $ii$ ) the synthetic data for the sequence labelling tasks includes entity type and boundary, which is more challenging for PLMs to generate, in particular for low-resource settings, compared to the sentence classification task.\n\nPromDA and Unlabeled Data The above experiments are based on the assumption that no unlabeled data is available. In this section, we explore the connection between PromDA and unlabeled data. To incorporate unlabeled data into our NLU\n\nTable 7: Generated synthetic data from our proposed PromDA and other baseline methods. Text chunks in Red are duplicated with the few-shot training data. Text chunks in Blue are the novel words/phrases.   \n\n<table><tr><td colspan=\"2\">Sequence Labeling</td></tr><tr><td>GT:</td><td>It quoted an [Org Interior Ministry] statement as saying [Per Shabir Ahmad Muhammad Jalil] was executed in [Loc Mecca].</td></tr><tr><td>SDANER:</td><td>It, an [Org Interior Ministry] statement as. [Per Mike Lloyd Muhammad Jalil] was , in [Loc Berlin]</td></tr><tr><td>LAMBADA:</td><td>It quoted an [Misc German] newspaper as saying [Per Klaus Kinkel] was killed in [Loc Berlin] plane crash.</td></tr><tr><td>PromDA:</td><td>The [Org AP] quoted the head of [Org the Back of New Zealand] as saying “[Per Noel Davis] said the bank would cut its ties with [Org Bancorp] and [Per Peter Johnson] would be the next to take over.”</td></tr><tr><td>GT:</td><td>[Loc U.S.] embassy officials in [Loc Colombo] were not immediately available to comment on the report.</td></tr><tr><td>SDANER:</td><td>[Loc Mahala] embassy jail in [Loc China] were not immediately available to v on the board.</td></tr><tr><td>LAMBADA:</td><td>[Loc U.S.] embassy officials in [Loc Saudi Arabia] were not immediately available to comment on the report.</td></tr><tr><td>PromDA:</td><td>The [Loc United States] Embassy in [Loc Germany] has not commented on the latest developments</td></tr><tr><td>GT:</td><td>[Org All Fishermen&#x27;s Association] secretary [Per N.J. Bose] said the strike would continue indefinitely and the fishermen would block road and rail traffic if their demands were not met.</td></tr><tr><td>LAMBADA:</td><td>[Org All Fishermen&#x27;s Association] secretary [Per N. Fairbrother] said the strike would continue indefinitely and the fishermen would block road and rail traffic if their demands were not met.</td></tr><tr><td>PromDA:</td><td>[Org FIA] secretary [Per David Davidson] said the [Org World Bank] had offered them about 60 million euros.</td></tr><tr><td>GT:</td><td>[Org Araneta Coliseum], [Loc Quezon City]; [Org University of Akron], [Loc Akron]</td></tr><tr><td>PromDA:</td><td>[Org Memorial Theatre], [Loc Houston, Texas]; [Org University of Louisville], [Loc Louisville]</td></tr><tr><td colspan=\"2\">Sentence Classification</td></tr><tr><td>GT1:</td><td>The story has its redundancies, and the young actors, not very experienced, are sometimes inexpressive. Negative</td></tr><tr><td>GT2:</td><td>Full frontal, which opens today nationwide, could almost be classified as a movie-industry satire, but it lacks the generous inclusiveness that is the genre &#x27;s definitive, if disingenuous, feature. Negative</td></tr><tr><td>LAMBADA:</td><td>The story has its redundancies, the bullying that are the genre&#x27;s definitive, if disingenuous, episodes. Negative</td></tr><tr><td>PromDA:</td><td>Despite their experience, the young actors are sometimes inexpressive because of the redundancies in the story, which may have caused them to feel rushed and out of place. Negative</td></tr><tr><td>GT:</td><td>I could just feel the screenwriter at every moment “tap, tap, tap, tapping away” on this screenplay. Negative</td></tr><tr><td>PromDA:</td><td>Mr. Mcsweeney, the screenwriter, has done a masterful job with a dynamic plot, full of suspense, wit, and humor. Positive</td></tr><tr><td>GT:</td><td>The saigon of 1952 is an uneasy mix of sensual delights and simmering violence, and the quiet american brings us right into the center of that world. Positive</td></tr><tr><td>LAMBADA:</td><td>many of the ladies in blue are very much in love with the saigon of 1952, and many of them are very much in love with the country. Positive</td></tr><tr><td>PromDA:</td><td>The saigon of the ’70s is the antithesis of that, with a sardonic tone and well conceived plot that builds toward a great end. Positive</td></tr></table>\n\nmodels, we apply the classic self-training framework (Scudder, 1965) to the NLU models. Specifically, for each unlabeled instance, we use the NLU models to label it and record the output tags and corresponding likelihood score. The low likelihood score means predictions with less confidence. We rank all unlabeled instances based on the likelihood score and remove instances at the bottom $20\\%$ . Table 6 shows the experiment result of four benchmarks under the shot-10 setting.\n\nThe Effect of Unlabeled Data Domain We design three settings: Unlabeled In-domain Data (UID), Unlabeled Near-domain Data (UND) and Unlabeled General-domain Data (UGD) where\n\nthe unlabeled data come from exactly same, similar and general-purpose domains. We exchange the training data between CoNLL03 and Wikiann, and between SST2 and RT to simulate similar domains. We randomly sample sentences from PLM pre-training corpus to simulate the general-purpose domain. We note that unlabeled data domain has a great impact of the self-training performance. Even a slight domain shift (i.e., UND) delegates the NLU performance by $2.5\\%$ . The performance of NLU models trained with unlabeled data from general-purpose corpus are even $3.2\\%$ lower than the NLU baseline models only trained with few-shot labeled data $\\mathcal{T}$ . Both sequence labeling tasks\n\nand sentence classification tasks follow this trend, but sequence labeling tasks is more sensitive to the unlabeled data domain. Extra human effort is still required, for semi-supervised learning, to select suitable domains to collect unlabeled data.\n\nCombining Unlabeled In-domain Data with PromDA We apply the above self-training algorithm to the final NLU models (PromDA) supported by PromDA with unlabeled in-domain data. The resulting NLU models are further improved, on average, by $2.0\\%$ (w/UID in the last row). More sophisticated semi-supervised learning algorithms may introduce more improvement. This shows that a) synthetic data from PromDA and unlabeled in-domain data provide different information to the NLU models; b) PromDA successfully extracts the embedded knowledge in the PLMs and presents them in the generated synthetic data.\n\nDiversity Analysis In Table 8, we show the diversity of the generated synthetic data from PromDA and other baseline models. We sample 10 new synthetic data from each training instance. We use Novel Mention (number of entity mentions or keywords not appearing in the training data) and Self-BLEU score (Zhu et al., 2018) to measure the diversity. In general, simple generative data augmentation approaches (i.e., BackT. and CBERT) can easily produce Novel Mentions, but their generated synthetic data lacks diversity (relatively low self-BLEU score). The prompt-based learning helps PromDA to produce the most diverse synthetic data with the most Novel Mentions in both benchmarks. Due to the over-fitting issues, LAMBADA produces synthetic data that are less or equal diverse than other baseline approaches. Interestingly, the NLU models trained on these synthetic data achieve the second best performance. This could because LAMBADA coherently generate the whole synthetic sentences, while others reply on the random and/or heuristic rules.\n\nSynthetic Data Case Study Table 7 shows representative examples generated by our proposed PromDA and methods. In the Sequence Labelling example, the rule-based SDANER shuffles the original word order and creates low-quality text. The LAMBADA model generates a new synthetic instance by modifying three text spans in the original training instance (e.g., changing \"statement\" to \"newspaper\"). In contrast, Our PromDA method generates a completely new and reasonable event\n\nTable 8: Diversity Analysis for the generated synthetic data in CoNLL03 and SST2 under the shot-10 settings. NM refers to Novel Mentions.   \n\n<table><tr><td>Model</td><td>NM↑</td><td>Self-B↓</td><td>F1↑</td></tr><tr><td colspan=\"4\">CoNLL03</td></tr><tr><td>SDANER</td><td>141.4</td><td>0.770</td><td>72.9</td></tr><tr><td>LAMBADA</td><td>107.6</td><td>0.761</td><td>75.0</td></tr><tr><td>PromDA</td><td>351</td><td>0.259</td><td>77.5</td></tr><tr><td colspan=\"4\">SST2</td></tr><tr><td>EDA</td><td>59.6</td><td>0.889</td><td>66.7</td></tr><tr><td>BackT.</td><td>101.8</td><td>0.826</td><td>70.0</td></tr><tr><td>CBERT</td><td>127</td><td>0.900</td><td>67.8</td></tr><tr><td>LAMBADA</td><td>51.8</td><td>0.926</td><td>70.6</td></tr><tr><td>PromDA</td><td>276</td><td>0.578</td><td>81.4</td></tr></table>\n\nin a bank, as well as correct and novel geographical locations in the generated synthetic data. Similarly, in the sentence classification tasks, LAMBADA naively combines text chunks from two training instances in the second example. PromDA mentions some keywords in the training data, but adds more information into the output. In another example, PromDA comments on a screenwriter (not appearing in the training data) with a sequence of coherent words. Finally, PromDA successfully moves the topic from the film \"The Saigon of 1952\" to the Saigon in 70s. In summary, PromDA can extract the embedded real-world knowledge from the PLMs and introduces these knowledge into a relatively long sentence in a fluent way."
+    },
+    {
+      "source_window_id": "2022.acl-long.292::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "experiment details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2022.acl-long.292::appendix::A.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.1",
+      "section_title": "implementation details for nlu model",
+      "evidence": "We use BERT-BASE as our NLU models. The Baseline model is only trained with the few-shot training data $\\mathcal{T}$ . Given the newly generated synthetic data, we will train the same NLU model with the same set of hyper-parameters. The only difference between the two NLU models is the training data. To train the BERT-BASE model, we use the Adam optimizer to train the model with learning rate 5e-5 and weight decay 5e-6. We train all NLU models with 4,000 steps and check the validation performance every 400 steps. We use batch size 8."
+    },
+    {
+      "source_window_id": "2022.acl-long.292::appendix::A.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.2",
+      "section_title": "implementation details for compared models",
+      "evidence": "EDA $^{1}$ and SDANER $^{2}$ are rule-based data augmentation methods. They modify the available training instances via simple rules, including word order shuffle, synonym replace, etc. Since they have released their source code on GitHub, we directly run their source code, without any modification, for our experiments. BackT. first translates the input sentence in language A to language B, and then translates back to language A, which may create new linguistic expressions in the back-translated sentences. We directly use the M2M100 model (Fan et al., 2021), without any fine-tuning, to translate the sentence from English to French and backwards. CBERT (Wu et al., 2019) uses BERT model to replace words in the input sentences. Compared to EDA, the decision is made based on the context information, which should be more accurate. We use the suggested parameters and code released by the authors $^{3}$ . We Implement the LAMBADA model based on its original paper (Anaby-Tavor et al., 2020). The only difference is that, to allow a fair comparison with our proposed PromDA method, we replace its PLMs (i.e., GPT2) with T5-Large model. For LM adaptation, we follow the fine-tuning configuration in its original paper (Lester et al., 2021)."
+    },
+    {
+      "source_window_id": "2022.acl-long.292::appendix::B.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B.2",
+      "section_title": "training data for different few-shot settings",
+      "evidence": "Table 9 shows the number of training data in different few-shot settings.\n\nTable 9: The new of training data instances for each benchmark under different shot-k settings.   \n\n<table><tr><td>Shot</td><td>10</td><td>20</td><td>50</td><td>100</td></tr><tr><td>CoNLL03</td><td>40</td><td>80</td><td>200</td><td>400</td></tr><tr><td>Wikiann</td><td>30</td><td>60</td><td>150</td><td>300</td></tr><tr><td>SST2</td><td>20</td><td>40</td><td>100</td><td>200</td></tr><tr><td>RT</td><td>20</td><td>40</td><td>100</td><td>200</td></tr></table>"
+    },
+    {
+      "source_window_id": "2022.acl-long.292::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "experiment analysis",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.5"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2022\\2022.acl-long.292\\auto\\full.md",
+    "source_md_sha256": "117e2b40f3af4ce57000a840b31fb2720236a5ff5be7193b1e9542f8e25c90c7",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

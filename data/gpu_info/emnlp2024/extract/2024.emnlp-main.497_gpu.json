@@ -1,0 +1,292 @@
+{
+  "paper_id": "2024.emnlp-main.497",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.497::sections::1",
+      "paper_id": "2024.emnlp-main.497",
+      "section_number": "1",
+      "section_title": "introduction",
+      "normalized_section_title": "introduction",
+      "window_text": "Data preprocessing (DP) is a critical step in the data mining pipeline that involves transforming raw data into a manageable and processable format ready for use. Over the past decades, significant strides have been made in various DP tasks. Until 2021, most efforts were concentrated on one or two specific tasks such as error detection (ED) (Heidari et al., 2019; Mahdavi et al., 2019), data imputation (DI) (Rekatsinas et al., 2017; Mahdavi and\n\nHaochen Zhang and Yuyang Dong are co-first authors who contributed equally to this work. Chuan Xiao is the corresponding author.\n\nOur models are available at: https://huggingface.co/NECOUDBFM/Jellyfish. Our instruction dataset is available at: https://huggingface.co/datasets/NECOUDBFM/Jellyfish-Instruct.\n\nAbedjan, 2020; Mei et al., 2021), schema matching (SM) (Zhang et al., 2021), and entity matching (EM) (Konda et al., 2016; Li et al., 2020). A key challenge in developing generic solutions to DP is that these tasks differ in nature: they deal with errors, anomalies, matches, etc. and require different actions such as detection, repairing, and alignment.\n\nWith the advent of LLMs, researchers have found a key to address this challenge, spurring the development of generic solutions for a wider array of DP tasks. The advantages of LLMs over non-LLM DP methods reside in their natural language generation ability, internal knowledge, reasoning ability, generalizability, and adaptability through few-(Brown et al., 2020) or zero-shot (Kojima et al., 2022) prompting, thereby reducing the cost of human labor (e.g., hyperparameters tuning) and yielding better interpretability.\n\nDespite these strengths existing LLM-based DP solutions (Narayan et al., 2022; Zhang et al., 2023a; Korini and Bizer, 2023; Li et al., 2023), with reliance on GPT APIs, have raised concerns about data breaches, as evidenced by OpenAI's confirmed data breach (OpenAI, 2023). Another limitation is the difficulty in domain specification (Narayan et al., 2022). When dealing with data from highly specialized domains, training the LLMs used in these solutions can be costly (e.g., GPT-3.5) and even unavailable due to frozen parameters (e.g., GPT-4), posing difficulty in customizing the model.\n\nIn response to these challenges, we propose to construct instruction data and tune LLMs for various DP tasks. The tuned model, namely Jellyfish, distinguish itself with several key features: (1) Jellyfish is a universal DP task solver tuned to the following tasks: ED and DI for data cleaning, and SM and EM for data integration. (2) Varying from 7B to 13B, Jellyfish can operate on a local, single, and low-priced GPU, ensuring data security and allowing further tuning. (3) Capable of understanding natural language, Jellyfish allows users\n\n![](images/beaa3cbb20d92b50b3f9942da8d39b4cd31b710eef2bf6ab4b6db46d8af63075.jpg)  \nFigure 1: Overview of instruction tuning for data preprocessing.\n\nto manually craft instructions for DP tasks (or simply use our prompts in this paper) and apply prompt engineering techniques to tailor it to specific tasks and datasets. (4) Unlike many existing methods that rely heavily on handcrafted knowledge during inference (Rekatsinas et al., 2017; Qin et al., 2023), Jellyfish features domain knowledge in its instruction tuning and enables optional knowledge injection during inference. (5) By employing reasoning data in its instruction tuning, Jellyfish's interpretation ability provides natural language explanations of its outputs.\n\nWhereas instruction tuning of LLMs has been largely used for unstructured text (Zhang et al., 2023b), the construction of Jellyfish is non-trivial in the sense that (1) it tunes for structured data, (2) it finds a good data configuration for various DP tasks, and (3) it specifies domain knowledge that can be applied to unseen datasets. Besides, it is expected that the model's performance in NLP tasks can be preserved for generalizability and further customization. To the best of our knowledge, this is the first study that investigates instruction tuning for DP with LLMs as universal solutions.\n\nAs depicted in Figure 1, Jellyfish is constructed by carefully selecting data from several public datasets widely used for DP evaluation, considering their impacts on the overall performance. By instance serialization, raw data is serialized into instruction tuning prompts. By knowledge injection, task- and dataset-specific knowledge – particularly domain knowledge that can be extended to unseen datasets – is infused to the prompts. Moreover, we resort to Mixtral-8x7B-Instruct-v0.1 to generate reasoning data. As such, Jellyfish distills Mixtral's knowledge in reasoning DP results.\n\nOur evaluation focuses on tuning a set of prevalent open LLMs, including Mistral-7B-Instructv0.2 (as Jellyfish-7B), Llama 3-8B (as Jellyfish8B), and OpenOrca-Platypus2-13B (as Jellyfish\n\n13B). The results show that our instruction data applies to all these base models, substantially improving the DP performance. Compared to two categories of baseline methods, (1) non-LLM methods – typically solutions based on machine learning (ML) or pre-trained language models (PLMs) – and (2) LLM methods – typically GPT series methods, Jellyfish-13B consistently outperforms non-LLM methods on its seen datasets, and its effectiveness on unseen datasets even surpasses non-LLM methods on their respective seen datasets. Meanwhile, Jellyfish-7B/8B also exhibit competitiveness, especially on DI and EM tasks. For unseen tasks, Jellyfish models also deliver strong performance, rivaling GPT-3.5/4 models and showcasing generalizability to a wider range of DP tasks beyond the four tasks used for tuning. Our evaluation reveals the impacts of data configuration and the use of reasoning data in building Jellyfish, and discovers that Jellyfish barely compromises the base model's NLP performance. Furthermore, experiments demonstrate the advantage of Jellyfish's interpretation over GPT-3.5 in reasoning capabilities as well as the effectiveness of knowledge injection.",
+      "rule_tier": "soft_skip",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.497::sections::2",
+      "paper_id": "2024.emnlp-main.497",
+      "section_number": "2",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "In data mining, DP is a crucial step that deals with noise, missing values, inconsistencies, and heterogeneity in data. Major DP procedures include data cleaning, data integration, data transformation, and data reduction (Han et al., 2022). In this initial exploration of LLMs for DP, we concentrate on tabular data, one of the most common data types.\n\nOur data model operates on relational tables specified by schemas. We assume all attributes are either numerical (including binary) or textual (including categorical) values. Diverging from the traditional definition that presents the entire dataset and finds or fixes all the errors (or matches, etc.) within, we define the problem by handling one\n\nrecord (or a pair, depending on the task) at a time, so the prompt can be easily written and its length is within LLMs' token limitation. Next, we outline the DP tasks involved in this study:\n\n(1) Error Detection (ED): Given a record (i.e., a tuple in a relational table) and an attribute, our task is to detect whether there is an error in the cell value of this attribute. (2) Data Imputation (DI): Given a record and an attribute such that cell value for this attribute is missing, our task is to infer its correct value. (3) Schema Matching (SM): Given a pair of attributes represented in the form of (name, description), our task is to find whether they refer to the same attribute. (4) Entity Matching (EM): Given a pair of records, our task is to infer whether they refer to the same entity.\n\nThese four tasks form the most critical part of DP (Narayan et al., 2022; Zhang et al., 2023a) and are extensively discussed in the context of data mining (Han et al., 2022). We use them for instruction tuning. Besides, we consider two unseen tasks: (1) Column Type Annotation (CTA): Given a table with no header, our task is to infer the type of each column from a set of predefined types (e.g., name, time, location). (2) Attribute Value Extraction (AVE): Given a text description of an entity and a set of predefined attributes, the task is to extract attribute values from the text description.\n\nWe term each input object an instance, i.e., a record for ED and DI, a pair of attributes for SM, a pair of records for EM, a table or a column for CTA, and a text description for AVE.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.497::sections::5",
+      "paper_id": "2024.emnlp-main.497",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.497::sections::5.1",
+      "paper_id": "2024.emnlp-main.497",
+      "section_number": "5.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Datasets. We conduct experiments on the datasets shown in Table 3. CTA and AVE are unseen tasks.\n\nJellyfish Models. We instruction-tune three base models: (1) Mistral-7B (Mistral-7B-Instructv0.2 (Jiang et al., 2023)), (2) Llama 3-8B (Llama-3-8B-Instruct (Meta AI, 2024)), and (3) OOP2-13B (OpenOrca-Platypus2-13B (Lee et al., 2023)), a Llama 2-13B variant with enhanced reasoning capabilities and logic proficiency. The tuned models are dubbed Jellyfish-7B, Jellyfish-8B, and Jellyfish-13B, respectively. The 7B and 8B models are tuned with both DP task and reasoning data (15k reasoning instances for the 7B model and 8k for the 8B model). The 13B model is tuned with only DP task data. As such, Jellyfish-7B and Jellyfish-8B are interpretation models while Jellyfish-13B is a task solver dedicated to the tuned tasks.\n\nWe report hyperparameter setup in Appendix A and injected knowledge in Appendix E. For inference, the (zero-shot) prompts are the same as DP task data and reasoning data, respectively. We apply general knowledge in the prompts, e.g., missing values in matching tasks and error types in\n\nTable 3: Testing dataset statistics. For Walmart-Amazon, the entities belong to a different category of products from the Amazon dataset used for instruction tuning.   \n\n<table><tr><td>Task</td><td>Type</td><td>Dataset</td><td>#Instances</td></tr><tr><td rowspan=\"4\">ED</td><td rowspan=\"2\">Seen</td><td>Adult</td><td>9900</td></tr><tr><td>Hospital</td><td>17101</td></tr><tr><td rowspan=\"2\">Unseen</td><td>Flights</td><td>12832</td></tr><tr><td>Rayyan</td><td>8997</td></tr><tr><td rowspan=\"4\">DI</td><td rowspan=\"2\">Seen</td><td>Buy</td><td>65</td></tr><tr><td>Restaurant</td><td>86</td></tr><tr><td rowspan=\"2\">Unseen</td><td>Flipkart</td><td>2675</td></tr><tr><td>Phone</td><td>1194</td></tr><tr><td rowspan=\"3\">SM</td><td rowspan=\"2\">Seen</td><td>MIMIC-III</td><td>6408</td></tr><tr><td>Synthesa</td><td>2964</td></tr><tr><td>Unseen</td><td>CMS</td><td>2564</td></tr><tr><td rowspan=\"8\">EM</td><td rowspan=\"6\">Seen</td><td>Amazon-Google</td><td>2293</td></tr><tr><td>Beer</td><td>91</td></tr><tr><td>DBLP-ACM</td><td>2473</td></tr><tr><td>DBLP-GoogleScholar</td><td>5742</td></tr><tr><td>Fodors-Zagats</td><td>189</td></tr><tr><td>iTunes-Amazon</td><td>109</td></tr><tr><td rowspan=\"2\">Unseen</td><td>Abt-Buy</td><td>1946</td></tr><tr><td>Walmart-Amazon</td><td>2049</td></tr><tr><td>CTA</td><td>Unseen</td><td>SOTAB</td><td>250</td></tr><tr><td rowspan=\"2\">AVE</td><td rowspan=\"2\">Unseen</td><td>AE-110K</td><td>1482</td></tr><tr><td>OA-Mine</td><td>2451</td></tr></table>\n\nED. Dataset-specific knowledge is not used. When few-shot prompting is enabled, we equip LLMs with three examples for each dataset, covering both positives and negatives (Appendix F).\n\nBaselines. We categorize existing methods into non-LLM methods and LLM methods. For non-LLM methods, we select the following baselines: (1) ED: HoloDetect (Heidari et al., 2019) and Raha (Mahdavi et al., 2019); (2) DI: IPM (Mei et al., 2021); (3) SM: SMAT (Zhang et al., 2021); (4) EM: Ditto (Li et al., 2020) and Unicorn (Tu et al., 2023); (5) CTA: RoBERTa (Liu et al., 2019). For their performance, we follow the best numbers reported in prior works (Narayan et al., 2022; Korini and Bizer, 2023; Tu et al., 2023).\n\nLLM methods are GPT-3, GPT-3.5, TableGPT (Li et al., 2023) (GPT-3.5 fine-tuned for tables), GPT-4, GPT-4o, Stable Beluga 2 70B (Mahan et al., 2023), and SOLAR 70B (Upstage, 2023). We follow the numbers reported in previous works (Narayan et al., 2022; Zhang et al., 2023a; Brinkmann et al., 2023). Few-shots are used in line with Jellyfish for fair comparison.\n\nMetrics. For DP task solving, we measure accuracy for DI, F1 score for ED, DI, EM, and AVE, and micro-F1 for CTA, all reported on a 100-scale.\n\nEnvironment. Training and inference of LLMs are conducted on NVIDIA A100 80GB GPUs. We em\n\nploy LoRA (Hu et al., 2021) and FlashAttention-2 (Dao, 2023) for tuning and vLLM with PageAttention (Kwon et al., 2023) for inference.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.497::sections::5.7",
+      "paper_id": "2024.emnlp-main.497",
+      "section_number": "5.7",
+      "section_title": "comparison of efficiency",
+      "normalized_section_title": "comparison of efficiency",
+      "window_text": "With 8 GPUs of A100 80G, instruction tuning spends around 5 hours for Jellyfish-13B, 3 hours for Jellyfish-7B and Jellyfish-8B. For inference on single GPU of A100 80G, Jellyfish-7B, 8B, and 13B spend 0.07, 0.08, and 0.15 seconds, respectively, on average to process an instance. As a reference, GPT-4 spends an average of $1 - 8$ seconds per instance. Although LLMs require substantial computational resources, thereby increasing the cost of use and compromising the efficiency, some non-LLM methods, such as RoBERTa and those built upon it (e.g., IPM), need fine-tuning when applied\n\nto unseen datasets. This fine-tuning time should be counted towards total time expense for fair comparison. Moreover, advanced learning techniques enables Jellyfish models to be quantized (Liu et al., 2023) or distilled to improve efficiency, which will be considered in the future. To further save processing time, users are also suggested using a simple but faster method to retrieve a set of candidates and then apply Jellyfish models to the candidates. For example, for EM, blocking is often used to group similar records together based on certain attributes and narrow the comparisons to within each block.\n\nFor batch processing of multiple instances, the speed can be improved by 1.31 and 1.27 times for 8B and 13B models, respectively, when prefix caching is enabled in vLLM. However, this optimization is not available for the 7B model due to the sliding window attention used in Mistral-7B.\n\nAs for memory consumption, Jellyfish-7B, 8B, and 13B spend 18GB, 20GB, and 30GB VRAM (including the model), respectively. To further reduce memory consumption, we can resort to activation-aware weight quantization (Lin et al., 2024). By doing so, the memory consumption of the 7B and 8B models can be reduced to 7.5GB and 8GB, respectively, without compromising much of the performance (-1.25 and -0.52 average micro-F1/accuracy for the 7B and 8B models, respectively).",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2024.emnlp-main.497::sections::7",
+      "paper_id": "2024.emnlp-main.497",
+      "section_number": "7",
+      "section_title": "conclusions",
+      "normalized_section_title": "conclusions",
+      "window_text": "We studied the problem of instruction-tuning LLMs as universal DP task solvers. By devising data preparation and knowledge injection techniques, we proposed Jellyfish, which enables users to craft instructions for DP tasks. Another notable feature of Jellyfish is its interpretation ability, providing explanations of its outputs. We tuned three base models ranging from 7B to 13B, which can operate on a local GPU without compromising data security. The experiments demonstrated the competitiveness of Jellyfish against existing DP solutions, impressive generalizability to new tasks, the ability of retaining performance in NLP tasks, as well as the competence in interpretation.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.497::appendix::A",
+      "paper_id": "2024.emnlp-main.497",
+      "section_number": "A",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Hyperparameters. The following hyperparameters are used for Jellyfish models' tuning and inference:\n\nTable 8: Hyperparameter setting.   \n\n<table><tr><td>Category</td><td>Parameter</td><td>Value</td></tr><tr><td rowspan=\"7\">Tuning</td><td>lora_target</td><td>q_Proj, k_Proj, v_Proj, o_Proj</td></tr><tr><td>per_device_train_batch_size</td><td>2</td></tr><tr><td>gradient Accumulation_steps</td><td>2</td></tr><tr><td>learning_rate</td><td>3e-5</td></tr><tr><td>num_train_epochs</td><td>5</td></tr><tr><td>lora_rank</td><td>32</td></tr><tr><td>lora_alpha</td><td>32</td></tr><tr><td rowspan=\"3\">Inference</td><td>temperature</td><td>0.35</td></tr><tr><td>top_p</td><td>0.9</td></tr><tr><td>top_k</td><td>20</td></tr></table>\n\nDatasets. Apart from the seen datasets in building Jellyfish (Section 3), we use the following datasets as unseen data, where CTA and AVE are case studies on unseen tasks. (1) ED: Flights and Rayyan (Mahdavi et al., 2019); (2) DI: Flipkart (Flipkart.com) and Phone (Reviews) from Kaggle; (3) SM: CMS (Zhang et al., 2021); (4) EM: Abt-Buy and Walmart-Amazon from the Magellan data repository (Das et al.); (5) CTA: SOTAB (Korini and Bizer, 2023); (6) AVE: AE-110k and OA-Mine (Brinkmann et al., 2023). The statistics of the datasets are reported in Table 3. We generate train/valid/test splits following the protocols for Adult and Hospital (Heidari et al., 2019), Flipkart and Phone (Mei et al., 2021), and MIMIC-III and CMS (Zhang et al., 2021). The other datasets have already been provided with splits (Narayan et al., 2022; Korini and Bizer, 2023; Brinkmann et al., 2023).\n\nBaselines. We categorize existing methods into non-LLM methods and LLM methods. For non-LLM methods, we select the following baselines, in line with (Narayan et al., 2022): (1) ED: HoloDetect (Heidari et al., 2019) and Raha (Mahdavi et al., 2019); (2) DI: IPM (Mei et al., 2021); (3) SM: SMAT (Zhang et al., 2021); (4) EM: Ditto (Li et al., 2020) and Unicorn (Tu et al., 2023); (5) CTA: RoBERTa (Liu et al., 2019). For their performance, we follow the best numbers reported in prior works (Narayan et al., 2022; Korini and Bizer, 2023; Tu et al., 2023). Other methods such as Baran (Mahdavi and Abedjan, 2020), HoloClean (Rekatsinas et al., 2017), and DODUO (Suhara et al., 2022), have been shown to be outperformed by the above competitors (Mei et al., 2021; Narayan et al., 2022; Korini and Bizer, 2023), and hence are not compared here.\n\nLLM methods are GPT-3 (text-davinci-002), GPT-3.5 (gpt-3.5-turbo-0301), Table-GPT (Li et al., 2023) (GPT-3.5 fine-tuned for tables), GPT-4 (gpt-4-0314), GPT-4o (gpt-4o-2024-05-13), Stable Beluga 2 70B (Mahan et al., 2023), and SOLAR 70B (Upstage, 2023). We follow the numbers reported in previous works (Narayan et al., 2022; Zhang et al., 2023a; Brinkmann et al., 2023). Few-shots are used in line with Jellyfish for fair comparison. TableLlama (Zhang et al., 2023c), which can handle CTA, is not compared because it is tuned for CTA, whereas our purpose is to evaluate the performance of LLMs on CTA as an unseen task.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.497::appendix::C",
+      "paper_id": "2024.emnlp-main.497",
+      "section_number": "C",
+      "section_title": "additional experiments",
+      "normalized_section_title": "additional experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.497::sections::5.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "count": null,
+      "count_text": "",
+      "evidence": "Datasets. We conduct experiments on the datasets shown in Table 3. CTA and AVE are unseen tasks.\n\nJellyfish Models. We instruction-tune three base models: (1) Mistral-7B (Mistral-7B-Instructv0.2 (Jiang et al., 2023)), (2) Llama 3-8B (Llama-3-8B-Instruct (Meta AI, 2024)), and (3) OOP2-13B (OpenOrca-Platypus2-13B (Lee et al., 2023)), a Llama 2-13B variant with enhanced reasoning capabilities and logic proficiency. The tuned models are dubbed Jellyfish-7B, Jellyfish-8B, and Jellyfish-13B, respectively. The 7B and 8B models are tuned with both DP task and reasoning data (15k reasoning instances for the 7B model and 8k for the 8B model). The 13B model is tuned with only DP task data. As such, Jellyfish-7B and Jellyfish-8B are interpretation models while Jellyfish-13B is a task solver dedicated to the tuned tasks.\n\nWe report hyperparameter setup in Appendix A and injected knowledge in Appendix E. For inference, the (zero-shot) prompts are the same as DP task data and reasoning data, respectively. We apply general knowledge in the prompts, e.g., missing values in matching tasks and error types in\n\nTable 3: Testing dataset statistics. For Walmart-Amazon, the entities belong to a different category of products from the Amazon dataset used for instruction tuning.   \n\n<table><tr><td>Task</td><td>Type</td><td>Dataset</td><td>#Instances</td></tr><tr><td rowspan=\"4\">ED</td><td rowspan=\"2\">Seen</td><td>Adult</td><td>9900</td></tr><tr><td>Hospital</td><td>17101</td></tr><tr><td rowspan=\"2\">Unseen</td><td>Flights</td><td>12832</td></tr><tr><td>Rayyan</td><td>8997</td></tr><tr><td rowspan=\"4\">DI</td><td rowspan=\"2\">Seen</td><td>Buy</td><td>65</td></tr><tr><td>Restaurant</td><td>86</td></tr><tr><td rowspan=\"2\">Unseen</td><td>Flipkart</td><td>2675</td></tr><tr><td>Phone</td><td>1194</td></tr><tr><td rowspan=\"3\">SM</td><td rowspan=\"2\">Seen</td><td>MIMIC-III</td><td>6408</td></tr><tr><td>Synthesa</td><td>2964</td></tr><tr><td>Unseen</td><td>CMS</td><td>2564</td></tr><tr><td rowspan=\"8\">EM</td><td rowspan=\"6\">Seen</td><td>Amazon-Google</td><td>2293</td></tr><tr><td>Beer</td><td>91</td></tr><tr><td>DBLP-ACM</td><td>2473</td></tr><tr><td>DBLP-GoogleScholar</td><td>5742</td></tr><tr><td>Fodors-Zagats</td><td>189</td></tr><tr><td>iTunes-Amazon</td><td>109</td></tr><tr><td rowspan=\"2\">Unseen</td><td>Abt-Buy</td><td>1946</td></tr><tr><td>Walmart-Amazon</td><td>2049</td></tr><tr><td>CTA</td><td>Unseen</td><td>SOTAB</td><td>250</td></tr><tr><td rowspan=\"2\">AVE</td><td rowspan=\"2\">Unseen</td><td>AE-110K</td><td>1482</td></tr><tr><td>OA-Mine</td><td>2451</td></tr></table>\n\nED. Dataset-specific knowledge is not used. When few-shot prompting is enabled, we equip LLMs with three examples for each dataset, covering both positives and negatives (Appendix F).\n\nBaselines. We categorize existing methods into non-LLM methods and LLM methods. For non-LLM methods, we select the following baselines: (1) ED: HoloDetect (Heidari et al., 2019) and Raha (Mahdavi et al., 2019); (2) DI: IPM (Mei et al., 2021); (3) SM: SMAT (Zhang et al., 2021); (4) EM: Ditto (Li et al., 2020) and Unicorn (Tu et al., 2023); (5) CTA: RoBERTa (Liu et al., 2019). For their performance, we follow the best numbers reported in prior works (Narayan et al., 2022; Korini and Bizer, 2023; Tu et al., 2023).\n\nLLM methods are GPT-3, GPT-3.5, TableGPT (Li et al., 2023) (GPT-3.5 fine-tuned for tables), GPT-4, GPT-4o, Stable Beluga 2 70B (Mahan et al., 2023), and SOLAR 70B (Upstage, 2023). We follow the numbers reported in previous works (Narayan et al., 2022; Zhang et al., 2023a; Brinkmann et al., 2023). Few-shots are used in line with Jellyfish for fair comparison.\n\nMetrics. For DP task solving, we measure accuracy for DI, F1 score for ED, DI, EM, and AVE, and micro-F1 for CTA, all reported on a 100-scale.\n\nEnvironment. Training and inference of LLMs are conducted on NVIDIA A100 80GB GPUs. We em\n\nploy LoRA (Hu et al., 2021) and FlashAttention-2 (Dao, 2023) for tuning and vLLM with PageAttention (Kwon et al., 2023) for inference.",
+      "section_number": "5.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup"
+    },
+    {
+      "window_id": "2024.emnlp-main.497::sections::5.7",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80G",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "With 8 GPUs of A100 80G, instruction tuning spends around 5 hours for Jellyfish-13B, 3 hours for Jellyfish-7B and Jellyfish-8B. For inference on single GPU of A100 80G, Jellyfish-7B, 8B, and 13B spend 0.07, 0.08, and 0.15 seconds, respectively, on average to process an instance. As a reference, GPT-4 spends an average of $1 - 8$ seconds per instance. Although LLMs require substantial computational resources, thereby increasing the cost of use and compromising the efficiency, some non-LLM methods, such as RoBERTa and those built upon it (e.g., IPM), need fine-tuning when applied\n\nto unseen datasets. This fine-tuning time should be counted towards total time expense for fair comparison. Moreover, advanced learning techniques enables Jellyfish models to be quantized (Liu et al., 2023) or distilled to improve efficiency, which will be considered in the future. To further save processing time, users are also suggested using a simple but faster method to retrieve a set of candidates and then apply Jellyfish models to the candidates. For example, for EM, blocking is often used to group similar records together based on certain attributes and narrow the comparisons to within each block.\n\nFor batch processing of multiple instances, the speed can be improved by 1.31 and 1.27 times for 8B and 13B models, respectively, when prefix caching is enabled in vLLM. However, this optimization is not available for the 7B model due to the sliding window attention used in Mistral-7B.\n\nAs for memory consumption, Jellyfish-7B, 8B, and 13B spend 18GB, 20GB, and 30GB VRAM (including the model), respectively. To further reduce memory consumption, we can resort to activation-aware weight quantization (Lin et al., 2024). By doing so, the memory consumption of the 7B and 8B models can be reduced to 7.5GB and 8GB, respectively, without compromising much of the performance (-1.25 and -0.52 average micro-F1/accuracy for the 7B and 8B models, respectively).",
+      "section_number": "5.7",
+      "section_title": "comparison of efficiency",
+      "normalized_section_title": "comparison of efficiency"
+    },
+    {
+      "window_id": "2024.emnlp-main.497::sections::5.7",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80G",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "With 8 GPUs of A100 80G, instruction tuning spends around 5 hours for Jellyfish-13B, 3 hours for Jellyfish-7B and Jellyfish-8B. For inference on single GPU of A100 80G, Jellyfish-7B, 8B, and 13B spend 0.07, 0.08, and 0.15 seconds, respectively, on average to process an instance. As a reference, GPT-4 spends an average of $1 - 8$ seconds per instance. Although LLMs require substantial computational resources, thereby increasing the cost of use and compromising the efficiency, some non-LLM methods, such as RoBERTa and those built upon it (e.g., IPM), need fine-tuning when applied\n\nto unseen datasets. This fine-tuning time should be counted towards total time expense for fair comparison. Moreover, advanced learning techniques enables Jellyfish models to be quantized (Liu et al., 2023) or distilled to improve efficiency, which will be considered in the future. To further save processing time, users are also suggested using a simple but faster method to retrieve a set of candidates and then apply Jellyfish models to the candidates. For example, for EM, blocking is often used to group similar records together based on certain attributes and narrow the comparisons to within each block.\n\nFor batch processing of multiple instances, the speed can be improved by 1.31 and 1.27 times for 8B and 13B models, respectively, when prefix caching is enabled in vLLM. However, this optimization is not available for the 7B model due to the sliding window attention used in Mistral-7B.\n\nAs for memory consumption, Jellyfish-7B, 8B, and 13B spend 18GB, 20GB, and 30GB VRAM (including the model), respectively. To further reduce memory consumption, we can resort to activation-aware weight quantization (Lin et al., 2024). By doing so, the memory consumption of the 7B and 8B models can be reduced to 7.5GB and 8GB, respectively, without compromising much of the performance (-1.25 and -0.52 average micro-F1/accuracy for the 7B and 8B models, respectively).",
+      "section_number": "5.7",
+      "section_title": "comparison of efficiency",
+      "normalized_section_title": "comparison of efficiency"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.497::sections::5.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": null,
+      "count": null,
+      "count_text": "",
+      "section_number": "5.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "evidence": "Datasets. We conduct experiments on the datasets shown in Table 3. CTA and AVE are unseen tasks.\n\nJellyfish Models. We instruction-tune three base models: (1) Mistral-7B (Mistral-7B-Instructv0.2 (Jiang et al., 2023)), (2) Llama 3-8B (Llama-3-8B-Instruct (Meta AI, 2024)), and (3) OOP2-13B (OpenOrca-Platypus2-13B (Lee et al., 2023)), a Llama 2-13B variant with enhanced reasoning capabilities and logic proficiency. The tuned models are dubbed Jellyfish-7B, Jellyfish-8B, and Jellyfish-13B, respectively. The 7B and 8B models are tuned with both DP task and reasoning data (15k reasoning instances for the 7B model and 8k for the 8B model). The 13B model is tuned with only DP task data. As such, Jellyfish-7B and Jellyfish-8B are interpretation models while Jellyfish-13B is a task solver dedicated to the tuned tasks.\n\nWe report hyperparameter setup in Appendix A and injected knowledge in Appendix E. For inference, the (zero-shot) prompts are the same as DP task data and reasoning data, respectively. We apply general knowledge in the prompts, e.g., missing values in matching tasks and error types in\n\nTable 3: Testing dataset statistics. For Walmart-Amazon, the entities belong to a different category of products from the Amazon dataset used for instruction tuning.   \n\n<table><tr><td>Task</td><td>Type</td><td>Dataset</td><td>#Instances</td></tr><tr><td rowspan=\"4\">ED</td><td rowspan=\"2\">Seen</td><td>Adult</td><td>9900</td></tr><tr><td>Hospital</td><td>17101</td></tr><tr><td rowspan=\"2\">Unseen</td><td>Flights</td><td>12832</td></tr><tr><td>Rayyan</td><td>8997</td></tr><tr><td rowspan=\"4\">DI</td><td rowspan=\"2\">Seen</td><td>Buy</td><td>65</td></tr><tr><td>Restaurant</td><td>86</td></tr><tr><td rowspan=\"2\">Unseen</td><td>Flipkart</td><td>2675</td></tr><tr><td>Phone</td><td>1194</td></tr><tr><td rowspan=\"3\">SM</td><td rowspan=\"2\">Seen</td><td>MIMIC-III</td><td>6408</td></tr><tr><td>Synthesa</td><td>2964</td></tr><tr><td>Unseen</td><td>CMS</td><td>2564</td></tr><tr><td rowspan=\"8\">EM</td><td rowspan=\"6\">Seen</td><td>Amazon-Google</td><td>2293</td></tr><tr><td>Beer</td><td>91</td></tr><tr><td>DBLP-ACM</td><td>2473</td></tr><tr><td>DBLP-GoogleScholar</td><td>5742</td></tr><tr><td>Fodors-Zagats</td><td>189</td></tr><tr><td>iTunes-Amazon</td><td>109</td></tr><tr><td rowspan=\"2\">Unseen</td><td>Abt-Buy</td><td>1946</td></tr><tr><td>Walmart-Amazon</td><td>2049</td></tr><tr><td>CTA</td><td>Unseen</td><td>SOTAB</td><td>250</td></tr><tr><td rowspan=\"2\">AVE</td><td rowspan=\"2\">Unseen</td><td>AE-110K</td><td>1482</td></tr><tr><td>OA-Mine</td><td>2451</td></tr></table>\n\nED. Dataset-specific knowledge is not used. When few-shot prompting is enabled, we equip LLMs with three examples for each dataset, covering both positives and negatives (Appendix F).\n\nBaselines. We categorize existing methods into non-LLM methods and LLM methods. For non-LLM methods, we select the following baselines: (1) ED: HoloDetect (Heidari et al., 2019) and Raha (Mahdavi et al., 2019); (2) DI: IPM (Mei et al., 2021); (3) SM: SMAT (Zhang et al., 2021); (4) EM: Ditto (Li et al., 2020) and Unicorn (Tu et al., 2023); (5) CTA: RoBERTa (Liu et al., 2019). For their performance, we follow the best numbers reported in prior works (Narayan et al., 2022; Korini and Bizer, 2023; Tu et al., 2023).\n\nLLM methods are GPT-3, GPT-3.5, TableGPT (Li et al., 2023) (GPT-3.5 fine-tuned for tables), GPT-4, GPT-4o, Stable Beluga 2 70B (Mahan et al., 2023), and SOLAR 70B (Upstage, 2023). We follow the numbers reported in previous works (Narayan et al., 2022; Zhang et al., 2023a; Brinkmann et al., 2023). Few-shots are used in line with Jellyfish for fair comparison.\n\nMetrics. For DP task solving, we measure accuracy for DI, F1 score for ED, DI, EM, and AVE, and micro-F1 for CTA, all reported on a 100-scale.\n\nEnvironment. Training and inference of LLMs are conducted on NVIDIA A100 80GB GPUs. We em\n\nploy LoRA (Hu et al., 2021) and FlashAttention-2 (Dao, 2023) for tuning and vLLM with PageAttention (Kwon et al., 2023) for inference.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.emnlp-main.497::sections::5.7",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80G",
+      "cleaned_hardware_name": "a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": null,
+      "count": 8,
+      "count_text": "8",
+      "section_number": "5.7",
+      "section_title": "comparison of efficiency",
+      "normalized_section_title": "comparison of efficiency",
+      "evidence": "With 8 GPUs of A100 80G, instruction tuning spends around 5 hours for Jellyfish-13B, 3 hours for Jellyfish-7B and Jellyfish-8B. For inference on single GPU of A100 80G, Jellyfish-7B, 8B, and 13B spend 0.07, 0.08, and 0.15 seconds, respectively, on average to process an instance. As a reference, GPT-4 spends an average of $1 - 8$ seconds per instance. Although LLMs require substantial computational resources, thereby increasing the cost of use and compromising the efficiency, some non-LLM methods, such as RoBERTa and those built upon it (e.g., IPM), need fine-tuning when applied\n\nto unseen datasets. This fine-tuning time should be counted towards total time expense for fair comparison. Moreover, advanced learning techniques enables Jellyfish models to be quantized (Liu et al., 2023) or distilled to improve efficiency, which will be considered in the future. To further save processing time, users are also suggested using a simple but faster method to retrieve a set of candidates and then apply Jellyfish models to the candidates. For example, for EM, blocking is often used to group similar records together based on certain attributes and narrow the comparisons to within each block.\n\nFor batch processing of multiple instances, the speed can be improved by 1.31 and 1.27 times for 8B and 13B models, respectively, when prefix caching is enabled in vLLM. However, this optimization is not available for the 7B model due to the sliding window attention used in Mistral-7B.\n\nAs for memory consumption, Jellyfish-7B, 8B, and 13B spend 18GB, 20GB, and 30GB VRAM (including the model), respectively. To further reduce memory consumption, we can resort to activation-aware weight quantization (Lin et al., 2024). By doing so, the memory consumption of the 7B and 8B models can be reduced to 7.5GB and 8GB, respectively, without compromising much of the performance (-1.25 and -0.52 average micro-F1/accuracy for the 7B and 8B models, respectively).",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.emnlp-main.497::sections::5.7",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80G",
+      "cleaned_hardware_name": "a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "5.7",
+      "section_title": "comparison of efficiency",
+      "normalized_section_title": "comparison of efficiency",
+      "evidence": "With 8 GPUs of A100 80G, instruction tuning spends around 5 hours for Jellyfish-13B, 3 hours for Jellyfish-7B and Jellyfish-8B. For inference on single GPU of A100 80G, Jellyfish-7B, 8B, and 13B spend 0.07, 0.08, and 0.15 seconds, respectively, on average to process an instance. As a reference, GPT-4 spends an average of $1 - 8$ seconds per instance. Although LLMs require substantial computational resources, thereby increasing the cost of use and compromising the efficiency, some non-LLM methods, such as RoBERTa and those built upon it (e.g., IPM), need fine-tuning when applied\n\nto unseen datasets. This fine-tuning time should be counted towards total time expense for fair comparison. Moreover, advanced learning techniques enables Jellyfish models to be quantized (Liu et al., 2023) or distilled to improve efficiency, which will be considered in the future. To further save processing time, users are also suggested using a simple but faster method to retrieve a set of candidates and then apply Jellyfish models to the candidates. For example, for EM, blocking is often used to group similar records together based on certain attributes and narrow the comparisons to within each block.\n\nFor batch processing of multiple instances, the speed can be improved by 1.31 and 1.27 times for 8B and 13B models, respectively, when prefix caching is enabled in vLLM. However, this optimization is not available for the 7B model due to the sliding window attention used in Mistral-7B.\n\nAs for memory consumption, Jellyfish-7B, 8B, and 13B spend 18GB, 20GB, and 30GB VRAM (including the model), respectively. To further reduce memory consumption, we can resort to activation-aware weight quantization (Lin et al., 2024). By doing so, the memory consumption of the 7B and 8B models can be reduced to 7.5GB and 8GB, respectively, without compromising much of the performance (-1.25 and -0.52 average micro-F1/accuracy for the 7B and 8B models, respectively).",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.emnlp-main.497::sections::1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "1",
+      "section_title": "introduction",
+      "evidence": "Data preprocessing (DP) is a critical step in the data mining pipeline that involves transforming raw data into a manageable and processable format ready for use. Over the past decades, significant strides have been made in various DP tasks. Until 2021, most efforts were concentrated on one or two specific tasks such as error detection (ED) (Heidari et al., 2019; Mahdavi et al., 2019), data imputation (DI) (Rekatsinas et al., 2017; Mahdavi and\n\nHaochen Zhang and Yuyang Dong are co-first authors who contributed equally to this work. Chuan Xiao is the corresponding author.\n\nOur models are available at: https://huggingface.co/NECOUDBFM/Jellyfish. Our instruction dataset is available at: https://huggingface.co/datasets/NECOUDBFM/Jellyfish-Instruct.\n\nAbedjan, 2020; Mei et al., 2021), schema matching (SM) (Zhang et al., 2021), and entity matching (EM) (Konda et al., 2016; Li et al., 2020). A key challenge in developing generic solutions to DP is that these tasks differ in nature: they deal with errors, anomalies, matches, etc. and require different actions such as detection, repairing, and alignment.\n\nWith the advent of LLMs, researchers have found a key to address this challenge, spurring the development of generic solutions for a wider array of DP tasks. The advantages of LLMs over non-LLM DP methods reside in their natural language generation ability, internal knowledge, reasoning ability, generalizability, and adaptability through few-(Brown et al., 2020) or zero-shot (Kojima et al., 2022) prompting, thereby reducing the cost of human labor (e.g., hyperparameters tuning) and yielding better interpretability.\n\nDespite these strengths existing LLM-based DP solutions (Narayan et al., 2022; Zhang et al., 2023a; Korini and Bizer, 2023; Li et al., 2023), with reliance on GPT APIs, have raised concerns about data breaches, as evidenced by OpenAI's confirmed data breach (OpenAI, 2023). Another limitation is the difficulty in domain specification (Narayan et al., 2022). When dealing with data from highly specialized domains, training the LLMs used in these solutions can be costly (e.g., GPT-3.5) and even unavailable due to frozen parameters (e.g., GPT-4), posing difficulty in customizing the model.\n\nIn response to these challenges, we propose to construct instruction data and tune LLMs for various DP tasks. The tuned model, namely Jellyfish, distinguish itself with several key features: (1) Jellyfish is a universal DP task solver tuned to the following tasks: ED and DI for data cleaning, and SM and EM for data integration. (2) Varying from 7B to 13B, Jellyfish can operate on a local, single, and low-priced GPU, ensuring data security and allowing further tuning. (3) Capable of understanding natural language, Jellyfish allows users\n\n![](images/beaa3cbb20d92b50b3f9942da8d39b4cd31b710eef2bf6ab4b6db46d8af63075.jpg)  \nFigure 1: Overview of instruction tuning for data preprocessing.\n\nto manually craft instructions for DP tasks (or simply use our prompts in this paper) and apply prompt engineering techniques to tailor it to specific tasks and datasets. (4) Unlike many existing methods that rely heavily on handcrafted knowledge during inference (Rekatsinas et al., 2017; Qin et al., 2023), Jellyfish features domain knowledge in its instruction tuning and enables optional knowledge injection during inference. (5) By employing reasoning data in its instruction tuning, Jellyfish's interpretation ability provides natural language explanations of its outputs.\n\nWhereas instruction tuning of LLMs has been largely used for unstructured text (Zhang et al., 2023b), the construction of Jellyfish is non-trivial in the sense that (1) it tunes for structured data, (2) it finds a good data configuration for various DP tasks, and (3) it specifies domain knowledge that can be applied to unseen datasets. Besides, it is expected that the model's performance in NLP tasks can be preserved for generalizability and further customization. To the best of our knowledge, this is the first study that investigates instruction tuning for DP with LLMs as universal solutions.\n\nAs depicted in Figure 1, Jellyfish is constructed by carefully selecting data from several public datasets widely used for DP evaluation, considering their impacts on the overall performance. By instance serialization, raw data is serialized into instruction tuning prompts. By knowledge injection, task- and dataset-specific knowledge – particularly domain knowledge that can be extended to unseen datasets – is infused to the prompts. Moreover, we resort to Mixtral-8x7B-Instruct-v0.1 to generate reasoning data. As such, Jellyfish distills Mixtral's knowledge in reasoning DP results.\n\nOur evaluation focuses on tuning a set of prevalent open LLMs, including Mistral-7B-Instructv0.2 (as Jellyfish-7B), Llama 3-8B (as Jellyfish8B), and OpenOrca-Platypus2-13B (as Jellyfish\n\n13B). The results show that our instruction data applies to all these base models, substantially improving the DP performance. Compared to two categories of baseline methods, (1) non-LLM methods – typically solutions based on machine learning (ML) or pre-trained language models (PLMs) – and (2) LLM methods – typically GPT series methods, Jellyfish-13B consistently outperforms non-LLM methods on its seen datasets, and its effectiveness on unseen datasets even surpasses non-LLM methods on their respective seen datasets. Meanwhile, Jellyfish-7B/8B also exhibit competitiveness, especially on DI and EM tasks. For unseen tasks, Jellyfish models also deliver strong performance, rivaling GPT-3.5/4 models and showcasing generalizability to a wider range of DP tasks beyond the four tasks used for tuning. Our evaluation reveals the impacts of data configuration and the use of reasoning data in building Jellyfish, and discovers that Jellyfish barely compromises the base model's NLP performance. Furthermore, experiments demonstrate the advantage of Jellyfish's interpretation over GPT-3.5 in reasoning capabilities as well as the effectiveness of knowledge injection."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.497::sections::2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "2",
+      "section_title": "preliminaries",
+      "evidence": "In data mining, DP is a crucial step that deals with noise, missing values, inconsistencies, and heterogeneity in data. Major DP procedures include data cleaning, data integration, data transformation, and data reduction (Han et al., 2022). In this initial exploration of LLMs for DP, we concentrate on tabular data, one of the most common data types.\n\nOur data model operates on relational tables specified by schemas. We assume all attributes are either numerical (including binary) or textual (including categorical) values. Diverging from the traditional definition that presents the entire dataset and finds or fixes all the errors (or matches, etc.) within, we define the problem by handling one\n\nrecord (or a pair, depending on the task) at a time, so the prompt can be easily written and its length is within LLMs' token limitation. Next, we outline the DP tasks involved in this study:\n\n(1) Error Detection (ED): Given a record (i.e., a tuple in a relational table) and an attribute, our task is to detect whether there is an error in the cell value of this attribute. (2) Data Imputation (DI): Given a record and an attribute such that cell value for this attribute is missing, our task is to infer its correct value. (3) Schema Matching (SM): Given a pair of attributes represented in the form of (name, description), our task is to find whether they refer to the same attribute. (4) Entity Matching (EM): Given a pair of records, our task is to infer whether they refer to the same entity.\n\nThese four tasks form the most critical part of DP (Narayan et al., 2022; Zhang et al., 2023a) and are extensively discussed in the context of data mining (Han et al., 2022). We use them for instruction tuning. Besides, we consider two unseen tasks: (1) Column Type Annotation (CTA): Given a table with no header, our task is to infer the type of each column from a set of predefined types (e.g., name, time, location). (2) Attribute Value Extraction (AVE): Given a text description of an entity and a set of predefined attributes, the task is to extract attribute values from the text description.\n\nWe term each input object an instance, i.e., a record for ED and DI, a pair of attributes for SM, a pair of records for EM, a table or a column for CTA, and a text description for AVE."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.497::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.497::sections::7",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "7",
+      "section_title": "conclusions",
+      "evidence": "We studied the problem of instruction-tuning LLMs as universal DP task solvers. By devising data preparation and knowledge injection techniques, we proposed Jellyfish, which enables users to craft instructions for DP tasks. Another notable feature of Jellyfish is its interpretation ability, providing explanations of its outputs. We tuned three base models ranging from 7B to 13B, which can operate on a local GPU without compromising data security. The experiments demonstrated the competitiveness of Jellyfish against existing DP solutions, impressive generalizability to new tasks, the ability of retaining performance in NLP tasks, as well as the competence in interpretation."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.497::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "experimental setup",
+      "evidence": "Hyperparameters. The following hyperparameters are used for Jellyfish models' tuning and inference:\n\nTable 8: Hyperparameter setting.   \n\n<table><tr><td>Category</td><td>Parameter</td><td>Value</td></tr><tr><td rowspan=\"7\">Tuning</td><td>lora_target</td><td>q_Proj, k_Proj, v_Proj, o_Proj</td></tr><tr><td>per_device_train_batch_size</td><td>2</td></tr><tr><td>gradient Accumulation_steps</td><td>2</td></tr><tr><td>learning_rate</td><td>3e-5</td></tr><tr><td>num_train_epochs</td><td>5</td></tr><tr><td>lora_rank</td><td>32</td></tr><tr><td>lora_alpha</td><td>32</td></tr><tr><td rowspan=\"3\">Inference</td><td>temperature</td><td>0.35</td></tr><tr><td>top_p</td><td>0.9</td></tr><tr><td>top_k</td><td>20</td></tr></table>\n\nDatasets. Apart from the seen datasets in building Jellyfish (Section 3), we use the following datasets as unseen data, where CTA and AVE are case studies on unseen tasks. (1) ED: Flights and Rayyan (Mahdavi et al., 2019); (2) DI: Flipkart (Flipkart.com) and Phone (Reviews) from Kaggle; (3) SM: CMS (Zhang et al., 2021); (4) EM: Abt-Buy and Walmart-Amazon from the Magellan data repository (Das et al.); (5) CTA: SOTAB (Korini and Bizer, 2023); (6) AVE: AE-110k and OA-Mine (Brinkmann et al., 2023). The statistics of the datasets are reported in Table 3. We generate train/valid/test splits following the protocols for Adult and Hospital (Heidari et al., 2019), Flipkart and Phone (Mei et al., 2021), and MIMIC-III and CMS (Zhang et al., 2021). The other datasets have already been provided with splits (Narayan et al., 2022; Korini and Bizer, 2023; Brinkmann et al., 2023).\n\nBaselines. We categorize existing methods into non-LLM methods and LLM methods. For non-LLM methods, we select the following baselines, in line with (Narayan et al., 2022): (1) ED: HoloDetect (Heidari et al., 2019) and Raha (Mahdavi et al., 2019); (2) DI: IPM (Mei et al., 2021); (3) SM: SMAT (Zhang et al., 2021); (4) EM: Ditto (Li et al., 2020) and Unicorn (Tu et al., 2023); (5) CTA: RoBERTa (Liu et al., 2019). For their performance, we follow the best numbers reported in prior works (Narayan et al., 2022; Korini and Bizer, 2023; Tu et al., 2023). Other methods such as Baran (Mahdavi and Abedjan, 2020), HoloClean (Rekatsinas et al., 2017), and DODUO (Suhara et al., 2022), have been shown to be outperformed by the above competitors (Mei et al., 2021; Narayan et al., 2022; Korini and Bizer, 2023), and hence are not compared here.\n\nLLM methods are GPT-3 (text-davinci-002), GPT-3.5 (gpt-3.5-turbo-0301), Table-GPT (Li et al., 2023) (GPT-3.5 fine-tuned for tables), GPT-4 (gpt-4-0314), GPT-4o (gpt-4o-2024-05-13), Stable Beluga 2 70B (Mahan et al., 2023), and SOLAR 70B (Upstage, 2023). We follow the numbers reported in previous works (Narayan et al., 2022; Zhang et al., 2023a; Brinkmann et al., 2023). Few-shots are used in line with Jellyfish for fair comparison. TableLlama (Zhang et al., 2023c), which can handle CTA, is not compared because it is tuned for CTA, whereas our purpose is to evaluate the performance of LLMs on CTA as an unseen task."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.497::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "additional experiments",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "5.1",
+      "5.7"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": null
+      },
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 8
+      },
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2024\\2024.emnlp-main.497\\auto\\full.md",
+    "source_md_sha256": "975eac02341a1cdb453516493893b35ae68f835c84fb7fe2bc86b22c1d2fecb0",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "749fdb433714bfa003499fb1c90f58c9bb6de4daf647bf52f54e32986186b91c"
+  }
+}

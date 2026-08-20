@@ -1,0 +1,148 @@
+{
+  "paper_id": "2025.emnlp-main.945",
+  "candidate_windows": [
+    {
+      "window_id": "2025.emnlp-main.945::sections::3",
+      "paper_id": "2025.emnlp-main.945",
+      "section_number": "3",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.945::sections::3.1",
+      "paper_id": "2025.emnlp-main.945",
+      "section_number": "3.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Datasets and BaselinesTo train UltraComposer, we decompose instructions from ShareGPT(Chiang et al., 2O23) and generate corresponding evaluation questions by LLaMA-3.1-70B-Instruct. In our experiments,we collect human instructions from existing open-source datasets, including ShareGPT, OpenHermes2.5,and No Robots (Teknium, 2023; Rajani et al., 2023; Chiang et al., 2023), and employ UltraComposer to complicate instructions and then generate responses.For baselines, we reimplement existing methods using either public datasets (Sun et al., 2024a; Xu et al., 2023) or available implementations (Dong et al., 2O24), and include a series of currently open and closed-source LLMs. More details are in Appendix A.1.\n\nEvaluationWe evaluate ULTRAIF on five instruction-following benchmarks,including IFEval (Zhou et al., 2023), Multi-IF (He et al., 2024), InfoBench (Qin et al., 2024),FollowBench (Jiang et al., 2023), and LiveBench (White et al., 2024). While IFEval and Multi-IF focus on testing verifiable instructions using functions, the others extend to more general instructions that need to be evaluated byLLMs.Additionally,we further test the general ability of ULTRAIF such as mathematical (Chen et al., 2021), reasoning (Suzgun et al., 2022), coding (Cobbe et al., 2021), and general interaction capabilities (Li et al., 2O24). The details about benchmarks are provided in Appendix A.2.\n\nExperimental SettingsWe fine-tune LLaMA3.1-8B-Instruct to build our UltraComposer. Subsequently, we explore two settings to implement our training strategies listed in Appendix A.3, including Supervised Fine-tuning and Preference Learning.The implementation details are listed in Appendix A.4. And the prompts about instruction decomposition and evaluation question generation are provided in Appendix B.\n\n· Strong-to-Weak. In this setting, knowledge is distilled from a larger model to a smaller one.For ULTRAIF and baselines, we leverage LLaMA3.1-70B-Instruct for response generation and evaluation and then train LLaMA-3.1-8B-Base. · Self-Alignment. We replace the supervision model with Llama-3.1-8B-Instruct.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.945::appendix::A",
+      "paper_id": "2025.emnlp-main.945",
+      "section_number": "A",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.945::appendix::A.1.2",
+      "paper_id": "2025.emnlp-main.945",
+      "section_number": "A.1.2",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "AutoIF (Dong et al., 2024) uniquely employs code verification to conducting scalable and reliable data generation for complex instruction-following in LLMs.We reproduced AutoIF utilizing the official open-source code².\n\nConifer (Sun et al., 2O24a) curates a novel instruction tuning dataset which aims to enhance how LLMs,particularly open-source models, follow complex instructions involving multiple, intricate constraints.We generate responses for the public data using LLaMA-3.1-70B-Instruct .\n\nEvol-Instruct (Xu et al., 2023) automatically massproduces high-complexity training data by generating diverse instructions with varying difficulty levels. We sample 1Ok data and generate responses4.\n\nSPaR(Cheng et al., 2024) proposes a self-play framework to enhance instruction-following abilities forLLMs,where an LLM refines its own responses via tree-search. We reimplement SPaR utilizing its official open-source dataset5 .",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.945::appendix::A.3",
+      "paper_id": "2025.emnlp-main.945",
+      "section_number": "A.3",
+      "section_title": "training strategies",
+      "normalized_section_title": "training strategies",
+      "window_text": "ULTRAIF offers flexible training strategies for aligning model with instruction following capabilities. To thoroughly evaluate the effectiveness, we provide two approaches:\n\nSupervised Finetuing (SFT). Given the dataset $\\mathcal { D } _ { d a t a }$ , we apply standard Supervised Finetuning (SFT) objective on vanilla model $\\pi$ with parameters $\\theta$ ,as shown in Eq. 4:\n\nIn the context of ULTRAIF, the UltraComposer enables an iterative augmentation of instructions, transitioning from simpler to more complex tasks. This allows the DPO process to be formulated as an iterative curriculum. At each iteration, the model $\\pi _ { \\mathrm { r e f } }$ is replaced with the latest optimized model from the previous stage. Concurrently, more challenging instruction-following datasets are generated and utilized for further training. This iterative approach ensures continuous improvement in model performance and adaptability across increasingly complex scenarios.\n\nMoreover, during the iterative process,as observed by (Chen et al., 2024), the DPO objective primarily focuses on optimizing the margin between the chosen and rejected samples, rather than directly maximizing the probability of chosen samples and minimizing that of the rejected ones. To address this,we employ the Noise Contrastive Estimation (NCA, Chen et al. (2024)) loss in the final iteration, and the objective is defined in Eq. 6:\n\n$$\n\\begin{array} { l } { { \\displaystyle { \\mathcal { L } } _ { N C A } ( \\pi _ { \\theta } , \\pi _ { r e f } ) = } } \\\\ { { \\displaystyle ~ - \\mathbb { E } _ { ( \\bar { x } , y _ { c } , y _ { r } ) \\in { \\mathcal { D } } _ { d a t a } } \\bigg [ \\log \\sigma ( \\beta \\log \\frac { \\pi _ { \\theta } ( y _ { c } | \\bar { x } ) } { \\pi _ { r e f } ( y _ { c } | \\bar { x } ) } ) } } \\\\ { { \\displaystyle ~ + \\frac { 1 } { 2 } \\sum _ { y \\in \\{ y _ { c } , y _ { r } \\} } \\log \\sigma ( - \\beta \\log \\frac { \\pi _ { \\theta } ( y | \\bar { x } ) } { \\pi _ { r e f } ( y | \\bar { x } ) } ) \\bigg ] } } \\end{array}\n$$\n\n$$\n\\mathcal { L } _ { S F T } ( \\pi _ { \\theta } ) = \\sum _ { ( \\bar { x } , y _ { c } ) \\in \\mathcal { D } _ { d a t a } } \\log \\pi _ { \\theta } ( y _ { c } | \\bar { x } )\n$$\n\nwhere $\\bar { I }$ represents the augmented instruction, and $r _ { c }$ denotes the corresponding chosen response.\n\n$\\mathbf { S F T + }$ Iterative Online DPO. As ULTRAIF is equipped with evaluation questions, it facilitates quality control by enabling the generation of pairwise responses with varying quality levels. This property makes it particularly suitable for the application of Direct Perference Optimization (DPO, Rafailov et al. (2O24)) to refine the fine-tuned model, $\\pi _ { r e f }$ ．The DPO objective is formulated as Eq. 5:\n\n$$\n\\begin{array} { r l r } & { } & { \\mathcal { L } _ { D P O } ( \\pi _ { \\theta } , \\pi _ { r e f } ) = - \\mathbb { E } _ { ( \\bar { x } , y _ { c } , y _ { r } ) \\in \\mathcal { D } _ { d a t a } } \\log \\sigma ( \\beta \\cdot \\Delta ) } \\\\ & { } & { \\Delta = ( \\log \\frac { \\pi _ { \\theta } ( y _ { c } | \\bar { x } ) } { \\pi _ { r e f } ( y _ { c } | \\bar { x } ) } - \\log \\frac { \\pi _ { \\theta } ( y _ { r } | \\bar { x } ) } { \\pi _ { r e f } ( y _ { r } | \\bar { x } ) } ) } \\end{array}\n$$\n\nwhere $\\beta$ is a scaling hyperparameter, $\\sigma$ denotes the sigmoid function, and $\\pi \\theta$ is initialized from $\\pi _ { \\mathrm { r e f } }$ and further optimized during the DPO stage.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.945::appendix::A.4",
+      "paper_id": "2025.emnlp-main.945",
+      "section_number": "A.4",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "Our experiments are conducted on $8 \\times \\mathrm { A l 0 0 }$ GPUs (80GB) using mixed precision with bfl6, DeepSpeed ZeRO Stage 3 (Rasley et al., 202O), and FlashAttention 2 (Dao, 2023).\n\nIn the SFT stage, we perform full fine-tuning with a learning rate of 1e-5. The maximum token length is set to 8192 and variable-length packing is enabled. We use AdamW (Loshchilov, 2017) as the optimizer with a warmup ratio of O.O3 and employ a LinearLR scheduler at the beginning, transitioning to CosineAnnealingLR towards the end.\n\nIn the DPO stage, the configuration is similar, with the only difference being a lower learning rate of 5e-7. Additionally, the beta parameter of DPO loss is set to 0.1.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.945::appendix::C",
+      "paper_id": "2025.emnlp-main.945",
+      "section_number": "C",
+      "section_title": "additional experimental results",
+      "normalized_section_title": "additional experimental results",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.emnlp-main.945::appendix::A.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80GB",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Our experiments are conducted on $8 \\times \\mathrm { A l 0 0 }$ GPUs (80GB) using mixed precision with bfl6, DeepSpeed ZeRO Stage 3 (Rasley et al., 202O), and FlashAttention 2 (Dao, 2023).\n\nIn the SFT stage, we perform full fine-tuning with a learning rate of 1e-5. The maximum token length is set to 8192 and variable-length packing is enabled. We use AdamW (Loshchilov, 2017) as the optimizer with a warmup ratio of O.O3 and employ a LinearLR scheduler at the beginning, transitioning to CosineAnnealingLR towards the end.\n\nIn the DPO stage, the configuration is similar, with the only difference being a lower learning rate of 5e-7. Additionally, the beta parameter of DPO loss is set to 0.1.",
+      "section_number": "A.4",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.emnlp-main.945::appendix::A.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80GB",
+      "cleaned_hardware_name": "a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "A.4",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "Our experiments are conducted on $8 \\times \\mathrm { A l 0 0 }$ GPUs (80GB) using mixed precision with bfl6, DeepSpeed ZeRO Stage 3 (Rasley et al., 202O), and FlashAttention 2 (Dao, 2023).\n\nIn the SFT stage, we perform full fine-tuning with a learning rate of 1e-5. The maximum token length is set to 8192 and variable-length packing is enabled. We use AdamW (Loshchilov, 2017) as the optimizer with a warmup ratio of O.O3 and employ a LinearLR scheduler at the beginning, transitioning to CosineAnnealingLR towards the end.\n\nIn the DPO stage, the configuration is similar, with the only difference being a lower learning rate of 5e-7. Additionally, the beta parameter of DPO loss is set to 0.1.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.4"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 8
+      }
+    ]
+  }
+}

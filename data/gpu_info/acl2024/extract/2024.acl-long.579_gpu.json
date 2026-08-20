@@ -1,0 +1,141 @@
+{
+  "paper_id": "2024.acl-long.579",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.579::sections::4",
+      "paper_id": "2024.acl-long.579",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.579::sections::4.1",
+      "paper_id": "2024.acl-long.579",
+      "section_number": "4.1",
+      "section_title": "setups",
+      "normalized_section_title": "setups",
+      "window_text": "Evaluation Datasets. We conduct experiments on multimodal question answering and multimodal analogy reasoning tasks, namely ScienceQA and MARS. See Appendix A.1 for additional details.\n\n- ScienceQA. This dataset is a large-scale multimodal science question answering dataset (Lu et al., 2022), each multiple-choice question is accompanied by a textual or visual context. This dataset is not purely multimodal, only $48.7\\%$ of the data includes images.   \n- MARS. MARS (Zhang et al., 2022) is a novel dataset designed for evaluating multimodal analogical reasoning over the multimodal knowledge graph MarKG.\n\nMultimodal Knowledge Graphs. In theory, any knowledge-rich MMKG can be applied to multiple benchmarks. However, the suitable MMKG will vary depending on the benchmark's domain. In particular, MMKG is used in conjunction with ScienceQA, whereas MarKG is employed to support MARS. The reason is provided in Appendix A.2.\n\n- MMKG. This dataset (Liu et al., 2019) is extracted from FreeBase (Bordes et al., 2013), DBpedia (Auer et al., 2007), and YAGO (Suchanek et al., 2007), respectively. Each entity is associated with approximately 36 corresponding images from Google.   \n- MarKG. MarKG (Zhang et al., 2022) is a multimodal knowledge graph dataset devel\n\noped from seed entities and relations in E-KAR (Chen et al., 2022a) and BATs (Gladkova et al., 2016). It aims to support MARS to do multimodal analogical reasoning, sharing the same entity and relationship with MARS.\n\nPretraining setup. We extract the image, QA pairs, and modified scene graph for each data instance to construct the MMKG-grounded dataset based on Visual Genome (Krishna et al., 2017) for pretraining. Specifically, the object entities in the original scene graph are linked to their corresponding images and attributes through the \"image of\" and \"attribute of\" relations, respectively. More details are provided in Appendix A.3. This modified scene graph serves as the MMKG in pretraining.\n\nBaselines. For ScienceQA, we compare our approach against four kinds of baselines, including the zero- & few-shot GPT Model (Lu et al., 2022), SOTA method MM-Cot (Zhang et al., 2023c), representative end-to-end multimodal LLM model LLaVA (Liu et al., 2023), and parameter-efficient methods such as LLaMA-Adapter (Zhang et al., 2024a) and LaVIN (Luo et al., 2023). For MARS, we compare our approach against two kinds of baselines, MKGE methods like IKRL (Xie et al., 2017), TransAE (Wang et al., 2019), and RSME (Wang et al., 2021), Multimode pre-trained transformer model(MPT), VisualBERT (Li et al., 2019), ViLT (Kim et al., 2021), and MKGformer (Chen et al., 2022b), etc. Each baseline undergoes pre-training on MarKG, equipping them with essential prior knowledge about entities and relations for enhancing multimodal reasoning.\n\nImplementation. We select the ViT-L/32 (Radford et al., 2021) as the visual encoder and RGAT as the knowledge embedding model for both datasets. In ScienceQA, we adopt FLAN-T5 3B and FLAN-T5 11B (Chung et al., 2022) as the LLMs and implement the Multimodal-CoT prompting method (Zhang et al., 2023c). To verify the generality of MR-MKG, FLAN-UL2 19B (Chung et al., 2022) is also used as the backbone. For MARS, LLaMA-2 7B (Touvron et al., 2023) is selected to initialize our model. Regarding knowledge triple retrieval, we set the number of triples to either 10 or 20, and the hop distance for triple retrieval is maintained at one. All experiments are conducted on a NVIDIA $8 \\times$ A800-SXM4-80GB machine. More details are provided in Appendix A.7.\n\nTable 1: Results on the ScienceQA test set with accuracy $(\\%)$ . #T-Params = number of trainable parameters. Question classes: NAT = natural science, SOC = social science, LAN = language science, TXT = text context, IMG = image context, NO = no context, G1-6 = grades 1-6, G7-12 = grades 7-12. Previous SOTA results are underlined. The second segment: Zero- & few-shot methods. The third segment: SOTA and representative models. The fourth segment: Parameter-efficient methods. The fifth segment: Our MR-MKG results.   \n\n<table><tr><td rowspan=\"2\">Method</td><td rowspan=\"2\">#T-Param</td><td colspan=\"3\">Subject</td><td colspan=\"3\">Context Modality</td><td colspan=\"3\">Grade</td><td rowspan=\"2\">Average</td></tr><tr><td>NAT</td><td>SOC</td><td>LAN</td><td>TXT</td><td>IMG</td><td>NO</td><td>G1-6</td><td>G7-12</td><td></td></tr><tr><td>Human (Lu et al., 2022)</td><td>-</td><td>90.23</td><td>84.97</td><td>87.48</td><td>89.60</td><td>87.50</td><td>88.10</td><td>91.59</td><td>82.42</td><td>88.40</td><td></td></tr><tr><td>GPT-3.5 (CoT) (Lu et al., 2022)</td><td>-</td><td>75.44</td><td>70.87</td><td>78.09</td><td>74.68</td><td>67.43</td><td>79.93</td><td>78.23</td><td>69.68</td><td>75.17</td><td></td></tr><tr><td>GPT-4 (Liu et al., 2023)</td><td>-</td><td>84.06</td><td>73.45</td><td>87.36</td><td>81.87</td><td>70.75</td><td>90.73</td><td>84.69</td><td>79.10</td><td>82.69</td><td></td></tr><tr><td>UnifiedQABase(Lu et al., 2022)</td><td>223M</td><td>71.00</td><td>76.04</td><td>78.91</td><td>66.42</td><td>66.53</td><td>81.81</td><td>77.06</td><td>68.82</td><td>74.11</td><td></td></tr><tr><td>UnifiedQABase(MM-CoT) (Zhang et al., 2023c)</td><td>223M</td><td>87.52</td><td>77.17</td><td>85.82</td><td>87.88</td><td>82.90</td><td>86.83</td><td>84.65</td><td>85.37</td><td>84.91</td><td></td></tr><tr><td>UnifiedQALarge(MM-CoT) (Zhang et al., 2023c)</td><td>738M</td><td>95.91</td><td>82.00</td><td>90.82</td><td>95.26</td><td>88.80</td><td>92.89</td><td>92.44</td><td>90.31</td><td>91.68</td><td></td></tr><tr><td>LLaVA (Liu et al., 2023)</td><td>13B</td><td>90.36</td><td>95.95</td><td>88.00</td><td>89.49</td><td>88.00</td><td>90.66</td><td>90.93</td><td>90.90</td><td>90.92</td><td></td></tr><tr><td>LLaMA-Adapter (Zhang et al., 2024a)</td><td>1.8M</td><td>84.37</td><td>88.30</td><td>84.36</td><td>83.72</td><td>80.32</td><td>86.90</td><td>85.83</td><td>84.05</td><td>85.19</td><td></td></tr><tr><td>LaVIN-7B (Luo et al., 2023)</td><td>3.8M</td><td>89.25</td><td>94.94</td><td>85.24</td><td>88.51</td><td>87.46</td><td>88.08</td><td>90.16</td><td>88.07</td><td>89.41</td><td></td></tr><tr><td>LaVIN-13B (Luo et al., 2023)</td><td>5.4M</td><td>89.88</td><td>94.49</td><td>89.82</td><td>88.95</td><td>87.61</td><td>91.85</td><td>91.45</td><td>89.72</td><td>90.83</td><td></td></tr><tr><td>MR-MKG (FLAN-T5-3B)</td><td>77M</td><td>90.67</td><td>85.38</td><td>86.45</td><td>90.96</td><td>87.46</td><td>87.39</td><td>90.27</td><td>85.23</td><td>88.47</td><td></td></tr><tr><td>MR-MKG (FLAN-T5-11B)</td><td>248M</td><td>94.93</td><td>90.1</td><td>90.55</td><td>94.53</td><td>92.12</td><td>92.2</td><td>93.83</td><td>90.9</td><td>92.78</td><td></td></tr><tr><td>MR-MKG (FLAN-UL2-19B)</td><td>248M</td><td>95.74</td><td>90.33</td><td>92.00</td><td>95.50</td><td>92.41</td><td>93.31</td><td>93.98</td><td>93.01</td><td>93.63</td><td></td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.579::appendix::A",
+      "paper_id": "2024.acl-long.579",
+      "section_number": "A",
+      "section_title": "additional experimental setups",
+      "normalized_section_title": "additional experimental setups",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.579::appendix::A.7",
+      "paper_id": "2024.acl-long.579",
+      "section_number": "A.7",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "ScienceQA. We use Multimodal-CoT prompting in ScienceQA task. It is a two-stage framework that separates rationale generation and answer inference. In each prediction, the model initially generates a rationale and then predicts the final answer based on the question and the rationale. Relevant sub-MMKGs are retrieved based on text features, which are concatenated by question, context, and\n\noptions. We fine-tune the models up to 3 epochs, with a learning rate of 4e-5. We set the maximum number of input and output token lengths of LLMs is 512. The batch size is 1 and the optimizer is AdamW with a weight decay of 0.01.\n\nMARS. Initially, we pre-train the models on the MarKG dataset, focusing on tasks such as entity prediction and relation prediction. It can acquire entity and relation embeddings matrix. Subsequently, we further fine-tune the models on MARS. The details of hyper-parameters can be seen in Table 9. Relevant sub-MMKGs are retrieved based on the question entity, and all entities are embedded and transformed according to their modes.\n\nMMKG-Grounded Dataset. We first pre-train our MR-MKG method on the MMKG-grounded dataset up to 2 epochs, with a learning rate of 5e-5. We set the maximum number of input and output token lengths of LLMs are 512 and 128, respectively. The batch size is 2 and the optimizer is AdamW with a weight decay of 0.01. Relevant sub-MMKGs are retrieved based on the question.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.579::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A800 SXM4 80GB",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Evaluation Datasets. We conduct experiments on multimodal question answering and multimodal analogy reasoning tasks, namely ScienceQA and MARS. See Appendix A.1 for additional details.\n\n- ScienceQA. This dataset is a large-scale multimodal science question answering dataset (Lu et al., 2022), each multiple-choice question is accompanied by a textual or visual context. This dataset is not purely multimodal, only $48.7\\%$ of the data includes images.   \n- MARS. MARS (Zhang et al., 2022) is a novel dataset designed for evaluating multimodal analogical reasoning over the multimodal knowledge graph MarKG.\n\nMultimodal Knowledge Graphs. In theory, any knowledge-rich MMKG can be applied to multiple benchmarks. However, the suitable MMKG will vary depending on the benchmark's domain. In particular, MMKG is used in conjunction with ScienceQA, whereas MarKG is employed to support MARS. The reason is provided in Appendix A.2.\n\n- MMKG. This dataset (Liu et al., 2019) is extracted from FreeBase (Bordes et al., 2013), DBpedia (Auer et al., 2007), and YAGO (Suchanek et al., 2007), respectively. Each entity is associated with approximately 36 corresponding images from Google.   \n- MarKG. MarKG (Zhang et al., 2022) is a multimodal knowledge graph dataset devel\n\noped from seed entities and relations in E-KAR (Chen et al., 2022a) and BATs (Gladkova et al., 2016). It aims to support MARS to do multimodal analogical reasoning, sharing the same entity and relationship with MARS.\n\nPretraining setup. We extract the image, QA pairs, and modified scene graph for each data instance to construct the MMKG-grounded dataset based on Visual Genome (Krishna et al., 2017) for pretraining. Specifically, the object entities in the original scene graph are linked to their corresponding images and attributes through the \"image of\" and \"attribute of\" relations, respectively. More details are provided in Appendix A.3. This modified scene graph serves as the MMKG in pretraining.\n\nBaselines. For ScienceQA, we compare our approach against four kinds of baselines, including the zero- & few-shot GPT Model (Lu et al., 2022), SOTA method MM-Cot (Zhang et al., 2023c), representative end-to-end multimodal LLM model LLaVA (Liu et al., 2023), and parameter-efficient methods such as LLaMA-Adapter (Zhang et al., 2024a) and LaVIN (Luo et al., 2023). For MARS, we compare our approach against two kinds of baselines, MKGE methods like IKRL (Xie et al., 2017), TransAE (Wang et al., 2019), and RSME (Wang et al., 2021), Multimode pre-trained transformer model(MPT), VisualBERT (Li et al., 2019), ViLT (Kim et al., 2021), and MKGformer (Chen et al., 2022b), etc. Each baseline undergoes pre-training on MarKG, equipping them with essential prior knowledge about entities and relations for enhancing multimodal reasoning.\n\nImplementation. We select the ViT-L/32 (Radford et al., 2021) as the visual encoder and RGAT as the knowledge embedding model for both datasets. In ScienceQA, we adopt FLAN-T5 3B and FLAN-T5 11B (Chung et al., 2022) as the LLMs and implement the Multimodal-CoT prompting method (Zhang et al., 2023c). To verify the generality of MR-MKG, FLAN-UL2 19B (Chung et al., 2022) is also used as the backbone. For MARS, LLaMA-2 7B (Touvron et al., 2023) is selected to initialize our model. Regarding knowledge triple retrieval, we set the number of triples to either 10 or 20, and the hop distance for triple retrieval is maintained at one. All experiments are conducted on a NVIDIA $8 \\times$ A800-SXM4-80GB machine. More details are provided in Appendix A.7.\n\nTable 1: Results on the ScienceQA test set with accuracy $(\\%)$ . #T-Params = number of trainable parameters. Question classes: NAT = natural science, SOC = social science, LAN = language science, TXT = text context, IMG = image context, NO = no context, G1-6 = grades 1-6, G7-12 = grades 7-12. Previous SOTA results are underlined. The second segment: Zero- & few-shot methods. The third segment: SOTA and representative models. The fourth segment: Parameter-efficient methods. The fifth segment: Our MR-MKG results.   \n\n<table><tr><td rowspan=\"2\">Method</td><td rowspan=\"2\">#T-Param</td><td colspan=\"3\">Subject</td><td colspan=\"3\">Context Modality</td><td colspan=\"3\">Grade</td><td rowspan=\"2\">Average</td></tr><tr><td>NAT</td><td>SOC</td><td>LAN</td><td>TXT</td><td>IMG</td><td>NO</td><td>G1-6</td><td>G7-12</td><td></td></tr><tr><td>Human (Lu et al., 2022)</td><td>-</td><td>90.23</td><td>84.97</td><td>87.48</td><td>89.60</td><td>87.50</td><td>88.10</td><td>91.59</td><td>82.42</td><td>88.40</td><td></td></tr><tr><td>GPT-3.5 (CoT) (Lu et al., 2022)</td><td>-</td><td>75.44</td><td>70.87</td><td>78.09</td><td>74.68</td><td>67.43</td><td>79.93</td><td>78.23</td><td>69.68</td><td>75.17</td><td></td></tr><tr><td>GPT-4 (Liu et al., 2023)</td><td>-</td><td>84.06</td><td>73.45</td><td>87.36</td><td>81.87</td><td>70.75</td><td>90.73</td><td>84.69</td><td>79.10</td><td>82.69</td><td></td></tr><tr><td>UnifiedQABase(Lu et al., 2022)</td><td>223M</td><td>71.00</td><td>76.04</td><td>78.91</td><td>66.42</td><td>66.53</td><td>81.81</td><td>77.06</td><td>68.82</td><td>74.11</td><td></td></tr><tr><td>UnifiedQABase(MM-CoT) (Zhang et al., 2023c)</td><td>223M</td><td>87.52</td><td>77.17</td><td>85.82</td><td>87.88</td><td>82.90</td><td>86.83</td><td>84.65</td><td>85.37</td><td>84.91</td><td></td></tr><tr><td>UnifiedQALarge(MM-CoT) (Zhang et al., 2023c)</td><td>738M</td><td>95.91</td><td>82.00</td><td>90.82</td><td>95.26</td><td>88.80</td><td>92.89</td><td>92.44</td><td>90.31</td><td>91.68</td><td></td></tr><tr><td>LLaVA (Liu et al., 2023)</td><td>13B</td><td>90.36</td><td>95.95</td><td>88.00</td><td>89.49</td><td>88.00</td><td>90.66</td><td>90.93</td><td>90.90</td><td>90.92</td><td></td></tr><tr><td>LLaMA-Adapter (Zhang et al., 2024a)</td><td>1.8M</td><td>84.37</td><td>88.30</td><td>84.36</td><td>83.72</td><td>80.32</td><td>86.90</td><td>85.83</td><td>84.05</td><td>85.19</td><td></td></tr><tr><td>LaVIN-7B (Luo et al., 2023)</td><td>3.8M</td><td>89.25</td><td>94.94</td><td>85.24</td><td>88.51</td><td>87.46</td><td>88.08</td><td>90.16</td><td>88.07</td><td>89.41</td><td></td></tr><tr><td>LaVIN-13B (Luo et al., 2023)</td><td>5.4M</td><td>89.88</td><td>94.49</td><td>89.82</td><td>88.95</td><td>87.61</td><td>91.85</td><td>91.45</td><td>89.72</td><td>90.83</td><td></td></tr><tr><td>MR-MKG (FLAN-T5-3B)</td><td>77M</td><td>90.67</td><td>85.38</td><td>86.45</td><td>90.96</td><td>87.46</td><td>87.39</td><td>90.27</td><td>85.23</td><td>88.47</td><td></td></tr><tr><td>MR-MKG (FLAN-T5-11B)</td><td>248M</td><td>94.93</td><td>90.1</td><td>90.55</td><td>94.53</td><td>92.12</td><td>92.2</td><td>93.83</td><td>90.9</td><td>92.78</td><td></td></tr><tr><td>MR-MKG (FLAN-UL2-19B)</td><td>248M</td><td>95.74</td><td>90.33</td><td>92.00</td><td>95.50</td><td>92.41</td><td>93.31</td><td>93.98</td><td>93.01</td><td>93.63</td><td></td></tr></table>",
+      "section_number": "4.1",
+      "section_title": "setups",
+      "normalized_section_title": "setups"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.579::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A800 SXM4 80GB",
+      "cleaned_hardware_name": "nvidia a800 sxm4 80gb",
+      "normalized_hardware_name": "NVIDIA A800 SXM",
+      "benchmark_hardware_name": "NVIDIA A800 SXM",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "4.1",
+      "section_title": "setups",
+      "normalized_section_title": "setups",
+      "evidence": "Evaluation Datasets. We conduct experiments on multimodal question answering and multimodal analogy reasoning tasks, namely ScienceQA and MARS. See Appendix A.1 for additional details.\n\n- ScienceQA. This dataset is a large-scale multimodal science question answering dataset (Lu et al., 2022), each multiple-choice question is accompanied by a textual or visual context. This dataset is not purely multimodal, only $48.7\\%$ of the data includes images.   \n- MARS. MARS (Zhang et al., 2022) is a novel dataset designed for evaluating multimodal analogical reasoning over the multimodal knowledge graph MarKG.\n\nMultimodal Knowledge Graphs. In theory, any knowledge-rich MMKG can be applied to multiple benchmarks. However, the suitable MMKG will vary depending on the benchmark's domain. In particular, MMKG is used in conjunction with ScienceQA, whereas MarKG is employed to support MARS. The reason is provided in Appendix A.2.\n\n- MMKG. This dataset (Liu et al., 2019) is extracted from FreeBase (Bordes et al., 2013), DBpedia (Auer et al., 2007), and YAGO (Suchanek et al., 2007), respectively. Each entity is associated with approximately 36 corresponding images from Google.   \n- MarKG. MarKG (Zhang et al., 2022) is a multimodal knowledge graph dataset devel\n\noped from seed entities and relations in E-KAR (Chen et al., 2022a) and BATs (Gladkova et al., 2016). It aims to support MARS to do multimodal analogical reasoning, sharing the same entity and relationship with MARS.\n\nPretraining setup. We extract the image, QA pairs, and modified scene graph for each data instance to construct the MMKG-grounded dataset based on Visual Genome (Krishna et al., 2017) for pretraining. Specifically, the object entities in the original scene graph are linked to their corresponding images and attributes through the \"image of\" and \"attribute of\" relations, respectively. More details are provided in Appendix A.3. This modified scene graph serves as the MMKG in pretraining.\n\nBaselines. For ScienceQA, we compare our approach against four kinds of baselines, including the zero- & few-shot GPT Model (Lu et al., 2022), SOTA method MM-Cot (Zhang et al., 2023c), representative end-to-end multimodal LLM model LLaVA (Liu et al., 2023), and parameter-efficient methods such as LLaMA-Adapter (Zhang et al., 2024a) and LaVIN (Luo et al., 2023). For MARS, we compare our approach against two kinds of baselines, MKGE methods like IKRL (Xie et al., 2017), TransAE (Wang et al., 2019), and RSME (Wang et al., 2021), Multimode pre-trained transformer model(MPT), VisualBERT (Li et al., 2019), ViLT (Kim et al., 2021), and MKGformer (Chen et al., 2022b), etc. Each baseline undergoes pre-training on MarKG, equipping them with essential prior knowledge about entities and relations for enhancing multimodal reasoning.\n\nImplementation. We select the ViT-L/32 (Radford et al., 2021) as the visual encoder and RGAT as the knowledge embedding model for both datasets. In ScienceQA, we adopt FLAN-T5 3B and FLAN-T5 11B (Chung et al., 2022) as the LLMs and implement the Multimodal-CoT prompting method (Zhang et al., 2023c). To verify the generality of MR-MKG, FLAN-UL2 19B (Chung et al., 2022) is also used as the backbone. For MARS, LLaMA-2 7B (Touvron et al., 2023) is selected to initialize our model. Regarding knowledge triple retrieval, we set the number of triples to either 10 or 20, and the hop distance for triple retrieval is maintained at one. All experiments are conducted on a NVIDIA $8 \\times$ A800-SXM4-80GB machine. More details are provided in Appendix A.7.\n\nTable 1: Results on the ScienceQA test set with accuracy $(\\%)$ . #T-Params = number of trainable parameters. Question classes: NAT = natural science, SOC = social science, LAN = language science, TXT = text context, IMG = image context, NO = no context, G1-6 = grades 1-6, G7-12 = grades 7-12. Previous SOTA results are underlined. The second segment: Zero- & few-shot methods. The third segment: SOTA and representative models. The fourth segment: Parameter-efficient methods. The fifth segment: Our MR-MKG results.   \n\n<table><tr><td rowspan=\"2\">Method</td><td rowspan=\"2\">#T-Param</td><td colspan=\"3\">Subject</td><td colspan=\"3\">Context Modality</td><td colspan=\"3\">Grade</td><td rowspan=\"2\">Average</td></tr><tr><td>NAT</td><td>SOC</td><td>LAN</td><td>TXT</td><td>IMG</td><td>NO</td><td>G1-6</td><td>G7-12</td><td></td></tr><tr><td>Human (Lu et al., 2022)</td><td>-</td><td>90.23</td><td>84.97</td><td>87.48</td><td>89.60</td><td>87.50</td><td>88.10</td><td>91.59</td><td>82.42</td><td>88.40</td><td></td></tr><tr><td>GPT-3.5 (CoT) (Lu et al., 2022)</td><td>-</td><td>75.44</td><td>70.87</td><td>78.09</td><td>74.68</td><td>67.43</td><td>79.93</td><td>78.23</td><td>69.68</td><td>75.17</td><td></td></tr><tr><td>GPT-4 (Liu et al., 2023)</td><td>-</td><td>84.06</td><td>73.45</td><td>87.36</td><td>81.87</td><td>70.75</td><td>90.73</td><td>84.69</td><td>79.10</td><td>82.69</td><td></td></tr><tr><td>UnifiedQABase(Lu et al., 2022)</td><td>223M</td><td>71.00</td><td>76.04</td><td>78.91</td><td>66.42</td><td>66.53</td><td>81.81</td><td>77.06</td><td>68.82</td><td>74.11</td><td></td></tr><tr><td>UnifiedQABase(MM-CoT) (Zhang et al., 2023c)</td><td>223M</td><td>87.52</td><td>77.17</td><td>85.82</td><td>87.88</td><td>82.90</td><td>86.83</td><td>84.65</td><td>85.37</td><td>84.91</td><td></td></tr><tr><td>UnifiedQALarge(MM-CoT) (Zhang et al., 2023c)</td><td>738M</td><td>95.91</td><td>82.00</td><td>90.82</td><td>95.26</td><td>88.80</td><td>92.89</td><td>92.44</td><td>90.31</td><td>91.68</td><td></td></tr><tr><td>LLaVA (Liu et al., 2023)</td><td>13B</td><td>90.36</td><td>95.95</td><td>88.00</td><td>89.49</td><td>88.00</td><td>90.66</td><td>90.93</td><td>90.90</td><td>90.92</td><td></td></tr><tr><td>LLaMA-Adapter (Zhang et al., 2024a)</td><td>1.8M</td><td>84.37</td><td>88.30</td><td>84.36</td><td>83.72</td><td>80.32</td><td>86.90</td><td>85.83</td><td>84.05</td><td>85.19</td><td></td></tr><tr><td>LaVIN-7B (Luo et al., 2023)</td><td>3.8M</td><td>89.25</td><td>94.94</td><td>85.24</td><td>88.51</td><td>87.46</td><td>88.08</td><td>90.16</td><td>88.07</td><td>89.41</td><td></td></tr><tr><td>LaVIN-13B (Luo et al., 2023)</td><td>5.4M</td><td>89.88</td><td>94.49</td><td>89.82</td><td>88.95</td><td>87.61</td><td>91.85</td><td>91.45</td><td>89.72</td><td>90.83</td><td></td></tr><tr><td>MR-MKG (FLAN-T5-3B)</td><td>77M</td><td>90.67</td><td>85.38</td><td>86.45</td><td>90.96</td><td>87.46</td><td>87.39</td><td>90.27</td><td>85.23</td><td>88.47</td><td></td></tr><tr><td>MR-MKG (FLAN-T5-11B)</td><td>248M</td><td>94.93</td><td>90.1</td><td>90.55</td><td>94.53</td><td>92.12</td><td>92.2</td><td>93.83</td><td>90.9</td><td>92.78</td><td></td></tr><tr><td>MR-MKG (FLAN-UL2-19B)</td><td>248M</td><td>95.74</td><td>90.33</td><td>92.00</td><td>95.50</td><td>92.41</td><td>93.31</td><td>93.98</td><td>93.01</td><td>93.63</td><td></td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.acl-long.579::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.acl-long.579::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "additional experimental setups",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.acl-long.579::appendix::A.7",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.7",
+      "section_title": "implementation details",
+      "evidence": "ScienceQA. We use Multimodal-CoT prompting in ScienceQA task. It is a two-stage framework that separates rationale generation and answer inference. In each prediction, the model initially generates a rationale and then predicts the final answer based on the question and the rationale. Relevant sub-MMKGs are retrieved based on text features, which are concatenated by question, context, and\n\noptions. We fine-tune the models up to 3 epochs, with a learning rate of 4e-5. We set the maximum number of input and output token lengths of LLMs is 512. The batch size is 1 and the optimizer is AdamW with a weight decay of 0.01.\n\nMARS. Initially, we pre-train the models on the MarKG dataset, focusing on tasks such as entity prediction and relation prediction. It can acquire entity and relation embeddings matrix. Subsequently, we further fine-tune the models on MARS. The details of hyper-parameters can be seen in Table 9. Relevant sub-MMKGs are retrieved based on the question entity, and all entities are embedded and transformed according to their modes.\n\nMMKG-Grounded Dataset. We first pre-train our MR-MKG method on the MMKG-grounded dataset up to 2 epochs, with a learning rate of 5e-5. We set the maximum number of input and output token lengths of LLMs are 512 and 128, respectively. The batch size is 2 and the optimizer is AdamW with a weight decay of 0.01. Relevant sub-MMKGs are retrieved based on the question."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A800 SXM",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2024\\2024.acl-long.579\\auto\\full.md",
+    "source_md_sha256": "a07faf1c93e9bea82e93360ee73aa4875a6ee5476f887775feae72c99409cf1a",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "ad96f3b6ca003898756db958dd17467668c845886fa3f1f835d26a866c8af3f0"
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "paper_id": "2025.naacl-long.618",
+  "candidate_windows": [
+    {
+      "window_id": "2025.naacl-long.618::sections::3",
+      "paper_id": "2025.naacl-long.618",
+      "section_number": "3",
+      "section_title": "methods",
+      "normalized_section_title": "methods",
+      "window_text": "Probe Design We use a $\\mathbb{P}(\\mathrm{IK})$ probing approach in part because of the difficulty of reasoning about uncertainty using token probabilities. Token probabilities for open-ended questions are a highly imperfect proxy for a model's confidence, because they conflate semantic uncertainty, or uncertainty about content, with syntactic uncertainty, or uncertainty about form (Kuhn et al., 2022). Furthermore, we are most interested in improving uncertainty quantification for fine-tuned chat models, for which token probabilities do not correspond to an underlying distribution over possible text strings.\n\nWe construct a dataset on which to train the $\\mathbb{P}(\\mathrm{IK})$ probe according to the following steps.\n\n1. Perform 32 forward passes for each question on the question-answering task. We used few-shot prompting with 5 examples to ensure that the model answered in the right format.   \n2. Check whether a model's answers are correct. Specifically, we check whether a model's answer contains any correct answer as a substring, ignoring case. (See Appendix B.1 for validation of this approach.)   \n3. For each question in the dataset, save the number of correct and incorrect answers (implying a \"true probability\" of the model answering correctly).   \n4. Also, for each question, save the output of the model's last layer (before the unembedding). This is a vector in $\\mathbb{R}^{d_{\\mathrm{model}}}$\n\nThe $\\mathbb{P}(\\mathrm{IK})$ probe is a logistic classifier $p: \\mathbb{R}^{d_{\\mathrm{model}}} \\to (0,1)$ which takes these last layer activations as input and returns the proportion of correct answers. For example, if the model answers a question correctly $47\\%$ of the time, the probe should\n\n![](images/fec3718f29fa302250b14f5350f43e51a173555f53be9eedbdcca4e7ead503bd.jpg)  \n\"What is the religion of Abdullah Ahmad Badawi?\"\n\n![](images/9b7d620219198a5f1d9d76e1bf8bf7f60b36f2c6b9c2d41d9276aca0f38c4752.jpg)  \n\"What is the owner of Google Street View?\"\n\n![](images/c5de11745b261d8cf5692bd50d21f2a221f43fb7961aa05e5278fda2360b60a2.jpg)  \n\"What musical instrument does/did Terence Blanchard play?\"\n\n![](images/97c1a802a282085ec1240ac9f9168b2a6fe637dd2c6dd28da5b42d0d1ae74c43.jpg)  \n\"What is the religion of Abdullah Ahmad Badawi?\"\n\n![](images/a224b283d0b52c0e476322305879d1061b2555ad2cada064b7636e34d47a0748.jpg)  \n\"What is the owner of Google Street View?\"\n\n![](images/bcd86327538aa5621407334acb4f19ae18c269a035f9913afdfbc60cd6326886.jpg)  \n\"What musical instrument does/did Terence Blanchard play?\"   \nFigure 2: Representative results of causal tracing, shown for Gemma 2 9B Instruct (top) and Llama 2 7B (bottom) on three questions in CounterFact. The vertical axis shows the layer. Only layer .out locations are shown (plus embed .out in the first row). The input embeddings for the starred tokens (e.g., *Abdullah) are replaced with zeros in the corrupted and restored runs. We chose these questions to be representative of typical behavior. In the left column, the sets of components for which restorations have substantial effects on $m$ and $p$ are almost identical. In the middle column, the sets are very similar except at the Google token. (Restoring this token decreases the probability of the correct output token—also Google—even below the corrupted baseline, but increases the model's certainty in its answer.) This pattern was common across examples in which the correct answer appeared in the question. In the right column, the model is confidently wrong. We exclude cases like this (with very low $m_{\\mathrm{clean}}$ ) from this analysis, since we cannot meaningfully select a set of components which contribute to correctness.\n\noutput 0.47 on the last-layer activations at the last token of that question. We trained with binary cross-entropy loss, using dropout and a triangular learning rate schedule, and used a low learning rate $(\\eta = 3\\times 10^{-6})$ as in Kadavath et al. (2022).\n\nWe used between 2048 and 8192 examples per task (using fewer than 8192 when we were limited by the size of the dataset), and held out $20\\%$ of the data as a test split. Experiments were done with examples from the test split.\n\nModels and Datasets We studied eight models, including Llama 2 and 3 and Gemma 2 models with two to thirteen billion parameters, and five datasets; these are described in detail in Appendix B. All of the datasets studied, with the partial exception of MMLU (Hendrycks et al., 2021b), are \"recall-intensive\" in that they largely depend on recalling factual information learned during training;\n\nwe studied both multiple-choice datasets (MMLU, ARC (Clark et al., 2018) $^{1}$ ) and open-ended ones (TriviaQA (Joshi et al., 2017), WebQuestions (Berant et al., 2013), CounterFact (Meng et al., 2022)). Based on some preliminary zero-ablation experiments, we believe that models may exhibit similar behavior on some non-recall tasks such as simple math questions (see Appendix D for details).\n\nWe used the CounterFact dataset (Meng et al., 2022) exclusively for causal tracing. We reformulated CounterFact prompts as questions to match the format of our other datasets. Because we used the TriviaQA probe for the causal tracing experiment with CounterFact, we also did few-shot prompting with the prompt from TriviaQA.\n\nCausal Tracing. Causal tracing is a causal intervention method that aims to trace and identify important components in neural models for a given task (Meng et al., 2022; Wang et al., 2023), which is a generalization of causal mediation analysis (Vig et al., 2020). In this work, we use causal tracing (Meng et al., 2022) to examine the importance and role of individual circuits and components in LLMs. Specifically, given a specific input $q$ , causal tracing involves three runs: (1) a clean run, in which the original input $q$ is given to the model, which is used to obtain the hidden states of each layer; (2) a corrupted run, in which the input embeddings of certain tokens are corrupted by adding noise or (in this paper) replaced with zeros; and (3) a corrupted-with-restoration run, in which the computation is similar to the corrupted run except that the hidden states at specific locations $\\ell$ in the model are restored using the hidden states obtained from the clean run. By comparing the differences between the output (predicted probabilities) of the clean, corrupted, and restored runs, causal tracing allows the identification of important components in LLMs. That is, if the restored run achieves a similar effect as the clean run, it is likely that the corresponding restored component plays an important role in the model's processing.\n\nZero-Ablation. Zero-ablation is a mechanistic intervention technique that takes advantage of a transformer's residual structure by treating attention or MLP layers as separable modules which read from and write to the residual stream (Elhage et al., 2021; Nostalgebraist, 2020). A component $\\ell$ (in this paper, an attention or MLP layer) is \"ablated\" by replacing its output with zero. The drop in model performance on a given task after an intervention removing a component $\\ell$ provides a measure of the importance of $\\ell$ for the task.\n\nLeave-one-out and COAR interventions. Interpretability work using ablation commonly employs leave-one-out style interventions, in which an intervention is applied to a single component at a time. Since larger Transformer LMs are often insensitive to smaller interventions, leave-one-out interventions may struggle to meaningfully affect the target metrics. COAR (Shah et al., 2024) is a recent approach which addresses this by applying ablation interventions to random subsets of model components. In a COAR experiment, ablations are performed for many dataset examples and subsets\n\nof components, and linear regression is used to predict the target metrics from a vector of ablated components; the coefficients of the linear predictor then reflect the predicted effect of ablating each component on the target metric. (We refer the reader to Shah et al. (2024) for details.)",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.618::appendix::A",
+      "paper_id": "2025.naacl-long.618",
+      "section_number": "A",
+      "section_title": "reproducibility",
+      "normalized_section_title": "reproducibility",
+      "window_text": "Code to reproduce our results can be found at https://github.com/crtep/sciurus.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.618::appendix::D",
+      "paper_id": "2025.naacl-long.618",
+      "section_number": "D",
+      "section_title": "experiments on non-recall tasks",
+      "normalized_section_title": "experiments on non-recall tasks",
+      "window_text": "To explore whether our results were specific to recall-based tasks, we repeated our leave-one-out ablation analysis on a set of simple math datasets.\n\nWe constructed datasets of 2-, 3-, and 4-digit math problems, consisting of equal mixes of addition, subtraction, multiplication, and division. We validated answers for addition, subtraction and multiplication by extracting the first valid integer from the answer and testing whether it matched the answer exactly. We validated answers for division by extracting the first decimal real number and testing whether it was within one percent of the correct answer. We ran our leave-one-out ablation analysis for these datasets with four models. Using the same hypothesis test as in the main analysis, we rejected the null hypothesis at $p < 0.05$ in 11 of 12 cases.\n\n![](images/785107b7616ce02f4a965d95d1bee0b16b0ed144327aca0b4ad887de3388fd34.jpg)\n\n![](images/0bfed51a96fe7a07ca5cec5f58994f81a76aa5878879c5bebcc26d645cb18cf5.jpg)\n\n![](images/acc75212f1b82348514a301973c84d2eeb485bc0271a258da043c90ab2df3bcb.jpg)\n\n![](images/b6cbe270f53aaa619635dd3210ad9cb4d4886ccc5072e6dcafc1d60b44617dc3.jpg)\n\n![](images/3aa82c81d47993679c4b2c27cc47b98ca0419c5247f43ea5a9c16aded06001f0.jpg)\n\n![](images/b60d8382477441b5df154cb32459449e28f4e25e2c8fee1f5a132e05a291654b.jpg)\n\n![](images/76a2cac1c2462cf7be046cd52fa7db430d8ef253c6161ef4e0d9be9762482306.jpg)\n\n![](images/801cf2c45d87c147938d1745be48880a1102fc8bbbc4c33c1a996df4a8114115.jpg)\n\n![](images/b727f09a21396243320e66a79c7a3b19e54fb92f31e5d495ac595718be04cd9f.jpg)\n\n![](images/32dd098125c3648c981ad036f8897105e8fe2c5070793aa72ff6a1f55f3c5fc1.jpg)\n\n![](images/940966d42a760f34175c14f32e7dfa1b26d14ff9603bf972c99c70c2735fa195.jpg)\n\n![](images/7c2ff51a266514e4febb170739437b49a7464d6bc4898a86d3158c37a97a98f2.jpg)  \nFigure 5: Results of zero-ablation for selected models on math datasets. Circle, triangle, and X markers represent MLP ablations, attention ablations, and clean runs respectively. Warmer colors represent earlier layers. Error bars for individual points are omitted for legibility, but std. err. $< 0.032$ in all cases (by the bounds on $p$ and $m$ ).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.618::appendix::H",
+      "paper_id": "2025.naacl-long.618",
+      "section_number": "H",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources",
+      "window_text": "This project has used approximately 1200 GPU-hours of computation time on an academic cluster, mainly on RTX8000 GPUs with 48 GB of memory, including approximately 600 GPU-hours for results used directly in this paper. Results for individual model/dataset combinations can be reproduced independently; for example, the code to produce the TriviaQA / Llama 3 8B Instruct results ran in approximately 20 GPU-hours.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.naacl-long.618::appendix::H",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX8000 48GB",
+      "count": null,
+      "count_text": "",
+      "evidence": "This project has used approximately 1200 GPU-hours of computation time on an academic cluster, mainly on RTX8000 GPUs with 48 GB of memory, including approximately 600 GPU-hours for results used directly in this paper. Results for individual model/dataset combinations can be reproduced independently; for example, the code to produce the TriviaQA / Llama 3 8B Instruct results ran in approximately 20 GPU-hours.",
+      "section_number": "H",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.naacl-long.618::appendix::H",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX8000 48GB",
+      "cleaned_hardware_name": "rtx 8000 48gb",
+      "normalized_hardware_name": "NVIDIA Quadro RTX 8000",
+      "benchmark_hardware_name": "NVIDIA Quadro RTX 8000",
+      "count": null,
+      "count_text": "",
+      "section_number": "H",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources",
+      "evidence": "This project has used approximately 1200 GPU-hours of computation time on an academic cluster, mainly on RTX8000 GPUs with 48 GB of memory, including approximately 600 GPU-hours for results used directly in this paper. Results for individual model/dataset combinations can be reproduced independently; for example, the code to produce the TriviaQA / Llama 3 8B Instruct results ran in approximately 20 GPU-hours.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized RTX family rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "H"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Quadro RTX 8000",
+        "num": null
+      }
+    ]
+  }
+}

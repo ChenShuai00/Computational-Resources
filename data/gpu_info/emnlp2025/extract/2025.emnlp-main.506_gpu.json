@@ -1,0 +1,161 @@
+{
+  "paper_id": "2025.emnlp-main.506",
+  "candidate_windows": [
+    {
+      "window_id": "2025.emnlp-main.506::sections::4",
+      "paper_id": "2025.emnlp-main.506",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.506::sections::4.1",
+      "paper_id": "2025.emnlp-main.506",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Datasets. We selected four representative benchmark datasets to evaluate the performance of our method: FEVER(Thorne et al., 2018), HotpotQA (Yang et al., 2018), ALFWorld (Shridhar et al., 2020)，and WebShop (Yao et al.， 2022a)． The FEVER dataset is utilized for assessing fact extraction and verification.HotpotQA serves as a benchmark for knowledge-intensive, multi-hop question answering.ALFWorld provides an embodied simulation environment for executing multi-step tasks in domestic contexts. Finally, WebShop functions as a benchmark for complex decision-making, simulating multi-modal interactions and product filtering in online shopping settings.\n\nBaselines.We compare our method with four baseline methods: Act (Yao et al., 2022b), ReAct (Yao et al., 2022b), Reflexion (Shinn et al., 2024), and ExpeL (Zhao et al., 2024). The Act method generates responses through single-step predictions without explicit reasoning abilities. ReAct adopts a more structured approach by integrating reasoning and action in a feedback loop to enhance task performance.Reflexion uses verbal reinforcement to enable agents to learn from past mistakes,thereby improving the quality of reasoning. ExpeL, the state-of-the-art agent-based method, focuses on autonomously gathering experience from a set of training tasks to enhance the capabilities of LLM.\n\nImplementation. Following ReAct, we use success rate (SR) as the evaluation metric: exact matching for HotpotQA and FEVER, timely task completion for ALFWorld, and purchasing an item matching all attributes for WebShop. We utilize the LLaMA-3.1-8B-Instruct model (Dubey et al., 2024) as the LLM agent for our method and all baselines.For FEVER and HotpotQA,Wikipedia information is appended to questions for additional context, a common practice among all baselines. For MCTS,we conduct $m = 3$ simulations to determine the label for each step. Regarding rejection sampling, $n = 4$ different responses are generated over $T = 5$ iterations during the training of our LLM agent. Al results are averaged across three different random seeds. For further implementation details, please refer to Appendix B.\n\nComputational Resources All our experiments were conducted on a single machine with 1TB RAM and 256-core AMD EPYC 7742 64-Core Processor $@ \\ 3 . 4 \\mathrm { G H z }$ CPU.We use the NVIDIA H100 GPU with 80GB memory. The software environment settings are:Python 3.9.21, PyTorch 2.5.1 with CUDA 12.4 on Ubuntu 22.04.4 LTS.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.506::sections::4.5",
+      "paper_id": "2025.emnlp-main.506",
+      "section_number": "4.5",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "window_text": "Hyperparameter sensitivity. We investigate the impact of the hyperparameters top- $p$ and temperature of our method on LLM agent performance in generating step-wise responses. As shown in Fig. 5,when the temperature is fixed at O.5,adjusting top_p within the range of O.45 to O.95 leads to less than a $0 . 5 4 \\%$ variation in accuracy on the FEVER dataset $( 6 5 . 3 8 \\%$ compared to $6 4 . 8 4 \\%$ . This finding indicates that the model exhibits strong robustness to these hyperparameters. Similarly, fixing top_p at O.85 and varying the temperature between O.4 and O.9 results in model accuracy remaining consistently within a $0 . 6 2 \\%$ range, peaking at $6 5 . 3 8 \\%$ at a temperature of 0.5. Notably, even under extreme temperature settings such as O.4, the model maintained performance levels above $6 4 . 7 6 \\%$ . This highlights the positive effect of process supervision mechanisms on the stability of the step-wise generation process.\n\n![](images/4f9424e3e810a62878ebacde27b24237b0ab97e436999fc2e67eebfcb502282a.jpg)  \nFigure 5: Impact of hyperparameters on agent performance for the FEVER dataset.\n\nTable 2: Success rates $( \\% )$ of our method with different number of MCTS iterations on the HotpotQA dataset.   \n\n<table><tr><td>No.of MCTS iterations</td><td>√</td><td>3</td><td>5</td><td>7</td><td>9</td></tr><tr><td>Accuracy</td><td>32</td><td>39</td><td>41</td><td>42</td><td>42</td></tr></table>\n\nEffectof MCTS simulation iterations. Table 2 shows how different numbers of MCTS simulation iterations impact the agent performance of our method on the HotpotQA dataset. The results demonstrate a significant increase in accuracy from $32 \\%$ to $39 \\%$ as the number of simulations rises from 1 to 3. Increasing the simulations to 5 yields a marginal improvement of $2 \\%$ (from $39 \\%$ to $41 \\%$ ). Beyond 5 simulations,the performance stabilizes at $42 \\%$ . These findings suggest that the MCTS algorithm effectively identifies crucial path information within the first three simulations,and provides empirical evidence that a balance can be achieved between computational efficiency and model performance,as three simulations are adequate for achieving near-optimal outcomes.\n\nEffect of number of generated responses during rejection sampling. We evaluated the effect of the number of generated responses $( n )$ during rejection sampling on the performance of our method observed on the AlfWorld and Webshop datasets. As illustrated in Table 3, there is a clear pattern of \"diminishing marginal returns\" associated with increasing $n$ . For instance, in the AlfWorld tasks, performance levels off when $n$ reaches 6,with a marginal improvement from $42 \\%$ to $43 \\%$ . Similarly, in WebShop tasks, the accuracy improved from $47 \\%$ to $55 \\%$ when $n$ increased from 3 to 7, with no notable improvements beyond this point. This pattern indicates that while initial increases in the number of generated responses significantly enhance the diversity and quality of candidate responses,further increases eventually result in minimal gains as the selection mechanism driven by the reward model reaches stabilization.\n\nTable 3: Accuracy $( \\% )$ of our method with various number of generated responses during rejection sampling.   \n\n<table><tr><td>No. of Responses</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td></tr><tr><td>AlfWorld</td><td>38</td><td>40</td><td>41</td><td>42</td><td>42</td><td>43</td></tr><tr><td>WebShop</td><td>47</td><td>50</td><td>52</td><td>54</td><td>55</td><td>55</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.506::appendix::B",
+      "paper_id": "2025.emnlp-main.506",
+      "section_number": "B",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.506::appendix::B.3",
+      "paper_id": "2025.emnlp-main.506",
+      "section_number": "B.3",
+      "section_title": "hyperparameters",
+      "normalized_section_title": "hyperparameters",
+      "window_text": "In our experiments, we use the vllm and the transformer library to generate step by step responses. The sampling process is controlled by a temperature of O.9,which adjusts the randomness of the output, and a top-p value of O.85 for nucleus sampling, determining the smallest set of tokens to consider based on cumulative probability. The model generates a maximum of 2O48 tokens per output, with a repetition penalty of 1.O to discourage repetitive phrases.Additionally, the tokenizer processes the text before it is passed to the model for generation and decodes the output back into human-readable text. All these parameters were conducted through grid search and the hyper-parameters with the best performance are selected as the final parameters. We generated three different responses for Monte Carlo Tree Search with seeds O, 1 and 3407. For Rejection Sampling,we run five iterations,and for every iteration we generate four different responses with seeds 0, 3407, 314159, 271828,respectively.\n\nThe LLaMA-Factory library is used to fine-tune the large language models, including the process reward model and the LLM agent. In our experiments, the adopted fine-tuning approach involves full fine-tuning with the SFT (Supervised FineTuning) stage. Training is conducted using DeepSpeed, which is well-suited for large-scale training environments and incorporates ZeRO-3 optimization. The maximum input sequence length is constrained to 2O48 tokens.During training, the batch size per device is set to 1, and gradient accumulation is used over 2 steps to simulate a larger batch. The learning rate is set to $1 . 0 \\mathrm { e } { \\cdot } 5$ with a cosine learning rate scheduler, a warmup ratio of O.1,and training will run for $E _ { r s } = 5$ epochs and $T = 5$ iterations. Every epoch will train the model for 2250 steps.Mixed precision training with bf16 is enabled for efficiency. The training pipeline uses 16 workers for data preprocessing. For evaluation, $10 \\%$ of the dataset is used for validation, with the batch size set to 1 for evaluation as well.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.506::appendix::D",
+      "paper_id": "2025.emnlp-main.506",
+      "section_number": "D",
+      "section_title": "additional experiments",
+      "normalized_section_title": "additional experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.506::appendix::D.6",
+      "paper_id": "2025.emnlp-main.506",
+      "section_number": "D.6",
+      "section_title": "comparison with training-based baselines",
+      "normalized_section_title": "comparison with training-based baselines",
+      "window_text": "To assess the effectiveness of our full pipeline relative to other training-based approaches, we compare our method with two representative baselines: Copy (Ma et al., 2024) and AGILE (Peiyuan et al., 2024), both of which leverage fine-tuned language models and task-specific training.The evaluation is conducted on the FEVER and ALFWorld datasets.\n\nAs summarized in Table 12,our approach consistently outperforms both baselines across tasks. The improvement is particularly pronounced on FEVER,where our method achieves $6 5 . 3 9 \\%$ accuracy compared to $6 1 . 5 2 \\%$ and $6 3 . 9 7 \\%$ for Copy and AGILE respectively. These results highlight the advantage of our method in capturing factual consistency and multi-step inference.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.506::appendix::E",
+      "paper_id": "2025.emnlp-main.506",
+      "section_number": "E",
+      "section_title": "experiment details and discussion",
+      "normalized_section_title": "experiment details and discussion",
+      "window_text": "Table 5 presents the detailed numerical values of all the datasets depicted in Fig. 3,serving as a reference for further analysis and comparison.\n\nThe ablation studies discussed in Section 4.5 conclusively show that our method ensures robust hyperparameter selection and exhibits distinct convergence behaviors during critical processes like MCTS simulations and rejection sampling. These findings affirm the effectiveness of our method in reducing the need for manual adjustments of hyperparameters, while the automated process supervision framework improves the model's resilience to parameter fluctuations by optimizing explicit reasoning paths. Importantly, these experimental results offer practical implications for deployment: users can efficiently manage computational resources by moderately decreasing the number of MCTS simulations and rejection sampling iterations without compromising performance.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.emnlp-main.506::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA H100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Datasets. We selected four representative benchmark datasets to evaluate the performance of our method: FEVER(Thorne et al., 2018), HotpotQA (Yang et al., 2018), ALFWorld (Shridhar et al., 2020)，and WebShop (Yao et al.， 2022a)． The FEVER dataset is utilized for assessing fact extraction and verification.HotpotQA serves as a benchmark for knowledge-intensive, multi-hop question answering.ALFWorld provides an embodied simulation environment for executing multi-step tasks in domestic contexts. Finally, WebShop functions as a benchmark for complex decision-making, simulating multi-modal interactions and product filtering in online shopping settings.\n\nBaselines.We compare our method with four baseline methods: Act (Yao et al., 2022b), ReAct (Yao et al., 2022b), Reflexion (Shinn et al., 2024), and ExpeL (Zhao et al., 2024). The Act method generates responses through single-step predictions without explicit reasoning abilities. ReAct adopts a more structured approach by integrating reasoning and action in a feedback loop to enhance task performance.Reflexion uses verbal reinforcement to enable agents to learn from past mistakes,thereby improving the quality of reasoning. ExpeL, the state-of-the-art agent-based method, focuses on autonomously gathering experience from a set of training tasks to enhance the capabilities of LLM.\n\nImplementation. Following ReAct, we use success rate (SR) as the evaluation metric: exact matching for HotpotQA and FEVER, timely task completion for ALFWorld, and purchasing an item matching all attributes for WebShop. We utilize the LLaMA-3.1-8B-Instruct model (Dubey et al., 2024) as the LLM agent for our method and all baselines.For FEVER and HotpotQA,Wikipedia information is appended to questions for additional context, a common practice among all baselines. For MCTS,we conduct $m = 3$ simulations to determine the label for each step. Regarding rejection sampling, $n = 4$ different responses are generated over $T = 5$ iterations during the training of our LLM agent. Al results are averaged across three different random seeds. For further implementation details, please refer to Appendix B.\n\nComputational Resources All our experiments were conducted on a single machine with 1TB RAM and 256-core AMD EPYC 7742 64-Core Processor $@ \\ 3 . 4 \\mathrm { G H z }$ CPU.We use the NVIDIA H100 GPU with 80GB memory. The software environment settings are:Python 3.9.21, PyTorch 2.5.1 with CUDA 12.4 on Ubuntu 22.04.4 LTS.",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.emnlp-main.506::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA H100 80GB",
+      "cleaned_hardware_name": "nvidia h100 80gb",
+      "normalized_hardware_name": "NVIDIA H100 PCIe",
+      "benchmark_hardware_name": "NVIDIA H100 PCIe",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "evidence": "Datasets. We selected four representative benchmark datasets to evaluate the performance of our method: FEVER(Thorne et al., 2018), HotpotQA (Yang et al., 2018), ALFWorld (Shridhar et al., 2020)，and WebShop (Yao et al.， 2022a)． The FEVER dataset is utilized for assessing fact extraction and verification.HotpotQA serves as a benchmark for knowledge-intensive, multi-hop question answering.ALFWorld provides an embodied simulation environment for executing multi-step tasks in domestic contexts. Finally, WebShop functions as a benchmark for complex decision-making, simulating multi-modal interactions and product filtering in online shopping settings.\n\nBaselines.We compare our method with four baseline methods: Act (Yao et al., 2022b), ReAct (Yao et al., 2022b), Reflexion (Shinn et al., 2024), and ExpeL (Zhao et al., 2024). The Act method generates responses through single-step predictions without explicit reasoning abilities. ReAct adopts a more structured approach by integrating reasoning and action in a feedback loop to enhance task performance.Reflexion uses verbal reinforcement to enable agents to learn from past mistakes,thereby improving the quality of reasoning. ExpeL, the state-of-the-art agent-based method, focuses on autonomously gathering experience from a set of training tasks to enhance the capabilities of LLM.\n\nImplementation. Following ReAct, we use success rate (SR) as the evaluation metric: exact matching for HotpotQA and FEVER, timely task completion for ALFWorld, and purchasing an item matching all attributes for WebShop. We utilize the LLaMA-3.1-8B-Instruct model (Dubey et al., 2024) as the LLM agent for our method and all baselines.For FEVER and HotpotQA,Wikipedia information is appended to questions for additional context, a common practice among all baselines. For MCTS,we conduct $m = 3$ simulations to determine the label for each step. Regarding rejection sampling, $n = 4$ different responses are generated over $T = 5$ iterations during the training of our LLM agent. Al results are averaged across three different random seeds. For further implementation details, please refer to Appendix B.\n\nComputational Resources All our experiments were conducted on a single machine with 1TB RAM and 256-core AMD EPYC 7742 64-Core Processor $@ \\ 3 . 4 \\mathrm { G H z }$ CPU.We use the NVIDIA H100 GPU with 80GB memory. The software environment settings are:Python 3.9.21, PyTorch 2.5.1 with CUDA 12.4 on Ubuntu 22.04.4 LTS.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA H100 PCIe",
+        "num": 1
+      }
+    ]
+  }
+}

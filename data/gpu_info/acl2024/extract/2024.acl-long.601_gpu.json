@@ -1,0 +1,183 @@
+{
+  "paper_id": "2024.acl-long.601",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.601::sections::2.1",
+      "paper_id": "2024.acl-long.601",
+      "section_number": "2.1",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "Rotary position embedding (RoPE) (Su et al., 2022) stands as a prevalent technique for position encoding in large language models with Transformer backbone (Vaswani et al., 2017). During the attention calculation, given a query or key vector at position $m$ in the sequence, RoPE serves to encode the position information into the vector via a $d$ -dimensional rotation matrix denoted as $R_{\\theta,m}$ . This matrix $R_{\\theta,m}$ is structured as a block diagonal matrix consisting of blocks with dimensions of $2 \\times 2$ , totaling $d/2$ such blocks. Specifically, the $i$ -th block is defined as:\n\n$$\nR _ {\\theta_ {i}, m} = \\left[ \\begin{array}{c c} \\cos m \\theta_ {i} & - \\sin m \\theta_ {i} \\\\ \\sin m \\theta_ {i} & \\cos m \\theta_ {i} \\end{array} \\right], \\tag {1}\n$$\n\nwhere $\\theta_{i} = B^{-\\frac{2i}{d}}$ , with $B$ is termed as the base of the rotary angle.\n\nIn each Transformer layer, after multiplying the query vector $q_{m}$ at position $m$ and the key vector $k_{n}$ at position $n$ with the rotation matrix, the relative position is incorporated in their inner product (the attention score before softmax):\n\n$$\n\\left(R _ {\\theta , m} q _ {m}\\right) ^ {\\top} \\left(R _ {\\theta , n} k _ {n}\\right) = q _ {m} ^ {\\top} R _ {\\theta , n - m} k _ {n}. \\quad (2)\n$$\n\nWhen the relative distance $n - m$ increases, the waveform of the attention score before softmax demonstrates a long-term decay, i.e., the value generally decreases as the relative distance grows. This trend is accompanied by a waveform, as depicted in Figure 1(c). The derivation of this waveform is presented in the Appendix A.\n\nAs a widely-used position embedding technique in LLMs, many researchers found RoPE has a substantial impact on LLM's context utilization and awareness. RoPE has favorable properties that enhance the model in various aspects, such extrapolation (Chen et al., 2023a; Gao et al., 2023; Liu et al., 2023b), efficient long-context model (Zhu et al., 2023; Xiong et al., 2023; Li et al., 2024), and better understanding of training data (Lv et al., 2023). In this paper, however, our focus lies in conducting an in-depth analysis of the functionality of the LLM (Wang et al., 2023a; Lv et al., 2024), we leverage the attention waveform introduced by position embeddings to enhance the context awareness of LLMs. We hypothesize that these waveform patterns might affect the model's context awareness. Intuitively, tokens located at troughs of the attention waveform would receive less focus. If such tokens are important for the current prediction, this could hamper the performance. We designed an experiment to test this hypothesis.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.601::sections::3.1",
+      "paper_id": "2024.acl-long.601",
+      "section_number": "3.1",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "In tool-use, fulfilling a user's intent typically involves multiple turns, such as selecting tools, calling for APIs, and engaging with the user across\n\nmultiple interactions. In this section, our introduction focuses on one single turn since the multi-turn scenario is a simple amalgamation of this single-turn scenario. We consider all information from previous turns, including API responses, tool execution outcomes, and user feedback, as the model's context for the current turn, which we represent as $\\mathcal{C}$ . Subsequently, the LLM proceeds to generate a response, denoted as $\\mathcal{R}$ , in an autoregressive manner based on $\\mathcal{C}$ . To denote the specific tokens within $\\mathcal{C}$ or $\\mathcal{R}$ , we employ the notation $\\mathcal{C}_k$ or $\\mathcal{R}_k$ , respectively, where $k$ represents the token's index.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.601::sections::4",
+      "paper_id": "2024.acl-long.601",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.601::sections::4.3",
+      "paper_id": "2024.acl-long.601",
+      "section_number": "4.3",
+      "section_title": "discussion on efficacy",
+      "normalized_section_title": "discussion on efficacy",
+      "window_text": "Readers may have concerns about Attention Buckets's efficiency, as parallel processing of context with varying base values could introduce additional memory overhead. However, it's important to note that Attention Buckets does not compromise inference speed with sufficient memory. All experiments described in this paper were successfully conducted using a single NVIDIA A100-80G GPU.\n\nTo further address concerns regarding Attention Buckets's effectiveness, we compare it with three methods:\n\n- Attention Buckets<sup>once</sup>. Unlike the approach that utilizes $N$ inference processes with $N$ RoPE bases, Attention Buckets<sup>once</sup> computes the average of $N$ attention waveforms from individual bases and then encodes the positional information using this averaged waveform. This technique utilizes only a single inference process, thereby avoiding any additional memory cost.\n\n- Attention Sorting. In ASort (Peysakhovich and Lerer, 2023), tokens in distant contexts that re\n\nTable 3: Comparison among Attention Buckets(AB), Attention Buckets ${}_{\\text{once }}$ (AB ${}_{\\text{once}}$ ),Universal Self-Consistency (USC) and Attention Sorting (ASort), based on the ToolLlama-DFSDT-R retriever configuration.   \n\n<table><tr><td></td><td colspan=\"2\">Original</td><td colspan=\"2\">+ABonce</td><td colspan=\"2\">+ASort</td><td colspan=\"2\">+USC</td><td colspan=\"2\">+AB</td></tr><tr><td></td><td>pass</td><td>win</td><td>pass</td><td>win</td><td>pass</td><td>win</td><td>pass</td><td>win</td><td>pass</td><td>win</td></tr><tr><td>I1-Inst.</td><td>64.0</td><td>62.3</td><td>52.0</td><td>37.0</td><td>66.0</td><td>63.0</td><td>66.0</td><td>63.0</td><td>68.5</td><td>65.0</td></tr><tr><td>I1-Cat.</td><td>64.0</td><td>59.0</td><td>40.5</td><td>31.0</td><td>67.0</td><td>62.0</td><td>65.5</td><td>61.5</td><td>70.0</td><td>65.5</td></tr><tr><td>I1-Tool.</td><td>60.5</td><td>55.5</td><td>47.0</td><td>34.5</td><td>59.5</td><td>58.5</td><td>61.0</td><td>58.5</td><td>65.0</td><td>67.0</td></tr><tr><td>I2-Inst.</td><td>81.5</td><td>68.5</td><td>70.5</td><td>65.0</td><td>80.0</td><td>68.5</td><td>80.0</td><td>73.0</td><td>84.0</td><td>78.0</td></tr><tr><td>I2-Cat.</td><td>68.5</td><td>60.8</td><td>65.0</td><td>58.0</td><td>68.5</td><td>60.3</td><td>70.0</td><td>61.5</td><td>71.0</td><td>64.5</td></tr><tr><td>I3-Inst.</td><td>65.0</td><td>73.0</td><td>61.0</td><td>52.0</td><td>66.0</td><td>75.0</td><td>66.0</td><td>78.0</td><td>69.0</td><td>89.0</td></tr><tr><td>Avg</td><td>67.3</td><td>63.1</td><td>56.0</td><td>45.3</td><td>67.8</td><td>64.6</td><td>68.1</td><td>65.9</td><td>71.3</td><td>71.5</td></tr></table>\n\nceive high attention are considered important. The authors first segmented the context and calculated the average attention of each segment. By rearranging segments in context based on sorted attention scores (with the highest attention segment placed last), they generate the answer using the newly sorted context. This approach does not require extra memory; however, it necessitates multiple iterations to gain the attention scores and lacks parallelizability.\n\n- Universal Self-Consistency. USC (Chen et al., 2023b) is a universal self-consistency (Wang et al., 2023c) algorithm that supports free-format outputs. The LLM first generates $N$ responses. Subsequently, the LLM is tasked with selecting the response that exhibits the highest degree of consistency, employing a specific prompt. The memory cost of this method is roughly equivalent to that of our Attention Buckets.\n\nAll methods are evaluated using the ToolLlama-DFSDT-Retriever configuration. The results are presented in Table 3. Results reveal that preprocessing the aggregation of attention waveforms significantly reduces memory costs, but at the expense of the model's performance. Specifically, compared to the original Attention Buckets, Attention Buckets<sup>once</sup> shows a reduction of $11.3\\%$ points in pass rate and $17.8\\%$ points in win rate on average. This decline is attributed to the fact that the pre-averaged waveform can produce out-of-distribution position information. This issue does not arise in Attention Buckets, where each base value is independently utilized during the forward computation.\n\nASort tries to strengthen the model's focus on key information through re-sorting, but its weak improvement in task performance, with a $0.5\\%$ point increase in pass rate and $1.5\\%$ point in win rate on\n\naverage, reveals that the attention scores may not capture crucial information well.\n\nUSC incurs a similar inference cost to our method. However, it only demonstrates a mere $0.8\\%$ point increase in pass rate and a $2.8\\%$ point increase in win rate on average, compared to the original ToolLlama. This limited enhancement can be attributed to the USC method's failure to effectively address the problem of trough position oversight inherent in inference with a single RoPE base. Despite multiple attempts, this oversight persists. This comparison clearly illustrates the effectiveness of the Attention Buckets as it outperforms the method with a similar level of overhead and without additional training.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.601::appendix::C",
+      "paper_id": "2024.acl-long.601",
+      "section_number": "C",
+      "section_title": "supplement to the in-context retrieval experiment",
+      "normalized_section_title": "supplement to the in-context retrieval experiment",
+      "window_text": "There are several critical settings to make our experiments fair and convincing:\n\n- Position Anchoring Based on Last Token: We anchor the position of each target key-value pair at its last token. This approach is based on the findings of (Wang et al., 2023b; Lv et al., 2024) that the sentence semantic is gathered to the last token.   \n- Precise Positioning of Key-Value Pairs: To accurately place key-value pairs at specific positions within the context, we insert padding tokens after the key-value JSON data and prior to the query.   \n- Consistent Prompt Lengths Across Rounds: Since our experiments involve comparing the accuracy between two rounds, it is essential to mitigate any potential biases arising from varying context lengths. To achieve this, we maintain consistency in the context length across two rounds by inserting padding tokens at the beginning of the input.\n\n![](images/cfea1ab4baebe93e4a667a0b05910e16e50f4ba7109d8863ce867c3636aa8ead.jpg)  \nFigure 4 illustrates details of the above operations.   \nFigure 4: Fair and convincing experimental operations. (a) We apply padding prior to the \"Query\" to accurately locate the final token of the target key-value pair at a desired position, which corresponds to an attention peak or trough. (b) We use paddings to maintain consistency in prompt length across various rounds.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.601::appendix::D",
+      "paper_id": "2024.acl-long.601",
+      "section_number": "D",
+      "section_title": "the impact of base value smaller than that used in training",
+      "normalized_section_title": "the impact of base value smaller than that used in training",
+      "window_text": "Considering Eq.6, where the position information is integrated using $d / 2$ sinusoidal functions with the frequency $\\theta_{j} = B^{-\\frac{2j}{d}}$ , for $j \\in [0, \\frac{d}{2}]$ . If a smaller value of $B'$ is employed, compared to the pre-trained $B$ , the frequency of these sinusoidal functions will be higher, resulting in a reduced period. In this case, given the maximum pre-trained context length, the final few tokens could correspond to positions within a period of the sinusoidal functions that are not encountered during training. These positions would be considered out-of-distribution for the model. We recommend that readers interested in a more in-depth analysis of this context \"scaling law\" refer to (Liu et al., 2023b).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.601::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80G",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Readers may have concerns about Attention Buckets's efficiency, as parallel processing of context with varying base values could introduce additional memory overhead. However, it's important to note that Attention Buckets does not compromise inference speed with sufficient memory. All experiments described in this paper were successfully conducted using a single NVIDIA A100-80G GPU.\n\nTo further address concerns regarding Attention Buckets's effectiveness, we compare it with three methods:\n\n- Attention Buckets<sup>once</sup>. Unlike the approach that utilizes $N$ inference processes with $N$ RoPE bases, Attention Buckets<sup>once</sup> computes the average of $N$ attention waveforms from individual bases and then encodes the positional information using this averaged waveform. This technique utilizes only a single inference process, thereby avoiding any additional memory cost.\n\n- Attention Sorting. In ASort (Peysakhovich and Lerer, 2023), tokens in distant contexts that re\n\nTable 3: Comparison among Attention Buckets(AB), Attention Buckets ${}_{\\text{once }}$ (AB ${}_{\\text{once}}$ ),Universal Self-Consistency (USC) and Attention Sorting (ASort), based on the ToolLlama-DFSDT-R retriever configuration.   \n\n<table><tr><td></td><td colspan=\"2\">Original</td><td colspan=\"2\">+ABonce</td><td colspan=\"2\">+ASort</td><td colspan=\"2\">+USC</td><td colspan=\"2\">+AB</td></tr><tr><td></td><td>pass</td><td>win</td><td>pass</td><td>win</td><td>pass</td><td>win</td><td>pass</td><td>win</td><td>pass</td><td>win</td></tr><tr><td>I1-Inst.</td><td>64.0</td><td>62.3</td><td>52.0</td><td>37.0</td><td>66.0</td><td>63.0</td><td>66.0</td><td>63.0</td><td>68.5</td><td>65.0</td></tr><tr><td>I1-Cat.</td><td>64.0</td><td>59.0</td><td>40.5</td><td>31.0</td><td>67.0</td><td>62.0</td><td>65.5</td><td>61.5</td><td>70.0</td><td>65.5</td></tr><tr><td>I1-Tool.</td><td>60.5</td><td>55.5</td><td>47.0</td><td>34.5</td><td>59.5</td><td>58.5</td><td>61.0</td><td>58.5</td><td>65.0</td><td>67.0</td></tr><tr><td>I2-Inst.</td><td>81.5</td><td>68.5</td><td>70.5</td><td>65.0</td><td>80.0</td><td>68.5</td><td>80.0</td><td>73.0</td><td>84.0</td><td>78.0</td></tr><tr><td>I2-Cat.</td><td>68.5</td><td>60.8</td><td>65.0</td><td>58.0</td><td>68.5</td><td>60.3</td><td>70.0</td><td>61.5</td><td>71.0</td><td>64.5</td></tr><tr><td>I3-Inst.</td><td>65.0</td><td>73.0</td><td>61.0</td><td>52.0</td><td>66.0</td><td>75.0</td><td>66.0</td><td>78.0</td><td>69.0</td><td>89.0</td></tr><tr><td>Avg</td><td>67.3</td><td>63.1</td><td>56.0</td><td>45.3</td><td>67.8</td><td>64.6</td><td>68.1</td><td>65.9</td><td>71.3</td><td>71.5</td></tr></table>\n\nceive high attention are considered important. The authors first segmented the context and calculated the average attention of each segment. By rearranging segments in context based on sorted attention scores (with the highest attention segment placed last), they generate the answer using the newly sorted context. This approach does not require extra memory; however, it necessitates multiple iterations to gain the attention scores and lacks parallelizability.\n\n- Universal Self-Consistency. USC (Chen et al., 2023b) is a universal self-consistency (Wang et al., 2023c) algorithm that supports free-format outputs. The LLM first generates $N$ responses. Subsequently, the LLM is tasked with selecting the response that exhibits the highest degree of consistency, employing a specific prompt. The memory cost of this method is roughly equivalent to that of our Attention Buckets.\n\nAll methods are evaluated using the ToolLlama-DFSDT-Retriever configuration. The results are presented in Table 3. Results reveal that preprocessing the aggregation of attention waveforms significantly reduces memory costs, but at the expense of the model's performance. Specifically, compared to the original Attention Buckets, Attention Buckets<sup>once</sup> shows a reduction of $11.3\\%$ points in pass rate and $17.8\\%$ points in win rate on average. This decline is attributed to the fact that the pre-averaged waveform can produce out-of-distribution position information. This issue does not arise in Attention Buckets, where each base value is independently utilized during the forward computation.\n\nASort tries to strengthen the model's focus on key information through re-sorting, but its weak improvement in task performance, with a $0.5\\%$ point increase in pass rate and $1.5\\%$ point in win rate on\n\naverage, reveals that the attention scores may not capture crucial information well.\n\nUSC incurs a similar inference cost to our method. However, it only demonstrates a mere $0.8\\%$ point increase in pass rate and a $2.8\\%$ point increase in win rate on average, compared to the original ToolLlama. This limited enhancement can be attributed to the USC method's failure to effectively address the problem of trough position oversight inherent in inference with a single RoPE base. Despite multiple attempts, this oversight persists. This comparison clearly illustrates the effectiveness of the Attention Buckets as it outperforms the method with a similar level of overhead and without additional training.",
+      "section_number": "4.3",
+      "section_title": "discussion on efficacy",
+      "normalized_section_title": "discussion on efficacy"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.601::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80G",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "4.3",
+      "section_title": "discussion on efficacy",
+      "normalized_section_title": "discussion on efficacy",
+      "evidence": "Readers may have concerns about Attention Buckets's efficiency, as parallel processing of context with varying base values could introduce additional memory overhead. However, it's important to note that Attention Buckets does not compromise inference speed with sufficient memory. All experiments described in this paper were successfully conducted using a single NVIDIA A100-80G GPU.\n\nTo further address concerns regarding Attention Buckets's effectiveness, we compare it with three methods:\n\n- Attention Buckets<sup>once</sup>. Unlike the approach that utilizes $N$ inference processes with $N$ RoPE bases, Attention Buckets<sup>once</sup> computes the average of $N$ attention waveforms from individual bases and then encodes the positional information using this averaged waveform. This technique utilizes only a single inference process, thereby avoiding any additional memory cost.\n\n- Attention Sorting. In ASort (Peysakhovich and Lerer, 2023), tokens in distant contexts that re\n\nTable 3: Comparison among Attention Buckets(AB), Attention Buckets ${}_{\\text{once }}$ (AB ${}_{\\text{once}}$ ),Universal Self-Consistency (USC) and Attention Sorting (ASort), based on the ToolLlama-DFSDT-R retriever configuration.   \n\n<table><tr><td></td><td colspan=\"2\">Original</td><td colspan=\"2\">+ABonce</td><td colspan=\"2\">+ASort</td><td colspan=\"2\">+USC</td><td colspan=\"2\">+AB</td></tr><tr><td></td><td>pass</td><td>win</td><td>pass</td><td>win</td><td>pass</td><td>win</td><td>pass</td><td>win</td><td>pass</td><td>win</td></tr><tr><td>I1-Inst.</td><td>64.0</td><td>62.3</td><td>52.0</td><td>37.0</td><td>66.0</td><td>63.0</td><td>66.0</td><td>63.0</td><td>68.5</td><td>65.0</td></tr><tr><td>I1-Cat.</td><td>64.0</td><td>59.0</td><td>40.5</td><td>31.0</td><td>67.0</td><td>62.0</td><td>65.5</td><td>61.5</td><td>70.0</td><td>65.5</td></tr><tr><td>I1-Tool.</td><td>60.5</td><td>55.5</td><td>47.0</td><td>34.5</td><td>59.5</td><td>58.5</td><td>61.0</td><td>58.5</td><td>65.0</td><td>67.0</td></tr><tr><td>I2-Inst.</td><td>81.5</td><td>68.5</td><td>70.5</td><td>65.0</td><td>80.0</td><td>68.5</td><td>80.0</td><td>73.0</td><td>84.0</td><td>78.0</td></tr><tr><td>I2-Cat.</td><td>68.5</td><td>60.8</td><td>65.0</td><td>58.0</td><td>68.5</td><td>60.3</td><td>70.0</td><td>61.5</td><td>71.0</td><td>64.5</td></tr><tr><td>I3-Inst.</td><td>65.0</td><td>73.0</td><td>61.0</td><td>52.0</td><td>66.0</td><td>75.0</td><td>66.0</td><td>78.0</td><td>69.0</td><td>89.0</td></tr><tr><td>Avg</td><td>67.3</td><td>63.1</td><td>56.0</td><td>45.3</td><td>67.8</td><td>64.6</td><td>68.1</td><td>65.9</td><td>71.3</td><td>71.5</td></tr></table>\n\nceive high attention are considered important. The authors first segmented the context and calculated the average attention of each segment. By rearranging segments in context based on sorted attention scores (with the highest attention segment placed last), they generate the answer using the newly sorted context. This approach does not require extra memory; however, it necessitates multiple iterations to gain the attention scores and lacks parallelizability.\n\n- Universal Self-Consistency. USC (Chen et al., 2023b) is a universal self-consistency (Wang et al., 2023c) algorithm that supports free-format outputs. The LLM first generates $N$ responses. Subsequently, the LLM is tasked with selecting the response that exhibits the highest degree of consistency, employing a specific prompt. The memory cost of this method is roughly equivalent to that of our Attention Buckets.\n\nAll methods are evaluated using the ToolLlama-DFSDT-Retriever configuration. The results are presented in Table 3. Results reveal that preprocessing the aggregation of attention waveforms significantly reduces memory costs, but at the expense of the model's performance. Specifically, compared to the original Attention Buckets, Attention Buckets<sup>once</sup> shows a reduction of $11.3\\%$ points in pass rate and $17.8\\%$ points in win rate on average. This decline is attributed to the fact that the pre-averaged waveform can produce out-of-distribution position information. This issue does not arise in Attention Buckets, where each base value is independently utilized during the forward computation.\n\nASort tries to strengthen the model's focus on key information through re-sorting, but its weak improvement in task performance, with a $0.5\\%$ point increase in pass rate and $1.5\\%$ point in win rate on\n\naverage, reveals that the attention scores may not capture crucial information well.\n\nUSC incurs a similar inference cost to our method. However, it only demonstrates a mere $0.8\\%$ point increase in pass rate and a $2.8\\%$ point increase in win rate on average, compared to the original ToolLlama. This limited enhancement can be attributed to the USC method's failure to effectively address the problem of trough position oversight inherent in inference with a single RoPE base. Despite multiple attempts, this oversight persists. This comparison clearly illustrates the effectiveness of the Attention Buckets as it outperforms the method with a similar level of overhead and without additional training.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.acl-long.601::sections::2.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "2.1",
+      "section_title": "preliminaries",
+      "evidence": "Rotary position embedding (RoPE) (Su et al., 2022) stands as a prevalent technique for position encoding in large language models with Transformer backbone (Vaswani et al., 2017). During the attention calculation, given a query or key vector at position $m$ in the sequence, RoPE serves to encode the position information into the vector via a $d$ -dimensional rotation matrix denoted as $R_{\\theta,m}$ . This matrix $R_{\\theta,m}$ is structured as a block diagonal matrix consisting of blocks with dimensions of $2 \\times 2$ , totaling $d/2$ such blocks. Specifically, the $i$ -th block is defined as:\n\n$$\nR _ {\\theta_ {i}, m} = \\left[ \\begin{array}{c c} \\cos m \\theta_ {i} & - \\sin m \\theta_ {i} \\\\ \\sin m \\theta_ {i} & \\cos m \\theta_ {i} \\end{array} \\right], \\tag {1}\n$$\n\nwhere $\\theta_{i} = B^{-\\frac{2i}{d}}$ , with $B$ is termed as the base of the rotary angle.\n\nIn each Transformer layer, after multiplying the query vector $q_{m}$ at position $m$ and the key vector $k_{n}$ at position $n$ with the rotation matrix, the relative position is incorporated in their inner product (the attention score before softmax):\n\n$$\n\\left(R _ {\\theta , m} q _ {m}\\right) ^ {\\top} \\left(R _ {\\theta , n} k _ {n}\\right) = q _ {m} ^ {\\top} R _ {\\theta , n - m} k _ {n}. \\quad (2)\n$$\n\nWhen the relative distance $n - m$ increases, the waveform of the attention score before softmax demonstrates a long-term decay, i.e., the value generally decreases as the relative distance grows. This trend is accompanied by a waveform, as depicted in Figure 1(c). The derivation of this waveform is presented in the Appendix A.\n\nAs a widely-used position embedding technique in LLMs, many researchers found RoPE has a substantial impact on LLM's context utilization and awareness. RoPE has favorable properties that enhance the model in various aspects, such extrapolation (Chen et al., 2023a; Gao et al., 2023; Liu et al., 2023b), efficient long-context model (Zhu et al., 2023; Xiong et al., 2023; Li et al., 2024), and better understanding of training data (Lv et al., 2023). In this paper, however, our focus lies in conducting an in-depth analysis of the functionality of the LLM (Wang et al., 2023a; Lv et al., 2024), we leverage the attention waveform introduced by position embeddings to enhance the context awareness of LLMs. We hypothesize that these waveform patterns might affect the model's context awareness. Intuitively, tokens located at troughs of the attention waveform would receive less focus. If such tokens are important for the current prediction, this could hamper the performance. We designed an experiment to test this hypothesis."
+    },
+    {
+      "source_window_id": "2024.acl-long.601::sections::3.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3.1",
+      "section_title": "preliminaries",
+      "evidence": "In tool-use, fulfilling a user's intent typically involves multiple turns, such as selecting tools, calling for APIs, and engaging with the user across\n\nmultiple interactions. In this section, our introduction focuses on one single turn since the multi-turn scenario is a simple amalgamation of this single-turn scenario. We consider all information from previous turns, including API responses, tool execution outcomes, and user feedback, as the model's context for the current turn, which we represent as $\\mathcal{C}$ . Subsequently, the LLM proceeds to generate a response, denoted as $\\mathcal{R}$ , in an autoregressive manner based on $\\mathcal{C}$ . To denote the specific tokens within $\\mathcal{C}$ or $\\mathcal{R}$ , we employ the notation $\\mathcal{C}_k$ or $\\mathcal{R}_k$ , respectively, where $k$ represents the token's index."
+    },
+    {
+      "source_window_id": "2024.acl-long.601::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.acl-long.601::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "supplement to the in-context retrieval experiment",
+      "evidence": "There are several critical settings to make our experiments fair and convincing:\n\n- Position Anchoring Based on Last Token: We anchor the position of each target key-value pair at its last token. This approach is based on the findings of (Wang et al., 2023b; Lv et al., 2024) that the sentence semantic is gathered to the last token.   \n- Precise Positioning of Key-Value Pairs: To accurately place key-value pairs at specific positions within the context, we insert padding tokens after the key-value JSON data and prior to the query.   \n- Consistent Prompt Lengths Across Rounds: Since our experiments involve comparing the accuracy between two rounds, it is essential to mitigate any potential biases arising from varying context lengths. To achieve this, we maintain consistency in the context length across two rounds by inserting padding tokens at the beginning of the input.\n\n![](images/cfea1ab4baebe93e4a667a0b05910e16e50f4ba7109d8863ce867c3636aa8ead.jpg)  \nFigure 4 illustrates details of the above operations.   \nFigure 4: Fair and convincing experimental operations. (a) We apply padding prior to the \"Query\" to accurately locate the final token of the target key-value pair at a desired position, which corresponds to an attention peak or trough. (b) We use paddings to maintain consistency in prompt length across various rounds."
+    },
+    {
+      "source_window_id": "2024.acl-long.601::appendix::D",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D",
+      "section_title": "the impact of base value smaller than that used in training",
+      "evidence": "Considering Eq.6, where the position information is integrated using $d / 2$ sinusoidal functions with the frequency $\\theta_{j} = B^{-\\frac{2j}{d}}$ , for $j \\in [0, \\frac{d}{2}]$ . If a smaller value of $B'$ is employed, compared to the pre-trained $B$ , the frequency of these sinusoidal functions will be higher, resulting in a reduced period. In this case, given the maximum pre-trained context length, the final few tokens could correspond to positions within a period of the sinusoidal functions that are not encountered during training. These positions would be considered out-of-distribution for the model. We recommend that readers interested in a more in-depth analysis of this context \"scaling law\" refer to (Liu et al., 2023b)."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.3"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2024\\2024.acl-long.601\\auto\\full.md",
+    "source_md_sha256": "321f11d591c8b527cddcbd59bd5d13bb011d6d1fa8f1c809282661d6dfa1a03b",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "ad96f3b6ca003898756db958dd17467668c845886fa3f1f835d26a866c8af3f0"
+  }
+}

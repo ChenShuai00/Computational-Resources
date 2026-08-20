@@ -1,0 +1,276 @@
+{
+  "paper_id": "2025.acl-long.959",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.959::sections::1",
+      "paper_id": "2025.acl-long.959",
+      "section_number": "1",
+      "section_title": "introduction",
+      "normalized_section_title": "introduction",
+      "window_text": "Large language models (LLMs) like GPT4 (OpenAI, 2024a) have emerged with remarkable natural language understanding capabilities and broad prospects in application. While subsequent advancements such as Chain-of-Thought (CoT) (Wei et al., 2022; Yao et al., 2024) have revitalized the landscape of applications, they also introduce significant computation and memory consumption due\n\nto exceedingly long contexts. Recent developments in reasoning models, exemplified by ChatGPT-o1 (OpenAI, 2024b) and DeepSeek-R1 (DeepSeek-AI, 2025), have exacerbated this issue because of their extensive internal reasoning processes.\n\n![](images/f30d9b74579746cc0b423eadf711c85a9088581d2662ff539937e8583caea6f5.jpg)  \nFigure 1: IAM is orthogonal to the existing KV cache eviction methods and can further reduce the KV cache usage in long context scenarios.\n\nTo address the aforementioned challenges and achieve efficient inference, various methodologies have been proposed, including optimizing model architectures (Sun et al., 2024; Gloeckle et al., 2024), prompt compression (Jiang et al., 2023; Pan et al., 2024), and KV cache optimization (Zhang et al., 2023; Yang et al., 2024b; Hooper et al., 2024), among others. A specific approach within KV cache optimization, known as KV cache eviction, achieves efficiency improvements by exploiting characteristics and sparsity within attention mechanisms. Nevertheless, these methodologies predominantly concentrate on leveraging intrinsic sparsity of LLM itself, without considering external information to facilitate better optimization.\n\nPrevious study (Chen et al., 2021) has indicated a significant similarity in attention patterns between small and large models within the BERT architecture. In Appendix B, we further substantiate that this similarity is also present in LLMs. Building\n\nupon this characteristic, this paper introduces an efficient inference technique through attention mapping between small language model (SLM) and the larger one. It is important to note that our proposed method achieves dual benefits of accelerated attention computation and reduced KV cache consumption, and is orthogonal to most existing KV cache optimization methods. As depicted in Figure 1, the utilization of $H_{2}O$ (Zhang et al., 2023) facilitates KV cache compression at the token level, whereas our method can achieve further compression at the model layer level.\n\nIn this study, we investigate the methodology to achieve attention mapping between SLM and LLM while maintaining the performance of the original LLM. Initially, we evaluate the impact of various similarity metrics applied to attention matrices on language modeling efficacy. Following this, we explore how mapping at different layers of the LLM influences its language-understanding capabilities, thereby identifying the most appropriate layers for mapping. Finally, we demonstrate that the established mapping relation remains consistent throughout the inference process, enabling it to be constructed during the prefill stage and subsequently utilized in subsequent decode stage. This method of establishing mapping also facilitates dynamic adaptation to evolving contexts.\n\nBased on these experiments and observations, we introduce the efficient Inference through Attention Mapping (IAM) framework. This framework effectively captures the similarities of attention patterns between SLM and LLM to dynamically establish mapping across varying contexts. Consequently, LLM can perform efficient inference without calculating portions of attention matrices, thereby achieving dual benefits of reduced GPU memory usage for KV cache and decreased computational requirements in attention mechanisms. We first comprehensively evaluate the performance preservation of IAM across four kinds of scenarios. Experimental results indicate that with a $30\\%$ mapping ratio, the model maintains performance close to lossless, while at a $50\\%$ mapping ratio, it also retains high capability levels. Efficiency evaluations across different inference scenarios demonstrate that IAM achieves an average reduction of $22.1\\%$ in KV cache usage and an average acceleration of $11\\%$ in inference speed. Our other experimental results indicate that the IAM is generalizable on other series of LLMs and compatible with existing KV cache optimization methods.",
+      "rule_tier": "soft_skip",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.959::sections::2",
+      "paper_id": "2025.acl-long.959",
+      "section_number": "2",
+      "section_title": "related work",
+      "normalized_section_title": "related work",
+      "window_text": "Due to the widespread adoption of technologies such as RAG and the recent emergence of reasoning models like DeepSeek-R1, the demand for handling long contexts has significantly increased. The self-attention mechanism necessitates computing attention between the current token and every preceding token, leading to the common practice of storing previous tokens' KV states (KV cache) to avoid recomputation. However, this approach has become a primary bottleneck for managing long contexts.\n\nOne category of methods focuses on efficiently storing and transmitting large amounts of KV cache with constrained hardware. For instance, tensor parallelism (Shoeybi et al., 2020) distributes attention heads and pipeline parallelism (Huang et al., 2019) distributes attention layers across multiple GPUs, enabling horizontal scaling of KV cache storage capacity by adding more GPUs. When GPU HBM is insufficient, some techniques (Sheng et al., 2023) concentrate on efficiently offloading the KV cache to CPU memory. Mooncake (Qin et al., 2024) advances this concept further by proposing a multi-level caching strategy centered around the KV cache. At the CUDA optimization level, FlashAttention (Dao, 2023) reduces the number of read/write operations between GPU HBM and GPU cache, while PagedAttention (Kwon et al., 2023) employs virtual memory management techniques to minimize memory fragmentation in GPU HBM. These approaches primarily aim to optimize hardware capabilities and KV cache requirements from a system perspective, without addressing KV cache reduction from an algorithmic perspective.\n\nAnother category of methods focuses on leveraging the inherent similarities and sparsity within the attention mechanism. Techniques such as KVQuant (Hooper et al., 2024) exploit redundancies in numerical representations to propose quantization of the KV cache, thereby reducing storage requirements and enhancing load speeds. StreamingLLM (Xiao et al., 2024) achieves closely unlimited input by reserving both the initial and the most recent KV cache of tokens. $H_{2}O$ (Zhang et al., 2023) observed that the accumulated attention scores of all tokens follow a power-law distribution, indicating that only a small subset of tokens is highly significant in the generation. Scissorhands (Liu et al., 2023) revealed the persistence of importance, indicating that tokens identified as impor\n\ntant in initial remain significant throughout subsequent stages of inference. PyramidInfer (Yang et al., 2024b) further explores the distinct attention characteristics across different layers within LLM, and identified that deeper layers exhibit greater redundancy. These findings help design effective KV cache eviction approaches. Meanwhile, KVMerger (Wang et al., 2024) leverages the high similarity of KV states observed across different datasets to design a Gaussian kernel weighted merging algorithm for merging KV Cache, thereby minimizing the loss introduced by dropping methods. However, these approaches primarily exploit the inherent similarities and sparsity within the model's attention mechanism and do not incorporate external information to enhance KV cache optimization, as IAM does. In addition, IAM is orthogonal to most of the aforementioned methods, due to its innovative approach of utilizing entire attention matrices of SLM and avoiding computations of attention mechanism of mapped layers in LLM.\n\nThere are also some works about speculative decoding (Xia et al., 2023; Cai et al., 2024), which employs a SLM as a draft model, followed by validation from a LLM to determine whether to adopt its predictions. Similar to our method, this approach aims to accelerate inference through the collaboration of small and large models. However, the core mechanisms differ: speculative decoding focuses on aligning the next-word prediction probability distributions between the SLM and LLM, while IAM relies on the high similarity of attention matrices between the SLM and LLM. Additionally, the LLM in speculative decoding can also benefit from the IAM method to enhance performance, achieving a synergistic effect.",
+      "rule_tier": "soft_skip",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.959::sections::3",
+      "paper_id": "2025.acl-long.959",
+      "section_number": "3",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "In this section, we begin by conducting a series of experiments aimed at providing valuable insights into attention mapping. Building on these findings, we then introduce the IAM framework.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.959::sections::4",
+      "paper_id": "2025.acl-long.959",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.959::sections::4.1",
+      "paper_id": "2025.acl-long.959",
+      "section_number": "4.1",
+      "section_title": "experiments setup",
+      "normalized_section_title": "experiments setup",
+      "window_text": "Datasets We comprehensively evaluate the utility preservation of IAM from four kinds of scenarios: 1) Language modeling: we measure the perplexity on WikiText-v2 (Merit et al., 2016). 2) Language understanding: We evaluate performance on\n\n![](images/6719792b6cf5d9e0356e7582d2963ba81cbea8785c547180105afc60eb3c1f0e.jpg)  \nFigure 4: Framework of IAM.\n\nthe MMLU (Hendrycks et al., 2021). 3) QA task: we assess QA performance using the HotpotQA dataset (Yang et al., 2018) and adopt F1 score as evaluation metric. 4) Long context: we utilize Gov-Report benchmark (Huang et al., 2021) to test the long text summarization capacity.\n\nImplementation Details Our experiments are conducted on two types of LLMs. The main results are obtained using the models of the Qwen2 series<sup>1</sup>. Specifically, we use Qwen2-72B as target LLM and two SLMs with different scales: Qwen2-0.5B and Qwen2-7B. We also test the LLaMA3 series models<sup>2</sup> to study the IAM's adaptation to different series LLMs in section 4.4. For these experiments, the SLM is LLaMA 3.2-1B, and the LLM is LLaMA 3.1-70B.\n\nAll experiments are performed on 8 NVIDIA A100 (80GB) GPUs. We use greedy decoding to ensure the stability of experimental results. For generative tasks, we limit the maximum output tokens to 512 and set the repetition penalty as 1.2. We also set the establishing threshold $\\tau_{e}$ and the truncation threshold $\\tau_{t}$ in IAM algorithm as 20 and 100 respectively. The other experimental environment includes the following configurations: CUDA version 12.0, PyTorch version 2.4.0, and\n\nHuggingFace's Transformers<sup>3</sup> with version 4.45.1.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.acl-long.959::sections::4.2",
+      "paper_id": "2025.acl-long.959",
+      "section_number": "4.2",
+      "section_title": "benchmark results",
+      "normalized_section_title": "benchmark results",
+      "window_text": "In Figure 5, we evaluate the performance of IAM in four kinds of scenarios with mapping ratio varying from 0 to $50\\%$ . It can be seen that IAM maintains high language understanding and generation quality with much less GPU memory consumption. Specifically, at a mapping ratio of $30\\%$ , IAM achieves almost the same performance as the original model. At a mapping ratio of $50\\%$ , it still retains high capability levels.\n\nIt is also important to note that using Qwen2-7B as the SLM yields better performance. We conjecture that this is because using the bigger model with more source attention matrices can improve maximum similarity between mapping layers, which will reduce the loss of mapping. This implies that there is a trade-off between efficiency and model performance.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.959::sections::4.3",
+      "paper_id": "2025.acl-long.959",
+      "section_number": "4.3",
+      "section_title": "efficiency analysis",
+      "normalized_section_title": "efficiency analysis",
+      "window_text": "To evaluate the efficiency of IAM, we consider two common scenarios: 1) Multi-userConcurrency: In this scenario, the context length is set to a prefetch length of 512 tokens and a maximum generation length of 512 tokens, with a batch size of 64. 2) Long Context: In this scenario, the context length\n\n![](images/b1d38851f23bcd557bdb9351ed76bfa3eac64293297f453321c0a1ca64bd6de4.jpg)\n\n![](images/64e6cb04d26ca566115b637e650c376d02b70b7c502a680b123132dd556ba631.jpg)\n\n![](images/1018a3bb18ca7963a53e735cfa72ba54f1114884d40de25232454009e9c847d6.jpg)\n\n![](images/2482a923452c7db2ea207f7f6b776d32698fb0c5512b6b6879ec48ea661d62df.jpg)  \nFigure 5: Benchmark results of IAM with mapping ratio varying from 0 to $50\\%$ . Default represents using the original LLM without mapping.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.959::sections::algorithm 1 iam",
+      "paper_id": "2025.acl-long.959",
+      "section_number": "",
+      "section_title": "algorithm 1 iam",
+      "normalized_section_title": "algorithm 1 iam",
+      "window_text": "Input: A target large language model $M$ ; A small language model $M_{s}$ ; Prompt $\\pmb{x}$ ; Establishing threshold $\\tau_{e}$ ; Truncation threshold $\\tau_{t}$ ; Mapping ratio $R$ ; Max output lenth $L_{max}$ .\n\n1: Calculate token length of prompt as $len(\\pmb{x})$   \n2: if $len(\\pmb{x}) > \\tau_t$ then   \n3: Truncate lenth of prompt to $\\tau_{t}$   \n4: else if $len(\\pmb{x}) < \\tau_{e}$ then   \n5: Autoregressive generation $\\pmb{y} = \\{y_i\\}_{i=1}^k$ by $M$ until $\\text{len}(\\pmb{x}) + k >= \\tau_e$   \n6: end if   \n7: Forward process by $M(\\pmb{x})$ and $M_{s}(\\pmb{x})$ and get attention matrices respectively   \n8: Calculate pairwise similarity via Eq.(4)   \n9: Select mapping layers according to $R$   \n10: Establish mapping via Eq.(5)   \n11: while $y_{i} \\neq eos$ and $L < L_{max}$ do   \n12: Replace attention matrix of $M$ via Eq.(6)   \n13: Autoregressive generation $\\pmb{y} = \\{y_{i}\\}_{i = k}^{L}$ by $M(\\pmb {x},\\pmb {y})$   \n14: end while\n\nOutput: Output token sequences $\\pmb{y} = \\{y_{i}\\}_{i=1}^{L}$\n\nis set to a prefetch length of 8192 tokens and a maximum generation length of 512 tokens, with a batch size of 8. In each scenario, we analyze both memory efficiency and compute efficiency, and thus derive a detailed view of the impact of IAM on end-to-end performance. The LLM used in this part of the experiment is Qwen2-72B while the SLM is Qwen2-0.5B, and the mapping ratio is set to 0.5.\n\nMemory Efficiency With IAM, the mapped layers in the LLM do not need to store the K cache because they do not compute attention matrices. This results in a reduction of memory usage. Although the introduction of SLM with its parameters and kv cache also incurs additional overhead. It is acceptable since the SLM's memory is signifi\n\ncantly smaller than that of the LLM. Referring to Table 3, even when accounting for the KV cache of the SLM, IAM achieves a $21.7\\%$ reduction in KV cache usage in the multi-user concurrency scenario and a $22.5\\%$ reduction in the long context scenario, which indicates the memory efficiency of IAM.\n\nCompute Efficiency Similarly, in IAM, the mapped layers of LLM do not need to perform Q projection, K projection, and the multiplication of the QK matrix with softmax. These computations are particularly intensive during the prefetch stage and often become a performance bottleneck. By using IAM, we can significantly reduce this computational load. Although introducing the SLM adds some computational overhead, this additional workload is significantly lower compared to the computations avoided in the LLM. As a result, the overall system still sees substantial benefits: In the multi-user concurrency scenario, the reduction in computational load leads to a $12\\%$ decrease in TTFT. In the long context scenario, where the computational complexity of the QK matrix multiplication increases quadratically with sequence length, IAM provides even greater computational savings, resulting in a more significant $17\\%$ reduction in TTFT.\n\nEnd-to-end Efficiency The resulting memory and compute savings contribute to improved overall system efficiency. Benefit from the substantial reduction in K cache usage, the LLM experiences notable improvements in TPOT during the decode stage, with decreases of $11\\%$ and $10\\%$ in the multi-user concurrency and long context scenarios, respectively. Additionally, the significant reduction in computational load leads to improved TTFT during the prefetch stage, with decreases of $12\\%$ and $17\\%$ in the same scenarios. These enhancements translate into improved end-to-end throughput performance. Compared to the default method, IAM\n\nTable 3: Evaluation on efficiency of IAM. Bsz: batch size. Lenth: prefetch length + decode lenth. KV Mem.: GPU memory usage (GB) of the KV cache. TPOT: average time (s) per output token in decode stage. TTTF: time (s) to first token. Thr.: End-to-end throughput (token/s)   \n\n<table><tr><td>Method</td><td>Bsz</td><td>Lenth</td><td>KV Mem.</td><td>TPOT</td><td>TTFT</td><td>Thr.</td></tr><tr><td rowspan=\"2\">DefaultIAM</td><td rowspan=\"2\">64</td><td rowspan=\"2\">512+512</td><td>158.7 (100%)</td><td>0.196 (1.0x)</td><td>2.67 (1.0x)</td><td>636 (1.0x)</td></tr><tr><td>124.2 (78.3%)</td><td>0.176 (1.11x)</td><td>2.39 (1.12x)</td><td>708 (1.11x)</td></tr><tr><td rowspan=\"2\">DefaultIAM</td><td rowspan=\"2\">4</td><td rowspan=\"2\">8192+512</td><td>187.4 (100%)</td><td>0.216 (1.0x)</td><td>6.72 (1.0x)</td><td>297 (1.0x)</td></tr><tr><td>143.1 (77.5%)</td><td>0.197 (1.10x)</td><td>5.74 (1.17x)</td><td>326 (1.10x)</td></tr></table>\n\nachieves throughput improvements of $11\\%$ and $10\\%$ in the multi-user concurrency and long context scenarios, making it both practical and beneficial for various deployment scenarios.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.959::appendix::A",
+      "paper_id": "2025.acl-long.959",
+      "section_number": "A",
+      "section_title": "training setting",
+      "normalized_section_title": "training setting",
+      "window_text": "The model is trained using 8 NVIDIA A100 80GB GPUs. During training, only the parameters of the small model are updated through gradient descent. We set the batch size to 128 and train for a maximum of five epochs. The learning rate is set to 2e-5, with a weight decay of 0.01 applied during training. These training parameters remain consistent for both the Qwen series and Llama series models. We observe that the training loss stops decreasing significantly after two epochs; therefore, we adopt the small model trained after two epochs for subsequent evaluation experiments.\n\nWe compared the perplexity of Qwen2-72B using IAM on the WikiText-v2 dataset before and after instruction tuning in Table 4. The results show that the perplexity decreases significantly after fine-tuning. Moreover, as the mapping ratio increases, the decrease becomes more pronounced. This indicates that appropriate fine-tuning at higher Mapping Ratios can help mitigate the performance degradation caused by IAM.\n\nTable 4: The ablation study on the impact of fine-tuning on IAM method.   \n\n<table><tr><td>Mapping Ratio</td><td>10%</td><td>20%</td><td>30%</td><td>40%</td><td>50%</td></tr><tr><td>w.o. tuning</td><td>8.47</td><td>8.72</td><td>9.09</td><td>9.74</td><td>10.32</td></tr><tr><td>w. tuning</td><td>8.53</td><td>8.84</td><td>9.18</td><td>10.34</td><td>11.99</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.959::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Datasets We comprehensively evaluate the utility preservation of IAM from four kinds of scenarios: 1) Language modeling: we measure the perplexity on WikiText-v2 (Merit et al., 2016). 2) Language understanding: We evaluate performance on\n\n![](images/6719792b6cf5d9e0356e7582d2963ba81cbea8785c547180105afc60eb3c1f0e.jpg)  \nFigure 4: Framework of IAM.\n\nthe MMLU (Hendrycks et al., 2021). 3) QA task: we assess QA performance using the HotpotQA dataset (Yang et al., 2018) and adopt F1 score as evaluation metric. 4) Long context: we utilize Gov-Report benchmark (Huang et al., 2021) to test the long text summarization capacity.\n\nImplementation Details Our experiments are conducted on two types of LLMs. The main results are obtained using the models of the Qwen2 series<sup>1</sup>. Specifically, we use Qwen2-72B as target LLM and two SLMs with different scales: Qwen2-0.5B and Qwen2-7B. We also test the LLaMA3 series models<sup>2</sup> to study the IAM's adaptation to different series LLMs in section 4.4. For these experiments, the SLM is LLaMA 3.2-1B, and the LLM is LLaMA 3.1-70B.\n\nAll experiments are performed on 8 NVIDIA A100 (80GB) GPUs. We use greedy decoding to ensure the stability of experimental results. For generative tasks, we limit the maximum output tokens to 512 and set the repetition penalty as 1.2. We also set the establishing threshold $\\tau_{e}$ and the truncation threshold $\\tau_{t}$ in IAM algorithm as 20 and 100 respectively. The other experimental environment includes the following configurations: CUDA version 12.0, PyTorch version 2.4.0, and\n\nHuggingFace's Transformers<sup>3</sup> with version 4.45.1.",
+      "section_number": "4.1",
+      "section_title": "experiments setup",
+      "normalized_section_title": "experiments setup"
+    },
+    {
+      "window_id": "2025.acl-long.959::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "The model is trained using 8 NVIDIA A100 80GB GPUs. During training, only the parameters of the small model are updated through gradient descent. We set the batch size to 128 and train for a maximum of five epochs. The learning rate is set to 2e-5, with a weight decay of 0.01 applied during training. These training parameters remain consistent for both the Qwen series and Llama series models. We observe that the training loss stops decreasing significantly after two epochs; therefore, we adopt the small model trained after two epochs for subsequent evaluation experiments.\n\nWe compared the perplexity of Qwen2-72B using IAM on the WikiText-v2 dataset before and after instruction tuning in Table 4. The results show that the perplexity decreases significantly after fine-tuning. Moreover, as the mapping ratio increases, the decrease becomes more pronounced. This indicates that appropriate fine-tuning at higher Mapping Ratios can help mitigate the performance degradation caused by IAM.\n\nTable 4: The ablation study on the impact of fine-tuning on IAM method.   \n\n<table><tr><td>Mapping Ratio</td><td>10%</td><td>20%</td><td>30%</td><td>40%</td><td>50%</td></tr><tr><td>w.o. tuning</td><td>8.47</td><td>8.72</td><td>9.09</td><td>9.74</td><td>10.32</td></tr><tr><td>w. tuning</td><td>8.53</td><td>8.84</td><td>9.18</td><td>10.34</td><td>11.99</td></tr></table>",
+      "section_number": "A",
+      "section_title": "training setting",
+      "normalized_section_title": "training setting"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.959::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "4.1",
+      "section_title": "experiments setup",
+      "normalized_section_title": "experiments setup",
+      "evidence": "Datasets We comprehensively evaluate the utility preservation of IAM from four kinds of scenarios: 1) Language modeling: we measure the perplexity on WikiText-v2 (Merit et al., 2016). 2) Language understanding: We evaluate performance on\n\n![](images/6719792b6cf5d9e0356e7582d2963ba81cbea8785c547180105afc60eb3c1f0e.jpg)  \nFigure 4: Framework of IAM.\n\nthe MMLU (Hendrycks et al., 2021). 3) QA task: we assess QA performance using the HotpotQA dataset (Yang et al., 2018) and adopt F1 score as evaluation metric. 4) Long context: we utilize Gov-Report benchmark (Huang et al., 2021) to test the long text summarization capacity.\n\nImplementation Details Our experiments are conducted on two types of LLMs. The main results are obtained using the models of the Qwen2 series<sup>1</sup>. Specifically, we use Qwen2-72B as target LLM and two SLMs with different scales: Qwen2-0.5B and Qwen2-7B. We also test the LLaMA3 series models<sup>2</sup> to study the IAM's adaptation to different series LLMs in section 4.4. For these experiments, the SLM is LLaMA 3.2-1B, and the LLM is LLaMA 3.1-70B.\n\nAll experiments are performed on 8 NVIDIA A100 (80GB) GPUs. We use greedy decoding to ensure the stability of experimental results. For generative tasks, we limit the maximum output tokens to 512 and set the repetition penalty as 1.2. We also set the establishing threshold $\\tau_{e}$ and the truncation threshold $\\tau_{t}$ in IAM algorithm as 20 and 100 respectively. The other experimental environment includes the following configurations: CUDA version 12.0, PyTorch version 2.4.0, and\n\nHuggingFace's Transformers<sup>3</sup> with version 4.45.1.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.959::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "A",
+      "section_title": "training setting",
+      "normalized_section_title": "training setting",
+      "evidence": "The model is trained using 8 NVIDIA A100 80GB GPUs. During training, only the parameters of the small model are updated through gradient descent. We set the batch size to 128 and train for a maximum of five epochs. The learning rate is set to 2e-5, with a weight decay of 0.01 applied during training. These training parameters remain consistent for both the Qwen series and Llama series models. We observe that the training loss stops decreasing significantly after two epochs; therefore, we adopt the small model trained after two epochs for subsequent evaluation experiments.\n\nWe compared the perplexity of Qwen2-72B using IAM on the WikiText-v2 dataset before and after instruction tuning in Table 4. The results show that the perplexity decreases significantly after fine-tuning. Moreover, as the mapping ratio increases, the decrease becomes more pronounced. This indicates that appropriate fine-tuning at higher Mapping Ratios can help mitigate the performance degradation caused by IAM.\n\nTable 4: The ablation study on the impact of fine-tuning on IAM method.   \n\n<table><tr><td>Mapping Ratio</td><td>10%</td><td>20%</td><td>30%</td><td>40%</td><td>50%</td></tr><tr><td>w.o. tuning</td><td>8.47</td><td>8.72</td><td>9.09</td><td>9.74</td><td>10.32</td></tr><tr><td>w. tuning</td><td>8.53</td><td>8.84</td><td>9.18</td><td>10.34</td><td>11.99</td></tr></table>",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.959::sections::1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "1",
+      "section_title": "introduction",
+      "evidence": "Large language models (LLMs) like GPT4 (OpenAI, 2024a) have emerged with remarkable natural language understanding capabilities and broad prospects in application. While subsequent advancements such as Chain-of-Thought (CoT) (Wei et al., 2022; Yao et al., 2024) have revitalized the landscape of applications, they also introduce significant computation and memory consumption due\n\nto exceedingly long contexts. Recent developments in reasoning models, exemplified by ChatGPT-o1 (OpenAI, 2024b) and DeepSeek-R1 (DeepSeek-AI, 2025), have exacerbated this issue because of their extensive internal reasoning processes.\n\n![](images/f30d9b74579746cc0b423eadf711c85a9088581d2662ff539937e8583caea6f5.jpg)  \nFigure 1: IAM is orthogonal to the existing KV cache eviction methods and can further reduce the KV cache usage in long context scenarios.\n\nTo address the aforementioned challenges and achieve efficient inference, various methodologies have been proposed, including optimizing model architectures (Sun et al., 2024; Gloeckle et al., 2024), prompt compression (Jiang et al., 2023; Pan et al., 2024), and KV cache optimization (Zhang et al., 2023; Yang et al., 2024b; Hooper et al., 2024), among others. A specific approach within KV cache optimization, known as KV cache eviction, achieves efficiency improvements by exploiting characteristics and sparsity within attention mechanisms. Nevertheless, these methodologies predominantly concentrate on leveraging intrinsic sparsity of LLM itself, without considering external information to facilitate better optimization.\n\nPrevious study (Chen et al., 2021) has indicated a significant similarity in attention patterns between small and large models within the BERT architecture. In Appendix B, we further substantiate that this similarity is also present in LLMs. Building\n\nupon this characteristic, this paper introduces an efficient inference technique through attention mapping between small language model (SLM) and the larger one. It is important to note that our proposed method achieves dual benefits of accelerated attention computation and reduced KV cache consumption, and is orthogonal to most existing KV cache optimization methods. As depicted in Figure 1, the utilization of $H_{2}O$ (Zhang et al., 2023) facilitates KV cache compression at the token level, whereas our method can achieve further compression at the model layer level.\n\nIn this study, we investigate the methodology to achieve attention mapping between SLM and LLM while maintaining the performance of the original LLM. Initially, we evaluate the impact of various similarity metrics applied to attention matrices on language modeling efficacy. Following this, we explore how mapping at different layers of the LLM influences its language-understanding capabilities, thereby identifying the most appropriate layers for mapping. Finally, we demonstrate that the established mapping relation remains consistent throughout the inference process, enabling it to be constructed during the prefill stage and subsequently utilized in subsequent decode stage. This method of establishing mapping also facilitates dynamic adaptation to evolving contexts.\n\nBased on these experiments and observations, we introduce the efficient Inference through Attention Mapping (IAM) framework. This framework effectively captures the similarities of attention patterns between SLM and LLM to dynamically establish mapping across varying contexts. Consequently, LLM can perform efficient inference without calculating portions of attention matrices, thereby achieving dual benefits of reduced GPU memory usage for KV cache and decreased computational requirements in attention mechanisms. We first comprehensively evaluate the performance preservation of IAM across four kinds of scenarios. Experimental results indicate that with a $30\\%$ mapping ratio, the model maintains performance close to lossless, while at a $50\\%$ mapping ratio, it also retains high capability levels. Efficiency evaluations across different inference scenarios demonstrate that IAM achieves an average reduction of $22.1\\%$ in KV cache usage and an average acceleration of $11\\%$ in inference speed. Our other experimental results indicate that the IAM is generalizable on other series of LLMs and compatible with existing KV cache optimization methods."
+    },
+    {
+      "source_window_id": "2025.acl-long.959::sections::2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "2",
+      "section_title": "related work",
+      "evidence": "Due to the widespread adoption of technologies such as RAG and the recent emergence of reasoning models like DeepSeek-R1, the demand for handling long contexts has significantly increased. The self-attention mechanism necessitates computing attention between the current token and every preceding token, leading to the common practice of storing previous tokens' KV states (KV cache) to avoid recomputation. However, this approach has become a primary bottleneck for managing long contexts.\n\nOne category of methods focuses on efficiently storing and transmitting large amounts of KV cache with constrained hardware. For instance, tensor parallelism (Shoeybi et al., 2020) distributes attention heads and pipeline parallelism (Huang et al., 2019) distributes attention layers across multiple GPUs, enabling horizontal scaling of KV cache storage capacity by adding more GPUs. When GPU HBM is insufficient, some techniques (Sheng et al., 2023) concentrate on efficiently offloading the KV cache to CPU memory. Mooncake (Qin et al., 2024) advances this concept further by proposing a multi-level caching strategy centered around the KV cache. At the CUDA optimization level, FlashAttention (Dao, 2023) reduces the number of read/write operations between GPU HBM and GPU cache, while PagedAttention (Kwon et al., 2023) employs virtual memory management techniques to minimize memory fragmentation in GPU HBM. These approaches primarily aim to optimize hardware capabilities and KV cache requirements from a system perspective, without addressing KV cache reduction from an algorithmic perspective.\n\nAnother category of methods focuses on leveraging the inherent similarities and sparsity within the attention mechanism. Techniques such as KVQuant (Hooper et al., 2024) exploit redundancies in numerical representations to propose quantization of the KV cache, thereby reducing storage requirements and enhancing load speeds. StreamingLLM (Xiao et al., 2024) achieves closely unlimited input by reserving both the initial and the most recent KV cache of tokens. $H_{2}O$ (Zhang et al., 2023) observed that the accumulated attention scores of all tokens follow a power-law distribution, indicating that only a small subset of tokens is highly significant in the generation. Scissorhands (Liu et al., 2023) revealed the persistence of importance, indicating that tokens identified as impor\n\ntant in initial remain significant throughout subsequent stages of inference. PyramidInfer (Yang et al., 2024b) further explores the distinct attention characteristics across different layers within LLM, and identified that deeper layers exhibit greater redundancy. These findings help design effective KV cache eviction approaches. Meanwhile, KVMerger (Wang et al., 2024) leverages the high similarity of KV states observed across different datasets to design a Gaussian kernel weighted merging algorithm for merging KV Cache, thereby minimizing the loss introduced by dropping methods. However, these approaches primarily exploit the inherent similarities and sparsity within the model's attention mechanism and do not incorporate external information to enhance KV cache optimization, as IAM does. In addition, IAM is orthogonal to most of the aforementioned methods, due to its innovative approach of utilizing entire attention matrices of SLM and avoiding computations of attention mechanism of mapped layers in LLM.\n\nThere are also some works about speculative decoding (Xia et al., 2023; Cai et al., 2024), which employs a SLM as a draft model, followed by validation from a LLM to determine whether to adopt its predictions. Similar to our method, this approach aims to accelerate inference through the collaboration of small and large models. However, the core mechanisms differ: speculative decoding focuses on aligning the next-word prediction probability distributions between the SLM and LLM, while IAM relies on the high similarity of attention matrices between the SLM and LLM. Additionally, the LLM in speculative decoding can also benefit from the IAM method to enhance performance, achieving a synergistic effect."
+    },
+    {
+      "source_window_id": "2025.acl-long.959::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methodology",
+      "evidence": "In this section, we begin by conducting a series of experiments aimed at providing valuable insights into attention mapping. Building on these findings, we then introduce the IAM framework."
+    },
+    {
+      "source_window_id": "2025.acl-long.959::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.959::sections::4.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2",
+      "section_title": "benchmark results",
+      "evidence": "In Figure 5, we evaluate the performance of IAM in four kinds of scenarios with mapping ratio varying from 0 to $50\\%$ . It can be seen that IAM maintains high language understanding and generation quality with much less GPU memory consumption. Specifically, at a mapping ratio of $30\\%$ , IAM achieves almost the same performance as the original model. At a mapping ratio of $50\\%$ , it still retains high capability levels.\n\nIt is also important to note that using Qwen2-7B as the SLM yields better performance. We conjecture that this is because using the bigger model with more source attention matrices can improve maximum similarity between mapping layers, which will reduce the loss of mapping. This implies that there is a trade-off between efficiency and model performance."
+    },
+    {
+      "source_window_id": "2025.acl-long.959::sections::4.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.3",
+      "section_title": "efficiency analysis",
+      "evidence": "To evaluate the efficiency of IAM, we consider two common scenarios: 1) Multi-userConcurrency: In this scenario, the context length is set to a prefetch length of 512 tokens and a maximum generation length of 512 tokens, with a batch size of 64. 2) Long Context: In this scenario, the context length\n\n![](images/b1d38851f23bcd557bdb9351ed76bfa3eac64293297f453321c0a1ca64bd6de4.jpg)\n\n![](images/64e6cb04d26ca566115b637e650c376d02b70b7c502a680b123132dd556ba631.jpg)\n\n![](images/1018a3bb18ca7963a53e735cfa72ba54f1114884d40de25232454009e9c847d6.jpg)\n\n![](images/2482a923452c7db2ea207f7f6b776d32698fb0c5512b6b6879ec48ea661d62df.jpg)  \nFigure 5: Benchmark results of IAM with mapping ratio varying from 0 to $50\\%$ . Default represents using the original LLM without mapping."
+    },
+    {
+      "source_window_id": "2025.acl-long.959::sections::algorithm 1 iam",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "",
+      "section_title": "algorithm 1 iam",
+      "evidence": "Input: A target large language model $M$ ; A small language model $M_{s}$ ; Prompt $\\pmb{x}$ ; Establishing threshold $\\tau_{e}$ ; Truncation threshold $\\tau_{t}$ ; Mapping ratio $R$ ; Max output lenth $L_{max}$ .\n\n1: Calculate token length of prompt as $len(\\pmb{x})$   \n2: if $len(\\pmb{x}) > \\tau_t$ then   \n3: Truncate lenth of prompt to $\\tau_{t}$   \n4: else if $len(\\pmb{x}) < \\tau_{e}$ then   \n5: Autoregressive generation $\\pmb{y} = \\{y_i\\}_{i=1}^k$ by $M$ until $\\text{len}(\\pmb{x}) + k >= \\tau_e$   \n6: end if   \n7: Forward process by $M(\\pmb{x})$ and $M_{s}(\\pmb{x})$ and get attention matrices respectively   \n8: Calculate pairwise similarity via Eq.(4)   \n9: Select mapping layers according to $R$   \n10: Establish mapping via Eq.(5)   \n11: while $y_{i} \\neq eos$ and $L < L_{max}$ do   \n12: Replace attention matrix of $M$ via Eq.(6)   \n13: Autoregressive generation $\\pmb{y} = \\{y_{i}\\}_{i = k}^{L}$ by $M(\\pmb {x},\\pmb {y})$   \n14: end while\n\nOutput: Output token sequences $\\pmb{y} = \\{y_{i}\\}_{i=1}^{L}$\n\nis set to a prefetch length of 8192 tokens and a maximum generation length of 512 tokens, with a batch size of 8. In each scenario, we analyze both memory efficiency and compute efficiency, and thus derive a detailed view of the impact of IAM on end-to-end performance. The LLM used in this part of the experiment is Qwen2-72B while the SLM is Qwen2-0.5B, and the mapping ratio is set to 0.5.\n\nMemory Efficiency With IAM, the mapped layers in the LLM do not need to store the K cache because they do not compute attention matrices. This results in a reduction of memory usage. Although the introduction of SLM with its parameters and kv cache also incurs additional overhead. It is acceptable since the SLM's memory is signifi\n\ncantly smaller than that of the LLM. Referring to Table 3, even when accounting for the KV cache of the SLM, IAM achieves a $21.7\\%$ reduction in KV cache usage in the multi-user concurrency scenario and a $22.5\\%$ reduction in the long context scenario, which indicates the memory efficiency of IAM.\n\nCompute Efficiency Similarly, in IAM, the mapped layers of LLM do not need to perform Q projection, K projection, and the multiplication of the QK matrix with softmax. These computations are particularly intensive during the prefetch stage and often become a performance bottleneck. By using IAM, we can significantly reduce this computational load. Although introducing the SLM adds some computational overhead, this additional workload is significantly lower compared to the computations avoided in the LLM. As a result, the overall system still sees substantial benefits: In the multi-user concurrency scenario, the reduction in computational load leads to a $12\\%$ decrease in TTFT. In the long context scenario, where the computational complexity of the QK matrix multiplication increases quadratically with sequence length, IAM provides even greater computational savings, resulting in a more significant $17\\%$ reduction in TTFT.\n\nEnd-to-end Efficiency The resulting memory and compute savings contribute to improved overall system efficiency. Benefit from the substantial reduction in K cache usage, the LLM experiences notable improvements in TPOT during the decode stage, with decreases of $11\\%$ and $10\\%$ in the multi-user concurrency and long context scenarios, respectively. Additionally, the significant reduction in computational load leads to improved TTFT during the prefetch stage, with decreases of $12\\%$ and $17\\%$ in the same scenarios. These enhancements translate into improved end-to-end throughput performance. Compared to the default method, IAM\n\nTable 3: Evaluation on efficiency of IAM. Bsz: batch size. Lenth: prefetch length + decode lenth. KV Mem.: GPU memory usage (GB) of the KV cache. TPOT: average time (s) per output token in decode stage. TTTF: time (s) to first token. Thr.: End-to-end throughput (token/s)   \n\n<table><tr><td>Method</td><td>Bsz</td><td>Lenth</td><td>KV Mem.</td><td>TPOT</td><td>TTFT</td><td>Thr.</td></tr><tr><td rowspan=\"2\">DefaultIAM</td><td rowspan=\"2\">64</td><td rowspan=\"2\">512+512</td><td>158.7 (100%)</td><td>0.196 (1.0x)</td><td>2.67 (1.0x)</td><td>636 (1.0x)</td></tr><tr><td>124.2 (78.3%)</td><td>0.176 (1.11x)</td><td>2.39 (1.12x)</td><td>708 (1.11x)</td></tr><tr><td rowspan=\"2\">DefaultIAM</td><td rowspan=\"2\">4</td><td rowspan=\"2\">8192+512</td><td>187.4 (100%)</td><td>0.216 (1.0x)</td><td>6.72 (1.0x)</td><td>297 (1.0x)</td></tr><tr><td>143.1 (77.5%)</td><td>0.197 (1.10x)</td><td>5.74 (1.17x)</td><td>326 (1.10x)</td></tr></table>\n\nachieves throughput improvements of $11\\%$ and $10\\%$ in the multi-user concurrency and long context scenarios, making it both practical and beneficial for various deployment scenarios."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.1",
+      "A"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 8
+      },
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.959\\auto\\full.md",
+    "source_md_sha256": "53822f994be08b7ae4df92513697cfee3ca75d3af773313f800e0b130b75f6d4",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

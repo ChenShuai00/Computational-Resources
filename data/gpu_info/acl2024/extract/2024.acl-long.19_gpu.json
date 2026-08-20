@@ -1,0 +1,415 @@
+{
+  "paper_id": "2024.acl-long.19",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.19::sections::1",
+      "paper_id": "2024.acl-long.19",
+      "section_number": "1",
+      "section_title": "introduction",
+      "normalized_section_title": "introduction",
+      "window_text": "The landscape of vision-language modeling has undergone significant transformations in recent years, with CLIP (Radford et al., 2021) serving as a landmark development. It distinguished itself through\n\n*This work was done during an internship at ByteDance Inc.\n\nunparalleled zero-shot classification capabilities and efficiency in image-text retrieval tasks from prior works (Zhang et al., 2022a). Successive models like ALBEF (Li et al., 2021a), X-VLM (Zeng et al., 2022), and VLMo (Bao et al., 2022) further broadened the scope, addressing a myriad of tasks such as retrieval, visual entailment, and closed-set Visual Question Answering (VQA), among others.\n\nRecently, the field has been enriched by the advent of generative models designed for complex image-to-language tasks. Notable contributions include CoCa (Yu et al., 2022), SimVLM (Wang et al., 2022c), Frozen (Tsimpoukelli et al., 2021), and Flamingo (Alayrac et al., 2022), targeting tasks like image and video captioning and open-set VQA. These models all rely on billion-scale datasets for training from scratch to bridge the substantial modality gap between vision and language.\n\nAs a result, the resource-intensive requirements (i.e., thousands of TPUs) of these training-from-scratch Vision-Language Models (VLMs) led to the conceptualization of BLIP-2 (Li et al., 2023a): this model alleviates computational costs (e.g., only requiring $16 \\times$ fewer GPUs) by integrating existing well-pretrained vision encoders (ViT) with language decoders (LLM), and then tuning their joint operation. A central innovation in aligning vision and language modules in BLIP-2 is $Q$ -former, a multimodal connector equipped with learnable queries for enhancing cross-attention mechanisms. This architectural choice, however, prevents the full model from end-to-end training and therefore still demands an additional pre-training regimen for $Q$ -former, referred to as BLIP-2's Stage 1. The stage involves three learning objectives—image-text contrastive, image-text matching, and language generation—and necessitates multiple forward passes for facilitating the $Q$ -former's optimization.\n\nDespite its efficiency gains over CoCa, BLIP-2's training still imposes considerable computational costs. This poses challenges for research en\n\n![](images/13701baf53f042afce74a023eacaf756743c6175b6f972ab38e7c6d413388e72.jpg)  \nFigure 1: Overview of our $\\mathrm{EVL_{Gen}}$ . $\\mathrm{EVL_{Gen}}$ employs a streamlined, single-stage training mechanism with a unified loss. Here, visual tokens (in grey) are progressively aggregated based on their inherent similarities at each layer of the TomeFormer architecture. The final set of merged tokens (in orange) serves as semantically rich but computationally efficient soft prompts, guiding the LLM to generate a corresponding caption for the input image.\n\nvironments with limited computational resources, such as university labs. Our experiments indicate that the Stage-1 training of BLIP-2 took approximately eight days on eight A100-80G GPUs (See Appendix B for training configurations). This computational burden has consequently restricted research to using the pre-trained Q-former, hindering the exploration of alternative ViTs in VLMs. This limitation is evident in subsequent works such as InstructBLIP (Dai et al., 2023b), VideoChat (Li et al., 2023b), Video-LLaMA (Zhang et al., 2023b), X-LLM (Chen et al., 2023a).\n\nThe prospect of reducing BLIP-2's computational cost through end-to-end, single-stage training is compelling. Such an approach would remove the complexities associated with resource allocation and hyper-parameter tuning inherent in multi-stage training. Yet, direct end-to-end training with BLIP-2 poses substantial challenges, corroborated by both original findings from BLIP-2 and our own empirical analyses. We hypothesize that these challenges emanate from the intrinsic design of the Q-former. Specifically, the inclusion of randomly initialized learnable queries and crossattention mechanisms complicates the optimization landscape, especially when the aim is to minimize the representational disparity between visual and linguistic modalities.\n\nIn this paper, we propose a token merging Transformer (TomeFormer) as an efficient vision-language connector. TomeFormer employs a systematic token-merging (Bolya et al., 2023) strategy that is both intuitive and effective. By connecting a pre-trained ViT as the visual encoder and a frozen LLM as the language decoder, we intro\n\nduce a new VLM \"Expedited Visual Language Generation model\" (EVL<sub>Gen</sub>), facilitates a streamlined, single-stage training process. It requires only a singular learning objective and a single forward pass per optimization step. This stands in contrast to BLIP-2's multi-stage training, laden with multiple objectives and several forward passes.\n\nFurther, we introduce a soft attentive temporal contextualization mechanism within the ViT for effective video-language modeling. This uncovers more shared semantic features across temporal frames, thereby improving the efficiency of the spatial token merging process. It eliminates the need for modality realignment, contrasting approaches such as the temporal Q-former (Zhang et al., 2023b), or the addition of new learnable temporal queries (Li et al., 2023b). Our strategy simplifies the optimization challenges tied to working with relatively smaller video-text datasets, compared to their image-text counterparts. Remarkably, we demonstrate that even without video pre-training, our temporal token contextualize approach can effectively train robust video-language models. This differs from recent work in video-language models (Yan et al., 2022; Chen et al., 2023b) that depend on pre-training models using vast million-scale video-text datasets. In summary, our contributions are:\n\n- For reducing vision redundancy within the vision language connector, we adopt Token Merging, initially designed to enhance ViT inference speed without training. Concurrently, we present a novel temporal token contextualization scheme for video modeling.   \n- Our proposed VLM featuring TomeFormer com\n\npetes effectively with BLIP-2, while requiring just a fraction of the computational resources. Given the reliance on BLIP-2's pre-trained model in contemporary studies, our approach widens the exploratory scope for various ViTs.\n\n- We introduce a straightforward spatial attentive temporal modeling technique that allows for the seamless adaptation of pre-trained image-text models to video tasks. This approach eliminates the need for complex modality re-alignment, a common requirement in alternative methods.",
+      "rule_tier": "soft_skip",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.19::sections::3",
+      "paper_id": "2024.acl-long.19",
+      "section_number": "3",
+      "section_title": "methods",
+      "normalized_section_title": "methods",
+      "window_text": "We begin by presenting our image-text model and then describe the adaptations made to this pretrained model for video-related tasks.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.19::sections::3.1",
+      "paper_id": "2024.acl-long.19",
+      "section_number": "3.1",
+      "section_title": "preliminary",
+      "normalized_section_title": "preliminary",
+      "window_text": "We follow BLIP-2's efficient training paradigm, i.e., utilizing frozen but well-pretrained ViTs and LLMs while solely training a vision-to-language connector. However, BLIP-2 still remains a challenge, since it necessitates an extra Stage-1 as a pre-training phase for the unstable Q-former (i.e., the vision-to-language connector), before the final end-to-end fine-tuning.\n\nOur observation underscores the pivot role of BLIP-2 Stage-1 pre-training (which takes approximately 8 days on eight A100 GPUs): without it, the BLIP-2 model collapses, as evidenced in Table 1. To avoid this extra stage-1, we replace Q-former with a novel vision-to-language connector, which is designed to discover vision redundancy and then significantly accelerate visual-language alignment, often resulting in enhanced performance.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.19::sections::4",
+      "paper_id": "2024.acl-long.19",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "Our experimental setup is as follows:\n\n- Pre-training Data Our model is pre-trained using the MSCOCO (Lin et al., 2014) and CapFilt (Li et al., 2022) datasets, which include BLIP's pseudo-labeled Conceptual Captioning (Sharma et al., 2018), SBU (Ordonez et al., 2011), and LAION (Schuhmann et al., 2022) datasets—similar to the data sources utilized in BLIP-2. Note that we intentionally exclude the VG (Krishna et al., 2017) dataset from our pre-training procedure, as it mainly consists of localized captions.\n\n- Models To facilitate a direct and fair comparison with BLIP-2, we employ the same ViT, texttvevavit-g (Fang et al., 2023). For the language model decoders, we explore both opt-2.7b (Zhang et al., 2022b) and vicuna-7b (Chiang et al., 2023). Our TomeFormer is initialized using bert-base-uncased, ensuring parameter count parity with BLIP-2's Q-former.   \n- Pre-training Details Our pre-training setup closely mirrors the configurations of BLIP-2. We utilize a maximum learning rate of $1e^{-4}$ and a minimum learning rate of $1e^{-5}$ . The learning rate follows a schedule that begins with a linear warm-up phase of 5000 steps starting from $1e^{-6}$ and then transitions to a cosine decay schedule. Weight decay is set at 0.05. The training is conducted with a batch size of 1600, distributed over either $8 \\times$ A100-80G or $32 \\times$ V100-32G.   \n- Downstream Tasks $\\mathrm{EVL}_{\\mathrm{Gen}}$ -Image is evaluated without additional fine-tuning on a variety of tasks, including MSCOCO captioning, VQAv2 (Goyal et al., 2017), GQA (Hudson and Manning, 2019), and OK-VQA (Marino et al., 2019). For video tasks, $\\mathrm{EVL}_{\\mathrm{Gen}}$ -Video is evaluated on fine-tuned MSR-VTT (Xu et al., 2016) and MSVD (Chen and Dolan, 2011) captioning. We use the standard train/val/test splits.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.19::sections::4.1",
+      "paper_id": "2024.acl-long.19",
+      "section_number": "4.1",
+      "section_title": "evaluation on image-text benchmarks",
+      "normalized_section_title": "evaluation on image-text benchmarks",
+      "window_text": "We conducted comparative evaluations between $\\mathrm{EVL}_{\\mathrm{Gen}}$ and BLIP-2 on multiple image-text benchmarks, including zero-shot VQAv2, GQA, OK-VQA, and MSCOCO captioning. It is essential to note that BLIP-2 demands an extensive Stage-1 pre-training phase involving 250,000 optimization steps. This phase incorporates three distinct loss functions and necessitates multiple forward passes through the model, a process crucial for BLIP-2 to prevent model divergence.\n\nTable 1 summarizes the results of our experiments. Our primary insights can be distilled into the following key points:\n\nUtilizing the same training set of 104M image-text pairs and an equal number of optimization steps (250K), $\\mathrm{EVL_{Gen}}$ consistently outperforms BLIP-2 across nearly all evaluated tasks.   \n- Remarkably, $\\mathrm{EVL}_{\\mathrm{Gen}}$ maintains competitive performance even when its training budget is trimmed to approximately one-third of BLIP-2's, specifically 150K optimization steps.   \n- Our experiments show that $\\mathrm{EVL}_{\\mathrm{Gen}}$ can produce satisfactory results with a significantly reduced\n\n<table><tr><td>Models</td><td># pre-train image-text</td><td># trainable params</td><td># stage-1 steps</td><td># stage-2 steps</td><td>VQAv2 val</td><td>GQA test-dev</td><td>OK-VQA test</td><td>COCO val</td><td>Clock time</td></tr><tr><td>VL-T5</td><td>9.2M</td><td>224M</td><td>-</td><td>-</td><td>13.5</td><td>6.3</td><td>5.8</td><td>-</td><td>-</td></tr><tr><td>FewVLM</td><td>9.2M</td><td>740M</td><td>-</td><td>-</td><td>47.7</td><td>29.3</td><td>16.5</td><td>-</td><td>-</td></tr><tr><td>Frozen</td><td>3M</td><td>40M</td><td>-</td><td>-</td><td>29.6</td><td>-</td><td>5.9</td><td>-</td><td>-</td></tr><tr><td>VLKD</td><td>3M</td><td>406M</td><td>-</td><td>-</td><td>42.6</td><td>-</td><td>13.3</td><td>-</td><td>-</td></tr><tr><td>BLIP-2</td><td>\\( 104\\mathbf{M}^{\\dagger} \\)</td><td>\\( 110\\mathbf{M}+^{\\ddagger} \\)</td><td>-</td><td>80k/250k*</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td></tr><tr><td>BLIP-2</td><td>104M</td><td>110M+</td><td>250k</td><td>80k</td><td>44.6</td><td>30.6</td><td>26.0</td><td>137.7</td><td>234 hrs</td></tr><tr><td>\\( EVL_{Gen} \\)</td><td>104M</td><td>55M</td><td>-</td><td>90k</td><td>45.9</td><td>30.6</td><td>25.8</td><td>134.0</td><td>47 hrs</td></tr><tr><td>\\( EVL_{Gen} \\)</td><td>\\( 11\\mathbf{M}^{\\dagger} \\)</td><td>110M</td><td>-</td><td>150k</td><td>46.3</td><td>30.0</td><td>23.0</td><td>135.1</td><td>80 hrs</td></tr><tr><td>\\( EVL_{Gen} \\)</td><td>104M</td><td>110M</td><td>-</td><td>150k</td><td>46.9</td><td>30.8</td><td>24.8</td><td>137.0</td><td>80 hrs</td></tr><tr><td>\\( EVL_{Gen} \\)</td><td>104M</td><td>110M</td><td>-</td><td>250k</td><td>48.4</td><td>30.9</td><td>27.2</td><td>139.1</td><td>133 hrs</td></tr></table>\n\nTable 1: Comparison of methods on zero-shot VQA and MSCOCO captioning (CIDEr) tasks without additional fine-tuning. Both BLIP-2 and $\\mathrm{EVL_{Gen}}$ use OPT-2.7b as the LLM decoder. \\*: BLIP-2 without extensive stage-1 pre-training will collapse. †: We were only able to download approximately $81\\%$ of LAION-115M (110M) and $78\\%$ of CCS-14M (11M) from the CapFilt dataset. $\\ddagger$ : BLIP-2 incorporates an additional set of 32 learnable queries, each with a dimension of 768.\n\ntraining dataset of 11 million image-text pairs, while still undergoing 150K optimization steps.\n\n- $\\mathrm{EVL}_{\\mathrm{Gen}}$ retains its efficacy even when the training budget is restricted to as few as 90K steps, showing the model's efficiency and robustness.\n\nWe further evaluate BLIP-2 and $\\mathrm{EVL_{Gen}}$ on zero-shot NoCaps and Flickr30K datasets. Shown in Table 2, $\\mathrm{EVL_{Gen}}$ consistently outperforms BLIP-2 in both datasets using different LLMs.\n\nTraining Time In the Stage-1 pre-training phase, BLIP-2 requires considerable time, necessitating multiple forward passes to optimize three separate loss functions. We document the training durations for both BLIP-2 and $\\mathrm{EVL_{Gen}}$ when utilizing eight A100-80G GPUs in the last column of Table 1.\n\nAlthough BLIP-2 significantly reduces training time relative to predecessors like CoCa, it still mandates an extended training duration, approximately ten days (8 days for stage 1 and 2 days for stage 2). This extensive time commitment limits the feasibility of researchers to investigate various ViT configurations. Most subsequent works based on BLIP-2 continue to use the pre-trained Q-former in conjunction with the eva-vit-g model, thereby narrowing the scope of ViT exploration. In contrast, $\\mathrm{EVL_{Gen}}$ significantly trims the training time while maintaining satisfactory performances, thus providing researchers with the latitude to explore a wider array of advanced ViTs in future investigations.\n\nFurthermore, MACs (FLOPs) in Q-Former and TomeFormer is discussed in Section 5.5.\n\n<table><tr><td></td><td>LLM</td><td>Model</td><td>C</td><td>B4</td><td>M</td><td>R</td></tr><tr><td rowspan=\"4\">NoCaps</td><td rowspan=\"2\">OPT</td><td>BLIP-2</td><td>112.2</td><td>44.4</td><td>29.5</td><td>59.7</td></tr><tr><td>EVLGen</td><td>117.4</td><td>45.9</td><td>30.3</td><td>61.1</td></tr><tr><td rowspan=\"2\">Vicuna</td><td>BLIP-2</td><td>115.6</td><td>45.3</td><td>30.3</td><td>60.6</td></tr><tr><td>EVLGen</td><td>119.0</td><td>45.9</td><td>30.6</td><td>61.5</td></tr><tr><td rowspan=\"4\">Flickr30K</td><td rowspan=\"2\">OPT</td><td>BLIP-2</td><td>77.1</td><td>28.7</td><td>23.9</td><td>51.6</td></tr><tr><td>EVLGen</td><td>82.0</td><td>30.0</td><td>24.5</td><td>52.4</td></tr><tr><td rowspan=\"2\">Vicuna</td><td>BLIP-2</td><td>80.0</td><td>30.1</td><td>24.8</td><td>52.1</td></tr><tr><td>EVLGen</td><td>81.8</td><td>30.3</td><td>24.5</td><td>52.2</td></tr></table>\n\nTable 2: Comparison of different models' performance on zero-shot NoCaps and Flickr30K captioning. C→CIDEr, B4→BLEU-4, M→METEOR, R→ROUGE",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.19::sections::4.2",
+      "paper_id": "2024.acl-long.19",
+      "section_number": "4.2",
+      "section_title": "evaluation of evl<sub>gen</sub>-video",
+      "normalized_section_title": "evaluation of evl<sub>gen</sub>-video",
+      "window_text": "We proceed to evaluate the performance of finetuned $\\mathrm{EVL_{Gen}}$ -Video models in video captioning tasks, utilizing OPT-2.7b as the language model decoder. Our investigation includes two specific variants of $\\mathrm{EVL_{Gen}}$ -Video: the first is exclusively pre-trained on image data, while the second is further enhanced by pre-training on a corpus of 2 million video-text pairs sourced from the WebVid (Bain et al., 2021) dataset. To provide a comprehensive evaluation, we benchmark $\\mathrm{EVL_{Gen}}$ -Video against five distinct models, described as follows:\n\n- **Baseline (concat):** This model processes each frame of a video individually and concatenates their visual features to generate a single prompt for the LLM. This method is analogous to the strategy employed in InstructBLIP.\n\n- **Baseline (mean):** Similar to the concat baseline, this model processes each video frame individually but averages the visual features to create a\n\nTable 3: Comparison of different models' performance on MSR-VTT video captioning. Models are pre-trained using 2 million video-text pairs from WebVid dataset, except for image pre-trained $\\mathrm{EVL}_{\\mathrm{Gen}}$ -image.   \n\n<table><tr><td>Models</td><td>C</td><td>B4</td><td>M</td><td>R</td></tr><tr><td>Baseline (concat)</td><td>65.5</td><td>44.4</td><td>31.9</td><td>64.1</td></tr><tr><td>Baseline (mean)</td><td>67.8</td><td>47.3</td><td>32.2</td><td>65.0</td></tr><tr><td>EVLGen-image</td><td>68.4</td><td>47.6</td><td>32.4</td><td>65.3</td></tr><tr><td>EVLGen-video</td><td>69.8</td><td>48.3</td><td>32.6</td><td>65.8</td></tr><tr><td>EVLGen-video-scst</td><td>74.0</td><td>49.2</td><td>33.0</td><td>66.5</td></tr><tr><td>Video-LLaMA</td><td>59.3</td><td>47.7</td><td>29.6</td><td>63.7</td></tr><tr><td>VideoChat</td><td>58.0</td><td>46.5</td><td>29.5</td><td>63.4</td></tr><tr><td>VideoCoCa (open)</td><td>63.0</td><td>48.5</td><td>31.4</td><td>64.8</td></tr></table>\n\nsingle prompt for the LLM.\n\n- Video-LLaMA: This variant incorporates the BLIP-2 framework and enhances it with an additional temporal Q-former layer. For this evaluation, we focus solely on the vision-language component of Video-LLaMA.   \n- VideoChat: This model extends BLIP-2 by integrating additional Uniformer modules within the ViT architecture and also incorporates learnable temporal queries in its Q-former component.   \n- VideoCoCa: In this model, we adapt the Open-CoCa framework by mlfoundations and augment the existing CoCa architecture with a learnable attentional pooler, resulting in VideoCoCa.\n\nEvaluation on MSR-VTT As detailed in Table 3, $\\mathrm{EVL_{Gen}}$ -Video demonstrates superior performance relative to the baseline models, even without the aid of video-text pre-training. This result highlights the effectiveness of our proposed Temporal Attentive Soft Token Contextualizing in capturing temporal dynamics. Additionally, we observe an enhancement in performance when incorporating video-text pre-training along with Self-Critical Sequence Training (SCST) (Rennie et al., 2017).\n\nTemporal Attentive Soft Token Contextualizing has the distinct advantage of maintaining the integration of the well-pretrained image-text model (i.e., $\\mathrm{EVL_{Gen}}$ -Image). This contrasts with models such as Video-LLaMA and VideoChat, where the original BLIP-2 architecture is altered, necessitating a complex re-alignment process using video-text pairs. Our empirical analysis indicates that such re-alignment is a non-trivial endeavor (as shown in Table 3, Video-LLaMA and VideoChat struggle to re-align with 2M WebVid video-text pairs). It is worth noting that our VideoCoCa model is at a disadvantage when benchmarked against\n\nTable 4: Comparison of different models' performance on MSVD video captioning.   \n\n<table><tr><td>Models</td><td>C</td><td>B4</td><td>M</td><td>R</td></tr><tr><td>Video-LLaMA</td><td>121.2</td><td>61.6</td><td>40.3</td><td>77.8</td></tr><tr><td>VideoChat</td><td>118.4</td><td>64.1</td><td>41.0</td><td>78.7</td></tr><tr><td>VideoCoCa (open)</td><td>150.9</td><td>67.7</td><td>45.3</td><td>81.9</td></tr><tr><td>EVLGen-video</td><td>158.2</td><td>68.4</td><td>46.8</td><td>83.1</td></tr></table>\n\n![](images/f1f65f656a90a89b6af2cab1ea022dcee584ca23deda3c43149ffa1922043009.jpg)  \nFigure 3: Trade-off between MSCOCO captioning scores (depicted in red) and GPU training time (depicted in blue) as a function of the number of tokens merged $(r)$ in TomeFormer.\n\nGoogle's reported results, which benefit from extensive training on a much larger billion-scale dataset.\n\nEvaluation on MSVD Similarly, we evaluate $\\mathrm{EVL_{Gen}}$ 's performance against Video-LLaMA, VideoChat, and VideoCoCa using the MSVD caption dataset (presented in Table 4). Our results corroborate that $\\mathrm{EVL_{Gen}}$ consistently surpasses these competing models, further attesting to its robust performance across different video caption tasks.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.19::sections::5.1",
+      "paper_id": "2024.acl-long.19",
+      "section_number": "5.1",
+      "section_title": "ablations on tomeformer",
+      "normalized_section_title": "ablations on tomeformer",
+      "window_text": "Within the TomeFormer, the vision-to-language connector in $\\mathrm{EVL}_{\\mathrm{Gen}}$ we introduce a hyperparameter $r$ that regulates the number of spatial tokens merged at each layer. Increasing $r$ substantially reduces the token count, but runs the risk of eliminating important visual details. On the other hand, a smaller $r$ produces two main effects: (1) a more diffuse representation of visual features, complicating the optimization landscape, and (2) elongated soft prompts for the LLM, leading to increased computational cost during training, such as memory overflow and extended training duration.\n\nTo study the effects of $r$ , we conduct an ablation experiment using $8 \\times$ RTX-A6000 and the CCS-14M dataset for pre-training. The models are trained for 60,000 steps, and their performance is evaluated using CIDEr scores on MSCOCO cap\n\n![](images/ba2a720e2514d1468eac801426a96ab8b5a07f377b5cbd3c564b83e141f2863b.jpg)  \nFigure 4: Pre- and post-training visualization of merged tokens in $\\mathrm{EVL}_{\\mathrm{Gen}}$ . The visual features compressed via token merging exhibit semantic informativeness even prior to training. This inherent characteristic facilitates $\\mathrm{EVL}_{\\mathrm{Gen}}$ ’s ability to converge quickly in an end-to-end training setup.\n\ntioning. In Figure 3, we observe that a smaller $r$ (e.g., 10) places a higher computational load on both TomeFormer and the LLM, extending training time and compromising optimization, as evidenced by lower CIDEr scores. In contrast, a larger $r$ value (e.g., 25) expedites training but at the expense of model performance, likely due to excessive feature compression and consequent information loss. Additional ablation results on VQAv2, GQA and OKVQA are provided in Appendix G.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.19::sections::5.5",
+      "paper_id": "2024.acl-long.19",
+      "section_number": "5.5",
+      "section_title": "macs (flops) in q-former and tomeformer",
+      "normalized_section_title": "macs (flops) in q-former and tomeformer",
+      "window_text": "In this section, we compute multiply-accumulate operations (MACs) in Q-Former and TomeFormer. MACs performs $a \\gets a + (b \\times c)$ . Whereas, FLOPs is floating operations which includes $\\times / + / \\div \\ldots$ etc. One MACs has one $\\times$ and one $+$ . And thus, roughly speaking, FLOPs is two times as MACs.\n\nIn our experiments, BLIP-2 and $\\mathrm{EVL}_{\\mathrm{Gen}}$ have identical ViTs and LM decoders. Thus, we only\n\nTable 6: Multiply-accumulate operations (MACs) comparison of Q-Former (of BLIP-2) and TomeFormer (of $\\mathrm{EVL}_{\\mathrm{Gen}}$ ) when utilizing OPT-2.7b as the LLM.   \n\n<table><tr><td>Models</td><td>Stage 1 (MACs)</td><td>Stage 1 steps</td><td>Stage 2 (MACs)</td><td>Stage 2 steps</td></tr><tr><td>BLIP-2</td><td>36.7G</td><td>250k</td><td>6.28G</td><td>80k</td></tr><tr><td>EVLGen</td><td>-</td><td>-</td><td>11.9G</td><td>250k</td></tr><tr><td>EVLGen</td><td>-</td><td>-</td><td>11.9G</td><td>150k</td></tr><tr><td>EVLGen55M</td><td>-</td><td>-</td><td>5.6G</td><td>90k</td></tr></table>\n\ncompare the MACs in VL Connector in BLIP-2 and $\\mathrm{EVL_{Gen}}$ (i.e., Q-Former and TomeFormer).\n\nThere's a large MACs in BLIP-2 stage-1 due to three forward passes using Q-Former, where the last forward-pass used for caption loss dominates (27.0G). In contrast, $\\mathrm{EVL}_{\\mathrm{Gen}}$ does not require such a representation training stage (stage-1) at all.\n\nAnother reason why BLIP-2 stage-1 is slow is that the computation of Image-Text Contra-pressive and Image-Text Matching losses needs concat_all_gather operations that require GPU communications. Further Image-Text Matching requires binomial sampling of hard negatives. In comparison, our $\\mathrm{EVL_{Gen}}$ circumvents such computations/communications.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.19::appendix::B",
+      "paper_id": "2024.acl-long.19",
+      "section_number": "B",
+      "section_title": "blip-2 training configurations",
+      "normalized_section_title": "blip-2 training configurations",
+      "window_text": "We re-train BLIP-2 from scratch using LAION115M, CCS-14M, MSCOCO from CapFilt dataset (Li et al., 2022). The models are trained on eight A100-80G GPUs. The training configurations are shown in Table 7.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.19::appendix::D",
+      "paper_id": "2024.acl-long.19",
+      "section_number": "D",
+      "section_title": "details on our implementations of blip-2 and videococa",
+      "normalized_section_title": "details on our implementations of blip-2 and videococa",
+      "window_text": "Our reported results of our re-trained BLIP-2 are slightly worse than what was reported in Li et al. (2023a). There are mainly three reasons:\n\n- We are only able to download 104M image-text pairs from the original 129M CapFlit dataset.   \n- We intentionally exclude the VG dataset from our pre-training procedure, as it mainly consists of localized captions. Thus, our re-trained BLIP-2 is more challenging when evaluated on GQA, which is built on VG dataset.   \n- The exact dataset weighting is unknown from the LAVIS project, we use a weighting that is based on the size of each pre-training dataset, i.e., CSS14M, LAION115M, MSCOCO.\n\nFor video captioning in Table 3 and Table 4, because VideoCoCa is not open-sourced, we use a pre-trained model OpenCoCa released by mlfoundations.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.19::appendix::F",
+      "paper_id": "2024.acl-long.19",
+      "section_number": "F",
+      "section_title": "ablation on visual encoders",
+      "normalized_section_title": "ablation on visual encoders",
+      "window_text": "One of the limitations of BLIP-2 is that it requires an extensive stage-1 pre-training for every different vision encoder. This prohibits practitioners from exploring stronger ViTs when they are available. $\\mathrm{EVL}_{\\mathrm{Gen}}$ offers fast training of models, allowing for exploration of different ViTs as visual encoders.\n\nWe conduct an ablation experiment on two ViTs (CLIP $_{\\mathrm{L}}$ and EVA- $\\mathrm{ViT}_{\\mathrm{G}}$ ) using $8 \\times$ RTX-A6000 and the CCS-14M dataset for pre-training. The models are trained for 60,000 steps.\n\nShown in Table 8, $\\mathrm{EVL}_{\\mathrm{Gen}}$ is robust to different visual encoders, and the stronger ViT leads to better results. This implies that while $\\mathrm{EVL}_{\\mathrm{Gen}}$ also requires retraining for different ViTs, but the single-stage training and quick convergence allow it to benefit from a future release of the latest ViTs, given its capability of fast adaptation.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.19::sections::4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80G",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Our experimental setup is as follows:\n\n- Pre-training Data Our model is pre-trained using the MSCOCO (Lin et al., 2014) and CapFilt (Li et al., 2022) datasets, which include BLIP's pseudo-labeled Conceptual Captioning (Sharma et al., 2018), SBU (Ordonez et al., 2011), and LAION (Schuhmann et al., 2022) datasets—similar to the data sources utilized in BLIP-2. Note that we intentionally exclude the VG (Krishna et al., 2017) dataset from our pre-training procedure, as it mainly consists of localized captions.\n\n- Models To facilitate a direct and fair comparison with BLIP-2, we employ the same ViT, texttvevavit-g (Fang et al., 2023). For the language model decoders, we explore both opt-2.7b (Zhang et al., 2022b) and vicuna-7b (Chiang et al., 2023). Our TomeFormer is initialized using bert-base-uncased, ensuring parameter count parity with BLIP-2's Q-former.   \n- Pre-training Details Our pre-training setup closely mirrors the configurations of BLIP-2. We utilize a maximum learning rate of $1e^{-4}$ and a minimum learning rate of $1e^{-5}$ . The learning rate follows a schedule that begins with a linear warm-up phase of 5000 steps starting from $1e^{-6}$ and then transitions to a cosine decay schedule. Weight decay is set at 0.05. The training is conducted with a batch size of 1600, distributed over either $8 \\times$ A100-80G or $32 \\times$ V100-32G.   \n- Downstream Tasks $\\mathrm{EVL}_{\\mathrm{Gen}}$ -Image is evaluated without additional fine-tuning on a variety of tasks, including MSCOCO captioning, VQAv2 (Goyal et al., 2017), GQA (Hudson and Manning, 2019), and OK-VQA (Marino et al., 2019). For video tasks, $\\mathrm{EVL}_{\\mathrm{Gen}}$ -Video is evaluated on fine-tuned MSR-VTT (Xu et al., 2016) and MSVD (Chen and Dolan, 2011) captioning. We use the standard train/val/test splits.",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments"
+    },
+    {
+      "window_id": "2024.acl-long.19::sections::4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100 32G",
+      "count": 32,
+      "count_text": "32",
+      "evidence": "Our experimental setup is as follows:\n\n- Pre-training Data Our model is pre-trained using the MSCOCO (Lin et al., 2014) and CapFilt (Li et al., 2022) datasets, which include BLIP's pseudo-labeled Conceptual Captioning (Sharma et al., 2018), SBU (Ordonez et al., 2011), and LAION (Schuhmann et al., 2022) datasets—similar to the data sources utilized in BLIP-2. Note that we intentionally exclude the VG (Krishna et al., 2017) dataset from our pre-training procedure, as it mainly consists of localized captions.\n\n- Models To facilitate a direct and fair comparison with BLIP-2, we employ the same ViT, texttvevavit-g (Fang et al., 2023). For the language model decoders, we explore both opt-2.7b (Zhang et al., 2022b) and vicuna-7b (Chiang et al., 2023). Our TomeFormer is initialized using bert-base-uncased, ensuring parameter count parity with BLIP-2's Q-former.   \n- Pre-training Details Our pre-training setup closely mirrors the configurations of BLIP-2. We utilize a maximum learning rate of $1e^{-4}$ and a minimum learning rate of $1e^{-5}$ . The learning rate follows a schedule that begins with a linear warm-up phase of 5000 steps starting from $1e^{-6}$ and then transitions to a cosine decay schedule. Weight decay is set at 0.05. The training is conducted with a batch size of 1600, distributed over either $8 \\times$ A100-80G or $32 \\times$ V100-32G.   \n- Downstream Tasks $\\mathrm{EVL}_{\\mathrm{Gen}}$ -Image is evaluated without additional fine-tuning on a variety of tasks, including MSCOCO captioning, VQAv2 (Goyal et al., 2017), GQA (Hudson and Manning, 2019), and OK-VQA (Marino et al., 2019). For video tasks, $\\mathrm{EVL}_{\\mathrm{Gen}}$ -Video is evaluated on fine-tuned MSR-VTT (Xu et al., 2016) and MSVD (Chen and Dolan, 2011) captioning. We use the standard train/val/test splits.",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments"
+    },
+    {
+      "window_id": "2024.acl-long.19::sections::5.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX-A6000",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Within the TomeFormer, the vision-to-language connector in $\\mathrm{EVL}_{\\mathrm{Gen}}$ we introduce a hyperparameter $r$ that regulates the number of spatial tokens merged at each layer. Increasing $r$ substantially reduces the token count, but runs the risk of eliminating important visual details. On the other hand, a smaller $r$ produces two main effects: (1) a more diffuse representation of visual features, complicating the optimization landscape, and (2) elongated soft prompts for the LLM, leading to increased computational cost during training, such as memory overflow and extended training duration.\n\nTo study the effects of $r$ , we conduct an ablation experiment using $8 \\times$ RTX-A6000 and the CCS-14M dataset for pre-training. The models are trained for 60,000 steps, and their performance is evaluated using CIDEr scores on MSCOCO cap\n\n![](images/ba2a720e2514d1468eac801426a96ab8b5a07f377b5cbd3c564b83e141f2863b.jpg)  \nFigure 4: Pre- and post-training visualization of merged tokens in $\\mathrm{EVL}_{\\mathrm{Gen}}$ . The visual features compressed via token merging exhibit semantic informativeness even prior to training. This inherent characteristic facilitates $\\mathrm{EVL}_{\\mathrm{Gen}}$ ’s ability to converge quickly in an end-to-end training setup.\n\ntioning. In Figure 3, we observe that a smaller $r$ (e.g., 10) places a higher computational load on both TomeFormer and the LLM, extending training time and compromising optimization, as evidenced by lower CIDEr scores. In contrast, a larger $r$ value (e.g., 25) expedites training but at the expense of model performance, likely due to excessive feature compression and consequent information loss. Additional ablation results on VQAv2, GQA and OKVQA are provided in Appendix G.",
+      "section_number": "5.1",
+      "section_title": "ablations on tomeformer",
+      "normalized_section_title": "ablations on tomeformer"
+    },
+    {
+      "window_id": "2024.acl-long.19::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80G",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "We re-train BLIP-2 from scratch using LAION115M, CCS-14M, MSCOCO from CapFilt dataset (Li et al., 2022). The models are trained on eight A100-80G GPUs. The training configurations are shown in Table 7.",
+      "section_number": "B",
+      "section_title": "blip-2 training configurations",
+      "normalized_section_title": "blip-2 training configurations"
+    },
+    {
+      "window_id": "2024.acl-long.19::appendix::F",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX A6000",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "One of the limitations of BLIP-2 is that it requires an extensive stage-1 pre-training for every different vision encoder. This prohibits practitioners from exploring stronger ViTs when they are available. $\\mathrm{EVL}_{\\mathrm{Gen}}$ offers fast training of models, allowing for exploration of different ViTs as visual encoders.\n\nWe conduct an ablation experiment on two ViTs (CLIP $_{\\mathrm{L}}$ and EVA- $\\mathrm{ViT}_{\\mathrm{G}}$ ) using $8 \\times$ RTX-A6000 and the CCS-14M dataset for pre-training. The models are trained for 60,000 steps.\n\nShown in Table 8, $\\mathrm{EVL}_{\\mathrm{Gen}}$ is robust to different visual encoders, and the stronger ViT leads to better results. This implies that while $\\mathrm{EVL}_{\\mathrm{Gen}}$ also requires retraining for different ViTs, but the single-stage training and quick convergence allow it to benefit from a future release of the latest ViTs, given its capability of fast adaptation.",
+      "section_number": "F",
+      "section_title": "ablation on visual encoders",
+      "normalized_section_title": "ablation on visual encoders"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.19::sections::4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80G",
+      "cleaned_hardware_name": "a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "evidence": "Our experimental setup is as follows:\n\n- Pre-training Data Our model is pre-trained using the MSCOCO (Lin et al., 2014) and CapFilt (Li et al., 2022) datasets, which include BLIP's pseudo-labeled Conceptual Captioning (Sharma et al., 2018), SBU (Ordonez et al., 2011), and LAION (Schuhmann et al., 2022) datasets—similar to the data sources utilized in BLIP-2. Note that we intentionally exclude the VG (Krishna et al., 2017) dataset from our pre-training procedure, as it mainly consists of localized captions.\n\n- Models To facilitate a direct and fair comparison with BLIP-2, we employ the same ViT, texttvevavit-g (Fang et al., 2023). For the language model decoders, we explore both opt-2.7b (Zhang et al., 2022b) and vicuna-7b (Chiang et al., 2023). Our TomeFormer is initialized using bert-base-uncased, ensuring parameter count parity with BLIP-2's Q-former.   \n- Pre-training Details Our pre-training setup closely mirrors the configurations of BLIP-2. We utilize a maximum learning rate of $1e^{-4}$ and a minimum learning rate of $1e^{-5}$ . The learning rate follows a schedule that begins with a linear warm-up phase of 5000 steps starting from $1e^{-6}$ and then transitions to a cosine decay schedule. Weight decay is set at 0.05. The training is conducted with a batch size of 1600, distributed over either $8 \\times$ A100-80G or $32 \\times$ V100-32G.   \n- Downstream Tasks $\\mathrm{EVL}_{\\mathrm{Gen}}$ -Image is evaluated without additional fine-tuning on a variety of tasks, including MSCOCO captioning, VQAv2 (Goyal et al., 2017), GQA (Hudson and Manning, 2019), and OK-VQA (Marino et al., 2019). For video tasks, $\\mathrm{EVL}_{\\mathrm{Gen}}$ -Video is evaluated on fine-tuned MSR-VTT (Xu et al., 2016) and MSVD (Chen and Dolan, 2011) captioning. We use the standard train/val/test splits.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.acl-long.19::sections::4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100 32G",
+      "cleaned_hardware_name": "v100 32gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "count": 32,
+      "count_text": "32",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "evidence": "Our experimental setup is as follows:\n\n- Pre-training Data Our model is pre-trained using the MSCOCO (Lin et al., 2014) and CapFilt (Li et al., 2022) datasets, which include BLIP's pseudo-labeled Conceptual Captioning (Sharma et al., 2018), SBU (Ordonez et al., 2011), and LAION (Schuhmann et al., 2022) datasets—similar to the data sources utilized in BLIP-2. Note that we intentionally exclude the VG (Krishna et al., 2017) dataset from our pre-training procedure, as it mainly consists of localized captions.\n\n- Models To facilitate a direct and fair comparison with BLIP-2, we employ the same ViT, texttvevavit-g (Fang et al., 2023). For the language model decoders, we explore both opt-2.7b (Zhang et al., 2022b) and vicuna-7b (Chiang et al., 2023). Our TomeFormer is initialized using bert-base-uncased, ensuring parameter count parity with BLIP-2's Q-former.   \n- Pre-training Details Our pre-training setup closely mirrors the configurations of BLIP-2. We utilize a maximum learning rate of $1e^{-4}$ and a minimum learning rate of $1e^{-5}$ . The learning rate follows a schedule that begins with a linear warm-up phase of 5000 steps starting from $1e^{-6}$ and then transitions to a cosine decay schedule. Weight decay is set at 0.05. The training is conducted with a batch size of 1600, distributed over either $8 \\times$ A100-80G or $32 \\times$ V100-32G.   \n- Downstream Tasks $\\mathrm{EVL}_{\\mathrm{Gen}}$ -Image is evaluated without additional fine-tuning on a variety of tasks, including MSCOCO captioning, VQAv2 (Goyal et al., 2017), GQA (Hudson and Manning, 2019), and OK-VQA (Marino et al., 2019). For video tasks, $\\mathrm{EVL}_{\\mathrm{Gen}}$ -Video is evaluated on fine-tuned MSR-VTT (Xu et al., 2016) and MSVD (Chen and Dolan, 2011) captioning. We use the standard train/val/test splits.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.acl-long.19::sections::5.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX-A6000",
+      "cleaned_hardware_name": "rtx a6000",
+      "normalized_hardware_name": "NVIDIA RTX A6000",
+      "benchmark_hardware_name": "NVIDIA RTX A6000",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "5.1",
+      "section_title": "ablations on tomeformer",
+      "normalized_section_title": "ablations on tomeformer",
+      "evidence": "Within the TomeFormer, the vision-to-language connector in $\\mathrm{EVL}_{\\mathrm{Gen}}$ we introduce a hyperparameter $r$ that regulates the number of spatial tokens merged at each layer. Increasing $r$ substantially reduces the token count, but runs the risk of eliminating important visual details. On the other hand, a smaller $r$ produces two main effects: (1) a more diffuse representation of visual features, complicating the optimization landscape, and (2) elongated soft prompts for the LLM, leading to increased computational cost during training, such as memory overflow and extended training duration.\n\nTo study the effects of $r$ , we conduct an ablation experiment using $8 \\times$ RTX-A6000 and the CCS-14M dataset for pre-training. The models are trained for 60,000 steps, and their performance is evaluated using CIDEr scores on MSCOCO cap\n\n![](images/ba2a720e2514d1468eac801426a96ab8b5a07f377b5cbd3c564b83e141f2863b.jpg)  \nFigure 4: Pre- and post-training visualization of merged tokens in $\\mathrm{EVL}_{\\mathrm{Gen}}$ . The visual features compressed via token merging exhibit semantic informativeness even prior to training. This inherent characteristic facilitates $\\mathrm{EVL}_{\\mathrm{Gen}}$ ’s ability to converge quickly in an end-to-end training setup.\n\ntioning. In Figure 3, we observe that a smaller $r$ (e.g., 10) places a higher computational load on both TomeFormer and the LLM, extending training time and compromising optimization, as evidenced by lower CIDEr scores. In contrast, a larger $r$ value (e.g., 25) expedites training but at the expense of model performance, likely due to excessive feature compression and consequent information loss. Additional ablation results on VQAv2, GQA and OKVQA are provided in Appendix G.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.acl-long.19::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80G",
+      "cleaned_hardware_name": "a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "B",
+      "section_title": "blip-2 training configurations",
+      "normalized_section_title": "blip-2 training configurations",
+      "evidence": "We re-train BLIP-2 from scratch using LAION115M, CCS-14M, MSCOCO from CapFilt dataset (Li et al., 2022). The models are trained on eight A100-80G GPUs. The training configurations are shown in Table 7.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.acl-long.19::appendix::F",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX A6000",
+      "cleaned_hardware_name": "rtx a6000",
+      "normalized_hardware_name": "NVIDIA RTX A6000",
+      "benchmark_hardware_name": "NVIDIA RTX A6000",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "F",
+      "section_title": "ablation on visual encoders",
+      "normalized_section_title": "ablation on visual encoders",
+      "evidence": "One of the limitations of BLIP-2 is that it requires an extensive stage-1 pre-training for every different vision encoder. This prohibits practitioners from exploring stronger ViTs when they are available. $\\mathrm{EVL}_{\\mathrm{Gen}}$ offers fast training of models, allowing for exploration of different ViTs as visual encoders.\n\nWe conduct an ablation experiment on two ViTs (CLIP $_{\\mathrm{L}}$ and EVA- $\\mathrm{ViT}_{\\mathrm{G}}$ ) using $8 \\times$ RTX-A6000 and the CCS-14M dataset for pre-training. The models are trained for 60,000 steps.\n\nShown in Table 8, $\\mathrm{EVL}_{\\mathrm{Gen}}$ is robust to different visual encoders, and the stronger ViT leads to better results. This implies that while $\\mathrm{EVL}_{\\mathrm{Gen}}$ also requires retraining for different ViTs, but the single-stage training and quick convergence allow it to benefit from a future release of the latest ViTs, given its capability of fast adaptation.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.acl-long.19::sections::1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "1",
+      "section_title": "introduction",
+      "evidence": "The landscape of vision-language modeling has undergone significant transformations in recent years, with CLIP (Radford et al., 2021) serving as a landmark development. It distinguished itself through\n\n*This work was done during an internship at ByteDance Inc.\n\nunparalleled zero-shot classification capabilities and efficiency in image-text retrieval tasks from prior works (Zhang et al., 2022a). Successive models like ALBEF (Li et al., 2021a), X-VLM (Zeng et al., 2022), and VLMo (Bao et al., 2022) further broadened the scope, addressing a myriad of tasks such as retrieval, visual entailment, and closed-set Visual Question Answering (VQA), among others.\n\nRecently, the field has been enriched by the advent of generative models designed for complex image-to-language tasks. Notable contributions include CoCa (Yu et al., 2022), SimVLM (Wang et al., 2022c), Frozen (Tsimpoukelli et al., 2021), and Flamingo (Alayrac et al., 2022), targeting tasks like image and video captioning and open-set VQA. These models all rely on billion-scale datasets for training from scratch to bridge the substantial modality gap between vision and language.\n\nAs a result, the resource-intensive requirements (i.e., thousands of TPUs) of these training-from-scratch Vision-Language Models (VLMs) led to the conceptualization of BLIP-2 (Li et al., 2023a): this model alleviates computational costs (e.g., only requiring $16 \\times$ fewer GPUs) by integrating existing well-pretrained vision encoders (ViT) with language decoders (LLM), and then tuning their joint operation. A central innovation in aligning vision and language modules in BLIP-2 is $Q$ -former, a multimodal connector equipped with learnable queries for enhancing cross-attention mechanisms. This architectural choice, however, prevents the full model from end-to-end training and therefore still demands an additional pre-training regimen for $Q$ -former, referred to as BLIP-2's Stage 1. The stage involves three learning objectives—image-text contrastive, image-text matching, and language generation—and necessitates multiple forward passes for facilitating the $Q$ -former's optimization.\n\nDespite its efficiency gains over CoCa, BLIP-2's training still imposes considerable computational costs. This poses challenges for research en\n\n![](images/13701baf53f042afce74a023eacaf756743c6175b6f972ab38e7c6d413388e72.jpg)  \nFigure 1: Overview of our $\\mathrm{EVL_{Gen}}$ . $\\mathrm{EVL_{Gen}}$ employs a streamlined, single-stage training mechanism with a unified loss. Here, visual tokens (in grey) are progressively aggregated based on their inherent similarities at each layer of the TomeFormer architecture. The final set of merged tokens (in orange) serves as semantically rich but computationally efficient soft prompts, guiding the LLM to generate a corresponding caption for the input image.\n\nvironments with limited computational resources, such as university labs. Our experiments indicate that the Stage-1 training of BLIP-2 took approximately eight days on eight A100-80G GPUs (See Appendix B for training configurations). This computational burden has consequently restricted research to using the pre-trained Q-former, hindering the exploration of alternative ViTs in VLMs. This limitation is evident in subsequent works such as InstructBLIP (Dai et al., 2023b), VideoChat (Li et al., 2023b), Video-LLaMA (Zhang et al., 2023b), X-LLM (Chen et al., 2023a).\n\nThe prospect of reducing BLIP-2's computational cost through end-to-end, single-stage training is compelling. Such an approach would remove the complexities associated with resource allocation and hyper-parameter tuning inherent in multi-stage training. Yet, direct end-to-end training with BLIP-2 poses substantial challenges, corroborated by both original findings from BLIP-2 and our own empirical analyses. We hypothesize that these challenges emanate from the intrinsic design of the Q-former. Specifically, the inclusion of randomly initialized learnable queries and crossattention mechanisms complicates the optimization landscape, especially when the aim is to minimize the representational disparity between visual and linguistic modalities.\n\nIn this paper, we propose a token merging Transformer (TomeFormer) as an efficient vision-language connector. TomeFormer employs a systematic token-merging (Bolya et al., 2023) strategy that is both intuitive and effective. By connecting a pre-trained ViT as the visual encoder and a frozen LLM as the language decoder, we intro\n\nduce a new VLM \"Expedited Visual Language Generation model\" (EVL<sub>Gen</sub>), facilitates a streamlined, single-stage training process. It requires only a singular learning objective and a single forward pass per optimization step. This stands in contrast to BLIP-2's multi-stage training, laden with multiple objectives and several forward passes.\n\nFurther, we introduce a soft attentive temporal contextualization mechanism within the ViT for effective video-language modeling. This uncovers more shared semantic features across temporal frames, thereby improving the efficiency of the spatial token merging process. It eliminates the need for modality realignment, contrasting approaches such as the temporal Q-former (Zhang et al., 2023b), or the addition of new learnable temporal queries (Li et al., 2023b). Our strategy simplifies the optimization challenges tied to working with relatively smaller video-text datasets, compared to their image-text counterparts. Remarkably, we demonstrate that even without video pre-training, our temporal token contextualize approach can effectively train robust video-language models. This differs from recent work in video-language models (Yan et al., 2022; Chen et al., 2023b) that depend on pre-training models using vast million-scale video-text datasets. In summary, our contributions are:\n\n- For reducing vision redundancy within the vision language connector, we adopt Token Merging, initially designed to enhance ViT inference speed without training. Concurrently, we present a novel temporal token contextualization scheme for video modeling.   \n- Our proposed VLM featuring TomeFormer com\n\npetes effectively with BLIP-2, while requiring just a fraction of the computational resources. Given the reliance on BLIP-2's pre-trained model in contemporary studies, our approach widens the exploratory scope for various ViTs.\n\n- We introduce a straightforward spatial attentive temporal modeling technique that allows for the seamless adaptation of pre-trained image-text models to video tasks. This approach eliminates the need for complex modality re-alignment, a common requirement in alternative methods."
+    },
+    {
+      "source_window_id": "2024.acl-long.19::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methods",
+      "evidence": "We begin by presenting our image-text model and then describe the adaptations made to this pretrained model for video-related tasks."
+    },
+    {
+      "source_window_id": "2024.acl-long.19::sections::3.1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3.1",
+      "section_title": "preliminary",
+      "evidence": "We follow BLIP-2's efficient training paradigm, i.e., utilizing frozen but well-pretrained ViTs and LLMs while solely training a vision-to-language connector. However, BLIP-2 still remains a challenge, since it necessitates an extra Stage-1 as a pre-training phase for the unstable Q-former (i.e., the vision-to-language connector), before the final end-to-end fine-tuning.\n\nOur observation underscores the pivot role of BLIP-2 Stage-1 pre-training (which takes approximately 8 days on eight A100 GPUs): without it, the BLIP-2 model collapses, as evidenced in Table 1. To avoid this extra stage-1, we replace Q-former with a novel vision-to-language connector, which is designed to discover vision redundancy and then significantly accelerate visual-language alignment, often resulting in enhanced performance."
+    },
+    {
+      "source_window_id": "2024.acl-long.19::sections::4.1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "evaluation on image-text benchmarks",
+      "evidence": "We conducted comparative evaluations between $\\mathrm{EVL}_{\\mathrm{Gen}}$ and BLIP-2 on multiple image-text benchmarks, including zero-shot VQAv2, GQA, OK-VQA, and MSCOCO captioning. It is essential to note that BLIP-2 demands an extensive Stage-1 pre-training phase involving 250,000 optimization steps. This phase incorporates three distinct loss functions and necessitates multiple forward passes through the model, a process crucial for BLIP-2 to prevent model divergence.\n\nTable 1 summarizes the results of our experiments. Our primary insights can be distilled into the following key points:\n\nUtilizing the same training set of 104M image-text pairs and an equal number of optimization steps (250K), $\\mathrm{EVL_{Gen}}$ consistently outperforms BLIP-2 across nearly all evaluated tasks.   \n- Remarkably, $\\mathrm{EVL}_{\\mathrm{Gen}}$ maintains competitive performance even when its training budget is trimmed to approximately one-third of BLIP-2's, specifically 150K optimization steps.   \n- Our experiments show that $\\mathrm{EVL}_{\\mathrm{Gen}}$ can produce satisfactory results with a significantly reduced\n\n<table><tr><td>Models</td><td># pre-train image-text</td><td># trainable params</td><td># stage-1 steps</td><td># stage-2 steps</td><td>VQAv2 val</td><td>GQA test-dev</td><td>OK-VQA test</td><td>COCO val</td><td>Clock time</td></tr><tr><td>VL-T5</td><td>9.2M</td><td>224M</td><td>-</td><td>-</td><td>13.5</td><td>6.3</td><td>5.8</td><td>-</td><td>-</td></tr><tr><td>FewVLM</td><td>9.2M</td><td>740M</td><td>-</td><td>-</td><td>47.7</td><td>29.3</td><td>16.5</td><td>-</td><td>-</td></tr><tr><td>Frozen</td><td>3M</td><td>40M</td><td>-</td><td>-</td><td>29.6</td><td>-</td><td>5.9</td><td>-</td><td>-</td></tr><tr><td>VLKD</td><td>3M</td><td>406M</td><td>-</td><td>-</td><td>42.6</td><td>-</td><td>13.3</td><td>-</td><td>-</td></tr><tr><td>BLIP-2</td><td>\\( 104\\mathbf{M}^{\\dagger} \\)</td><td>\\( 110\\mathbf{M}+^{\\ddagger} \\)</td><td>-</td><td>80k/250k*</td><td>X</td><td>X</td><td>X</td><td>X</td><td>X</td></tr><tr><td>BLIP-2</td><td>104M</td><td>110M+</td><td>250k</td><td>80k</td><td>44.6</td><td>30.6</td><td>26.0</td><td>137.7</td><td>234 hrs</td></tr><tr><td>\\( EVL_{Gen} \\)</td><td>104M</td><td>55M</td><td>-</td><td>90k</td><td>45.9</td><td>30.6</td><td>25.8</td><td>134.0</td><td>47 hrs</td></tr><tr><td>\\( EVL_{Gen} \\)</td><td>\\( 11\\mathbf{M}^{\\dagger} \\)</td><td>110M</td><td>-</td><td>150k</td><td>46.3</td><td>30.0</td><td>23.0</td><td>135.1</td><td>80 hrs</td></tr><tr><td>\\( EVL_{Gen} \\)</td><td>104M</td><td>110M</td><td>-</td><td>150k</td><td>46.9</td><td>30.8</td><td>24.8</td><td>137.0</td><td>80 hrs</td></tr><tr><td>\\( EVL_{Gen} \\)</td><td>104M</td><td>110M</td><td>-</td><td>250k</td><td>48.4</td><td>30.9</td><td>27.2</td><td>139.1</td><td>133 hrs</td></tr></table>\n\nTable 1: Comparison of methods on zero-shot VQA and MSCOCO captioning (CIDEr) tasks without additional fine-tuning. Both BLIP-2 and $\\mathrm{EVL_{Gen}}$ use OPT-2.7b as the LLM decoder. \\*: BLIP-2 without extensive stage-1 pre-training will collapse. †: We were only able to download approximately $81\\%$ of LAION-115M (110M) and $78\\%$ of CCS-14M (11M) from the CapFilt dataset. $\\ddagger$ : BLIP-2 incorporates an additional set of 32 learnable queries, each with a dimension of 768.\n\ntraining dataset of 11 million image-text pairs, while still undergoing 150K optimization steps.\n\n- $\\mathrm{EVL}_{\\mathrm{Gen}}$ retains its efficacy even when the training budget is restricted to as few as 90K steps, showing the model's efficiency and robustness.\n\nWe further evaluate BLIP-2 and $\\mathrm{EVL_{Gen}}$ on zero-shot NoCaps and Flickr30K datasets. Shown in Table 2, $\\mathrm{EVL_{Gen}}$ consistently outperforms BLIP-2 in both datasets using different LLMs.\n\nTraining Time In the Stage-1 pre-training phase, BLIP-2 requires considerable time, necessitating multiple forward passes to optimize three separate loss functions. We document the training durations for both BLIP-2 and $\\mathrm{EVL_{Gen}}$ when utilizing eight A100-80G GPUs in the last column of Table 1.\n\nAlthough BLIP-2 significantly reduces training time relative to predecessors like CoCa, it still mandates an extended training duration, approximately ten days (8 days for stage 1 and 2 days for stage 2). This extensive time commitment limits the feasibility of researchers to investigate various ViT configurations. Most subsequent works based on BLIP-2 continue to use the pre-trained Q-former in conjunction with the eva-vit-g model, thereby narrowing the scope of ViT exploration. In contrast, $\\mathrm{EVL_{Gen}}$ significantly trims the training time while maintaining satisfactory performances, thus providing researchers with the latitude to explore a wider array of advanced ViTs in future investigations.\n\nFurthermore, MACs (FLOPs) in Q-Former and TomeFormer is discussed in Section 5.5.\n\n<table><tr><td></td><td>LLM</td><td>Model</td><td>C</td><td>B4</td><td>M</td><td>R</td></tr><tr><td rowspan=\"4\">NoCaps</td><td rowspan=\"2\">OPT</td><td>BLIP-2</td><td>112.2</td><td>44.4</td><td>29.5</td><td>59.7</td></tr><tr><td>EVLGen</td><td>117.4</td><td>45.9</td><td>30.3</td><td>61.1</td></tr><tr><td rowspan=\"2\">Vicuna</td><td>BLIP-2</td><td>115.6</td><td>45.3</td><td>30.3</td><td>60.6</td></tr><tr><td>EVLGen</td><td>119.0</td><td>45.9</td><td>30.6</td><td>61.5</td></tr><tr><td rowspan=\"4\">Flickr30K</td><td rowspan=\"2\">OPT</td><td>BLIP-2</td><td>77.1</td><td>28.7</td><td>23.9</td><td>51.6</td></tr><tr><td>EVLGen</td><td>82.0</td><td>30.0</td><td>24.5</td><td>52.4</td></tr><tr><td rowspan=\"2\">Vicuna</td><td>BLIP-2</td><td>80.0</td><td>30.1</td><td>24.8</td><td>52.1</td></tr><tr><td>EVLGen</td><td>81.8</td><td>30.3</td><td>24.5</td><td>52.2</td></tr></table>\n\nTable 2: Comparison of different models' performance on zero-shot NoCaps and Flickr30K captioning. C→CIDEr, B4→BLEU-4, M→METEOR, R→ROUGE"
+    },
+    {
+      "source_window_id": "2024.acl-long.19::sections::4.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2",
+      "section_title": "evaluation of evl<sub>gen</sub>-video",
+      "evidence": "We proceed to evaluate the performance of finetuned $\\mathrm{EVL_{Gen}}$ -Video models in video captioning tasks, utilizing OPT-2.7b as the language model decoder. Our investigation includes two specific variants of $\\mathrm{EVL_{Gen}}$ -Video: the first is exclusively pre-trained on image data, while the second is further enhanced by pre-training on a corpus of 2 million video-text pairs sourced from the WebVid (Bain et al., 2021) dataset. To provide a comprehensive evaluation, we benchmark $\\mathrm{EVL_{Gen}}$ -Video against five distinct models, described as follows:\n\n- **Baseline (concat):** This model processes each frame of a video individually and concatenates their visual features to generate a single prompt for the LLM. This method is analogous to the strategy employed in InstructBLIP.\n\n- **Baseline (mean):** Similar to the concat baseline, this model processes each video frame individually but averages the visual features to create a\n\nTable 3: Comparison of different models' performance on MSR-VTT video captioning. Models are pre-trained using 2 million video-text pairs from WebVid dataset, except for image pre-trained $\\mathrm{EVL}_{\\mathrm{Gen}}$ -image.   \n\n<table><tr><td>Models</td><td>C</td><td>B4</td><td>M</td><td>R</td></tr><tr><td>Baseline (concat)</td><td>65.5</td><td>44.4</td><td>31.9</td><td>64.1</td></tr><tr><td>Baseline (mean)</td><td>67.8</td><td>47.3</td><td>32.2</td><td>65.0</td></tr><tr><td>EVLGen-image</td><td>68.4</td><td>47.6</td><td>32.4</td><td>65.3</td></tr><tr><td>EVLGen-video</td><td>69.8</td><td>48.3</td><td>32.6</td><td>65.8</td></tr><tr><td>EVLGen-video-scst</td><td>74.0</td><td>49.2</td><td>33.0</td><td>66.5</td></tr><tr><td>Video-LLaMA</td><td>59.3</td><td>47.7</td><td>29.6</td><td>63.7</td></tr><tr><td>VideoChat</td><td>58.0</td><td>46.5</td><td>29.5</td><td>63.4</td></tr><tr><td>VideoCoCa (open)</td><td>63.0</td><td>48.5</td><td>31.4</td><td>64.8</td></tr></table>\n\nsingle prompt for the LLM.\n\n- Video-LLaMA: This variant incorporates the BLIP-2 framework and enhances it with an additional temporal Q-former layer. For this evaluation, we focus solely on the vision-language component of Video-LLaMA.   \n- VideoChat: This model extends BLIP-2 by integrating additional Uniformer modules within the ViT architecture and also incorporates learnable temporal queries in its Q-former component.   \n- VideoCoCa: In this model, we adapt the Open-CoCa framework by mlfoundations and augment the existing CoCa architecture with a learnable attentional pooler, resulting in VideoCoCa.\n\nEvaluation on MSR-VTT As detailed in Table 3, $\\mathrm{EVL_{Gen}}$ -Video demonstrates superior performance relative to the baseline models, even without the aid of video-text pre-training. This result highlights the effectiveness of our proposed Temporal Attentive Soft Token Contextualizing in capturing temporal dynamics. Additionally, we observe an enhancement in performance when incorporating video-text pre-training along with Self-Critical Sequence Training (SCST) (Rennie et al., 2017).\n\nTemporal Attentive Soft Token Contextualizing has the distinct advantage of maintaining the integration of the well-pretrained image-text model (i.e., $\\mathrm{EVL_{Gen}}$ -Image). This contrasts with models such as Video-LLaMA and VideoChat, where the original BLIP-2 architecture is altered, necessitating a complex re-alignment process using video-text pairs. Our empirical analysis indicates that such re-alignment is a non-trivial endeavor (as shown in Table 3, Video-LLaMA and VideoChat struggle to re-align with 2M WebVid video-text pairs). It is worth noting that our VideoCoCa model is at a disadvantage when benchmarked against\n\nTable 4: Comparison of different models' performance on MSVD video captioning.   \n\n<table><tr><td>Models</td><td>C</td><td>B4</td><td>M</td><td>R</td></tr><tr><td>Video-LLaMA</td><td>121.2</td><td>61.6</td><td>40.3</td><td>77.8</td></tr><tr><td>VideoChat</td><td>118.4</td><td>64.1</td><td>41.0</td><td>78.7</td></tr><tr><td>VideoCoCa (open)</td><td>150.9</td><td>67.7</td><td>45.3</td><td>81.9</td></tr><tr><td>EVLGen-video</td><td>158.2</td><td>68.4</td><td>46.8</td><td>83.1</td></tr></table>\n\n![](images/f1f65f656a90a89b6af2cab1ea022dcee584ca23deda3c43149ffa1922043009.jpg)  \nFigure 3: Trade-off between MSCOCO captioning scores (depicted in red) and GPU training time (depicted in blue) as a function of the number of tokens merged $(r)$ in TomeFormer.\n\nGoogle's reported results, which benefit from extensive training on a much larger billion-scale dataset.\n\nEvaluation on MSVD Similarly, we evaluate $\\mathrm{EVL_{Gen}}$ 's performance against Video-LLaMA, VideoChat, and VideoCoCa using the MSVD caption dataset (presented in Table 4). Our results corroborate that $\\mathrm{EVL_{Gen}}$ consistently surpasses these competing models, further attesting to its robust performance across different video caption tasks."
+    },
+    {
+      "source_window_id": "2024.acl-long.19::sections::5.5",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.5",
+      "section_title": "macs (flops) in q-former and tomeformer",
+      "evidence": "In this section, we compute multiply-accumulate operations (MACs) in Q-Former and TomeFormer. MACs performs $a \\gets a + (b \\times c)$ . Whereas, FLOPs is floating operations which includes $\\times / + / \\div \\ldots$ etc. One MACs has one $\\times$ and one $+$ . And thus, roughly speaking, FLOPs is two times as MACs.\n\nIn our experiments, BLIP-2 and $\\mathrm{EVL}_{\\mathrm{Gen}}$ have identical ViTs and LM decoders. Thus, we only\n\nTable 6: Multiply-accumulate operations (MACs) comparison of Q-Former (of BLIP-2) and TomeFormer (of $\\mathrm{EVL}_{\\mathrm{Gen}}$ ) when utilizing OPT-2.7b as the LLM.   \n\n<table><tr><td>Models</td><td>Stage 1 (MACs)</td><td>Stage 1 steps</td><td>Stage 2 (MACs)</td><td>Stage 2 steps</td></tr><tr><td>BLIP-2</td><td>36.7G</td><td>250k</td><td>6.28G</td><td>80k</td></tr><tr><td>EVLGen</td><td>-</td><td>-</td><td>11.9G</td><td>250k</td></tr><tr><td>EVLGen</td><td>-</td><td>-</td><td>11.9G</td><td>150k</td></tr><tr><td>EVLGen55M</td><td>-</td><td>-</td><td>5.6G</td><td>90k</td></tr></table>\n\ncompare the MACs in VL Connector in BLIP-2 and $\\mathrm{EVL_{Gen}}$ (i.e., Q-Former and TomeFormer).\n\nThere's a large MACs in BLIP-2 stage-1 due to three forward passes using Q-Former, where the last forward-pass used for caption loss dominates (27.0G). In contrast, $\\mathrm{EVL}_{\\mathrm{Gen}}$ does not require such a representation training stage (stage-1) at all.\n\nAnother reason why BLIP-2 stage-1 is slow is that the computation of Image-Text Contra-pressive and Image-Text Matching losses needs concat_all_gather operations that require GPU communications. Further Image-Text Matching requires binomial sampling of hard negatives. In comparison, our $\\mathrm{EVL_{Gen}}$ circumvents such computations/communications."
+    },
+    {
+      "source_window_id": "2024.acl-long.19::appendix::D",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D",
+      "section_title": "details on our implementations of blip-2 and videococa",
+      "evidence": "Our reported results of our re-trained BLIP-2 are slightly worse than what was reported in Li et al. (2023a). There are mainly three reasons:\n\n- We are only able to download 104M image-text pairs from the original 129M CapFlit dataset.   \n- We intentionally exclude the VG dataset from our pre-training procedure, as it mainly consists of localized captions. Thus, our re-trained BLIP-2 is more challenging when evaluated on GQA, which is built on VG dataset.   \n- The exact dataset weighting is unknown from the LAVIS project, we use a weighting that is based on the size of each pre-training dataset, i.e., CSS14M, LAION115M, MSCOCO.\n\nFor video captioning in Table 3 and Table 4, because VideoCoCa is not open-sourced, we use a pre-trained model OpenCoCa released by mlfoundations."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4",
+      "5.1",
+      "B",
+      "F"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 8
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 32 GB",
+        "num": 32
+      },
+      {
+        "name": "NVIDIA RTX A6000",
+        "num": 8
+      },
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 8
+      },
+      {
+        "name": "NVIDIA RTX A6000",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2024\\2024.acl-long.19\\auto\\full.md",
+    "source_md_sha256": "232eae62cecd974875efadc5185906631293c2b3fef42d2aa634b782139b3e72",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "ad96f3b6ca003898756db958dd17467668c845886fa3f1f835d26a866c8af3f0"
+  }
+}

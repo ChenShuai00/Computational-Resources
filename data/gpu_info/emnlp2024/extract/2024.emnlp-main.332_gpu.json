@@ -1,0 +1,246 @@
+{
+  "paper_id": "2024.emnlp-main.332",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.332::sections::1",
+      "paper_id": "2024.emnlp-main.332",
+      "section_number": "1",
+      "section_title": "introduction",
+      "normalized_section_title": "introduction",
+      "window_text": "With the introduction of the Transformer (Vaswani et al., 2017) has emerged the era of large language models (Chowdhery et al., 2022; Touvron et al., 2023; OpenAI, 2024) and the development of LLMs capable of reasoning and acting in astonishingly human-like manner (Kaplan et al., 2020; Wei\n\net al., 2023; Ouyang et al., 2022). However, the use of resource intensive models and techniques remains a pre-requisite and accordingly, methods have been developed and applied to alleviate concerns relating to the practical usability of these models (Dettmers et al., 2022; Dao, 2024). One major area that has observed consistent improvement over time is the auto-regressive decoding aspect of text generation, where each generation of a new token requires a complete inference pass through the model, which under-utilizes the property of attention and the ability of modern accelerators (e.g. GPUs, TPUs) to parallelize computations (de Jong et al., 2022; Kim et al., 2023a).\n\nA growing approach towards addressing this is speculative decoding (Xia et al., 2023; Leviathan et al., 2023). In speculative decoding, latency is reduced by minimizing the amount of high-latency sequential computations and replacing them with cheaper ones. Rather than sampling directly from the larger model, the sampling is approximated with samples from a smaller and cheaper model through accept-reject sampling. Specifically, a small draft model auto-regressively generates text which is then verified by a larger target model in parallel (Stern et al., 2018; Sun et al., 2021). Thus the large model does not need to generate text repeatedly but rather guides the small model by correcting outputs when it is truly incapable. This can reduce the number of calls to the large LLM, saving both time and memory. However two models are required, along with some similarity in their generative abilities in order for this method to see significant speedups. While approaches exist to circumvent some of these needs (Yang et al., 2023; Zhang et al., 2023; Li et al., 2024; Cai et al., 2024; Hooper et al., 2024), these are often limited by the need for additional tuning (Liu et al., 2024b; Cai et al., 2024; Li et al., 2024), which is difficult in resource constrained settings, or quality degradation in generations (Kim et al., 2023b). Because of\n\n![](images/65826c36d8c4ccba6cb8ec731a7017124b4998c323c12da119d7659a40e2c096.jpg)  \nFigure 1: Overview of our methodology. We first train a policy using offline data collected from greedily decoded output from each model, which are scored to produce reward samples. At test time, the policy takes in a query $q'$ to select a draft candidate model, which is then used for assisted generation with the target model.\n\nthe evident size-cost tradeoff, this is very efficient if the draft model is well aligned to the target.\n\nHowever, while one can ensure that the final output follows the target distribution (Chen et al., 2023), selecting an inadequate draft model can lead to a lack of acceleration due to the significant number of rejections that will occur. While other methods allow for changes in the output distribution shift (Kim et al., 2023a; Zhou et al., 2024; Fu et al., 2024) to further speed-up inference, such types of shifts can be problematic in many high-risk scenarios. From this perspective, the presence of multiple draft models, each suited for different settings, can be helpful for inference acceleration without degredations in generation quality. By dynamically choosing a draft model, speedups can be achieved on multiple domains with marginal additional costs. However this requires learning how to choose the best draft option given a context, introducing a decision making problem which needs to be solved.\n\nSo how can this decision making process be learned? We start by observing this as a contextual bandits (Woodroofoe, 1979; Auer, 2003), where the goal is to have a policy select a draft model based on a given query. This also requires rewards from which the policy can learn to estimate and compare the ideality of different actions that can be taken. To this end, we use an offline process to estimate the contextual alignment between different draft models and the target model on a set of training examples (Figure 1), enabling the construction of a dataset that defines the preference a target can have towards specific draft candidates. This enables us to train a policy that can take into account\n\nsuch preferences without knowing further details about the draft models. By delaying this policy at inference time it becomes possible to weigh these preferences, leading to speedups in generation with the target. We further show that this policy is useful when using self-speculative decoding, whereby the draft model is a subset of the target model parameters. To summarize our contributions:\n\n- We frame a speculative decoding scenario as a contextual bandits problem, where multiple draft models serve as arms that each produce a reward, an abstraction of the inference speed-up relative to using the target model on its own which is not known a priori.   \n- We demonstrate that offline training of a decision making agent through only the similarity between the draft and target model generations, the agent can correctly select which draft model to use for a given input query.   \n- We show that the policy can balance tradeoffs in draft model alignment and generation speed by incorporating explicit information about the model within the reward.",
+      "rule_tier": "soft_skip",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.332::sections::2",
+      "paper_id": "2024.emnlp-main.332",
+      "section_number": "2",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.332::sections::3.1",
+      "paper_id": "2024.emnlp-main.332",
+      "section_number": "3.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Models and Tasks. We select publicly available LLMs to use for our experiments. We conduct a number of experiments, which we motivate by\n\nTable 1: Quality, decoding speeds and acceptance rates when using a policy for selecting between different draft models of the same size but specialized on different domains. Across the two domains, both a greedy and dynamic policy can accelerate decoding on both domains, with marginal differences between the exact nature of the policy. Acceptance rate computation is described in Appendix A.   \n\n<table><tr><td>DRAFT MODEL</td><td>BLEU</td><td>IWSTL2017 EN-DE \nDecoding Speedup</td><td>Accept (%)</td><td>ROUGE-L</td><td>XSUM \nDecoding Speedup</td><td>Accept (%)</td><td>AVERAGE \nSPEEDUP</td></tr><tr><td colspan=\"8\">Auto-Regressive Generation</td></tr><tr><td>Greedy</td><td>18.26</td><td>1.00× (31.20±0.04 ms/token)</td><td>-</td><td>35.93</td><td>1.00× (36.92±0.08 ms/token)</td><td>-</td><td>1.00×</td></tr><tr><td>Sampling</td><td>9.85</td><td>1.00× (31.06±0.06 ms/token)</td><td>-</td><td>29.83</td><td>1.00× (37.06±0.06 ms/token)</td><td>-</td><td>1.00×</td></tr><tr><td colspan=\"8\">Greedy Assisted Decoding</td></tr><tr><td>T5-Small</td><td>18.26</td><td>1.10× (28.24±0.15 ms/token)</td><td>41.68</td><td>35.93</td><td>0.97× (38.60±0.18 ms/token)</td><td>28.21</td><td>1.03×</td></tr><tr><td>T5-Small-XSum</td><td>18.26</td><td>0.83× (37.61±0.19 ms/token)</td><td>7.23</td><td>35.93</td><td>1.21× (30.71±0.15 ms/token)</td><td>40.24</td><td>1.02×</td></tr><tr><td colspan=\"8\">Speculative Decoding</td></tr><tr><td>T5-Small</td><td>9.24</td><td>1.10× (28.14±0.17 ms/token)</td><td>38.21</td><td>29.10</td><td>0.99× (37.53±0.14 ms/token)</td><td>26.02</td><td>1.04×</td></tr><tr><td>T5-Small-XSum</td><td>9.51</td><td>0.83× (37.45±0.18 ms/token)</td><td>8.75</td><td>29.10</td><td>1.18× (31.33±0.16 ms/token)</td><td>38.29</td><td>1.01×</td></tr><tr><td colspan=\"8\">Speculative Decoding + Decision Making</td></tr><tr><td>Greedy πθ</td><td>9.76</td><td>1.09× (28.56±0.16 ms/token)</td><td>37.72</td><td>29.83</td><td>1.17× (31.63±0.19 ms/token)</td><td>37.76</td><td>1.13×</td></tr><tr><td>Dynamic πθ</td><td>9.62</td><td>1.07× (29.20±0.17 ms/token)</td><td>36.64</td><td>29.45</td><td>1.16× (31.88±0.17 ms/token)</td><td>37.34</td><td>1.11×</td></tr></table>\n\nvarying the draft options along different axes such as alignment with the target model, sizes of the draft models, architecture of the drafter/target and the level of independence between the draft and target models. Each of these forms a dedicated experiment detailed in the sections that follow.\n\nData Collection. For each experiment, we collect offline data using task-specific training dataset splits. Each model is used to generate a greedy decoded sample from each, which is used to construct a reward dataset. To score samples against the target model output, we use the ROUGE-L score.\n\nPolicy Training. To train our policy, the input is a sentence embedding of the query from the target model and the output is a distribution over the drafting candidates. We train on the offline dataset for 3 epochs using a fixed batch size of 64 and AdamW (Loshchilov and Hutter, 2019) with a learning rate of 1e-3 and weight decay 1e-2. All other hyperparameters are set to their default values in PyTorch. In all experiments, our policy consists of a 3 layer multi-layer perceptron. Hidden layers have a fixed dimensions of 512 with a tanh activation function. The input dimension is the hidden dimension size of the target model and the output size is the number of drafting options.\n\nInference. We sample using a temperature $T$ of 1 and draft tokens $\\gamma$ set at 7. We use both a policy that takes the greedy action and another that samples from the output distribution.<sup>1</sup> The policy takes in a sentence embedding of the query and returns a\n\ndistribution, from which a drafter is sampled and used to assist decoding for the specific query.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.332::sections::4",
+      "paper_id": "2024.emnlp-main.332",
+      "section_number": "4",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "LLM Routing. LLMs have demonstrated remarkable capabilities across a range of tasks, but there exists wide variation in their costs and capabilities. Very broadly, more capable models tend to be more expensive than less capable models. This leads to a dilemma when deploying LLMs in the real-world - routing all queries to the largest, most capable model leads to the highest-quality responses but can be expensive, while routing queries to smaller models can save costs but may result in lower-quality responses. Similarly, not all models may be well suited for the same set of tasks, meaning that routing to the most suitable model can be of great importance as well.\n\nOur work shares a great deal of similarity with this notion of model routing, or selecting the best model based on the query. In particular, the set of draft models can be considered to be a group of sub-networks, similar to a Mixture-of-Experts (MoE) (Shazeer et al., 2017) style paradigm. The policy meanwhile acts as a router to the correct subnetwork. More advanced routing techniques (Fedus et al., 2021; Ong et al., 2024) have been explored as a way to leverage the multitude of LLMs that exist\n\nin the wild, but have yet to be widely used within downstream settings such as speculative decoding.\n\nAdaptive Speculative Decoding. Speculative decoding methods require the use of many predefined hyper-parameters which can significantly influence acceleration, with even minor changes having noticeable effects. Recent work has begun to explore how to decouple this process, such as by dynamically selecting the number of drafting tokens to generate at each decoding step (Wang et al., 2024; Liu et al., 2024a). Kavehzadeh et al. (2024) further discussed dynamically selecting a model per instance, however their method is limited to their specific setup due to needing to compute confidence scores after generation at early exits.\n\nWhile we do not introduce a new decoding algorithm, we make a first attempt to make the speculative decoding adaptive through the ability to switch between multiple draft models based on the input. However, more complex levels of adaptivity may be necessary as each decoding step may not be the same, necessitating perhaps a need to carefully adjust different hyperparameters through the process in order to maximize acceleration.\n\nDecision Making for Assisted Decoding. Assisted decoding can require making multiple decisions. One of these is determining an ideal number of draft tokens to decode at each step. Another relates to how to reject tokens, which commonly uses either greedy (Xia et al., 2023) or sampling-based token-matching heuristics (Leviathan et al., 2023). However, there are trade-offs when enforcing specific choices, which requires further investigation to better understand how to tune such techniques.\n\nThis work proposes adding an additional decision at the beginning of the decoding process, namely at the beginning of the process under the assumption that multiple drafting options exist. While we limit ourselves to make a more complete analysis within a more self-contained setting, various ways to have these methods co-exist within one larger pipeline are possible. However such work is left for future exploration due to the non-trivial nature of understanding how different choices and effect overall reported results in conjunction.\n\nMeasuring Alignment Between Outputs. We observe that token-level similarity scores are effective for training the decision maker, which can be attributed to the fact that assisted decoding itself relies on matching the token-level distribution of\n\noutputs. As such, if the greedy-decoded output from a draft model highly resembles the target output, it follows that this will be represented by a higher degree of similarity between the probability distributions in the logit space, which can then lead to fewer rejections when sampling.\n\nHowever, such metrics have limitations (Deutsch et al., 2022) due to capturing primarily superficial elements of text, where marginal differences in distribution have large effects on the output text. Furthermore, different metrics may overfit specific tasks, necessitating the need for better measures of draft/target alignment, which can hopefully lead to better estimation of rewards for training improved policies, either by designining better metrics themselves or by learning to compare features at different levels of granularity (ex. target and draft logits against text outputs). Additionally, semantic meaning also can play an important role, as outputs with significant structure may still possess the same meaning, something that token-level similarity metrics will not adequately capture.\n\nSpeculative Decoding as Approximate Inference. Speculative decoding can be analogized as a form of approximate inference where due to the intractability of performing inference with a model of interest, approximation methods are used to learn an estimate of the model. While training the draft model is equivalent to performing variational inference (i.e. approximating an intractable distribution with a surrogate), this can be expensive. Accordingly, training only a policy can be seen as weighing a set of fixed distributions to act as a better surrogate for the target model.\n\nSome works have further attempted to study speculative decoding from this angle. In particular, Zhou et al. (2024) explore such a process by building a draft model through the use of KL-divergence losses, effectively building a posterior distribution of the target model based on likelihood information from the draft output. Liu et al. (2024b) meanwhile explore the same technique as the distribution of examples changes, building a draft model that can adapt to changing user inputs. Such settings also could perhaps benefit from multiple draft models, where conditioning on the query can enable more effective adaptation of draft models to better generalize to unseen settings.\n\nHosting Multiple Draft Models. An important aspect of this method relates to the need to host multiple draft models in conjunction with the expert.\n\nThis can incur additional costs, in particular if the expert and selected drafter do not reside in the same device. While methods such as self-drafting avoid this issue and the possibility to create minimally-sized drafters generally alleviates the concern of excessive memory usage, one particular aspect of consideration remains hardware level optimizations which can best enable for the selected drafters to be loaded at maximal speed, avoiding additional latency that can result from the bandwidth constraints that relate to data transfer between devices.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.332::appendix::A",
+      "paper_id": "2024.emnlp-main.332",
+      "section_number": "A",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.332::appendix::A.1",
+      "paper_id": "2024.emnlp-main.332",
+      "section_number": "A.1",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "To baseline and compare our architectural constraints against (Leviathan et al., 2023), we partially benchmark our experiments against theirs. These are presented in Table 7 and 8. We conduct this as we suspect a difference in both system architecture used for experiments as well as for implementation of models.\n\nWe observe that their results are generally show speedups that are consistently 2.5 to $3.0 \\times$ as large as ours, with minor deviations. We attribute this to the usage of different computational resources and potential implementation differences. Additionally, given the small amount of variation in the relative differences between the observed and reported speedups, we contend that these differences are not due to errors in implementation.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.332::appendix::A.2",
+      "paper_id": "2024.emnlp-main.332",
+      "section_number": "A.2",
+      "section_title": "technical details",
+      "normalized_section_title": "technical details",
+      "window_text": "All experiments are conducted on a machine with a single NVIDIA A100 GPU with 8 CPU cores. We run all experiments using PyTorch and Hugging-Face models.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.332::appendix::A.3",
+      "paper_id": "2024.emnlp-main.332",
+      "section_number": "A.3",
+      "section_title": "hyperparameter configurations",
+      "normalized_section_title": "hyperparameter configurations",
+      "window_text": "Details about hyperparameters we use within our experiments are detailed here.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.332::appendix::B",
+      "paper_id": "2024.emnlp-main.332",
+      "section_number": "B",
+      "section_title": "different sampling hyperparameters",
+      "normalized_section_title": "different sampling hyperparameters",
+      "window_text": "We run our ablations based on our setup for our first experiment.\n\nTable 7: Reproduced translation results   \n\n<table><tr><td>Target Model</td><td>Draft Model</td><td>Temperature</td><td>Draft Tokens</td><td>Ours</td><td>Original</td><td>Relative Difference</td></tr><tr><td>T5-XXL</td><td>None</td><td>0</td><td>-</td><td>1.00× (19.6 ms/token)</td><td>1.0×</td><td>-</td></tr><tr><td>T5-XXL</td><td>T5-Small</td><td>0</td><td>7</td><td>1.21× (16.2 ms/token)</td><td>3.4×</td><td>2.81×</td></tr><tr><td>T5-XXL</td><td>T5-Base</td><td>0</td><td>7</td><td>0.96× (20.4 ms/token)</td><td>2.8×</td><td>2.91×</td></tr><tr><td>T5-XXL</td><td>T5-Large</td><td>0</td><td>7</td><td>0.61× (32.1 ms/token)</td><td>1.7×</td><td>2.78×</td></tr><tr><td>T5-XXL</td><td>T5-Small</td><td>1</td><td>7</td><td>1.03× (19.1 ms/token)</td><td>2.6×</td><td>2.53×</td></tr><tr><td>T5-XXL</td><td>T5-Base</td><td>1</td><td>5</td><td>0.83× (23.5 ms/token)</td><td>2.4×</td><td>2.88×</td></tr><tr><td>T5-XXL</td><td>T5-Large</td><td>1</td><td>3</td><td>0.56× (35.3 ms/token)</td><td>1.4×</td><td>2.52×</td></tr></table>\n\nTable 8: Reproduced summarization results   \n\n<table><tr><td>Target Model</td><td>Draft Model</td><td>Temperature</td><td>Draft Tokens</td><td>Ours</td><td>Original</td><td>Relative Difference</td></tr><tr><td>T5-XXL</td><td>None</td><td>0</td><td>-</td><td>1.00× (31.8 ms/token)</td><td>1.0×</td><td>-</td></tr><tr><td>T5-XXL</td><td>T5-Small</td><td>0</td><td>5</td><td>0.99× (32.1 ms/token)</td><td>3.1×</td><td>3.13×</td></tr><tr><td>T5-XXL</td><td>T5-Base</td><td>0</td><td>5</td><td>0.87× (36.4 ms/token)</td><td>3.0×</td><td>3.43×</td></tr><tr><td>T5-XXL</td><td>T5-Large</td><td>0</td><td>3</td><td>0.59× (53.8 ms/token)</td><td>2.2×</td><td>3.72×</td></tr><tr><td>T5-XXL</td><td>T5-Small</td><td>1</td><td>5</td><td>0.86× (33.0 ms/token)</td><td>2.3×</td><td>2.39×</td></tr><tr><td>T5-XXL</td><td>T5-Base</td><td>1</td><td>5</td><td>0.85× (37.5 ms/token)</td><td>2.2×</td><td>2.59×</td></tr><tr><td>T5-XXL</td><td>T5-Large</td><td>1</td><td>3</td><td>0.57× (48.6 ms/token)</td><td>1.7×</td><td>2.60×</td></tr></table>\n\n<table><tr><td>Hyperparameter</td><td>Value</td></tr><tr><td>Optimizer</td><td>AdamW</td></tr><tr><td>Learning Rate</td><td>0.001</td></tr><tr><td>Weight Decay</td><td>0.01</td></tr><tr><td>β1</td><td>0.9</td></tr><tr><td>β2</td><td>0.99</td></tr><tr><td>ε</td><td>1e-8</td></tr></table>\n\nTable 9: Optimization Hyperparameters   \nTable 10: Prompts for the different tasks   \n\n<table><tr><td>Task</td><td></td><td>Prompt</td></tr><tr><td>ENDE</td><td colspan=\"2\">translate English to German: {input}</td></tr><tr><td>XSUM</td><td></td><td>summarize: {input}</td></tr><tr><td>GSM8K</td><td></td><td>Q: {input}</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.332::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "All experiments are conducted on a machine with a single NVIDIA A100 GPU with 8 CPU cores. We run all experiments using PyTorch and Hugging-Face models.",
+      "section_number": "A.2",
+      "section_title": "technical details",
+      "normalized_section_title": "technical details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.332::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100",
+      "benchmark_hardware_name": "NVIDIA A100",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.2",
+      "section_title": "technical details",
+      "normalized_section_title": "technical details",
+      "evidence": "All experiments are conducted on a machine with a single NVIDIA A100 GPU with 8 CPU cores. We run all experiments using PyTorch and Hugging-Face models.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.emnlp-main.332::sections::1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "1",
+      "section_title": "introduction",
+      "evidence": "With the introduction of the Transformer (Vaswani et al., 2017) has emerged the era of large language models (Chowdhery et al., 2022; Touvron et al., 2023; OpenAI, 2024) and the development of LLMs capable of reasoning and acting in astonishingly human-like manner (Kaplan et al., 2020; Wei\n\net al., 2023; Ouyang et al., 2022). However, the use of resource intensive models and techniques remains a pre-requisite and accordingly, methods have been developed and applied to alleviate concerns relating to the practical usability of these models (Dettmers et al., 2022; Dao, 2024). One major area that has observed consistent improvement over time is the auto-regressive decoding aspect of text generation, where each generation of a new token requires a complete inference pass through the model, which under-utilizes the property of attention and the ability of modern accelerators (e.g. GPUs, TPUs) to parallelize computations (de Jong et al., 2022; Kim et al., 2023a).\n\nA growing approach towards addressing this is speculative decoding (Xia et al., 2023; Leviathan et al., 2023). In speculative decoding, latency is reduced by minimizing the amount of high-latency sequential computations and replacing them with cheaper ones. Rather than sampling directly from the larger model, the sampling is approximated with samples from a smaller and cheaper model through accept-reject sampling. Specifically, a small draft model auto-regressively generates text which is then verified by a larger target model in parallel (Stern et al., 2018; Sun et al., 2021). Thus the large model does not need to generate text repeatedly but rather guides the small model by correcting outputs when it is truly incapable. This can reduce the number of calls to the large LLM, saving both time and memory. However two models are required, along with some similarity in their generative abilities in order for this method to see significant speedups. While approaches exist to circumvent some of these needs (Yang et al., 2023; Zhang et al., 2023; Li et al., 2024; Cai et al., 2024; Hooper et al., 2024), these are often limited by the need for additional tuning (Liu et al., 2024b; Cai et al., 2024; Li et al., 2024), which is difficult in resource constrained settings, or quality degradation in generations (Kim et al., 2023b). Because of\n\n![](images/65826c36d8c4ccba6cb8ec731a7017124b4998c323c12da119d7659a40e2c096.jpg)  \nFigure 1: Overview of our methodology. We first train a policy using offline data collected from greedily decoded output from each model, which are scored to produce reward samples. At test time, the policy takes in a query $q'$ to select a draft candidate model, which is then used for assisted generation with the target model.\n\nthe evident size-cost tradeoff, this is very efficient if the draft model is well aligned to the target.\n\nHowever, while one can ensure that the final output follows the target distribution (Chen et al., 2023), selecting an inadequate draft model can lead to a lack of acceleration due to the significant number of rejections that will occur. While other methods allow for changes in the output distribution shift (Kim et al., 2023a; Zhou et al., 2024; Fu et al., 2024) to further speed-up inference, such types of shifts can be problematic in many high-risk scenarios. From this perspective, the presence of multiple draft models, each suited for different settings, can be helpful for inference acceleration without degredations in generation quality. By dynamically choosing a draft model, speedups can be achieved on multiple domains with marginal additional costs. However this requires learning how to choose the best draft option given a context, introducing a decision making problem which needs to be solved.\n\nSo how can this decision making process be learned? We start by observing this as a contextual bandits (Woodroofoe, 1979; Auer, 2003), where the goal is to have a policy select a draft model based on a given query. This also requires rewards from which the policy can learn to estimate and compare the ideality of different actions that can be taken. To this end, we use an offline process to estimate the contextual alignment between different draft models and the target model on a set of training examples (Figure 1), enabling the construction of a dataset that defines the preference a target can have towards specific draft candidates. This enables us to train a policy that can take into account\n\nsuch preferences without knowing further details about the draft models. By delaying this policy at inference time it becomes possible to weigh these preferences, leading to speedups in generation with the target. We further show that this policy is useful when using self-speculative decoding, whereby the draft model is a subset of the target model parameters. To summarize our contributions:\n\n- We frame a speculative decoding scenario as a contextual bandits problem, where multiple draft models serve as arms that each produce a reward, an abstraction of the inference speed-up relative to using the target model on its own which is not known a priori.   \n- We demonstrate that offline training of a decision making agent through only the similarity between the draft and target model generations, the agent can correctly select which draft model to use for a given input query.   \n- We show that the policy can balance tradeoffs in draft model alignment and generation speed by incorporating explicit information about the model within the reward."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.332::sections::2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "2",
+      "section_title": "methodology",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.332::sections::3.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3.1",
+      "section_title": "experimental setup",
+      "evidence": "Models and Tasks. We select publicly available LLMs to use for our experiments. We conduct a number of experiments, which we motivate by\n\nTable 1: Quality, decoding speeds and acceptance rates when using a policy for selecting between different draft models of the same size but specialized on different domains. Across the two domains, both a greedy and dynamic policy can accelerate decoding on both domains, with marginal differences between the exact nature of the policy. Acceptance rate computation is described in Appendix A.   \n\n<table><tr><td>DRAFT MODEL</td><td>BLEU</td><td>IWSTL2017 EN-DE \nDecoding Speedup</td><td>Accept (%)</td><td>ROUGE-L</td><td>XSUM \nDecoding Speedup</td><td>Accept (%)</td><td>AVERAGE \nSPEEDUP</td></tr><tr><td colspan=\"8\">Auto-Regressive Generation</td></tr><tr><td>Greedy</td><td>18.26</td><td>1.00× (31.20±0.04 ms/token)</td><td>-</td><td>35.93</td><td>1.00× (36.92±0.08 ms/token)</td><td>-</td><td>1.00×</td></tr><tr><td>Sampling</td><td>9.85</td><td>1.00× (31.06±0.06 ms/token)</td><td>-</td><td>29.83</td><td>1.00× (37.06±0.06 ms/token)</td><td>-</td><td>1.00×</td></tr><tr><td colspan=\"8\">Greedy Assisted Decoding</td></tr><tr><td>T5-Small</td><td>18.26</td><td>1.10× (28.24±0.15 ms/token)</td><td>41.68</td><td>35.93</td><td>0.97× (38.60±0.18 ms/token)</td><td>28.21</td><td>1.03×</td></tr><tr><td>T5-Small-XSum</td><td>18.26</td><td>0.83× (37.61±0.19 ms/token)</td><td>7.23</td><td>35.93</td><td>1.21× (30.71±0.15 ms/token)</td><td>40.24</td><td>1.02×</td></tr><tr><td colspan=\"8\">Speculative Decoding</td></tr><tr><td>T5-Small</td><td>9.24</td><td>1.10× (28.14±0.17 ms/token)</td><td>38.21</td><td>29.10</td><td>0.99× (37.53±0.14 ms/token)</td><td>26.02</td><td>1.04×</td></tr><tr><td>T5-Small-XSum</td><td>9.51</td><td>0.83× (37.45±0.18 ms/token)</td><td>8.75</td><td>29.10</td><td>1.18× (31.33±0.16 ms/token)</td><td>38.29</td><td>1.01×</td></tr><tr><td colspan=\"8\">Speculative Decoding + Decision Making</td></tr><tr><td>Greedy πθ</td><td>9.76</td><td>1.09× (28.56±0.16 ms/token)</td><td>37.72</td><td>29.83</td><td>1.17× (31.63±0.19 ms/token)</td><td>37.76</td><td>1.13×</td></tr><tr><td>Dynamic πθ</td><td>9.62</td><td>1.07× (29.20±0.17 ms/token)</td><td>36.64</td><td>29.45</td><td>1.16× (31.88±0.17 ms/token)</td><td>37.34</td><td>1.11×</td></tr></table>\n\nvarying the draft options along different axes such as alignment with the target model, sizes of the draft models, architecture of the drafter/target and the level of independence between the draft and target models. Each of these forms a dedicated experiment detailed in the sections that follow.\n\nData Collection. For each experiment, we collect offline data using task-specific training dataset splits. Each model is used to generate a greedy decoded sample from each, which is used to construct a reward dataset. To score samples against the target model output, we use the ROUGE-L score.\n\nPolicy Training. To train our policy, the input is a sentence embedding of the query from the target model and the output is a distribution over the drafting candidates. We train on the offline dataset for 3 epochs using a fixed batch size of 64 and AdamW (Loshchilov and Hutter, 2019) with a learning rate of 1e-3 and weight decay 1e-2. All other hyperparameters are set to their default values in PyTorch. In all experiments, our policy consists of a 3 layer multi-layer perceptron. Hidden layers have a fixed dimensions of 512 with a tanh activation function. The input dimension is the hidden dimension size of the target model and the output size is the number of drafting options.\n\nInference. We sample using a temperature $T$ of 1 and draft tokens $\\gamma$ set at 7. We use both a policy that takes the greedy action and another that samples from the output distribution.<sup>1</sup> The policy takes in a sentence embedding of the query and returns a\n\ndistribution, from which a drafter is sampled and used to assist decoding for the specific query."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.332::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "discussion",
+      "evidence": "LLM Routing. LLMs have demonstrated remarkable capabilities across a range of tasks, but there exists wide variation in their costs and capabilities. Very broadly, more capable models tend to be more expensive than less capable models. This leads to a dilemma when deploying LLMs in the real-world - routing all queries to the largest, most capable model leads to the highest-quality responses but can be expensive, while routing queries to smaller models can save costs but may result in lower-quality responses. Similarly, not all models may be well suited for the same set of tasks, meaning that routing to the most suitable model can be of great importance as well.\n\nOur work shares a great deal of similarity with this notion of model routing, or selecting the best model based on the query. In particular, the set of draft models can be considered to be a group of sub-networks, similar to a Mixture-of-Experts (MoE) (Shazeer et al., 2017) style paradigm. The policy meanwhile acts as a router to the correct subnetwork. More advanced routing techniques (Fedus et al., 2021; Ong et al., 2024) have been explored as a way to leverage the multitude of LLMs that exist\n\nin the wild, but have yet to be widely used within downstream settings such as speculative decoding.\n\nAdaptive Speculative Decoding. Speculative decoding methods require the use of many predefined hyper-parameters which can significantly influence acceleration, with even minor changes having noticeable effects. Recent work has begun to explore how to decouple this process, such as by dynamically selecting the number of drafting tokens to generate at each decoding step (Wang et al., 2024; Liu et al., 2024a). Kavehzadeh et al. (2024) further discussed dynamically selecting a model per instance, however their method is limited to their specific setup due to needing to compute confidence scores after generation at early exits.\n\nWhile we do not introduce a new decoding algorithm, we make a first attempt to make the speculative decoding adaptive through the ability to switch between multiple draft models based on the input. However, more complex levels of adaptivity may be necessary as each decoding step may not be the same, necessitating perhaps a need to carefully adjust different hyperparameters through the process in order to maximize acceleration.\n\nDecision Making for Assisted Decoding. Assisted decoding can require making multiple decisions. One of these is determining an ideal number of draft tokens to decode at each step. Another relates to how to reject tokens, which commonly uses either greedy (Xia et al., 2023) or sampling-based token-matching heuristics (Leviathan et al., 2023). However, there are trade-offs when enforcing specific choices, which requires further investigation to better understand how to tune such techniques.\n\nThis work proposes adding an additional decision at the beginning of the decoding process, namely at the beginning of the process under the assumption that multiple drafting options exist. While we limit ourselves to make a more complete analysis within a more self-contained setting, various ways to have these methods co-exist within one larger pipeline are possible. However such work is left for future exploration due to the non-trivial nature of understanding how different choices and effect overall reported results in conjunction.\n\nMeasuring Alignment Between Outputs. We observe that token-level similarity scores are effective for training the decision maker, which can be attributed to the fact that assisted decoding itself relies on matching the token-level distribution of\n\noutputs. As such, if the greedy-decoded output from a draft model highly resembles the target output, it follows that this will be represented by a higher degree of similarity between the probability distributions in the logit space, which can then lead to fewer rejections when sampling.\n\nHowever, such metrics have limitations (Deutsch et al., 2022) due to capturing primarily superficial elements of text, where marginal differences in distribution have large effects on the output text. Furthermore, different metrics may overfit specific tasks, necessitating the need for better measures of draft/target alignment, which can hopefully lead to better estimation of rewards for training improved policies, either by designining better metrics themselves or by learning to compare features at different levels of granularity (ex. target and draft logits against text outputs). Additionally, semantic meaning also can play an important role, as outputs with significant structure may still possess the same meaning, something that token-level similarity metrics will not adequately capture.\n\nSpeculative Decoding as Approximate Inference. Speculative decoding can be analogized as a form of approximate inference where due to the intractability of performing inference with a model of interest, approximation methods are used to learn an estimate of the model. While training the draft model is equivalent to performing variational inference (i.e. approximating an intractable distribution with a surrogate), this can be expensive. Accordingly, training only a policy can be seen as weighing a set of fixed distributions to act as a better surrogate for the target model.\n\nSome works have further attempted to study speculative decoding from this angle. In particular, Zhou et al. (2024) explore such a process by building a draft model through the use of KL-divergence losses, effectively building a posterior distribution of the target model based on likelihood information from the draft output. Liu et al. (2024b) meanwhile explore the same technique as the distribution of examples changes, building a draft model that can adapt to changing user inputs. Such settings also could perhaps benefit from multiple draft models, where conditioning on the query can enable more effective adaptation of draft models to better generalize to unseen settings.\n\nHosting Multiple Draft Models. An important aspect of this method relates to the need to host multiple draft models in conjunction with the expert.\n\nThis can incur additional costs, in particular if the expert and selected drafter do not reside in the same device. While methods such as self-drafting avoid this issue and the possibility to create minimally-sized drafters generally alleviates the concern of excessive memory usage, one particular aspect of consideration remains hardware level optimizations which can best enable for the selected drafters to be loaded at maximal speed, avoiding additional latency that can result from the bandwidth constraints that relate to data transfer between devices."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.332::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "experimental details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.332::appendix::A.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.1",
+      "section_title": "baselines",
+      "evidence": "To baseline and compare our architectural constraints against (Leviathan et al., 2023), we partially benchmark our experiments against theirs. These are presented in Table 7 and 8. We conduct this as we suspect a difference in both system architecture used for experiments as well as for implementation of models.\n\nWe observe that their results are generally show speedups that are consistently 2.5 to $3.0 \\times$ as large as ours, with minor deviations. We attribute this to the usage of different computational resources and potential implementation differences. Additionally, given the small amount of variation in the relative differences between the observed and reported speedups, we contend that these differences are not due to errors in implementation."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.332::appendix::A.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.3",
+      "section_title": "hyperparameter configurations",
+      "evidence": "Details about hyperparameters we use within our experiments are detailed here."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.332::appendix::B",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B",
+      "section_title": "different sampling hyperparameters",
+      "evidence": "We run our ablations based on our setup for our first experiment.\n\nTable 7: Reproduced translation results   \n\n<table><tr><td>Target Model</td><td>Draft Model</td><td>Temperature</td><td>Draft Tokens</td><td>Ours</td><td>Original</td><td>Relative Difference</td></tr><tr><td>T5-XXL</td><td>None</td><td>0</td><td>-</td><td>1.00× (19.6 ms/token)</td><td>1.0×</td><td>-</td></tr><tr><td>T5-XXL</td><td>T5-Small</td><td>0</td><td>7</td><td>1.21× (16.2 ms/token)</td><td>3.4×</td><td>2.81×</td></tr><tr><td>T5-XXL</td><td>T5-Base</td><td>0</td><td>7</td><td>0.96× (20.4 ms/token)</td><td>2.8×</td><td>2.91×</td></tr><tr><td>T5-XXL</td><td>T5-Large</td><td>0</td><td>7</td><td>0.61× (32.1 ms/token)</td><td>1.7×</td><td>2.78×</td></tr><tr><td>T5-XXL</td><td>T5-Small</td><td>1</td><td>7</td><td>1.03× (19.1 ms/token)</td><td>2.6×</td><td>2.53×</td></tr><tr><td>T5-XXL</td><td>T5-Base</td><td>1</td><td>5</td><td>0.83× (23.5 ms/token)</td><td>2.4×</td><td>2.88×</td></tr><tr><td>T5-XXL</td><td>T5-Large</td><td>1</td><td>3</td><td>0.56× (35.3 ms/token)</td><td>1.4×</td><td>2.52×</td></tr></table>\n\nTable 8: Reproduced summarization results   \n\n<table><tr><td>Target Model</td><td>Draft Model</td><td>Temperature</td><td>Draft Tokens</td><td>Ours</td><td>Original</td><td>Relative Difference</td></tr><tr><td>T5-XXL</td><td>None</td><td>0</td><td>-</td><td>1.00× (31.8 ms/token)</td><td>1.0×</td><td>-</td></tr><tr><td>T5-XXL</td><td>T5-Small</td><td>0</td><td>5</td><td>0.99× (32.1 ms/token)</td><td>3.1×</td><td>3.13×</td></tr><tr><td>T5-XXL</td><td>T5-Base</td><td>0</td><td>5</td><td>0.87× (36.4 ms/token)</td><td>3.0×</td><td>3.43×</td></tr><tr><td>T5-XXL</td><td>T5-Large</td><td>0</td><td>3</td><td>0.59× (53.8 ms/token)</td><td>2.2×</td><td>3.72×</td></tr><tr><td>T5-XXL</td><td>T5-Small</td><td>1</td><td>5</td><td>0.86× (33.0 ms/token)</td><td>2.3×</td><td>2.39×</td></tr><tr><td>T5-XXL</td><td>T5-Base</td><td>1</td><td>5</td><td>0.85× (37.5 ms/token)</td><td>2.2×</td><td>2.59×</td></tr><tr><td>T5-XXL</td><td>T5-Large</td><td>1</td><td>3</td><td>0.57× (48.6 ms/token)</td><td>1.7×</td><td>2.60×</td></tr></table>\n\n<table><tr><td>Hyperparameter</td><td>Value</td></tr><tr><td>Optimizer</td><td>AdamW</td></tr><tr><td>Learning Rate</td><td>0.001</td></tr><tr><td>Weight Decay</td><td>0.01</td></tr><tr><td>β1</td><td>0.9</td></tr><tr><td>β2</td><td>0.99</td></tr><tr><td>ε</td><td>1e-8</td></tr></table>\n\nTable 9: Optimization Hyperparameters   \nTable 10: Prompts for the different tasks   \n\n<table><tr><td>Task</td><td></td><td>Prompt</td></tr><tr><td>ENDE</td><td colspan=\"2\">translate English to German: {input}</td></tr><tr><td>XSUM</td><td></td><td>summarize: {input}</td></tr><tr><td>GSM8K</td><td></td><td>Q: {input}</td></tr></table>"
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2024\\2024.emnlp-main.332\\auto\\full.md",
+    "source_md_sha256": "127b5092b34b79aa4f781512ce51122f2099879e1c3a46e95393317e996b9ce1",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "749fdb433714bfa003499fb1c90f58c9bb6de4daf647bf52f54e32986186b91c"
+  }
+}

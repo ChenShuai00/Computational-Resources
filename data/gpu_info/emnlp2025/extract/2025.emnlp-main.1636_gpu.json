@@ -1,0 +1,109 @@
+{
+  "paper_id": "2025.emnlp-main.1636",
+  "candidate_windows": [
+    {
+      "window_id": "2025.emnlp-main.1636::sections::3",
+      "paper_id": "2025.emnlp-main.1636",
+      "section_number": "3",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "Inspired by the recent success of reinforcement learning in the post-training of LLMs, GEM consists of two main stages: a supervised fine-tuning (SFT) cold start and subsequent annotation-free optimization guided by a designed reward function combining the detoxification quality and the semantic preservation. The whole process is demonstrated in Fig. 2. To facilitate a clear presentation of our method, we define a parallel dataset as $\\mathcal { D } = \\{ ( s _ { 1 } , s _ { 1 } ^ { \\prime } ) , \\cdot \\cdot \\cdot , ( s _ { n } , s _ { n } ^ { \\prime } ) \\}$ ,where $s _ { i }$ denotes a toxic input sample and $s _ { i } ^ { \\prime }$ is its corresponding human-annotated detoxified version.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1636::sections::4.1.1",
+      "paper_id": "2025.emnlp-main.1636",
+      "section_number": "4.1.1",
+      "section_title": "experiment settings",
+      "normalized_section_title": "experiment settings",
+      "window_text": "Datasets. We conduct our experiments on the high-quality human-annotated parallel dataset $P a$ raDetox,which contains approximately 11k sentence pairs.Following the original split, we use 671 samples for testing.For SFT-based cold start, we use $20 \\%$ of the annotated training data, further filtered to retain only examples with a similarity score greater than $\\alpha = 0 . 5$ (Eq.(1)). The entire training set (excluding reference rewrites) is used as unlabeled input for GRPO.\n\nBaselines.We compare our method with six representative existing approaches: ParaDetox (Logacheva et al., 2022), DetoxLLM (Khondaker et al., 2024)， YOPO (He et al., 2024), COUNT (Pour et al., 2023), XDetox (Lee et al., 2024), and DiffuDetox (Floto et al., 2023), along with two commonly used sequence-to-sequence models, T5 and BART, fine-tuned on the full training dataset. To address the limited use of LLMs in prior work, we additionally include two methods using base LLMs for comparison: five-shot prompting and supervised fine-tuning on the full training set. Since ParaDetox and DetoxLLM only release pretrained models without training code,we directly evaluate their released checkpoints. Notably, since DetoxLLMis trained on the DetoxLLM dataset, its evaluation on ParaDetox serves as an outof-domain test, whereas its performance on the DetoxLLM set in our OOD evaluation constitutes an in-domain test. For YOPO, we use the best hyperparameters reported by the authors to train on the full dataset without a validation split.\n\nEvaluation Metrics. Following ParaDetox, we use the following evaluation metrics to assess detoxification performance:\n\n· Style Accuracy (STA） measures whether the generated output is classified as “non-toxic\"(1) or not (O), indicating detoxification success. Following prior work,we use a RoBERTa-based classifier trained on the Jigsaw dataset (Logacheva et al., 2022).\n\n· Semantic Similarity (SIM) measures to what extent the generated text preserves the meaning of the original input. It is computed as the cosine similarity between sentence embeddings of the original and detoxified texts,using the model proposed by Wieting et al. (2019), which is trained on paraphrase pairs from the ParaNMT corpus to produce high similarity scores for semantically equivalent sentences.\n\n· Fluency (FL) measures grammatical acceptability, with 1 indicating acceptable and O otherwise. It is computed using a RoBERTa-based classifier trained on the CoLA dataset (Warstadt et al., 2019),and reported as the proportion of acceptable outputs, aligning with ParaDetox.\n\n· Joint Score (J) is defined as the product of STA, SIM,and FL. If either STA orFL is O—indicating failed detoxification or disfluent output—the J score is O. The final score is computed by averaging the J scores across all samples,as Eq. (8).\n\n$$\nJ = \\frac { \\sum ( \\mathrm { S T A } \\cdot \\mathrm { S I M } \\cdot \\mathrm { F L } ) } { | \\mathcal { D } _ { \\mathrm { t e s t } } | }\n$$\n\nOur Method (GEM). To verify the generality of our method across different backbone models, we conduct training on two widely used instructiontuned LLMs: Llama3.1-8B-Instruct1 (Llama) and Qwen2.5-7B-Instruct² (Qwen). For semantic similarity computation in the data selection stage, we use the pre-trained all-miniLM-L6-v2 model’.For the NonToxic score in the reward function,we train a BERT-based binary classifier on the training set to predict whether a generated sentence is toxic. For hyperparameter choice,we sample 1,00O examples from the training set as a validation set for hyperparameter selection in the SFT stage. In the GRPO stage, we use the full training set without annotations. To ensure fairness, we keep most hyperparameters fixed as default in trl framework and include a sensitivity analysis in Sec. 4.6.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1636::sections::4.3.1",
+      "paper_id": "2025.emnlp-main.1636",
+      "section_number": "4.3.1",
+      "section_title": "experiment settings",
+      "normalized_section_title": "experiment settings",
+      "window_text": "Compared to the in-domain setting, the out-ofdomain (OOD） experiments differ only in the choice of test data. We directly evaluate the models trained in in-domain settings on two additional datasets:DetoxLL $M ^ { 4 }$ and the HuggingFace text detoxification dataset5.Due to the relatively low annotation quality of these datasets,we do not use them for training. Instead, we randomly sample from them to construct OOD test sets.Notably, as mentioned in in-domain settings, DetoxLLM on the DetoxLLM dataset is an in-domain test.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1636::appendix::A.3",
+      "paper_id": "2025.emnlp-main.1636",
+      "section_number": "A.3",
+      "section_title": "parameters in grpo",
+      "normalized_section_title": "parameters in grpo",
+      "window_text": "In the GRPO stage, we apply LoRA training to the models after cold start. The learning rate is scheduled with cosine decay, starting at le-5, with $10 \\%$ of total steps used for warm-up.L2 regularization is applied with a weight decay of O.1. We use a gradient accumulation step of 8 and a maximum gradient norm of 1. During generation, four candidate outputs are generated per input and the temperature in sampling is set to 2.0. The number of training epochs is set to 5 and other parameters remain at their default values. All experiments were conducted using a single NVIDIA A8OO GPU.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.emnlp-main.1636::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A800",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "In the GRPO stage, we apply LoRA training to the models after cold start. The learning rate is scheduled with cosine decay, starting at le-5, with $10 \\%$ of total steps used for warm-up.L2 regularization is applied with a weight decay of O.1. We use a gradient accumulation step of 8 and a maximum gradient norm of 1. During generation, four candidate outputs are generated per input and the temperature in sampling is set to 2.0. The number of training epochs is set to 5 and other parameters remain at their default values. All experiments were conducted using a single NVIDIA A8OO GPU.",
+      "section_number": "A.3",
+      "section_title": "parameters in grpo",
+      "normalized_section_title": "parameters in grpo"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.emnlp-main.1636::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A800",
+      "cleaned_hardware_name": "nvidia a800",
+      "normalized_hardware_name": "NVIDIA A800 PCIe 40 GB",
+      "benchmark_hardware_name": "NVIDIA A800 PCIe 40 GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.3",
+      "section_title": "parameters in grpo",
+      "normalized_section_title": "parameters in grpo",
+      "evidence": "In the GRPO stage, we apply LoRA training to the models after cold start. The learning rate is scheduled with cosine decay, starting at le-5, with $10 \\%$ of total steps used for warm-up.L2 regularization is applied with a weight decay of O.1. We use a gradient accumulation step of 8 and a maximum gradient norm of 1. During generation, four candidate outputs are generated per input and the temperature in sampling is set to 2.0. The number of training epochs is set to 5 and other parameters remain at their default values. All experiments were conducted using a single NVIDIA A8OO GPU.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.3"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A800 PCIe 40 GB",
+        "num": 1
+      }
+    ]
+  }
+}

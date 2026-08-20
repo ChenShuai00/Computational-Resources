@@ -1,0 +1,96 @@
+{
+  "paper_id": "2024.naacl-long.177",
+  "candidate_windows": [
+    {
+      "window_id": "2024.naacl-long.177::sections::2.1",
+      "paper_id": "2024.naacl-long.177",
+      "section_number": "2.1",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "Backdoor Attacks on NLP. Consider a victim classification model $f$ parameterized by $\\theta$ , a be\n\nnign input sequence $\\mathbf{x}$ , and the corresponding ground truth label $y$ . A typical backdoor attack aims to mislead the classification model into target class $y'$ when the trigger pattern is presented, i.e., $f(\\mathcal{A}(\\mathbf{x},\\mathbf{t});\\boldsymbol{\\theta}) = y'$ where $\\mathbf{t}$ denotes the trigger, and $\\mathcal{A}$ denotes the trigger injection function to inject $\\mathbf{t}$ into $\\mathbf{x}$ (Gu et al., 2017; Liu et al., 2018). For NLP tasks, usually the triggers $\\mathbf{t}$ are defined as certain characters (Chen et al., 2021; Boucher et al., 2022), words (Chen et al., 2021; Xu et al., 2022) or phrases (Chen et al., 2021; Dai et al., 2019), and the trigger injection function $\\mathcal{A}$ is usually random insertion, i.e. the backdoor is activated as long as the $\\mathbf{t}$ can be found in the input. There also exist more complicated trigger injection functions for improving the stealthiness of the backdoor attack (Zhang et al., 2021a). For example, in the Trojan datasets $^1$ (IARPA, 2020), some backdoors are only triggered when the trigger phrases are inserted into the first or second half of the input sequences.\n\nTwo-Stage Backdoor Removal. Existing backdoor removal methods (Wang et al., 2019; Shen et al., 2022) rely on trigger inversion to approximate the real trigger of the backdoor and then remove the backdoor by fine-tuning the victim model on data with the found trigger and correct labels. In general, the process can be described as solving the following two optimization problems in sequence. For the trigger inversion stage, we have\n\n$$\n\\widehat {\\mathbf {t}} = \\underset {\\mathbf {t} \\in \\boldsymbol {\\Delta}} {\\arg \\min } \\mathbb {E} _ {(\\mathbf {x}, y) \\sim \\mathcal {D}} \\left[ \\mathcal {L} \\left(f \\left(\\mathcal {A} (\\mathbf {x}, \\mathbf {t}); \\boldsymbol {\\theta}\\right), y ^ {\\prime}\\right) \\right],\n$$\n\nwhere $\\Delta$ denotes the constraints we set for triggers. Once the inverted trigger is obtained, we can remove the potential backdoor via the following model fine-tuning process:\n\n$$\n\\begin{array}{l} \\widehat {\\boldsymbol {\\theta}} = \\underset {\\boldsymbol {\\theta}} {\\arg \\min } \\mathbb {E} _ {(\\mathbf {x}, y) \\sim \\mathcal {D}} \\left(\\mathcal {L} \\left(f \\left(\\mathcal {A} (\\mathbf {x}, \\widehat {\\mathbf {t}})\\right), y; \\boldsymbol {\\theta}\\right) + \\right. \\\\ \\left. \\mathcal {L} \\left(f (\\mathbf {x}), y; \\boldsymbol {\\theta}\\right)\\right). \\\\ \\end{array}\n$$\n\nDespite being intuitive, such two-stage backdoor removal strategies also have some major drawbacks:\n\n- Successful backdoor removal requires that $\\widehat{\\mathbf{t}}$ accurately approximates the real trigger $\\mathbf{t}$ , which is difficult to achieve due to the discrete nature of textual triggers. Empirically, the triggers found by DBS are only remotely related to the actual triggers injected (see table 1).\n\n- The trigger approximated is specific to the choice of $\\mathcal{A}$ and $y'$ . When the trigger injection method $\\mathcal{A}$ has many possible configurations or the number of classes is large, the search space of $(\\mathcal{A}, y')$ grows exponentially and brute-force searching in existing methods will no longer be feasible.   \n- Trigger fine-tuning requires a relatively large dataset to prevent overfitting which makes it not suitable in the few-shot settings.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.naacl-long.177::sections::3.5",
+      "paper_id": "2024.naacl-long.177",
+      "section_number": "3.5",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "window_text": "Number of trigger tokens Both PromptFix and DBS use 10 triggers in the main experiment. We selected 10 backdoored models out of TrojanAI where the trigger consists of at least 6 tokens and investigate if PromptFix is capable of removing backdoors when the available number of tokens in $\\mathbf{t}$ is lower than that. Table 7 and Table 8 shows the results when the number of trigger tokens varies between 1, 2, 5 and 10. These trials share the same hyper-parameters optimized for 10 trigger tokens. PromptFix turns out to be benefiting from more trigger tokens but even with insufficient number of tokens, PromptFix can already remove backdoors to a satisfactory extent.\n\nNumber of prompt tokens The number of prompt tokens is an important hyper-parameter for adjusting the strength of backdoor removal. We use the same subset of models as in section 3.5\n\nand the results can be found in table 9. Using two prompt tokens can already remove the backdoors pretty well and when increasing the number of token from 5 to 10, there is no apparent improvement on the performance. Hence, a number of prompt tokens larger than 5 is enough for 10 trigger tokens.\n\nLess few-shot settings The advantage of PromptFix over existing methods is most significant in the extremely few-shot settings and it is questionable if PromptFix only works without sufficient data. We tested PromptFix with access to 20 examples in each class on 10 backdoored models and verified that PromptFix is applicable to less few-shot settings as well and the results are in table 10.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.naacl-long.177::appendix::E",
+      "paper_id": "2024.naacl-long.177",
+      "section_number": "E",
+      "section_title": "hyper-parameter choice & computing infrastructure",
+      "normalized_section_title": "hyper-parameter choice & computing infrastructure",
+      "window_text": "The hyper-parameters unique to PromptFix are num_prompt_token=10, num_prompt_steps = num_trigger_steps = 100, num_round = 25, prompt learning rate is 1e-4 for the TrojAI experiment and 5e-5 for the domain shift experiment and the experiments on various other attacks, weights\n\n$\\alpha_{\\mathbf{p}} = \\alpha_{\\mathbf{t}} = \\alpha_{\\mathrm{CLS}} = 1$ and ce_threshold $= -0.1$ and the ratio of unlabeled and labeled data in each batch is 1:1 whenever used.\n\nFor hyper-parameters shared by PromptFix and DBS, most of them are kept the same as the recommended value in the paper of DBS, including trigger learning rate of 0.5 and initial/max temperature $= 2$ , etc. We performed a search on the best learning rate for DBS among 1e-5 to 5e-4 to balance the removal performance and overfitting to adapt to our extremely few-shot settings: 2e-5 is chosen for the TrojanAI experiment and 1e-4 for the rest. The maximum total number of optimization steps is 5000, which is identical to that of PromptFix.\n\nWe use a single Nvidia A6000 GPU to perform backdoor removal of each model and sometimes multiple removal shares a single GPU. In any case and for both DBS and PromptFix the process finishes very quickly within an hour.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.naacl-long.177::appendix::E",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A6000",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "The hyper-parameters unique to PromptFix are num_prompt_token=10, num_prompt_steps = num_trigger_steps = 100, num_round = 25, prompt learning rate is 1e-4 for the TrojAI experiment and 5e-5 for the domain shift experiment and the experiments on various other attacks, weights\n\n$\\alpha_{\\mathbf{p}} = \\alpha_{\\mathbf{t}} = \\alpha_{\\mathrm{CLS}} = 1$ and ce_threshold $= -0.1$ and the ratio of unlabeled and labeled data in each batch is 1:1 whenever used.\n\nFor hyper-parameters shared by PromptFix and DBS, most of them are kept the same as the recommended value in the paper of DBS, including trigger learning rate of 0.5 and initial/max temperature $= 2$ , etc. We performed a search on the best learning rate for DBS among 1e-5 to 5e-4 to balance the removal performance and overfitting to adapt to our extremely few-shot settings: 2e-5 is chosen for the TrojanAI experiment and 1e-4 for the rest. The maximum total number of optimization steps is 5000, which is identical to that of PromptFix.\n\nWe use a single Nvidia A6000 GPU to perform backdoor removal of each model and sometimes multiple removal shares a single GPU. In any case and for both DBS and PromptFix the process finishes very quickly within an hour.",
+      "section_number": "E",
+      "section_title": "hyper-parameter choice & computing infrastructure",
+      "normalized_section_title": "hyper-parameter choice & computing infrastructure"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.naacl-long.177::appendix::E",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A6000",
+      "cleaned_hardware_name": "nvidia a6000",
+      "normalized_hardware_name": "NVIDIA RTX A6000",
+      "benchmark_hardware_name": "NVIDIA RTX A6000",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "E",
+      "section_title": "hyper-parameter choice & computing infrastructure",
+      "normalized_section_title": "hyper-parameter choice & computing infrastructure",
+      "evidence": "The hyper-parameters unique to PromptFix are num_prompt_token=10, num_prompt_steps = num_trigger_steps = 100, num_round = 25, prompt learning rate is 1e-4 for the TrojAI experiment and 5e-5 for the domain shift experiment and the experiments on various other attacks, weights\n\n$\\alpha_{\\mathbf{p}} = \\alpha_{\\mathbf{t}} = \\alpha_{\\mathrm{CLS}} = 1$ and ce_threshold $= -0.1$ and the ratio of unlabeled and labeled data in each batch is 1:1 whenever used.\n\nFor hyper-parameters shared by PromptFix and DBS, most of them are kept the same as the recommended value in the paper of DBS, including trigger learning rate of 0.5 and initial/max temperature $= 2$ , etc. We performed a search on the best learning rate for DBS among 1e-5 to 5e-4 to balance the removal performance and overfitting to adapt to our extremely few-shot settings: 2e-5 is chosen for the TrojanAI experiment and 1e-4 for the rest. The maximum total number of optimization steps is 5000, which is identical to that of PromptFix.\n\nWe use a single Nvidia A6000 GPU to perform backdoor removal of each model and sometimes multiple removal shares a single GPU. In any case and for both DBS and PromptFix the process finishes very quickly within an hour.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "E"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA RTX A6000",
+        "num": 1
+      }
+    ]
+  }
+}

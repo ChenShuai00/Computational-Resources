@@ -23,7 +23,8 @@ Official result-reproduction repository for:
 ## Repository structure
 
 ```text
-data/analysis_ready/   
+data/analysis_ready/   Analysis-ready inputs used by the paper-result scripts
+data/gpu_info/         Paper-level GPU extraction evidence and released workbooks
 code/                  One-command runner, verifier, and result contracts
 results/               Paper-first sections with scripts and frozen references
   01_sample/

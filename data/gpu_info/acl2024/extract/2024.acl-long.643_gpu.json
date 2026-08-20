@@ -1,0 +1,96 @@
+{
+  "paper_id": "2024.acl-long.643",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.643::sections::3.2",
+      "paper_id": "2024.acl-long.643",
+      "section_number": "3.2",
+      "section_title": "batch decoding with calculator",
+      "normalized_section_title": "batch decoding with calculator",
+      "window_text": "We empirically observed that, in contrast to large LMs which excel at basic arithmetic calculations (Brown et al., 2020), smaller LMs like Flant5-Large exhibit poor performance on similar arithmetic tasks. This deficiency significantly impacts their ability to handle math reasoning tasks. To address this, various studies (Parisi et al., 2022; Schick et al., 2023; Kadlcik et al., 2023) have proposed augmenting these smaller models with an external calculator to enhance their math reasoning capabilities. However, many of these existing methods are limited to a batch size of one during decoding. This constraint substantially reduces the inference speed, which hinders their widespread adoption.\n\n![](images/bcdac2b0b687eba0bb6621c789258b71e84ecb7f8d68a0d038255be38c20b5b6.jpg)  \nFigure 4: Inference speed comparison between our methods (w/ and w/o calculator) and Cal-cformer (Kadlcik et al., 2023) with varying batch sizes. The results are measured on a single NVIDIA A40 GPU.\n\nTo alleviate this issue, we propose a simple yet efficient method to enable the use of a large batch size during inference with an external calculator. We adopt the calculator annotation provided in the original GSM8K dataset (Cobbe et al., 2021). Figure 3 demonstrates an example of this annotation and describes how such annotations can be used during decoding. Our models are built with the Transformers library (Wolf et al., 2020). During generation, we adopt a customized LogitsProcessor<sup>2</sup> to override the model's generation. LogitsProcessor provides an interface to modify the language model's output tokens during generation.\n\nTo demonstrate the efficiency of the proposed solution, We compare the inference speed of our methods (w/ and w/o calculator) based on Flan-T5-Large against an open-source tool-using method, Calcformer (Kadlčík et al., 2023) based on T5-Large, in Figure 4. We find that when the batch size equals 1, all three methods have a similar inference speed of around 40 tokens per second. However, as the inference batch size increases, the speedup of our methods increases significantly.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.643::sections::4",
+      "paper_id": "2024.acl-long.643",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "In this section, we first describe our experimental setup. Next, we present the performance of our models across a series of math word problem solving tasks, comparing them against a selection of competitive baselines. Finally, we empirically analyze what makes the proposed method effective.\n\nTable 1: Statistics of the datasets used in our experiments. The original GSM8K dataset only contains train and test split. We randomly select 768 training examples to construct the validation dataset in our experiments.   \n\n<table><tr><td>Dataset</td><td>Split</td><td># Data</td></tr><tr><td rowspan=\"3\">GSM8K (Cobbe et al., 2021)</td><td>Train</td><td>6,705</td></tr><tr><td>Validation</td><td>768</td></tr><tr><td>Test</td><td>1,319</td></tr><tr><td>MultiArith (Roy and Roth, 2015)</td><td>Test</td><td>600</td></tr><tr><td>ASDiv (Miao et al., 2020)</td><td>Test</td><td>2,096</td></tr><tr><td>SVAMP (Patel et al., 2021)</td><td>Test</td><td>1,000</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.643::sections::4.1",
+      "paper_id": "2024.acl-long.643",
+      "section_number": "4.1",
+      "section_title": "setup",
+      "normalized_section_title": "setup",
+      "window_text": "Base models We employ Flan-T5 models (Chung et al., 2024) as the base models in our experiments. Specifically, we consider two models of different sizes from the Flan-T5 model family: Flan-T5-Base (250M) and Flan-T5-Large (780M). We select Flan-T5 over the original T5 models (Raffel et al., 2019) as our backbone models based on the evidence from previous research (Chung et al., 2024; Fu et al., 2023), which demonstrated that instruction-tuned models, i.e., Flan-T5, outperform their pre-trained counterparts in math reasoning tasks. Besides Flan-T5 models, we also consider the Llama models (Touvron et al., 2023a,b; Meta, 2024) as our base models.\n\nDatasets The labeled dataset $\\mathcal{L}$ used in our experiments comes from the training split of the GSM8K dataset. Our unlabeled dataset $\\mathcal{U}$ is also built upon GSM8K's training data by removing its annotated rationales $y$ . For evaluation, we consider three other commonly used math reasoning tasks besides GSM8K: MultiArith (Roy and Roth, 2015), AS-Div (Miao et al., 2020), and SVAMP (Patel et al., 2021). Table 1 shows the statistics information of each dataset. Following previous practice (Fu et al., 2023), we only fine-tune the base models on the GSM8K training data while utilizing the rest three datasets to evaluate our models' out-of-domain performance as they do not have an official in-domain training split.\n\nEvaluation metrics We use accuracy of the greedy decoding results as the main evaluation metric. The questions in the datasets in our experiments ask about the values of the unknown variables. The answers to these questions are real numbers that can be extracted from the model-generated rationales.\n\nTable 2: Overall accuracies (%) over four math word problem solving tasks. Inspired by the previous practice (Fu et al., 2023), all the models in this table are only trained with the GSM8K training set (Cobbe et al., 2021). Hence, we report the in-distribution performance for GSM8K, while reporting the out-of-distribution performance for the other three datasets, i.e., MultiArith, ASDiv, and SVAMP.   \n\n<table><tr><td>Method</td><td>Base Model</td><td>GSM8K</td><td>MultiArith</td><td>ASDiv</td><td>SVAMP</td></tr><tr><td>Supervised Fine-Tuning</td><td>Flan-T5-Base</td><td>18.1</td><td>54.2</td><td>26.2</td><td>19.5</td></tr><tr><td>Self-Training</td><td>Flan-T5-Base</td><td>25.9</td><td>73.8</td><td>28.2</td><td>24.2</td></tr><tr><td>DPO-aug Self-Training (Ours)</td><td>Flan-T5-Base</td><td>27.2</td><td>74.3</td><td>29.2</td><td>22.6</td></tr><tr><td>Supervised Fine-Tuning</td><td>Flan-T5-Large</td><td>30.8</td><td>77.2</td><td>38.1</td><td>33.6</td></tr><tr><td>Self-Training</td><td>Flan-T5-Large</td><td>35.6</td><td>86.2</td><td>42.5</td><td>34.8</td></tr><tr><td>DPO-aug Self-Training (Ours)</td><td>Flan-T5-Large</td><td>37.4</td><td>89.0</td><td>42.8</td><td>36.8</td></tr></table>\n\nImplementation details In every DPO step, we sample rationales from the SFT model $f_{\\theta'}$ to build the DPO training data. We sample 5 rationales from $f_{\\theta'}$ per question with a temperature of 0.7. We regard generated rationales $\\hat{y}$ as winning ones $y_w$ if it contains the correct answer, while regarding the rest as the losing ones $y_l$ . For the SFT steps, we generate 3 rationales per question from the DPO-tuned model $f_{\\theta^d}$ also with a temperature of 0.7. Only the correct generated rationales $\\hat{y}$ will be selected to build the pseudo-labeled dataset $S$ . For both generated DPO data and SFT data, we make simple dedduplication based on the Jaccard similarity scores with a threshold of 0.7.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.643::sections::3.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A40",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We empirically observed that, in contrast to large LMs which excel at basic arithmetic calculations (Brown et al., 2020), smaller LMs like Flant5-Large exhibit poor performance on similar arithmetic tasks. This deficiency significantly impacts their ability to handle math reasoning tasks. To address this, various studies (Parisi et al., 2022; Schick et al., 2023; Kadlcik et al., 2023) have proposed augmenting these smaller models with an external calculator to enhance their math reasoning capabilities. However, many of these existing methods are limited to a batch size of one during decoding. This constraint substantially reduces the inference speed, which hinders their widespread adoption.\n\n![](images/bcdac2b0b687eba0bb6621c789258b71e84ecb7f8d68a0d038255be38c20b5b6.jpg)  \nFigure 4: Inference speed comparison between our methods (w/ and w/o calculator) and Cal-cformer (Kadlcik et al., 2023) with varying batch sizes. The results are measured on a single NVIDIA A40 GPU.\n\nTo alleviate this issue, we propose a simple yet efficient method to enable the use of a large batch size during inference with an external calculator. We adopt the calculator annotation provided in the original GSM8K dataset (Cobbe et al., 2021). Figure 3 demonstrates an example of this annotation and describes how such annotations can be used during decoding. Our models are built with the Transformers library (Wolf et al., 2020). During generation, we adopt a customized LogitsProcessor<sup>2</sup> to override the model's generation. LogitsProcessor provides an interface to modify the language model's output tokens during generation.\n\nTo demonstrate the efficiency of the proposed solution, We compare the inference speed of our methods (w/ and w/o calculator) based on Flan-T5-Large against an open-source tool-using method, Calcformer (Kadlčík et al., 2023) based on T5-Large, in Figure 4. We find that when the batch size equals 1, all three methods have a similar inference speed of around 40 tokens per second. However, as the inference batch size increases, the speedup of our methods increases significantly.",
+      "section_number": "3.2",
+      "section_title": "batch decoding with calculator",
+      "normalized_section_title": "batch decoding with calculator"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.643::sections::3.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A40",
+      "cleaned_hardware_name": "nvidia a40",
+      "normalized_hardware_name": "NVIDIA A40 PCIe",
+      "benchmark_hardware_name": "NVIDIA A40 PCIe",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "3.2",
+      "section_title": "batch decoding with calculator",
+      "normalized_section_title": "batch decoding with calculator",
+      "evidence": "We empirically observed that, in contrast to large LMs which excel at basic arithmetic calculations (Brown et al., 2020), smaller LMs like Flant5-Large exhibit poor performance on similar arithmetic tasks. This deficiency significantly impacts their ability to handle math reasoning tasks. To address this, various studies (Parisi et al., 2022; Schick et al., 2023; Kadlcik et al., 2023) have proposed augmenting these smaller models with an external calculator to enhance their math reasoning capabilities. However, many of these existing methods are limited to a batch size of one during decoding. This constraint substantially reduces the inference speed, which hinders their widespread adoption.\n\n![](images/bcdac2b0b687eba0bb6621c789258b71e84ecb7f8d68a0d038255be38c20b5b6.jpg)  \nFigure 4: Inference speed comparison between our methods (w/ and w/o calculator) and Cal-cformer (Kadlcik et al., 2023) with varying batch sizes. The results are measured on a single NVIDIA A40 GPU.\n\nTo alleviate this issue, we propose a simple yet efficient method to enable the use of a large batch size during inference with an external calculator. We adopt the calculator annotation provided in the original GSM8K dataset (Cobbe et al., 2021). Figure 3 demonstrates an example of this annotation and describes how such annotations can be used during decoding. Our models are built with the Transformers library (Wolf et al., 2020). During generation, we adopt a customized LogitsProcessor<sup>2</sup> to override the model's generation. LogitsProcessor provides an interface to modify the language model's output tokens during generation.\n\nTo demonstrate the efficiency of the proposed solution, We compare the inference speed of our methods (w/ and w/o calculator) based on Flan-T5-Large against an open-source tool-using method, Calcformer (Kadlčík et al., 2023) based on T5-Large, in Figure 4. We find that when the batch size equals 1, all three methods have a similar inference speed of around 40 tokens per second. However, as the inference batch size increases, the speedup of our methods increases significantly.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "3.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A40 PCIe",
+        "num": 1
+      }
+    ]
+  }
+}

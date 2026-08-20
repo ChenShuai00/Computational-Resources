@@ -1,0 +1,120 @@
+{
+  "paper_id": "2024.emnlp-main.1216",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.1216::sections::10.3",
+      "paper_id": "2024.emnlp-main.1216",
+      "section_number": "10.3",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources",
+      "window_text": "The experiments in our paper require computational resources. Our models run on a single 30GB NVIDIA V100 GPU or on one A40 GPU, along with storage and CPU capabilities provided by our campus. While our experiments do not need to leverage model or data parallelism, we still recognize that not all researchers have access to this resource level.\n\nWe use Huggingface models for our predictive tasks, and we will release the code of all the custom architectures that we construct. Our models do not exceed 300 million parameters.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1216::appendix::B",
+      "paper_id": "2024.emnlp-main.1216",
+      "section_number": "B",
+      "section_title": "doc-level nli experimental details",
+      "normalized_section_title": "doc-level nli experimental details",
+      "window_text": "We define Document-Level NLI as an aggregation over all pairwise Sentence-Level NLI relations. Figure 5 shows our process: first, we calculate sentence-level NLI relations, $p(y|p_i, n_j)$ , between all $\\vec{P} \\times \\vec{N}$ sentence pairs. Then, we average the top-kinner relations for each $p_i$ , generating a $p_i$ -level\n\nTable 7: Description of the 5-point creativity scale that we used to evaluate press releases. Based on Nylund (2013), our scale captures different levels of creative ideation: direct engagement with the press release (1-2), contextual/trend-level rebuttals (3-4) substantial and novel investigatory directions.   \n\n<table><tr><td></td><td>Description</td><td>More Detail</td></tr><tr><td>1</td><td>Directly related the press release and supporting it&#x27;s contents.</td><td>Can be derived just by summarizing a point in the press release.</td></tr><tr><td>2</td><td>Related to the press release but questioning it&#x27;s points.</td><td>Little more than a simple pattern-based contradiction to a point in the press release.</td></tr><tr><td>3</td><td>Takes an angle outside of the press release, but relatively limited.</td><td>Can be a generic, larger-trend kind of contradiction.</td></tr><tr><td>4</td><td>Adds substantial and less obvious context or history.</td><td>Substantial knowledge of prior coverage and company awareness involved in making this choice.</td></tr><tr><td>5</td><td>Entirely new direction.</td><td>Substantial investigatory work was involved even to make this suggestion.</td></tr></table>\n\nTable 8: Ability of sentence-level NLI-relational metrics to capture effective coverage. We show F1-scores on a set of 100 pairs of press releases and news articles manually labeled. $k_{outer}$ and $k_{inner}$ columns are hyperparameter settings: $k_{inner}$ shows how many news article sentences must contradict/entail. a sentence in the press release. $k_{outer}$ shows how many sentences in the press release should be considered in the overall doc-level calculation. coref resolution increases performance of doc-level NLI and enables lower $k_{inner}$ , $k_{outer}$ , indicating more precision.   \n\n<table><tr><td rowspan=\"2\">Trial</td><td rowspan=\"2\">F1 Score</td><td colspan=\"3\">kouter</td><td colspan=\"3\">kinner</td></tr><tr><td>Con.</td><td>Ent.</td><td>Neut.</td><td>Con.</td><td>Ent.</td><td>Neut.</td></tr><tr><td colspan=\"8\">Q1: Does the news article cover the press release?</td></tr><tr><td>LogReg/MLP/Hist</td><td>72.1 / 72.9 / 79.0</td><td>70</td><td>72</td><td>71</td><td>20</td><td>22</td><td>40</td></tr><tr><td>+coref</td><td>74.6 / 75.2 / 80.5</td><td>68</td><td>76</td><td>67</td><td>5</td><td>5</td><td>20</td></tr><tr><td colspan=\"8\">Q2: If so, does the news article challenge information in the press release?</td></tr><tr><td>LogReg/MLP/Hist.</td><td>60.3 / 62.9 / 69.4</td><td>40</td><td>78</td><td>90</td><td>7</td><td>33</td><td>34</td></tr><tr><td>+coref</td><td>61.2 / 62.4 / 73.0</td><td>45</td><td>74</td><td>95</td><td>5</td><td>10</td><td>30</td></tr></table>\n\nscore. Finally, we average the top- $k_{outer} p_i$ -level scores. Document-Level NLI following is:\n\n$$\n\\begin{array}{l} \\mathrm {N L I - D o c} (y | \\vec {P}, \\vec {N}) = \\\\ \\frac {1}{k _ {o u t e r}} \\sum_ {i = s (1) \\dots s (k _ {o u t e r})} \\Big [ \\\\ \\frac {1}{k _ {i n n e r}} \\sum_ {j = s (1) \\dots s (k _ {i n n e r})} p (y | p _ {i}, n _ {j}) \\Biggr ] \\\\ \\end{array}\n$$\n\nWhere $s(1) \\ldots s(n)$ is a list of indices sorted according to the value of the inner equation. If $y \\in \\{entail, contradict\\}$ , we sort descending, if $y = neutral$ we sort ascending. Intuitively, this approach gets us close to our goal of discovering press releases that are substantially covered by news articles: a press release is substantially covered if enough of its sentences' information is used or challenged by the news article. $k_{inner}(k_{inner})$ sets a level for which each press release sentence should be referenced before it is determined to have been \"covered\", and $k_{outer}(k_{outer})$ sets a level for how many of these sentences are enough to con\n\nsider the entire press release to be substantially covered. With Figure 5 an example: $(p_1, n_1)$ strongly entail each other while $(p_2, n_2)$ , $(p_2, n_3)$ contradicted. All other pairs (e.g. $(p_1, n_3)$ ) are neutral. At $k_{inner} = 2$ , $p_1$ would get an entailment score of $\\sim .5$ , while $p_2$ would get a contradiction score of $\\sim .915$ . All other $\\{entail, contradict\\}$ scores would be low while neutral would be high. At $k_{outer} = 2$ , the documents would have an entailment score of $\\sim .25$ , a contradiction score of $\\sim .5$ and a neutral score of $\\sim .3$ .\n\nFigure 8 shows the best settings of the hyperparameters, $k_{inner}$ and $k_{outer}$ are within expectation. After resolving coreferences, we find 5-10 news article sentences contradict or entail a press release sentence before it is meaningfully addressed. On the other hand, much more sentence pairs must be neutral before the sentence is considered neutral. Overall, we find that resolving coreferences before performing sentence-level NLI improves performance: it both increases the overall f1-score, and it narrows the $k_{inner}$ , $k_{outer}$ thresholds, indicating overall precision increases.\n\nTable 9: Examples of Human-deduced plans and LLM plans that were matched by the LLM.   \n\n<table><tr><td>type</td><td>Press Release Summary</td><td>Human Plan</td><td>LLM Plan</td></tr><tr><td>Angle</td><td>ADUHELM, a treatment for Alzheimer&#x27;s disease, has been granted accelerated approval based on its ability to reduce amyloid beta plaques in the brain, marking a significant advancement in Alzheimer&#x27;s treatment, with continued approval contingent on further verification of clinical benefits.</td><td>The news piece might focus on the need for another trial to confirm the drug&#x27;s clinical benefit, indicating that the drug&#x27;s approval could be seen as provisional or not fully justified by existing evidence.</td><td>Exploring the concerns raised by healthcare providers and experts about the accelerated approval process and the need for more substantial evidence of clinical benefit from confirmatory trials post-approval.</td></tr><tr><td>Source</td><td>Gilead Sciences&#x27; Chairman and CEO, Daniel O&#x27;Day, announced that the company is rapidly advancing clinical trials for remdesivir as a potential COVID-19 treatment, emphasizing a commitment to safety, efficacy, and accessibility, while also expanding compassionate use to meet urgent patient needs.</td><td>Medical professionals and bioethicists might comment on the ethical considerations and challenges of drug distribution during a pandemic.</td><td>Potential sources to speak to include healthcare professionals involved in the clinical trials of remdesivir, as well as bioethicists who can provide insights into the ethical considerations surrounding the drug&#x27;s distribution and use.</td></tr><tr><td>Angle</td><td>Elon Musk is considering taking Tesla private at $420 per share, a move aimed at benefiting shareholders and enhancing Tesla&#x27;s mission, with funding discussions ongoing, including significant interest from the Saudi Arabian sovereign wealth fund.</td><td>The news article might carefully examine Elon Musk&#x27;s claims in the press release about having secured funding to take Tesla private.</td><td>Potential controversies to investigate include the timing and handling of Musk&#x27;s announcement, particularly the claim of &#x27;funding secured&#x27; and its impact on Tesla&#x27;s stock price and investor perceptions.</td></tr><tr><td>Source</td><td>Theranos refutes allegations in a Wall Street Journal article by highlighting its commitment to accuracy and reliability through FDA clearances, partnerships, and industry-leading transparency, while criticizing the Journal&#x27;s reliance on uninformed and biased sources.</td><td>Former Theranos employees and their families provide insider perspectives on the company&#x27;s operations and challenges.</td><td>Speaking to current and former employees of Theranos to get a more balanced perspective on the company&#x27;s operations and technology.</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.1216::sections::10.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA V100 30GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "The experiments in our paper require computational resources. Our models run on a single 30GB NVIDIA V100 GPU or on one A40 GPU, along with storage and CPU capabilities provided by our campus. While our experiments do not need to leverage model or data parallelism, we still recognize that not all researchers have access to this resource level.\n\nWe use Huggingface models for our predictive tasks, and we will release the code of all the custom architectures that we construct. Our models do not exceed 300 million parameters.",
+      "section_number": "10.3",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources"
+    },
+    {
+      "window_id": "2024.emnlp-main.1216::sections::10.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A40",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "The experiments in our paper require computational resources. Our models run on a single 30GB NVIDIA V100 GPU or on one A40 GPU, along with storage and CPU capabilities provided by our campus. While our experiments do not need to leverage model or data parallelism, we still recognize that not all researchers have access to this resource level.\n\nWe use Huggingface models for our predictive tasks, and we will release the code of all the custom architectures that we construct. Our models do not exceed 300 million parameters.",
+      "section_number": "10.3",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.1216::sections::10.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA V100 30GB",
+      "cleaned_hardware_name": "nvidia v100 30gb",
+      "normalized_hardware_name": "NVIDIA V100 30GB",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "10.3",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources",
+      "evidence": "The experiments in our paper require computational resources. Our models run on a single 30GB NVIDIA V100 GPU or on one A40 GPU, along with storage and CPU capabilities provided by our campus. While our experiments do not need to leverage model or data parallelism, we still recognize that not all researchers have access to this resource level.\n\nWe use Huggingface models for our predictive tasks, and we will release the code of all the custom architectures that we construct. Our models do not exceed 300 million parameters.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.emnlp-main.1216::sections::10.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A40",
+      "cleaned_hardware_name": "a40",
+      "normalized_hardware_name": "A40",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "10.3",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources",
+      "evidence": "The experiments in our paper require computational resources. Our models run on a single 30GB NVIDIA V100 GPU or on one A40 GPU, along with storage and CPU capabilities provided by our campus. While our experiments do not need to leverage model or data parallelism, we still recognize that not all researchers have access to this resource level.\n\nWe use Huggingface models for our predictive tasks, and we will release the code of all the custom architectures that we construct. Our models do not exceed 300 million parameters.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 2,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "10.3"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA V100 30GB",
+        "num": 1
+      },
+      {
+        "name": "A40",
+        "num": 1
+      }
+    ]
+  }
+}

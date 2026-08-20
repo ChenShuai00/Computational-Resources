@@ -1,0 +1,109 @@
+{
+  "paper_id": "2025.acl-long.1353",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.1353::sections::3.1",
+      "paper_id": "2025.acl-long.1353",
+      "section_number": "3.1",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "RLHF. Reinforcement learning from human feedback (RLHF; Schulman et al. 2017) is a widely used technique for aligning LLMs with human preferences. Using human or AI annotations, RLHF enables LLMs to generate outputs that align better with human expectations. Consider a preference dataset $\\mathcal{D} = \\left(x^{(i)},y_w^{(i)},y_l^{(i)}\\right)_{i = 1}^N$ , where each sample consists of a prompt $x^{(i)}$ and two outputs, $y_w^{(i)}$ (preferred) and $y_l^{(i)}$ (dispreferred), as judged by annotators, the core of RLHF lies in a reward model, $r^{*}(x,y)$ , which assigns a score to each candidate output $y$ based on how well it aligns with the prompt $x$ . A commonly adopted framework for modeling preference distributions is the Bradley-Terry (BT; Bradley and Terry 1952) model, which defines the probability that $y_w$ is preferred over $y_l$ as:\n\n$$\np \\left(y _ {w} \\succ y _ {l} \\mid x\\right) = \\frac {\\exp \\left(r ^ {*} \\left(x , y _ {w}\\right)\\right)}{\\exp \\left(r ^ {*} \\left(x , y _ {w}\\right)\\right) + \\exp \\left(r ^ {*} \\left(x , y _ {l}\\right)\\right)}.\n$$\n\nThe RLHF process typically consists of two phases: learning the reward model from preference data, followed by using reinforcement learning to optimize a policy model based on this reward. In the first phase, the reward model is trained using maximum likelihood estimation, producing an estimated reward function $\\hat{r}(x,y)$ . The reward model can be structured to return feedback either at the end of a sequence (Liu et al., 2023; Dong et al., 2023; Xiong et al., 2024), where the evaluation is based on the entire output, or at each step of the sequence (Uesato et al., 2022; Lightman et al., 2023), where feedback is provided based on intermediate reasoning steps. Once the reward model is trained, it is used to finetune the policy model by optimizing the following objective:\n\n$$\n\\max _ {\\pi_ {\\theta}} \\mathbb {E} _ {x \\sim \\mathcal {D}, y \\sim \\pi_ {\\theta} (\\cdot | x)} \\left[ \\hat {r} (x, y) - \\beta \\log \\frac {\\pi_ {\\theta} (\\cdot | x)}{\\pi_ {\\mathrm {r e f}} (\\cdot | x)} \\right],\n$$\n\nwhere $\\beta$ is a KL penalty coefficient to regularize the deviation between the policy model $\\pi_{\\theta}$ and the reference model $\\pi_{\\mathrm{ref}}$ .\n\nDPO implicitly learns token-level rewards. In RLHF, rewards are typically assigned at the end of sequences, which can extend to thousands of tokens. However, not all tokens contribute equally to the final reward (Chan et al., 2024; Rafailov et al., 2024; Yang et al., 2024a). To address this, it is crucial for a preference optimization algorithm to effectively distribute sequence-level rewards across individual tokens. Previous work (Zhong et al., 2024; Rafailov et al., 2024) has shown that Direct Preference Optimization (DPO; Rafailov et al. 2023) implicitly learns token-level rewards under sequence-level reward supervision. Specifically, with the token-level reward defined as $r_{\\mathrm{token}}^{*}(y_{t}|x,y_{< t}) = \\beta \\log \\frac{\\pi^{*}(y_{t}|x,y_{< t})}{\\pi_{\\mathrm{ref}}(y_{t}|x,y_{< t})}$ , the sequence-level reward is computed as:\n\n$$\nr _ {\\mathrm {D P O}} (x, y) = V ^ {*} (x) + \\sum_ {t = 1} ^ {T} \\beta \\log \\frac {\\pi^ {*} (y _ {t} | x , y _ {<   t})}{\\pi_ {\\mathrm {r e f}} (y _ {t} | x , y _ {<   t})},\n$$\n\nwhere $T$ is the number of tokens in the sequence, $\\pi^{*}$ is the optimal policy, $\\pi_{\\mathrm{ref}}$ is the reference policy, and $V^{*}$ is the value function of $\\pi^{*}$ . For a pair of outputs $(y_w, y_l)$ , the probability that $y_w$ is preferred\n\nover $y_{l}$ , modeled using the BT model, is given by:\n\n$$\n\\begin{array}{l} p \\left(y _ {w} \\succ y _ {l} \\mid x\\right) = \\sigma \\left(\\sum_ {t = 1} ^ {T _ {w}} \\beta \\log \\frac {\\pi^ {*} \\left(y _ {w _ {t}} \\mid x , y _ {w _ {<   t}}\\right)}{\\pi_ {\\text {r e f}} \\left(y _ {w _ {t}} \\mid x , y _ {w _ {<   t}}\\right)} \\right. \\\\ \\left. - \\sum_ {t = 1} ^ {T _ {l}} \\beta \\log \\frac {\\pi^ {*} \\left(y _ {l _ {t}} \\mid x , y _ {l _ {<   t}}\\right)}{\\pi_ {\\mathrm {r e f}} \\left(y _ {l _ {t}} \\mid x , y _ {l _ {<   t}}\\right)}\\right), \\\\ \\end{array}\n$$\n\nwhere $V^{*}(x)$ cancels out because $y_{w}$ and $y_{l}$ correspond to the same prompt $x$ . By applying maximum likelihood estimation to the preference dataset, the policy model $\\pi$ can be optimized by the following loss function:\n\n$$\n\\mathcal {L} _ {\\mathrm {D P O}} = - \\mathbb {E} _ {(x, y _ {w}, y _ {l}) \\sim \\mathcal {D}} [ \\log p (y _ {w} \\succ y _ {l} | x) ],\n$$\n\nwhich resembles the original DPO loss (Rafailov et al., 2023). Therefore, performing RLHF with DPO is redistributing the sequence-level reward into the token level as $\\beta \\log \\frac{\\pi(y_t|x,y_{< t})}{\\pi_{\\mathrm{ref}}(y_t|x,y_{< t})}$ , where $\\pi$ is the policy trained by DPO. This redistribution ensures token-level credit assignment while optimizing the sequence-level objective.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1353::sections::4",
+      "paper_id": "2025.acl-long.1353",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "In this section, we outline our experimental settings in Section 4.1, present the main results and ablations in Section 4.2, and provide qualitative\n\ncase studies in Section 4.3. Additional analysis of T-REG can be found in Appendix A.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1353::sections::4.1",
+      "paper_id": "2025.acl-long.1353",
+      "section_number": "4.1",
+      "section_title": "experimental settings",
+      "normalized_section_title": "experimental settings",
+      "window_text": "Model configurations. Our methods are implemented using the official repo of Zephyr<sup>3</sup>. Preference optimization is performed based on two large language models: Llama-3-8B-Instruct (Dubey et al., 2024) and Gemma-2-9B-it (Team et al., 2024). We use the hyperparameters used by Meng et al. (2024), who conducted an extensive hyperparameter search. For our newly introduced hyperparameter, $\\alpha$ , we search in the range $\\{0.1, 0.25, 0.5\\}$ .\n\nTraining data. We perform RLHF in an on-policy setting, where outputs are sampled from the policy being optimized. However, generating outputs during training is computationally expensive. To address this, we adopt an approximate method similar to that used by Meng et al. (2024), where outputs are sampled using the reference policy before preference optimization. Specifically, the reference policy generates five outputs for each prompt, which are then evaluated using an external reward model. The best and worst outputs are selected to form a preference pair. For our experiments, we use the preference data generated by Meng et al. (2024), derived from prompts in Ultrafeedback (Cui et al., 2023) and scored using the ArmoRM reward model (Wang et al., 2024d,c).\n\nEvaluation. We evaluate the models on two benchmarks: Alpaca Eval 2 (Li et al., 2023) and Arena-Hard (Li et al., 2024). Alpaca Eval 2 is an automated benchmark designed to assess the alignment of LLMs with human preferences across 805 representative instructions. For each instruction, the evaluated model's response is compared head-to-head with the response generated by gpt-4-turbo using an automatic evaluator (with gpt-4-turbo as the default evaluator). The win rate reflects the probability that the evaluator prefers the responses of the evaluated model over those of gpt-4-turbo. Additionally, Alpaca Eval 2 introduces a length-controlled win rate (Dubois et al., 2024) to mitigate length bias in gpt-4-turbo. We use the generation configurations recommended by Zheng et al. (2024) to generate the outputs during evaluation.\n\nArena-Hard is an automated benchmark consisting of 500 user queries that emphasize challenging topics, such as coding and expert-level knowledge.\n\nTable 1: Evaluation results (%) on Alpaca Eval 2 and Arena-Hard benchmarks. Scores that are underlined denote statistically significant gains ( $p < 0.05$ ).   \n\n<table><tr><td rowspan=\"3\">Method</td><td colspan=\"3\">Llama-3-Instruct (8B)</td><td colspan=\"3\">Gemma-2-Instruct (9B)</td></tr><tr><td colspan=\"2\">Alpaca Eval 2.0</td><td>Arena-Hard</td><td colspan=\"2\">Alpaca Eval 2.0</td><td>Arena-Hard</td></tr><tr><td>Len-control. Win Rate</td><td>Win Rate vs GPT-4</td><td>Win Rate vs GPT-4</td><td>Len-control. Win Rate</td><td>Win Rate vs GPT-4</td><td>Win Rate vs GPT-4</td></tr><tr><td>SFT</td><td>26.0</td><td>25.3</td><td>22.3</td><td>51.1</td><td>38.1</td><td>40.8</td></tr><tr><td>RTO</td><td>49.2</td><td>47.2</td><td>37.6</td><td>67.6</td><td>68.7</td><td>63.1</td></tr><tr><td>SePO</td><td>48.5</td><td>45.5</td><td>33.1</td><td>-</td><td>-</td><td>-4</td></tr><tr><td>TDPO1</td><td>45.4</td><td>37.4</td><td>29.1</td><td>66.5</td><td>56.6</td><td>46.7</td></tr><tr><td>TDPO2</td><td>43.2</td><td>40.2</td><td>34.0</td><td>64.3</td><td>59.3</td><td>55.7</td></tr><tr><td>DPO</td><td>47.0</td><td>46.0</td><td>35.9</td><td>68.9</td><td>66.9</td><td>58.6</td></tr><tr><td>SimPO</td><td>52.5</td><td>47.1</td><td>33.1</td><td>73.5</td><td>70.7</td><td>63.0</td></tr><tr><td>DPO-REG</td><td>50.8</td><td>51.1</td><td>40.3</td><td>70.3</td><td>66.4</td><td>60.2</td></tr><tr><td>SimPO-REG</td><td>53.8</td><td>48.8</td><td>34.4</td><td>74.5</td><td>70.5</td><td>64.2</td></tr></table>\n\nThe model's response is compared head-to-head with the response generated by gpt-4-0314. Notably, Arena-Hard exhibits the highest correlation with Chatbot Arena and offers the best separability among widely used open-ended LLM benchmarks. In our experiments, we use the official generation configurations provided by Arena-Hard.\n\nCompared methods. We consider two preference optimization algorithms, DPO and SimPO (Meng et al., 2024) $^5$ , as the base algorithms for applying T-REG. Additionally, we evaluate the following token-level preference optimization algorithms for comparison: (1) RTO. Reinforced token optimization (Zhong et al., 2024) first trains a DPO model to derive the dense token-level rewards. It then uses PPO (Schulman et al., 2017) to directly optimize the policy model based on these token-level rewards. (2) SePO. Selective preference optimization (Yang et al., 2024a) also derives token-level rewards using DPO. It then performs preference optimization on a subset of tokens by selecting those with the highest reward values in the preferred output and the lowest reward values in the dispreferred output. (3) TDPO. Token-level direct preference optimization (Zeng et al., 2024) optimizes preferences at the token level and includes forward KL divergence constraints for each token. This approach has two variants, $\\mathrm{TDPO}_1$ and $\\mathrm{TDPO}_2$ . This method does not utilize explicit token-level rewards as supervision. As these methods do not report their numbers on our base models, we reproduce them and search for the best set of hyperparameters\n\nwithin their recommended range.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1353::appendix::B",
+      "paper_id": "2025.acl-long.1353",
+      "section_number": "B",
+      "section_title": "additional details",
+      "normalized_section_title": "additional details",
+      "window_text": "Scientific artifacts. This work utilizes various scientific resources, including LLMs, preference datasets, and evaluation tools or benchmarks. We provide references to all the artifacts used, where details about their licenses, supported languages, data coverage, parameter sizes, and any safety considerations can be\n\naccessed. Given the broad scope of data types and domains covered by modern LLMs and preference datasets, we do not detail these specifics here but encourage readers to refer to the original sources for more comprehensive information. All resources in this study were used strictly for non-distributive and non-commercial research purposes, adhering to the terms of their respective licenses.\n\nBudget. We conduct all experiments using $8 \\times$ H100 GPUs. The experiments take approximately 4 hours for Llama-3-Instruct and 7 hours for Gemma-2-it.\n\nUse of AI assistants. We employed ChatGPT exclusively to refine the language and improve the readability of the paper. The tool was used solely for stylistic enhancements and clarity improvements, without influencing the scientific content or analysis.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.1353::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "H100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Scientific artifacts. This work utilizes various scientific resources, including LLMs, preference datasets, and evaluation tools or benchmarks. We provide references to all the artifacts used, where details about their licenses, supported languages, data coverage, parameter sizes, and any safety considerations can be\n\naccessed. Given the broad scope of data types and domains covered by modern LLMs and preference datasets, we do not detail these specifics here but encourage readers to refer to the original sources for more comprehensive information. All resources in this study were used strictly for non-distributive and non-commercial research purposes, adhering to the terms of their respective licenses.\n\nBudget. We conduct all experiments using $8 \\times$ H100 GPUs. The experiments take approximately 4 hours for Llama-3-Instruct and 7 hours for Gemma-2-it.\n\nUse of AI assistants. We employed ChatGPT exclusively to refine the language and improve the readability of the paper. The tool was used solely for stylistic enhancements and clarity improvements, without influencing the scientific content or analysis.",
+      "section_number": "B",
+      "section_title": "additional details",
+      "normalized_section_title": "additional details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.1353::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "H100",
+      "cleaned_hardware_name": "h100",
+      "normalized_hardware_name": "NVIDIA H100 PCIe",
+      "benchmark_hardware_name": "NVIDIA H100 PCIe",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "B",
+      "section_title": "additional details",
+      "normalized_section_title": "additional details",
+      "evidence": "Scientific artifacts. This work utilizes various scientific resources, including LLMs, preference datasets, and evaluation tools or benchmarks. We provide references to all the artifacts used, where details about their licenses, supported languages, data coverage, parameter sizes, and any safety considerations can be\n\naccessed. Given the broad scope of data types and domains covered by modern LLMs and preference datasets, we do not detail these specifics here but encourage readers to refer to the original sources for more comprehensive information. All resources in this study were used strictly for non-distributive and non-commercial research purposes, adhering to the terms of their respective licenses.\n\nBudget. We conduct all experiments using $8 \\times$ H100 GPUs. The experiments take approximately 4 hours for Llama-3-Instruct and 7 hours for Gemma-2-it.\n\nUse of AI assistants. We employed ChatGPT exclusively to refine the language and improve the readability of the paper. The tool was used solely for stylistic enhancements and clarity improvements, without influencing the scientific content or analysis.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA H100 PCIe",
+        "num": 8
+      }
+    ]
+  }
+}

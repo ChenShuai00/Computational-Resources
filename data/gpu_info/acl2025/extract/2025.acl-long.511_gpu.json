@@ -1,0 +1,162 @@
+{
+  "paper_id": "2025.acl-long.511",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.511::sections::3",
+      "paper_id": "2025.acl-long.511",
+      "section_number": "3",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.511::sections::4",
+      "paper_id": "2025.acl-long.511",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "In this section, we implemented our proposed method on LRC and LE tasks and compare it with previous best-performance baselines. Then, we conducted an ablation study to demonstrate that each component contributes positively to the overall performance. Finally, a sensitivity analysis was performed to examine the impact of different hyperparameters under varying conditions.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.511::sections::4.2",
+      "paper_id": "2025.acl-long.511",
+      "section_number": "4.2",
+      "section_title": "implement details",
+      "normalized_section_title": "implement details",
+      "window_text": "To construct the external knowledge graph, we use NetworkX to build the original lexical graph and apply the PageRank algorithm along with the weakly connected component algorithm to refine the graph. Subsequently, we obtain token-level representations from various PLMs using transformers for both traditional GNN-based methods and our proposed approach. The training module is implemented by pytorch and dgl. All templates and instructions used for tuning are provided in Appendix A.\n\nOur experiments were conducted using an NVIDIA A100 GPU. The hyperparameters used for training the different datasets are provided in Appendix C. We employ a grid search to identify the optimal hyperparameters for our proposed method. For each PLM-based method, we train for 10 epochs using a linear growth scheduler followed by cosine decay.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.511::appendix::C",
+      "paper_id": "2025.acl-long.511",
+      "section_number": "C",
+      "section_title": "hyperparameters and detailed experimental setup",
+      "normalized_section_title": "hyperparameters and detailed experimental setup",
+      "window_text": "For DeBERTa, the hyperparameters of GET are shown in Table 5. In addition to the hyperparameters listed in the table, the remaining settings are as follows: the initial learning rate is set to 1e-4, with\n\na maximum learning rate of 5e-4. For the ROOT09 dataset, the warm-up rate is 0.3, while for all other datasets, it is set to 0.2.\n\nFor fully fine-tuned models, we use an initial learning rate of 5e-6 and a maximum learning rate of 2e-5. For LoRA, we set the LoRA alpha and LoRA rank to 16 and 64, respectively, with a LoRA dropout rate of 0.1. For PT2, we use 20 prefix tokens. The learning rate settings for LoRA and PT2 are the same as those for GET. All DeBERTa models are trained with a batch size of 32.\n\nFor Llama, the sequence classification setting follows the same configuration as LoRA, with a batch size of 8. For instruction tuning, the batch size is set to 2, and every 10 examples are merged into a single prompt, requiring the model to learn and predict the lexical relations for all ten examples in one forward pass.\n\nAll methods above are trained for 10 epochs using a scheduler with linear growth followed by cosine decay.\n\nTable 5: Hyperparameters of GET. dim indicates the dimension of GNN. layers indicates the number of layers of GNN. context nodes indicates the number of context nodes used for prompting as the graph context.   \n\n<table><tr><td>Datasets</td><td>dim</td><td>layers</td><td>context nodes</td></tr><tr><td>BLESS</td><td>128</td><td>3</td><td>12</td></tr><tr><td>CogALexV</td><td>128</td><td>4</td><td>20</td></tr><tr><td>EVALution</td><td>256</td><td>3</td><td>20</td></tr><tr><td>K&amp;H+N</td><td>128</td><td>3</td><td>20</td></tr><tr><td>ROOT09</td><td>256</td><td>3</td><td>20</td></tr><tr><td>lexical</td><td>128</td><td>2</td><td>20</td></tr><tr><td>random</td><td>128</td><td>1</td><td>20</td></tr></table>\n\nFor GNN-based methods, since GNNs are not pre-trained, we train them for 30 epochs. For SGAE, we use an LSTM to embed the vectors of adjacent nodes.\n\nAll our experiments are conducted using the set_seed function from the transformers library, with the seed set to 42. The reported results correspond to a single run with this seed. For datasets with a validation set, we perform hyperparameter search using the validation set to determine the optimal hyperparameters, and the validation set results corresponding to the reported experimental outcomes can be found in Table 6, 7. The training time for all models is approximately 40 hours, with GNN-based methods taking around 10 hours and\n\nthe Llama3-8B model requiring an additional 10 hours.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.511::appendix::E",
+      "paper_id": "2025.acl-long.511",
+      "section_number": "E",
+      "section_title": "detailed performance analysis",
+      "normalized_section_title": "detailed performance analysis",
+      "window_text": "An analysis of performance bottlenecks in prior works. In addition, previous work considers the lexical relation types in HyperLex when modeling regression tasks, which contributes to a better understanding of the lexical relations but results in a lower Spearman $\\rho$ correlation. For example, NCGC first classifies lexical relations and then trains an additional regression module to fit the LE task. In addition, PEFT methods allow training without altering the PLM's original parameters, enabling us to directly regress on the PLM's hidden states, bypassing the LRC component. As a result, we achieve a performance improvement of over 5 points compared to prior works, even surpassing the IAA.An analysis of the results surpassing IAA. The results surpassing IAA indicates that the model's predicted scores are closer to the median of the annotated scores. If the LE task is viewed purely as a regression task, our experiments achieve the best performance. Furthermore, we observe that different PEFT methods show minimal differences in the LE task, and the graph features used in GET do not have as consistently positive an im\n\nTable 6: The weighted F1-score of the LRC experimental results on validation datasets.   \n\n<table><tr><td>Methods</td><td>BLESS</td><td>EVALution</td><td>K&amp;H+N</td><td>ROOT09</td></tr><tr><td>GCN</td><td>0.504</td><td>0.275</td><td>0.908</td><td>0.596</td></tr><tr><td>GAT</td><td>0.493</td><td>0.484</td><td>0.909</td><td>0.646</td></tr><tr><td>SAGE</td><td>0.847</td><td>0.581</td><td>0.965</td><td>0.731</td></tr><tr><td>Llama3-8B</td><td>0.958</td><td>0.820</td><td>0.989</td><td>0.959</td></tr><tr><td>Llama3-8B-Instruct</td><td>0.956</td><td>0.776</td><td>0.992</td><td>0.957</td></tr><tr><td>DeBERTa-xlarge*</td><td>0.960</td><td>0.796</td><td>0.989</td><td>0.953</td></tr><tr><td>+ LoRA</td><td>0.959</td><td>0.827</td><td>0.990</td><td>0.956</td></tr><tr><td>+ PT2</td><td>0.954</td><td>0.819</td><td>0.988</td><td>0.949</td></tr><tr><td>+ GET</td><td>0.961</td><td>0.818</td><td>0.990</td><td>0.947</td></tr></table>\n\n![](images/f1793b07c49d91f064d944275900d9536f25ece5397135866a1203b2f2d43a09.jpg)  \nFigure 6: Pearson Residuals of EVALution.\n\nTable 7: Results for HyperLex validation dataset.   \n\n<table><tr><td>Methods</td><td>lexical</td><td>random</td></tr><tr><td>GCN</td><td>—</td><td>0.378</td></tr><tr><td>GAT</td><td>—</td><td>0.212</td></tr><tr><td>SAGE</td><td>—</td><td>0.301</td></tr><tr><td>Llama3-8B</td><td>0.903</td><td>0.920</td></tr><tr><td>DeBERTa-xlarge*</td><td>0.925</td><td>0.921</td></tr><tr><td>+ LoRA</td><td>0.908</td><td>0.931</td></tr><tr><td>+ PT2</td><td>0.883</td><td>0.903</td></tr><tr><td>+ GET</td><td>0.913</td><td>0.922</td></tr><tr><td>IAA</td><td colspan=\"2\">0.864</td></tr></table>\n\npact as they do in LRC. Therefore, we conclude that LE, compared to LRC, is a task more reliant on semantic knowledge. Increasing the volume of pre-training data may help models achieve better performance, while graph features provide limited assistance in LE tasks.\n\nThrough detailed experimental analysis, we identify two potential reasons for this: (1) GET can infer some latent patterns from the graph, thereby enhancing performance in LRC and LE; (2) small-scale PLMs already store sufficient lexical relation knowledge from massive corpora. We also perform a sensitivity analysis to examine the effects of different hyperparameters on various datasets.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.511::sections::4.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "To construct the external knowledge graph, we use NetworkX to build the original lexical graph and apply the PageRank algorithm along with the weakly connected component algorithm to refine the graph. Subsequently, we obtain token-level representations from various PLMs using transformers for both traditional GNN-based methods and our proposed approach. The training module is implemented by pytorch and dgl. All templates and instructions used for tuning are provided in Appendix A.\n\nOur experiments were conducted using an NVIDIA A100 GPU. The hyperparameters used for training the different datasets are provided in Appendix C. We employ a grid search to identify the optimal hyperparameters for our proposed method. For each PLM-based method, we train for 10 epochs using a linear growth scheduler followed by cosine decay.",
+      "section_number": "4.2",
+      "section_title": "implement details",
+      "normalized_section_title": "implement details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.511::sections::4.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "4.2",
+      "section_title": "implement details",
+      "normalized_section_title": "implement details",
+      "evidence": "To construct the external knowledge graph, we use NetworkX to build the original lexical graph and apply the PageRank algorithm along with the weakly connected component algorithm to refine the graph. Subsequently, we obtain token-level representations from various PLMs using transformers for both traditional GNN-based methods and our proposed approach. The training module is implemented by pytorch and dgl. All templates and instructions used for tuning are provided in Appendix A.\n\nOur experiments were conducted using an NVIDIA A100 GPU. The hyperparameters used for training the different datasets are provided in Appendix C. We employ a grid search to identify the optimal hyperparameters for our proposed method. For each PLM-based method, we train for 10 epochs using a linear growth scheduler followed by cosine decay.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.511::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methodology",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.511::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": "In this section, we implemented our proposed method on LRC and LE tasks and compare it with previous best-performance baselines. Then, we conducted an ablation study to demonstrate that each component contributes positively to the overall performance. Finally, a sensitivity analysis was performed to examine the impact of different hyperparameters under varying conditions."
+    },
+    {
+      "source_window_id": "2025.acl-long.511::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "hyperparameters and detailed experimental setup",
+      "evidence": "For DeBERTa, the hyperparameters of GET are shown in Table 5. In addition to the hyperparameters listed in the table, the remaining settings are as follows: the initial learning rate is set to 1e-4, with\n\na maximum learning rate of 5e-4. For the ROOT09 dataset, the warm-up rate is 0.3, while for all other datasets, it is set to 0.2.\n\nFor fully fine-tuned models, we use an initial learning rate of 5e-6 and a maximum learning rate of 2e-5. For LoRA, we set the LoRA alpha and LoRA rank to 16 and 64, respectively, with a LoRA dropout rate of 0.1. For PT2, we use 20 prefix tokens. The learning rate settings for LoRA and PT2 are the same as those for GET. All DeBERTa models are trained with a batch size of 32.\n\nFor Llama, the sequence classification setting follows the same configuration as LoRA, with a batch size of 8. For instruction tuning, the batch size is set to 2, and every 10 examples are merged into a single prompt, requiring the model to learn and predict the lexical relations for all ten examples in one forward pass.\n\nAll methods above are trained for 10 epochs using a scheduler with linear growth followed by cosine decay.\n\nTable 5: Hyperparameters of GET. dim indicates the dimension of GNN. layers indicates the number of layers of GNN. context nodes indicates the number of context nodes used for prompting as the graph context.   \n\n<table><tr><td>Datasets</td><td>dim</td><td>layers</td><td>context nodes</td></tr><tr><td>BLESS</td><td>128</td><td>3</td><td>12</td></tr><tr><td>CogALexV</td><td>128</td><td>4</td><td>20</td></tr><tr><td>EVALution</td><td>256</td><td>3</td><td>20</td></tr><tr><td>K&amp;H+N</td><td>128</td><td>3</td><td>20</td></tr><tr><td>ROOT09</td><td>256</td><td>3</td><td>20</td></tr><tr><td>lexical</td><td>128</td><td>2</td><td>20</td></tr><tr><td>random</td><td>128</td><td>1</td><td>20</td></tr></table>\n\nFor GNN-based methods, since GNNs are not pre-trained, we train them for 30 epochs. For SGAE, we use an LSTM to embed the vectors of adjacent nodes.\n\nAll our experiments are conducted using the set_seed function from the transformers library, with the seed set to 42. The reported results correspond to a single run with this seed. For datasets with a validation set, we perform hyperparameter search using the validation set to determine the optimal hyperparameters, and the validation set results corresponding to the reported experimental outcomes can be found in Table 6, 7. The training time for all models is approximately 40 hours, with GNN-based methods taking around 10 hours and\n\nthe Llama3-8B model requiring an additional 10 hours."
+    },
+    {
+      "source_window_id": "2025.acl-long.511::appendix::E",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "E",
+      "section_title": "detailed performance analysis",
+      "evidence": "An analysis of performance bottlenecks in prior works. In addition, previous work considers the lexical relation types in HyperLex when modeling regression tasks, which contributes to a better understanding of the lexical relations but results in a lower Spearman $\\rho$ correlation. For example, NCGC first classifies lexical relations and then trains an additional regression module to fit the LE task. In addition, PEFT methods allow training without altering the PLM's original parameters, enabling us to directly regress on the PLM's hidden states, bypassing the LRC component. As a result, we achieve a performance improvement of over 5 points compared to prior works, even surpassing the IAA.An analysis of the results surpassing IAA. The results surpassing IAA indicates that the model's predicted scores are closer to the median of the annotated scores. If the LE task is viewed purely as a regression task, our experiments achieve the best performance. Furthermore, we observe that different PEFT methods show minimal differences in the LE task, and the graph features used in GET do not have as consistently positive an im\n\nTable 6: The weighted F1-score of the LRC experimental results on validation datasets.   \n\n<table><tr><td>Methods</td><td>BLESS</td><td>EVALution</td><td>K&amp;H+N</td><td>ROOT09</td></tr><tr><td>GCN</td><td>0.504</td><td>0.275</td><td>0.908</td><td>0.596</td></tr><tr><td>GAT</td><td>0.493</td><td>0.484</td><td>0.909</td><td>0.646</td></tr><tr><td>SAGE</td><td>0.847</td><td>0.581</td><td>0.965</td><td>0.731</td></tr><tr><td>Llama3-8B</td><td>0.958</td><td>0.820</td><td>0.989</td><td>0.959</td></tr><tr><td>Llama3-8B-Instruct</td><td>0.956</td><td>0.776</td><td>0.992</td><td>0.957</td></tr><tr><td>DeBERTa-xlarge*</td><td>0.960</td><td>0.796</td><td>0.989</td><td>0.953</td></tr><tr><td>+ LoRA</td><td>0.959</td><td>0.827</td><td>0.990</td><td>0.956</td></tr><tr><td>+ PT2</td><td>0.954</td><td>0.819</td><td>0.988</td><td>0.949</td></tr><tr><td>+ GET</td><td>0.961</td><td>0.818</td><td>0.990</td><td>0.947</td></tr></table>\n\n![](images/f1793b07c49d91f064d944275900d9536f25ece5397135866a1203b2f2d43a09.jpg)  \nFigure 6: Pearson Residuals of EVALution.\n\nTable 7: Results for HyperLex validation dataset.   \n\n<table><tr><td>Methods</td><td>lexical</td><td>random</td></tr><tr><td>GCN</td><td>—</td><td>0.378</td></tr><tr><td>GAT</td><td>—</td><td>0.212</td></tr><tr><td>SAGE</td><td>—</td><td>0.301</td></tr><tr><td>Llama3-8B</td><td>0.903</td><td>0.920</td></tr><tr><td>DeBERTa-xlarge*</td><td>0.925</td><td>0.921</td></tr><tr><td>+ LoRA</td><td>0.908</td><td>0.931</td></tr><tr><td>+ PT2</td><td>0.883</td><td>0.903</td></tr><tr><td>+ GET</td><td>0.913</td><td>0.922</td></tr><tr><td>IAA</td><td colspan=\"2\">0.864</td></tr></table>\n\npact as they do in LRC. Therefore, we conclude that LE, compared to LRC, is a task more reliant on semantic knowledge. Increasing the volume of pre-training data may help models achieve better performance, while graph features provide limited assistance in LE tasks.\n\nThrough detailed experimental analysis, we identify two potential reasons for this: (1) GET can infer some latent patterns from the graph, thereby enhancing performance in LRC and LE; (2) small-scale PLMs already store sufficient lexical relation knowledge from massive corpora. We also perform a sensitivity analysis to examine the effects of different hyperparameters on various datasets."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.511\\auto\\full.md",
+    "source_md_sha256": "da8b8d3649947002a378ef49e6e4033943975d77bca2dc8f86f22a2df9e5319e",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

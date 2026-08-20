@@ -1,0 +1,83 @@
+{
+  "paper_id": "2021.emnlp-main.675",
+  "candidate_windows": [
+    {
+      "window_id": "2021.emnlp-main.675::sections::4",
+      "paper_id": "2021.emnlp-main.675",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "In this section, we describe the datasets used in our experiments, their pre-processing, and implementation details.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.emnlp-main.675::sections::4.2",
+      "paper_id": "2021.emnlp-main.675",
+      "section_number": "4.2",
+      "section_title": "data preparation and implementation details",
+      "normalized_section_title": "data preparation and implementation details",
+      "window_text": "As the first step, sentences are segmented from the text corpora. Then script converted version of the datasets is obtained by transliterating Bengali, Gujarati, Punjabi, Oriya, and, Urdu into Devanagari script. We additionally perform de-duplication to remove repeated sentences. The statistics of the resulting set are reported in Table 1. We identify following two challenges that can affect pre-training negatively: 1) data imbalance and 2) compute requirements.\n\n1. Data imbalance: As reported in Table 1 the size of each language corpora differs up to four orders of magnitude, e.g. Hindi has 1552M sentences vs 0.36M in Magahi and 17.88M in Oriya. The language bias can creep into the tokenizer and the language model pre-training, if left unattended. To mitigate bias in tokenizer training, we utilize a re-sampling strategy to reduce the data skew (Lample and Conneau, 2019). Specifically, samples are drawn following multinomial distribution with adjusted probabilities. Adjusted probabilities are computed as $q_{i} = p_{i}^{\\alpha} / \\sum_{j}p_{j}^{\\alpha}$ where $p_i = n_i / \\sum_in_i$ , and $n_i$ is the number of samples in $i^{th}$ language. Before rescaling, the language distribution is in the range of $0.01\\% - 58\\%$ , which changes to $5 - 12\\%$ afterwards.\n\n2. Compute requirements: Depending on the computing infrastructure, running one training epoch can typically take few hundreds to (single digit) few thousands of GPU hours. To mitigate this, we utilize a variant of sharding technique outlined in Algorithm 1 to pre-train the model in infrastructure with limited memory (<50GB)\n\nAlgorithm 1: Economical LM training for language family   \nResult: Trained LM checkpoint randomly select working language set; for each language in working set do randomly select least number of blocks containing x% sentence of the language; for each block do if block is not cached then tokenize the block; persist on to storage; end read tokenized block into dataset; end   \nend   \nif checkpoint found then initialize model with checkpoint;   \nelse randomly initialize model;   \nend   \ntrain LM to minimize MLM loss on balanced mini-batches;\n\nand compute (one v100 GPU). It depends on dividing each language corpus into manageable (into memory) chunks, termed as blocks. Each LM is trained over $\\sim 50$ sequential executions of Algorithm 1 on a single v100 GPU machine and each execution running for a day, consuming about 1200 hours overall for pre-training.\n\nIn the re-sampling step, exponent $s = 0.1$ and scaling parameter of $\\gamma = 100$ are used. Byte-level BPE tokenizer (Radford et al., 2019; Wang et al., 2020a) is used with vocabulary size of 110K. Trained LMs use 12 layers, 12 attention heads, hidden size of 768, and dropout ratio for the attention probabilities of 0.1. Our implementation uses Huggingface (Wolf et al., 2020) library. We use linear schedule for learning rate decay. Maximum sequence length is set as 128 across tokenization, training, and fine-tuning. Due to compute limitations, having higher maximum sequence length lead to out-of-memory errors. Mini-batches are created by weighted sampling based on language priors with exponent $s = 0.7$ . In LM pre-training, minibatch of 48 samples and gradient accumulation of 53 is used making the effective batch size as $2,544^{10}$ .\n\nApex library is used with 01 optimization level to allow mixed precision training. In all our experiments on fine-tuning, we perform a grid-search with respect to learning-rate and batch size values of $\\{1,3,5\\} \\times 10^{-5}$ and $\\{16,32,64\\}$ respectively.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2021.emnlp-main.675::sections::4.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "v100 GPU",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "As the first step, sentences are segmented from the text corpora. Then script converted version of the datasets is obtained by transliterating Bengali, Gujarati, Punjabi, Oriya, and, Urdu into Devanagari script. We additionally perform de-duplication to remove repeated sentences. The statistics of the resulting set are reported in Table 1. We identify following two challenges that can affect pre-training negatively: 1) data imbalance and 2) compute requirements.\n\n1. Data imbalance: As reported in Table 1 the size of each language corpora differs up to four orders of magnitude, e.g. Hindi has 1552M sentences vs 0.36M in Magahi and 17.88M in Oriya. The language bias can creep into the tokenizer and the language model pre-training, if left unattended. To mitigate bias in tokenizer training, we utilize a re-sampling strategy to reduce the data skew (Lample and Conneau, 2019). Specifically, samples are drawn following multinomial distribution with adjusted probabilities. Adjusted probabilities are computed as $q_{i} = p_{i}^{\\alpha} / \\sum_{j}p_{j}^{\\alpha}$ where $p_i = n_i / \\sum_in_i$ , and $n_i$ is the number of samples in $i^{th}$ language. Before rescaling, the language distribution is in the range of $0.01\\% - 58\\%$ , which changes to $5 - 12\\%$ afterwards.\n\n2. Compute requirements: Depending on the computing infrastructure, running one training epoch can typically take few hundreds to (single digit) few thousands of GPU hours. To mitigate this, we utilize a variant of sharding technique outlined in Algorithm 1 to pre-train the model in infrastructure with limited memory (<50GB)\n\nAlgorithm 1: Economical LM training for language family   \nResult: Trained LM checkpoint randomly select working language set; for each language in working set do randomly select least number of blocks containing x% sentence of the language; for each block do if block is not cached then tokenize the block; persist on to storage; end read tokenized block into dataset; end   \nend   \nif checkpoint found then initialize model with checkpoint;   \nelse randomly initialize model;   \nend   \ntrain LM to minimize MLM loss on balanced mini-batches;\n\nand compute (one v100 GPU). It depends on dividing each language corpus into manageable (into memory) chunks, termed as blocks. Each LM is trained over $\\sim 50$ sequential executions of Algorithm 1 on a single v100 GPU machine and each execution running for a day, consuming about 1200 hours overall for pre-training.\n\nIn the re-sampling step, exponent $s = 0.1$ and scaling parameter of $\\gamma = 100$ are used. Byte-level BPE tokenizer (Radford et al., 2019; Wang et al., 2020a) is used with vocabulary size of 110K. Trained LMs use 12 layers, 12 attention heads, hidden size of 768, and dropout ratio for the attention probabilities of 0.1. Our implementation uses Huggingface (Wolf et al., 2020) library. We use linear schedule for learning rate decay. Maximum sequence length is set as 128 across tokenization, training, and fine-tuning. Due to compute limitations, having higher maximum sequence length lead to out-of-memory errors. Mini-batches are created by weighted sampling based on language priors with exponent $s = 0.7$ . In LM pre-training, minibatch of 48 samples and gradient accumulation of 53 is used making the effective batch size as $2,544^{10}$ .\n\nApex library is used with 01 optimization level to allow mixed precision training. In all our experiments on fine-tuning, we perform a grid-search with respect to learning-rate and batch size values of $\\{1,3,5\\} \\times 10^{-5}$ and $\\{16,32,64\\}$ respectively.",
+      "section_number": "4.2",
+      "section_title": "data preparation and implementation details",
+      "normalized_section_title": "data preparation and implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2021.emnlp-main.675::sections::4.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "v100 GPU",
+      "cleaned_hardware_name": "v100 gpu",
+      "normalized_hardware_name": "v100 GPU",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "4.2",
+      "section_title": "data preparation and implementation details",
+      "normalized_section_title": "data preparation and implementation details",
+      "evidence": "As the first step, sentences are segmented from the text corpora. Then script converted version of the datasets is obtained by transliterating Bengali, Gujarati, Punjabi, Oriya, and, Urdu into Devanagari script. We additionally perform de-duplication to remove repeated sentences. The statistics of the resulting set are reported in Table 1. We identify following two challenges that can affect pre-training negatively: 1) data imbalance and 2) compute requirements.\n\n1. Data imbalance: As reported in Table 1 the size of each language corpora differs up to four orders of magnitude, e.g. Hindi has 1552M sentences vs 0.36M in Magahi and 17.88M in Oriya. The language bias can creep into the tokenizer and the language model pre-training, if left unattended. To mitigate bias in tokenizer training, we utilize a re-sampling strategy to reduce the data skew (Lample and Conneau, 2019). Specifically, samples are drawn following multinomial distribution with adjusted probabilities. Adjusted probabilities are computed as $q_{i} = p_{i}^{\\alpha} / \\sum_{j}p_{j}^{\\alpha}$ where $p_i = n_i / \\sum_in_i$ , and $n_i$ is the number of samples in $i^{th}$ language. Before rescaling, the language distribution is in the range of $0.01\\% - 58\\%$ , which changes to $5 - 12\\%$ afterwards.\n\n2. Compute requirements: Depending on the computing infrastructure, running one training epoch can typically take few hundreds to (single digit) few thousands of GPU hours. To mitigate this, we utilize a variant of sharding technique outlined in Algorithm 1 to pre-train the model in infrastructure with limited memory (<50GB)\n\nAlgorithm 1: Economical LM training for language family   \nResult: Trained LM checkpoint randomly select working language set; for each language in working set do randomly select least number of blocks containing x% sentence of the language; for each block do if block is not cached then tokenize the block; persist on to storage; end read tokenized block into dataset; end   \nend   \nif checkpoint found then initialize model with checkpoint;   \nelse randomly initialize model;   \nend   \ntrain LM to minimize MLM loss on balanced mini-batches;\n\nand compute (one v100 GPU). It depends on dividing each language corpus into manageable (into memory) chunks, termed as blocks. Each LM is trained over $\\sim 50$ sequential executions of Algorithm 1 on a single v100 GPU machine and each execution running for a day, consuming about 1200 hours overall for pre-training.\n\nIn the re-sampling step, exponent $s = 0.1$ and scaling parameter of $\\gamma = 100$ are used. Byte-level BPE tokenizer (Radford et al., 2019; Wang et al., 2020a) is used with vocabulary size of 110K. Trained LMs use 12 layers, 12 attention heads, hidden size of 768, and dropout ratio for the attention probabilities of 0.1. Our implementation uses Huggingface (Wolf et al., 2020) library. We use linear schedule for learning rate decay. Maximum sequence length is set as 128 across tokenization, training, and fine-tuning. Due to compute limitations, having higher maximum sequence length lead to out-of-memory errors. Mini-batches are created by weighted sampling based on language priors with exponent $s = 0.7$ . In LM pre-training, minibatch of 48 samples and gradient accumulation of 53 is used making the effective batch size as $2,544^{10}$ .\n\nApex library is used with 01 optimization level to allow mixed precision training. In all our experiments on fine-tuning, we perform a grid-search with respect to learning-rate and batch size values of $\\{1,3,5\\} \\times 10^{-5}$ and $\\{16,32,64\\}$ respectively.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.2"
+    ],
+    "pred": [
+      {
+        "name": "v100 GPU",
+        "num": 1
+      }
+    ]
+  }
+}

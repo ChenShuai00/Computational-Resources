@@ -1,0 +1,276 @@
+{
+  "paper_id": "2024.acl-long.405",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.405::sections::4.1",
+      "paper_id": "2024.acl-long.405",
+      "section_number": "4.1",
+      "section_title": "overview",
+      "normalized_section_title": "overview",
+      "window_text": "We select four task categories for our experiments: (1) mathematical reasoning, (2) code completion, (3) logical reasoning, and (4) commonsense reasoning. For each task category, we apply LANGBRIDGE to LMs specialized in reasoning derived from Llama 2 (Touvron et al., 2023b), such as MetaMath or Orca 2. We evaluate the models on existing multilingual benchmarks (e.g., MGSM) or translated English benchmarks (e.g., translations of HumanEval (Chen et al., 2021)). As the evaluation tasks necessitate both multilingual understanding abilities and advanced reasoning capabilities, this complexity poses a significant challenge for general multilingual LMs and English-centric LMs specialized in reasoning. On the contrary, models aligned with LANGBRIDGE could take advantage of both.\n\nSince Touvron et al. (2023b) disclose the language distribution of the pretraining data of Llama 2, this enables us to identify which languages are underrepresented in LMs initialized from Llama 2 weights. Throughout the paper, we classify a language as underrepresented if it comprises less than $0.1\\%$ of Llama 2's pretraining data.\n\nIn all of our experiments, we use the encoders of mT5 (Xue et al., 2021) as the multilingual encoders due to their availability across a wide range of parameters, $^{4}$ and their support for longer input sequences compared to other multilingual encoder\n\nmodels. Specifically, we use the \"LM adapted\" checkpoints from Vu et al. (2022). We align target LMs of 7B parameters with mT5-XL encoder to adapt 9B-sized models and 13B-sized LMs with mT5-XL encoder and mT5-XXL encoder to obtain 15B and 20B models, respectively. As LANG-BRIDGE adds a considerable amount of additional parameters to the target LM, we conduct an inference throughput analysis in Appendix B. We also ablate the effect of the encoder parameter size and encoder model type in Appendix D.\n\nWe use the original continual training data of the LM for LANGBRIDGE when accessible (e.g., MetaMathQA for MetaMath). If unavailable, we opt for the closest publicly accessible dataset (e.g., OpenOrca (Lian et al., 2023) for Orca 2). In all our experiments, we fix the size of the training dataset to 200,000 instances. However, our ablation study on the effect of the training dataset size in Appendix D suggests LANGBRIDGE in practice may require much less data. We maintain the language model frozen throughout the alignment process for efficiency. We also freeze the encoder (except the embedding layer) for aligning finetuned LMs, whereas for pretrained LMs, we keep the encoder trainable. In Appendix D, we provide further explanations for these choices and ablate the effects of freezing. We align the models by training on the prefix LM objective described in Section 3.2. In our preliminary experiments, we find that training on various lengths of $\\mathbf{X}_{enc}$ is necessary to ensure robustness on inference time, as the language model is exposed to diverse lengths of $\\mathbf{H}_{enc}$ .\n\nWe use a maximum input length $(\\mathbf{X}_{enc})$ of 1,024 and a maximum target length $(\\mathbf{X}_{lm})$ of 128 for training. For unlabeled data, we randomly vary the input length within the 1,024 window to introduce the LM to various lengths of $\\mathbf{H}_{enc}$ . For labeled data, the data naturally comes in diverse input lengths. On a machine equipped with four A100 80GB GPUs, training a 9B model takes less than four hours when the encoder layers are frozen, and under five hours when the entire encoder is trainable. In our main experiments, the setting where the encoder is fully trainable in the 20B models results in the maximum training time, which is ap\n\nproximately ten hours. Further training details are available in Appendix F.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.405::sections::4.2.1",
+      "paper_id": "2024.acl-long.405",
+      "section_number": "4.2.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Evaluation Datasets MGSM (Shi et al., 2023) comprises grade school math word problems in 11 typologically diverse languages, human translated from a sample of GSM8K (Cobbe et al., 2021). For evaluating pretrained LMs, we adopt the crosslingual transfer chain-of-thought (CoT) reasoning (Wei et al., 2022) setting (NATIVE-EXEMPLARS + EN-COT) from Shi et al. (2023), where the few-shot exemplars are given in the target language, but the CoT rationales to solve the exemplars are provided in English. For finetuned LMs, we evaluate in zero-shot $^{7}$ setting. Additional evaluation on MSVAMP (Chen et al., 2023) is available in Appendix A.\n\nLanguage Models Llemma (Azerbayev et al., 2023) is a set of LMs for mathematics, continually pretrained from Code Llama (Rozière et al., 2023) on Proof-Pile-2, a mixture of scientific papers, web data containing mathematics, and mathematical code. MetaMath (Yu et al., 2023) was finetuned from Llama 2 (Touvron et al., 2023b) on MetaMathQA, a mathematical dataset based on GSM8K and MATH (Hendrycks et al., 2021b). As both Proof-Pile-2 and MetaMathQA are publicly available, we apply LANGBRIDGE using samples of their respective training datasets.\n\nBaselines Llama 2 (Touvron et al., 2023b) is an English-centric LM in which $89.7\\%$ of the pretraining data consists of English but has shown considerable performance on non-English languages (Lai et al., 2023). $\\mathbf{mT5}^{\\mathrm{8}}$ (Xue et al., 2021), XGLM (Lin et al., 2022), and BLOOM (Scao et al., 2022) are massively multilingual LMs. MathOctopus (Chen et al., 2023) is an LM for multilingual mathematical reasoning. It was initialized from Llama 2 and finetuned on translations of the GSM8K dataset across ten languages. The ten languages seen by MathOctopus overlap with the 11 languages included in MGSM, except Telugu. We use their best-performing checkpoints, xRFT-MathOctopus $^{P}$ , which were further enhanced by data augmentation through rejection sampling (Yuan et al., 2023). We also re\n\nTable 1: Accuracy (%) on MGSM. Alongside average (AVG) accuracy, we also report average accuracy of high-resource languages (HRL) and underrepresented languages (URL) classified by Shi et al. (2023). We include the language distribution of Llama 2 for reference. For pretrained models (Top), we prompt with 8-shot cross-lingual chain-of-thought (CoT) reasoning exemplars, except for PaLM-540B, for which we reference the 6-shot cross-lingual CoT performance reported by Shi et al. (2023). For finetuned models (Bottom), we evaluate zero-shot. The PP2 and MM suffixes denote models trained on Proof-Pile-2 and MetaMath, respectively. We compare LANGBRIDGE models (LB) to their original LMs and highlight the best-performing numbers in bold.   \n\n<table><tr><td></td><td>AVG</td><td>HRL</td><td>URL</td><td>EN</td><td>DE</td><td>FR</td><td>ES</td><td>RU</td><td>ZH</td><td>JA</td><td>TH</td><td>SW</td><td>BN</td><td>TE</td></tr><tr><td>Lang. Freq. (Llama 2, %)</td><td>-</td><td>-</td><td>-</td><td>89.7</td><td>0.17</td><td>0.16</td><td>0.13</td><td>0.13</td><td>0.13</td><td>0.10</td><td colspan=\"4\">LESS THAN 0.005</td></tr><tr><td colspan=\"15\">FEW-SHOT CROSS-LINGUAL COT</td></tr><tr><td>Llama 2-7B</td><td>9.1</td><td>12.1</td><td>3.9</td><td>15.2</td><td>11.6</td><td>13.2</td><td>11.2</td><td>11.6</td><td>11.2</td><td>10.8</td><td>7.2</td><td>5.2</td><td>3.2</td><td>0.0</td></tr><tr><td>XGLM-7.5B</td><td>1.5</td><td>1.6</td><td>1.2</td><td>0.4</td><td>1.6</td><td>1.2</td><td>1.6</td><td>2.0</td><td>2.8</td><td>1.6</td><td>2.0</td><td>0.4</td><td>1.2</td><td>1.2</td></tr><tr><td>mT5-XXL (13B)</td><td>2.9</td><td>3.5</td><td>2.0</td><td>3.6</td><td>2.4</td><td>4.0</td><td>3.6</td><td>2.8</td><td>3.6</td><td>4.4</td><td>2.8</td><td>1.2</td><td>3.2</td><td>0.8</td></tr><tr><td>BLOOM-7.1B</td><td>2.4</td><td>2.6</td><td>2.0</td><td>3.6</td><td>1.2</td><td>3.6</td><td>2.4</td><td>2.0</td><td>3.2</td><td>2.0</td><td>0.0</td><td>2.4</td><td>2.8</td><td>2.8</td></tr><tr><td>BLOOM-7.1B-PP2</td><td>2.3</td><td>2.5</td><td>1.9</td><td>4.8</td><td>1.2</td><td>2.0</td><td>2.0</td><td>1.6</td><td>4.0</td><td>1.6</td><td>0.8</td><td>2.8</td><td>2.0</td><td>2.0</td></tr><tr><td>PaLM-540B</td><td>51.3</td><td>52.3</td><td>46.8</td><td>62.4</td><td>53.6</td><td>51.2</td><td>58.0</td><td>55.6</td><td>46.0</td><td>49.6</td><td>49.6</td><td>44.4</td><td>46.4</td><td>46.8</td></tr><tr><td>Llemma-7B</td><td>21.6</td><td>29.9</td><td>7.2</td><td>44.8</td><td>27.2</td><td>33.2</td><td>29.2</td><td>26.0</td><td>26.4</td><td>22.4</td><td>14.0</td><td>8.4</td><td>6.4</td><td>0.0</td></tr><tr><td>Llemma-LB-9B</td><td>20.4</td><td>22.5</td><td>16.7</td><td>34.8</td><td>23.6</td><td>26.8</td><td>22.4</td><td>18.8</td><td>16.0</td><td>15.2</td><td>20.8</td><td>17.6</td><td>12.4</td><td>16.0</td></tr><tr><td>Llemma-34B</td><td>35.6</td><td>46.3</td><td>16.7</td><td>58.0</td><td>48.0</td><td>46.8</td><td>48.0</td><td>47.2</td><td>36.8</td><td>39.6</td><td>28.4</td><td>27.2</td><td>11.2</td><td>0.0</td></tr><tr><td colspan=\"15\">ZERO-SHOT COT</td></tr><tr><td>MathOctopus-7B</td><td>37.1</td><td>42.7</td><td>27.2</td><td>51.6</td><td>40.0</td><td>38.4</td><td>47.2</td><td>42.4</td><td>44.0</td><td>35.6</td><td>39.2</td><td>31.6</td><td>37.2</td><td>0.8</td></tr><tr><td>MathOctopus-13B</td><td>42.9</td><td>48.6</td><td>32.9</td><td>50.8</td><td>49.2</td><td>50.4</td><td>52.8</td><td>47.2</td><td>52.4</td><td>37.2</td><td>44.4</td><td>40.4</td><td>46.4</td><td>0.4</td></tr><tr><td>BLOOM-7.1B-MM</td><td>16.7</td><td>21.7</td><td>7.8</td><td>41.2</td><td>19.6</td><td>24.4</td><td>26.8</td><td>9.6</td><td>21.2</td><td>9.2</td><td>0.8</td><td>15.6</td><td>6.8</td><td>8.0</td></tr><tr><td>MetaMath-7B</td><td>34.4</td><td>51.8</td><td>3.9</td><td>64.8</td><td>57.6</td><td>55.6</td><td>56.4</td><td>50.4</td><td>42.4</td><td>35.6</td><td>4.0</td><td>6.4</td><td>4.4</td><td>0.8</td></tr><tr><td>MetaMath-LB-9B</td><td>48.8</td><td>52.3</td><td>42.8</td><td>63.2</td><td>50.8</td><td>52.4</td><td>58.0</td><td>56.4</td><td>45.2</td><td>40.0</td><td>50.4</td><td>43.2</td><td>42.8</td><td>34.8</td></tr><tr><td>MetaMath-13B</td><td>40.5</td><td>60.3</td><td>6.0</td><td>70.4</td><td>64.4</td><td>65.2</td><td>63.6</td><td>60.0</td><td>50.8</td><td>47.6</td><td>4.8</td><td>11.6</td><td>6.8</td><td>0.8</td></tr><tr><td>MetaMath-LB-15B</td><td>53.5</td><td>58.0</td><td>45.2</td><td>67.6</td><td>63.6</td><td>61.6</td><td>63.2</td><td>60.0</td><td>48.0</td><td>42.0</td><td>52.8</td><td>41.6</td><td>50.0</td><td>36.4</td></tr><tr><td>MetaMath-LB-20B</td><td>55.8</td><td>58.7</td><td>50.7</td><td>66.4</td><td>64.0</td><td>64.0</td><td>60.4</td><td>58.8</td><td>52.4</td><td>45.2</td><td>53.6</td><td>49.2</td><td>52.8</td><td>47.2</td></tr></table>\n\nport the performance of BLOOM models further trained on the training sets of LANGBRIDGE models: BLOOM-Proof-Pile-2 (PP2) and BLOOM-MetaMath (MM). This is done to confirm that the capabilities of LANGBRIDGE models are derived from the LMs' inherent strength rather than solely from the training set utilized by LANGBRIDGE. Detailed hyperparameters for training the BLOOM models are available in Appendix F. We additionally report the performance of PaLM (Chowdhery et al., 2023) measured by Shi et al. (2023). Similar to Llama 2, PaLM was pretrained on English-heavy corpora.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.405::sections::4.3.1",
+      "paper_id": "2024.acl-long.405",
+      "section_number": "4.3.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Evaluation Datasets Leveraging the strong translation capabilities of GPT-4 (OpenAI, 2023), as demonstrated in the study by Jiao et al. (2023), we extend HumanEval (Chen et al., 2021), a set of hand-written programming problems, into five underrepresented languages: Swahili, Bengali, Punjabi, Telugu, and Urdu. We name the resulting dataset HumanEval-MT. We select the five languages among those with reported MMLU (Hendrycks et al., 2021a) performance in the technical report of GPT-4 while also being included in the pretraining corpora of BLOOM. This choice is made to acquire high-quality translations from GPT-4, and provide BLOOM-based baselines at a level playing field. To guide GPT-4 to only translate the embedded natural language instruction of the docstring while not modifying the code segments, we prompt GPT-4 with two human-annotated examples. Subsequently, the generated translations are executed in a Python interpreter environment to assert the absence of syntax errors. We provide translation quality estimation of HumanEval-MT in Appendix E.\n\nThe examples within the HumanEval dataset often feature self-explanatory function names. This suggests that language models could potentially\n\ncomplete the associated code segments successfully, even without accurately comprehending the natural language comments embedded within them. Therefore, we evaluate the models on anonymized versions of each language set, wherein the target function names of the code segments are uniformly altered to \"func\". An example of the anonymization and evaluation result on the original version is available in Appendix A.\n\nLanguage Models Code Llama (Rozière et al., 2023) is a family of models initialized from Llama 2 model weights and pretrained on a code-heavy dataset. In our experiments, we use Code Llama-Python models, which were further pretrained on a Python-heavy dataset. Since the datasets used to pretrain the Code Llama models are not publicly available, we sample from the Python subset of StarCoder data (Li et al., 2023b) as the training dataset for LANGBRIDGE.\n\nBaselines We use Llama 2 and BLOOM models as the baselines. Both models contain code data within their pretraining corpora. Additionally, we report the performance of BLOOM-StarCoder, a BLOOM model continually pretrained on the sample of StarCoder data used to train LANGBRIDGE models.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.405::sections::4.4.1",
+      "paper_id": "2024.acl-long.405",
+      "section_number": "4.4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Evaluation Datasets We assess logical reasoning capabilities with Big-Bench Hard (BBH) (Suzgun et al., 2023) and Big-Bench Hard Bengali (BBH-BN) (Shafayat et al., 2024). BBH is a collection of challenging subtasks where the application of chain-of-thought (CoT) reasoning has the potential to enhance performance substantially.\n\nTable 2: Pass@1 scores on anonymized versions of HumanEval and HumanEval-MT. The models were evaluated on zero-shot code completion using greedy decoding. We compare LANGBRIDGE (LB) models to their original checkpoints and highlight the best-performing numbers in bold.   \n\n<table><tr><td></td><td>AVG</td><td>EN</td><td>SW</td><td>BN</td><td>PA</td><td>TE</td><td>UR</td></tr><tr><td>Llama 2-7B</td><td>4.6</td><td>9.8</td><td>3.7</td><td>3.0</td><td>3.0</td><td>3.0</td><td>4.9</td></tr><tr><td>BLOOM-7.1B</td><td>4.9</td><td>7.3</td><td>2.4</td><td>5.5</td><td>4.3</td><td>6.1</td><td>3.7</td></tr><tr><td>BLOOM-7.1B-StarCoder</td><td>4.5</td><td>6.7</td><td>3.0</td><td>4.3</td><td>4.3</td><td>3.7</td><td>4.9</td></tr><tr><td>Code Llama-7B</td><td>16.9</td><td>36.0</td><td>14.0</td><td>14.6</td><td>10.4</td><td>9.8</td><td>16.5</td></tr><tr><td>Code Llama-LB-9B</td><td>19.4</td><td>31.7</td><td>17.1</td><td>15.2</td><td>18.3</td><td>15.2</td><td>18.9</td></tr><tr><td>Code Llama-13B</td><td>19.6</td><td>40.2</td><td>15.2</td><td>17.7</td><td>12.2</td><td>12.8</td><td>19.5</td></tr><tr><td>Code Llama-LB-15B</td><td>23.6</td><td>41.5</td><td>20.1</td><td>20.1</td><td>19.5</td><td>19.5</td><td>20.7</td></tr><tr><td>Code Llama-LB-20B</td><td>23.5</td><td>36.0</td><td>24.4</td><td>20.1</td><td>20.7</td><td>18.9</td><td>20.7</td></tr><tr><td>Code Llama-34B</td><td>22.7</td><td>43.9</td><td>17.1</td><td>23.8</td><td>15.9</td><td>12.8</td><td>22.6</td></tr></table>\n\nBBH-BN translates 14 of the 23 subtasks of BBH into Bengali. To facilitate meaningful comparison, we evaluate only on the 14 subtasks supported by BBH-BN for BBH. $^{11}$\n\nLanguage Models Orca 2 (Mitra et al., 2023) was finetuned on Llama 2 with a collection of datasets augmented with reasoning traces of GPT-4 as well as fully synthetic datasets created with GPT-4. Orca 2 effectively improved the reasoning abilities of smaller LMs on complex tasks demanding advanced reasoning in zero-shot settings. As the training dataset of Orca 2 is not publicly available, we sample the training data for LANGBRIDGE from the OpenOrca dataset (Lian et al., 2023). OpenOrca follows the data distribution of the first iteration of Orca (Mukherjee et al., 2023). We employ CLD3 to filter any non-English data that mainly derives from translation datasets to ensure the zero-shot setting of our experiments. Examples were included if their input text had a $99\\%$ or greater probability of being English, while their target text also had a $95\\%$ or greater chance of being English. A slightly lower threshold was adopted for the target text to not falsely filter single-word responses, which CLD3 exhibits lower confidence.\n\nBaselines In our evaluation of BBH, we assess whether Orca 2-LB models could acquire multilingual comprehension while retaining the zero-shot CoT capabilities of Orca 2. However, from our limited testing, we found that no existing open multilingual LMs could generate CoT reliably in a zero-shot setting. Consequently, they were not included as baselines. We do report the performance of BLOOM-OpenOrca, a BLOOM model further\n\nTable 3: Accuracy (%) on BBH (English) and BBH-BN (Bengali). We report the average accuracy across 14 subtasks. We compare LANGBRIDGE (LB) models to their original checkpoints and highlight the best-performing numbers in bold.   \n\n<table><tr><td></td><td>EN</td><td>BN</td></tr><tr><td>BLOOM-7B-OpenOrca</td><td>35.8</td><td>31.2</td></tr><tr><td>Orca 2-7B</td><td>53.9</td><td>36.7</td></tr><tr><td>Orca 2-LB-9B</td><td>46.9</td><td>41.8</td></tr><tr><td>Orca 2-13B</td><td>57.9</td><td>41.7</td></tr><tr><td>Orca 2-LB-15B</td><td>55.2</td><td>45.4</td></tr><tr><td>Orca 2-LB-20B</td><td>53.1</td><td>45.4</td></tr></table>\n\ntrained on the same training set as Orca 2-LB.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.405::sections::6",
+      "paper_id": "2024.acl-long.405",
+      "section_number": "6",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.405::appendix::B",
+      "paper_id": "2024.acl-long.405",
+      "section_number": "B",
+      "section_title": "inference throughput of langbridge model",
+      "normalized_section_title": "inference throughput of langbridge model",
+      "window_text": "We report the inference throughput of models in Table 5. We measure the total time to infer 500 instances of XCOPA. For each model, we repeat\n\nTable 5: Inference throughputs measured using 500 examples of XCOPA.   \n\n<table><tr><td></td><td>Orca 2-7B</td><td>Orca 2-LB-9B</td><td>Orca 2-13B</td></tr><tr><td>Average Time (sec)</td><td>44.46</td><td>59.23</td><td>102.84</td></tr><tr><td>Standard Deviation (sec)</td><td>0.13</td><td>0.29</td><td>0.48</td></tr><tr><td>GPU Memory (GBs)</td><td>13.48</td><td>16.97</td><td>25.07</td></tr></table>\n\nfive times and report the average and the standard deviation. Additionally, we include the GPU memory utilization. We test using a single A6000 GPU on an idle server.\n\nResults show Orca 2-LB-9B model requires considerably less compute and memory compared to Orca 2-13B, despite it outperforming Orca 2-13B in BigBenchHard Bengali (BBH-BN) and XCOPA.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.405::appendix::D",
+      "paper_id": "2024.acl-long.405",
+      "section_number": "D",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.405::appendix::D.3",
+      "paper_id": "2024.acl-long.405",
+      "section_number": "D.3",
+      "section_title": "training set size",
+      "normalized_section_title": "training set size",
+      "window_text": "![](images/881eccbb64ff198221a8f392ba15f4ec867fcfe1a564a505591294386e89940d.jpg)  \nFigure 6: XCOPA accuracy $(\\%)$ of Orca 2-7B models adapted with LANGBRIDGE using five different sizes of training datasets.\n\nWhile we fixed the training set size to 200,000 in our main experiments, Figure 6 shows that XCOPA performance peaks on 120,000 training examples, which is $60\\%$ of our experiment setting. This suggests that in practice, LANGBRIDGE can be applied more efficiently.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.405::appendix::F",
+      "paper_id": "2024.acl-long.405",
+      "section_number": "F",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "window_text": "For training LANGBRIDGE models, we leverage AdamW (Loshchilov and Hutter, 2019). We use a learning rate of $6\\mathrm{e} - 4$ for the linear layer and $2\\mathrm{e} - 5$ for the encoder. We do not use any learning rate scheduling. We use an effective batch size of 128.\n\nFor further training BLOOM baselines, we keep the training configuration the same as LANGBRIDGE models with two exceptions: (1) Learning rate, in which we used a uniform value of $2\\mathrm{e} - 5$ across the entire model. (2) Sequence length, which was set to 1,152 $(1,024 + 128)$ .\n\nFor evaluations, we leverage code adapted from LM Evaluation Harness (version 0.3.0) (Gao et al., 2023) and Bigcode Evaluation Harness (version 0.1.0) (Ben Allal et al., 2022) packages and report single run results with fixed seed. We open source the evaluation code.\n\nFor constructing HumanEval-MT, we prompt GPT-4 with human-translated examples. The two examples used for HumanEval-MT were translated to Korean by a native Korean author. GPT-4 was then prompted to translate HumanEval to the target\n\nlanguages with the examples as reference. Note that the examples were provided to guide GPT-4 to keep the format of the data intact and only translate the natural language, not necessarily to enhance the translation quality itself.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.405::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80GB",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "We select four task categories for our experiments: (1) mathematical reasoning, (2) code completion, (3) logical reasoning, and (4) commonsense reasoning. For each task category, we apply LANGBRIDGE to LMs specialized in reasoning derived from Llama 2 (Touvron et al., 2023b), such as MetaMath or Orca 2. We evaluate the models on existing multilingual benchmarks (e.g., MGSM) or translated English benchmarks (e.g., translations of HumanEval (Chen et al., 2021)). As the evaluation tasks necessitate both multilingual understanding abilities and advanced reasoning capabilities, this complexity poses a significant challenge for general multilingual LMs and English-centric LMs specialized in reasoning. On the contrary, models aligned with LANGBRIDGE could take advantage of both.\n\nSince Touvron et al. (2023b) disclose the language distribution of the pretraining data of Llama 2, this enables us to identify which languages are underrepresented in LMs initialized from Llama 2 weights. Throughout the paper, we classify a language as underrepresented if it comprises less than $0.1\\%$ of Llama 2's pretraining data.\n\nIn all of our experiments, we use the encoders of mT5 (Xue et al., 2021) as the multilingual encoders due to their availability across a wide range of parameters, $^{4}$ and their support for longer input sequences compared to other multilingual encoder\n\nmodels. Specifically, we use the \"LM adapted\" checkpoints from Vu et al. (2022). We align target LMs of 7B parameters with mT5-XL encoder to adapt 9B-sized models and 13B-sized LMs with mT5-XL encoder and mT5-XXL encoder to obtain 15B and 20B models, respectively. As LANG-BRIDGE adds a considerable amount of additional parameters to the target LM, we conduct an inference throughput analysis in Appendix B. We also ablate the effect of the encoder parameter size and encoder model type in Appendix D.\n\nWe use the original continual training data of the LM for LANGBRIDGE when accessible (e.g., MetaMathQA for MetaMath). If unavailable, we opt for the closest publicly accessible dataset (e.g., OpenOrca (Lian et al., 2023) for Orca 2). In all our experiments, we fix the size of the training dataset to 200,000 instances. However, our ablation study on the effect of the training dataset size in Appendix D suggests LANGBRIDGE in practice may require much less data. We maintain the language model frozen throughout the alignment process for efficiency. We also freeze the encoder (except the embedding layer) for aligning finetuned LMs, whereas for pretrained LMs, we keep the encoder trainable. In Appendix D, we provide further explanations for these choices and ablate the effects of freezing. We align the models by training on the prefix LM objective described in Section 3.2. In our preliminary experiments, we find that training on various lengths of $\\mathbf{X}_{enc}$ is necessary to ensure robustness on inference time, as the language model is exposed to diverse lengths of $\\mathbf{H}_{enc}$ .\n\nWe use a maximum input length $(\\mathbf{X}_{enc})$ of 1,024 and a maximum target length $(\\mathbf{X}_{lm})$ of 128 for training. For unlabeled data, we randomly vary the input length within the 1,024 window to introduce the LM to various lengths of $\\mathbf{H}_{enc}$ . For labeled data, the data naturally comes in diverse input lengths. On a machine equipped with four A100 80GB GPUs, training a 9B model takes less than four hours when the encoder layers are frozen, and under five hours when the entire encoder is trainable. In our main experiments, the setting where the encoder is fully trainable in the 20B models results in the maximum training time, which is ap\n\nproximately ten hours. Further training details are available in Appendix F.",
+      "section_number": "4.1",
+      "section_title": "overview",
+      "normalized_section_title": "overview"
+    },
+    {
+      "window_id": "2024.acl-long.405::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A6000",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We report the inference throughput of models in Table 5. We measure the total time to infer 500 instances of XCOPA. For each model, we repeat\n\nTable 5: Inference throughputs measured using 500 examples of XCOPA.   \n\n<table><tr><td></td><td>Orca 2-7B</td><td>Orca 2-LB-9B</td><td>Orca 2-13B</td></tr><tr><td>Average Time (sec)</td><td>44.46</td><td>59.23</td><td>102.84</td></tr><tr><td>Standard Deviation (sec)</td><td>0.13</td><td>0.29</td><td>0.48</td></tr><tr><td>GPU Memory (GBs)</td><td>13.48</td><td>16.97</td><td>25.07</td></tr></table>\n\nfive times and report the average and the standard deviation. Additionally, we include the GPU memory utilization. We test using a single A6000 GPU on an idle server.\n\nResults show Orca 2-LB-9B model requires considerably less compute and memory compared to Orca 2-13B, despite it outperforming Orca 2-13B in BigBenchHard Bengali (BBH-BN) and XCOPA.",
+      "section_number": "B",
+      "section_title": "inference throughput of langbridge model",
+      "normalized_section_title": "inference throughput of langbridge model"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.405::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80GB",
+      "cleaned_hardware_name": "a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "4.1",
+      "section_title": "overview",
+      "normalized_section_title": "overview",
+      "evidence": "We select four task categories for our experiments: (1) mathematical reasoning, (2) code completion, (3) logical reasoning, and (4) commonsense reasoning. For each task category, we apply LANGBRIDGE to LMs specialized in reasoning derived from Llama 2 (Touvron et al., 2023b), such as MetaMath or Orca 2. We evaluate the models on existing multilingual benchmarks (e.g., MGSM) or translated English benchmarks (e.g., translations of HumanEval (Chen et al., 2021)). As the evaluation tasks necessitate both multilingual understanding abilities and advanced reasoning capabilities, this complexity poses a significant challenge for general multilingual LMs and English-centric LMs specialized in reasoning. On the contrary, models aligned with LANGBRIDGE could take advantage of both.\n\nSince Touvron et al. (2023b) disclose the language distribution of the pretraining data of Llama 2, this enables us to identify which languages are underrepresented in LMs initialized from Llama 2 weights. Throughout the paper, we classify a language as underrepresented if it comprises less than $0.1\\%$ of Llama 2's pretraining data.\n\nIn all of our experiments, we use the encoders of mT5 (Xue et al., 2021) as the multilingual encoders due to their availability across a wide range of parameters, $^{4}$ and their support for longer input sequences compared to other multilingual encoder\n\nmodels. Specifically, we use the \"LM adapted\" checkpoints from Vu et al. (2022). We align target LMs of 7B parameters with mT5-XL encoder to adapt 9B-sized models and 13B-sized LMs with mT5-XL encoder and mT5-XXL encoder to obtain 15B and 20B models, respectively. As LANG-BRIDGE adds a considerable amount of additional parameters to the target LM, we conduct an inference throughput analysis in Appendix B. We also ablate the effect of the encoder parameter size and encoder model type in Appendix D.\n\nWe use the original continual training data of the LM for LANGBRIDGE when accessible (e.g., MetaMathQA for MetaMath). If unavailable, we opt for the closest publicly accessible dataset (e.g., OpenOrca (Lian et al., 2023) for Orca 2). In all our experiments, we fix the size of the training dataset to 200,000 instances. However, our ablation study on the effect of the training dataset size in Appendix D suggests LANGBRIDGE in practice may require much less data. We maintain the language model frozen throughout the alignment process for efficiency. We also freeze the encoder (except the embedding layer) for aligning finetuned LMs, whereas for pretrained LMs, we keep the encoder trainable. In Appendix D, we provide further explanations for these choices and ablate the effects of freezing. We align the models by training on the prefix LM objective described in Section 3.2. In our preliminary experiments, we find that training on various lengths of $\\mathbf{X}_{enc}$ is necessary to ensure robustness on inference time, as the language model is exposed to diverse lengths of $\\mathbf{H}_{enc}$ .\n\nWe use a maximum input length $(\\mathbf{X}_{enc})$ of 1,024 and a maximum target length $(\\mathbf{X}_{lm})$ of 128 for training. For unlabeled data, we randomly vary the input length within the 1,024 window to introduce the LM to various lengths of $\\mathbf{H}_{enc}$ . For labeled data, the data naturally comes in diverse input lengths. On a machine equipped with four A100 80GB GPUs, training a 9B model takes less than four hours when the encoder layers are frozen, and under five hours when the entire encoder is trainable. In our main experiments, the setting where the encoder is fully trainable in the 20B models results in the maximum training time, which is ap\n\nproximately ten hours. Further training details are available in Appendix F.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.acl-long.405::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A6000",
+      "cleaned_hardware_name": "a6000",
+      "normalized_hardware_name": "NVIDIA RTX A6000",
+      "benchmark_hardware_name": "NVIDIA RTX A6000",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "B",
+      "section_title": "inference throughput of langbridge model",
+      "normalized_section_title": "inference throughput of langbridge model",
+      "evidence": "We report the inference throughput of models in Table 5. We measure the total time to infer 500 instances of XCOPA. For each model, we repeat\n\nTable 5: Inference throughputs measured using 500 examples of XCOPA.   \n\n<table><tr><td></td><td>Orca 2-7B</td><td>Orca 2-LB-9B</td><td>Orca 2-13B</td></tr><tr><td>Average Time (sec)</td><td>44.46</td><td>59.23</td><td>102.84</td></tr><tr><td>Standard Deviation (sec)</td><td>0.13</td><td>0.29</td><td>0.48</td></tr><tr><td>GPU Memory (GBs)</td><td>13.48</td><td>16.97</td><td>25.07</td></tr></table>\n\nfive times and report the average and the standard deviation. Additionally, we include the GPU memory utilization. We test using a single A6000 GPU on an idle server.\n\nResults show Orca 2-LB-9B model requires considerably less compute and memory compared to Orca 2-13B, despite it outperforming Orca 2-13B in BigBenchHard Bengali (BBH-BN) and XCOPA.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.acl-long.405::sections::4.2.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2.1",
+      "section_title": "experimental setup",
+      "evidence": "Evaluation Datasets MGSM (Shi et al., 2023) comprises grade school math word problems in 11 typologically diverse languages, human translated from a sample of GSM8K (Cobbe et al., 2021). For evaluating pretrained LMs, we adopt the crosslingual transfer chain-of-thought (CoT) reasoning (Wei et al., 2022) setting (NATIVE-EXEMPLARS + EN-COT) from Shi et al. (2023), where the few-shot exemplars are given in the target language, but the CoT rationales to solve the exemplars are provided in English. For finetuned LMs, we evaluate in zero-shot $^{7}$ setting. Additional evaluation on MSVAMP (Chen et al., 2023) is available in Appendix A.\n\nLanguage Models Llemma (Azerbayev et al., 2023) is a set of LMs for mathematics, continually pretrained from Code Llama (Rozière et al., 2023) on Proof-Pile-2, a mixture of scientific papers, web data containing mathematics, and mathematical code. MetaMath (Yu et al., 2023) was finetuned from Llama 2 (Touvron et al., 2023b) on MetaMathQA, a mathematical dataset based on GSM8K and MATH (Hendrycks et al., 2021b). As both Proof-Pile-2 and MetaMathQA are publicly available, we apply LANGBRIDGE using samples of their respective training datasets.\n\nBaselines Llama 2 (Touvron et al., 2023b) is an English-centric LM in which $89.7\\%$ of the pretraining data consists of English but has shown considerable performance on non-English languages (Lai et al., 2023). $\\mathbf{mT5}^{\\mathrm{8}}$ (Xue et al., 2021), XGLM (Lin et al., 2022), and BLOOM (Scao et al., 2022) are massively multilingual LMs. MathOctopus (Chen et al., 2023) is an LM for multilingual mathematical reasoning. It was initialized from Llama 2 and finetuned on translations of the GSM8K dataset across ten languages. The ten languages seen by MathOctopus overlap with the 11 languages included in MGSM, except Telugu. We use their best-performing checkpoints, xRFT-MathOctopus $^{P}$ , which were further enhanced by data augmentation through rejection sampling (Yuan et al., 2023). We also re\n\nTable 1: Accuracy (%) on MGSM. Alongside average (AVG) accuracy, we also report average accuracy of high-resource languages (HRL) and underrepresented languages (URL) classified by Shi et al. (2023). We include the language distribution of Llama 2 for reference. For pretrained models (Top), we prompt with 8-shot cross-lingual chain-of-thought (CoT) reasoning exemplars, except for PaLM-540B, for which we reference the 6-shot cross-lingual CoT performance reported by Shi et al. (2023). For finetuned models (Bottom), we evaluate zero-shot. The PP2 and MM suffixes denote models trained on Proof-Pile-2 and MetaMath, respectively. We compare LANGBRIDGE models (LB) to their original LMs and highlight the best-performing numbers in bold.   \n\n<table><tr><td></td><td>AVG</td><td>HRL</td><td>URL</td><td>EN</td><td>DE</td><td>FR</td><td>ES</td><td>RU</td><td>ZH</td><td>JA</td><td>TH</td><td>SW</td><td>BN</td><td>TE</td></tr><tr><td>Lang. Freq. (Llama 2, %)</td><td>-</td><td>-</td><td>-</td><td>89.7</td><td>0.17</td><td>0.16</td><td>0.13</td><td>0.13</td><td>0.13</td><td>0.10</td><td colspan=\"4\">LESS THAN 0.005</td></tr><tr><td colspan=\"15\">FEW-SHOT CROSS-LINGUAL COT</td></tr><tr><td>Llama 2-7B</td><td>9.1</td><td>12.1</td><td>3.9</td><td>15.2</td><td>11.6</td><td>13.2</td><td>11.2</td><td>11.6</td><td>11.2</td><td>10.8</td><td>7.2</td><td>5.2</td><td>3.2</td><td>0.0</td></tr><tr><td>XGLM-7.5B</td><td>1.5</td><td>1.6</td><td>1.2</td><td>0.4</td><td>1.6</td><td>1.2</td><td>1.6</td><td>2.0</td><td>2.8</td><td>1.6</td><td>2.0</td><td>0.4</td><td>1.2</td><td>1.2</td></tr><tr><td>mT5-XXL (13B)</td><td>2.9</td><td>3.5</td><td>2.0</td><td>3.6</td><td>2.4</td><td>4.0</td><td>3.6</td><td>2.8</td><td>3.6</td><td>4.4</td><td>2.8</td><td>1.2</td><td>3.2</td><td>0.8</td></tr><tr><td>BLOOM-7.1B</td><td>2.4</td><td>2.6</td><td>2.0</td><td>3.6</td><td>1.2</td><td>3.6</td><td>2.4</td><td>2.0</td><td>3.2</td><td>2.0</td><td>0.0</td><td>2.4</td><td>2.8</td><td>2.8</td></tr><tr><td>BLOOM-7.1B-PP2</td><td>2.3</td><td>2.5</td><td>1.9</td><td>4.8</td><td>1.2</td><td>2.0</td><td>2.0</td><td>1.6</td><td>4.0</td><td>1.6</td><td>0.8</td><td>2.8</td><td>2.0</td><td>2.0</td></tr><tr><td>PaLM-540B</td><td>51.3</td><td>52.3</td><td>46.8</td><td>62.4</td><td>53.6</td><td>51.2</td><td>58.0</td><td>55.6</td><td>46.0</td><td>49.6</td><td>49.6</td><td>44.4</td><td>46.4</td><td>46.8</td></tr><tr><td>Llemma-7B</td><td>21.6</td><td>29.9</td><td>7.2</td><td>44.8</td><td>27.2</td><td>33.2</td><td>29.2</td><td>26.0</td><td>26.4</td><td>22.4</td><td>14.0</td><td>8.4</td><td>6.4</td><td>0.0</td></tr><tr><td>Llemma-LB-9B</td><td>20.4</td><td>22.5</td><td>16.7</td><td>34.8</td><td>23.6</td><td>26.8</td><td>22.4</td><td>18.8</td><td>16.0</td><td>15.2</td><td>20.8</td><td>17.6</td><td>12.4</td><td>16.0</td></tr><tr><td>Llemma-34B</td><td>35.6</td><td>46.3</td><td>16.7</td><td>58.0</td><td>48.0</td><td>46.8</td><td>48.0</td><td>47.2</td><td>36.8</td><td>39.6</td><td>28.4</td><td>27.2</td><td>11.2</td><td>0.0</td></tr><tr><td colspan=\"15\">ZERO-SHOT COT</td></tr><tr><td>MathOctopus-7B</td><td>37.1</td><td>42.7</td><td>27.2</td><td>51.6</td><td>40.0</td><td>38.4</td><td>47.2</td><td>42.4</td><td>44.0</td><td>35.6</td><td>39.2</td><td>31.6</td><td>37.2</td><td>0.8</td></tr><tr><td>MathOctopus-13B</td><td>42.9</td><td>48.6</td><td>32.9</td><td>50.8</td><td>49.2</td><td>50.4</td><td>52.8</td><td>47.2</td><td>52.4</td><td>37.2</td><td>44.4</td><td>40.4</td><td>46.4</td><td>0.4</td></tr><tr><td>BLOOM-7.1B-MM</td><td>16.7</td><td>21.7</td><td>7.8</td><td>41.2</td><td>19.6</td><td>24.4</td><td>26.8</td><td>9.6</td><td>21.2</td><td>9.2</td><td>0.8</td><td>15.6</td><td>6.8</td><td>8.0</td></tr><tr><td>MetaMath-7B</td><td>34.4</td><td>51.8</td><td>3.9</td><td>64.8</td><td>57.6</td><td>55.6</td><td>56.4</td><td>50.4</td><td>42.4</td><td>35.6</td><td>4.0</td><td>6.4</td><td>4.4</td><td>0.8</td></tr><tr><td>MetaMath-LB-9B</td><td>48.8</td><td>52.3</td><td>42.8</td><td>63.2</td><td>50.8</td><td>52.4</td><td>58.0</td><td>56.4</td><td>45.2</td><td>40.0</td><td>50.4</td><td>43.2</td><td>42.8</td><td>34.8</td></tr><tr><td>MetaMath-13B</td><td>40.5</td><td>60.3</td><td>6.0</td><td>70.4</td><td>64.4</td><td>65.2</td><td>63.6</td><td>60.0</td><td>50.8</td><td>47.6</td><td>4.8</td><td>11.6</td><td>6.8</td><td>0.8</td></tr><tr><td>MetaMath-LB-15B</td><td>53.5</td><td>58.0</td><td>45.2</td><td>67.6</td><td>63.6</td><td>61.6</td><td>63.2</td><td>60.0</td><td>48.0</td><td>42.0</td><td>52.8</td><td>41.6</td><td>50.0</td><td>36.4</td></tr><tr><td>MetaMath-LB-20B</td><td>55.8</td><td>58.7</td><td>50.7</td><td>66.4</td><td>64.0</td><td>64.0</td><td>60.4</td><td>58.8</td><td>52.4</td><td>45.2</td><td>53.6</td><td>49.2</td><td>52.8</td><td>47.2</td></tr></table>\n\nport the performance of BLOOM models further trained on the training sets of LANGBRIDGE models: BLOOM-Proof-Pile-2 (PP2) and BLOOM-MetaMath (MM). This is done to confirm that the capabilities of LANGBRIDGE models are derived from the LMs' inherent strength rather than solely from the training set utilized by LANGBRIDGE. Detailed hyperparameters for training the BLOOM models are available in Appendix F. We additionally report the performance of PaLM (Chowdhery et al., 2023) measured by Shi et al. (2023). Similar to Llama 2, PaLM was pretrained on English-heavy corpora."
+    },
+    {
+      "source_window_id": "2024.acl-long.405::sections::4.3.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.3.1",
+      "section_title": "experimental setup",
+      "evidence": "Evaluation Datasets Leveraging the strong translation capabilities of GPT-4 (OpenAI, 2023), as demonstrated in the study by Jiao et al. (2023), we extend HumanEval (Chen et al., 2021), a set of hand-written programming problems, into five underrepresented languages: Swahili, Bengali, Punjabi, Telugu, and Urdu. We name the resulting dataset HumanEval-MT. We select the five languages among those with reported MMLU (Hendrycks et al., 2021a) performance in the technical report of GPT-4 while also being included in the pretraining corpora of BLOOM. This choice is made to acquire high-quality translations from GPT-4, and provide BLOOM-based baselines at a level playing field. To guide GPT-4 to only translate the embedded natural language instruction of the docstring while not modifying the code segments, we prompt GPT-4 with two human-annotated examples. Subsequently, the generated translations are executed in a Python interpreter environment to assert the absence of syntax errors. We provide translation quality estimation of HumanEval-MT in Appendix E.\n\nThe examples within the HumanEval dataset often feature self-explanatory function names. This suggests that language models could potentially\n\ncomplete the associated code segments successfully, even without accurately comprehending the natural language comments embedded within them. Therefore, we evaluate the models on anonymized versions of each language set, wherein the target function names of the code segments are uniformly altered to \"func\". An example of the anonymization and evaluation result on the original version is available in Appendix A.\n\nLanguage Models Code Llama (Rozière et al., 2023) is a family of models initialized from Llama 2 model weights and pretrained on a code-heavy dataset. In our experiments, we use Code Llama-Python models, which were further pretrained on a Python-heavy dataset. Since the datasets used to pretrain the Code Llama models are not publicly available, we sample from the Python subset of StarCoder data (Li et al., 2023b) as the training dataset for LANGBRIDGE.\n\nBaselines We use Llama 2 and BLOOM models as the baselines. Both models contain code data within their pretraining corpora. Additionally, we report the performance of BLOOM-StarCoder, a BLOOM model continually pretrained on the sample of StarCoder data used to train LANGBRIDGE models."
+    },
+    {
+      "source_window_id": "2024.acl-long.405::sections::4.4.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.4.1",
+      "section_title": "experimental setup",
+      "evidence": "Evaluation Datasets We assess logical reasoning capabilities with Big-Bench Hard (BBH) (Suzgun et al., 2023) and Big-Bench Hard Bengali (BBH-BN) (Shafayat et al., 2024). BBH is a collection of challenging subtasks where the application of chain-of-thought (CoT) reasoning has the potential to enhance performance substantially.\n\nTable 2: Pass@1 scores on anonymized versions of HumanEval and HumanEval-MT. The models were evaluated on zero-shot code completion using greedy decoding. We compare LANGBRIDGE (LB) models to their original checkpoints and highlight the best-performing numbers in bold.   \n\n<table><tr><td></td><td>AVG</td><td>EN</td><td>SW</td><td>BN</td><td>PA</td><td>TE</td><td>UR</td></tr><tr><td>Llama 2-7B</td><td>4.6</td><td>9.8</td><td>3.7</td><td>3.0</td><td>3.0</td><td>3.0</td><td>4.9</td></tr><tr><td>BLOOM-7.1B</td><td>4.9</td><td>7.3</td><td>2.4</td><td>5.5</td><td>4.3</td><td>6.1</td><td>3.7</td></tr><tr><td>BLOOM-7.1B-StarCoder</td><td>4.5</td><td>6.7</td><td>3.0</td><td>4.3</td><td>4.3</td><td>3.7</td><td>4.9</td></tr><tr><td>Code Llama-7B</td><td>16.9</td><td>36.0</td><td>14.0</td><td>14.6</td><td>10.4</td><td>9.8</td><td>16.5</td></tr><tr><td>Code Llama-LB-9B</td><td>19.4</td><td>31.7</td><td>17.1</td><td>15.2</td><td>18.3</td><td>15.2</td><td>18.9</td></tr><tr><td>Code Llama-13B</td><td>19.6</td><td>40.2</td><td>15.2</td><td>17.7</td><td>12.2</td><td>12.8</td><td>19.5</td></tr><tr><td>Code Llama-LB-15B</td><td>23.6</td><td>41.5</td><td>20.1</td><td>20.1</td><td>19.5</td><td>19.5</td><td>20.7</td></tr><tr><td>Code Llama-LB-20B</td><td>23.5</td><td>36.0</td><td>24.4</td><td>20.1</td><td>20.7</td><td>18.9</td><td>20.7</td></tr><tr><td>Code Llama-34B</td><td>22.7</td><td>43.9</td><td>17.1</td><td>23.8</td><td>15.9</td><td>12.8</td><td>22.6</td></tr></table>\n\nBBH-BN translates 14 of the 23 subtasks of BBH into Bengali. To facilitate meaningful comparison, we evaluate only on the 14 subtasks supported by BBH-BN for BBH. $^{11}$\n\nLanguage Models Orca 2 (Mitra et al., 2023) was finetuned on Llama 2 with a collection of datasets augmented with reasoning traces of GPT-4 as well as fully synthetic datasets created with GPT-4. Orca 2 effectively improved the reasoning abilities of smaller LMs on complex tasks demanding advanced reasoning in zero-shot settings. As the training dataset of Orca 2 is not publicly available, we sample the training data for LANGBRIDGE from the OpenOrca dataset (Lian et al., 2023). OpenOrca follows the data distribution of the first iteration of Orca (Mukherjee et al., 2023). We employ CLD3 to filter any non-English data that mainly derives from translation datasets to ensure the zero-shot setting of our experiments. Examples were included if their input text had a $99\\%$ or greater probability of being English, while their target text also had a $95\\%$ or greater chance of being English. A slightly lower threshold was adopted for the target text to not falsely filter single-word responses, which CLD3 exhibits lower confidence.\n\nBaselines In our evaluation of BBH, we assess whether Orca 2-LB models could acquire multilingual comprehension while retaining the zero-shot CoT capabilities of Orca 2. However, from our limited testing, we found that no existing open multilingual LMs could generate CoT reliably in a zero-shot setting. Consequently, they were not included as baselines. We do report the performance of BLOOM-OpenOrca, a BLOOM model further\n\nTable 3: Accuracy (%) on BBH (English) and BBH-BN (Bengali). We report the average accuracy across 14 subtasks. We compare LANGBRIDGE (LB) models to their original checkpoints and highlight the best-performing numbers in bold.   \n\n<table><tr><td></td><td>EN</td><td>BN</td></tr><tr><td>BLOOM-7B-OpenOrca</td><td>35.8</td><td>31.2</td></tr><tr><td>Orca 2-7B</td><td>53.9</td><td>36.7</td></tr><tr><td>Orca 2-LB-9B</td><td>46.9</td><td>41.8</td></tr><tr><td>Orca 2-13B</td><td>57.9</td><td>41.7</td></tr><tr><td>Orca 2-LB-15B</td><td>55.2</td><td>45.4</td></tr><tr><td>Orca 2-LB-20B</td><td>53.1</td><td>45.4</td></tr></table>\n\ntrained on the same training set as Orca 2-LB."
+    },
+    {
+      "source_window_id": "2024.acl-long.405::sections::6",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6",
+      "section_title": "discussion",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.acl-long.405::appendix::D",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D",
+      "section_title": "ablation studies",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.acl-long.405::appendix::D.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D.3",
+      "section_title": "training set size",
+      "evidence": "![](images/881eccbb64ff198221a8f392ba15f4ec867fcfe1a564a505591294386e89940d.jpg)  \nFigure 6: XCOPA accuracy $(\\%)$ of Orca 2-7B models adapted with LANGBRIDGE using five different sizes of training datasets.\n\nWhile we fixed the training set size to 200,000 in our main experiments, Figure 6 shows that XCOPA performance peaks on 120,000 training examples, which is $60\\%$ of our experiment setting. This suggests that in practice, LANGBRIDGE can be applied more efficiently."
+    },
+    {
+      "source_window_id": "2024.acl-long.405::appendix::F",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "F",
+      "section_title": "experimental details",
+      "evidence": "For training LANGBRIDGE models, we leverage AdamW (Loshchilov and Hutter, 2019). We use a learning rate of $6\\mathrm{e} - 4$ for the linear layer and $2\\mathrm{e} - 5$ for the encoder. We do not use any learning rate scheduling. We use an effective batch size of 128.\n\nFor further training BLOOM baselines, we keep the training configuration the same as LANGBRIDGE models with two exceptions: (1) Learning rate, in which we used a uniform value of $2\\mathrm{e} - 5$ across the entire model. (2) Sequence length, which was set to 1,152 $(1,024 + 128)$ .\n\nFor evaluations, we leverage code adapted from LM Evaluation Harness (version 0.3.0) (Gao et al., 2023) and Bigcode Evaluation Harness (version 0.1.0) (Ben Allal et al., 2022) packages and report single run results with fixed seed. We open source the evaluation code.\n\nFor constructing HumanEval-MT, we prompt GPT-4 with human-translated examples. The two examples used for HumanEval-MT were translated to Korean by a native Korean author. GPT-4 was then prompted to translate HumanEval to the target\n\nlanguages with the examples as reference. Note that the examples were provided to guide GPT-4 to keep the format of the data intact and only translate the natural language, not necessarily to enhance the translation quality itself."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.1",
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 4
+      },
+      {
+        "name": "NVIDIA RTX A6000",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2024\\2024.acl-long.405\\auto\\full.md",
+    "source_md_sha256": "84f94ef2f5c7004a898ce2110d0534f5f5a45ab0943e733bca2eb67e98d1c87e",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "ad96f3b6ca003898756db958dd17467668c845886fa3f1f835d26a866c8af3f0"
+  }
+}

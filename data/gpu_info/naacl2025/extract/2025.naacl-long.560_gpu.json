@@ -1,0 +1,133 @@
+{
+  "paper_id": "2025.naacl-long.560",
+  "candidate_windows": [
+    {
+      "window_id": "2025.naacl-long.560::sections::3",
+      "paper_id": "2025.naacl-long.560",
+      "section_number": "3",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "To present Planetarium, we first introduce planning, PDDL, and scene graphs.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.560::appendix::C",
+      "paper_id": "2025.naacl-long.560",
+      "section_number": "C",
+      "section_title": "implementation of fullyspecify",
+      "normalized_section_title": "implementation of fullyspecify",
+      "window_text": "The fullySpecify function adds trivial edges (edges that must exist but are not currently present) to our scene graphs. We build the fullySpecify function using our domain knowledge of the Blocks World and Gripper domains.\n\nBlocks World The following helpful facts are true about Blocks World:\n\n- If all blocks have its behavior above it defined (they are either clear, have something on top of it, or is being held), then any block that does not have its bottom behavior specified, must be on the table (on-table).   \n- If all blocks have its behavior beneath it defined (they are either on top of something else, are on the table (on-table), or are being held), then any block that does not have its behavior above it defined must be clear.   \n- Following the last two facts: if there is a block $\\mathbf{A}$ which has its behavior above it unspecified and block $\\mathbf{B}$ which has its behavior below it unspecified, then the only way that (on $\\mathbf{B} \\mathbf{A}$ ) can exist is if there isn't already a chain of predicates that leads $\\mathbf{A}$ to $\\mathbf{B}$ or vice versa. If there already exists a chain connecting these two blocks, that means $\\mathbf{A}$ and $\\mathbf{B}$ are already connected by being in the same tower, and that they are the top and bottom of the tower they are a part of.   \n- If there are no \"floating\" blocks (blocks that have both its top and bottom behavior defined), and the arm's behavior is undefined (neither\n\narm-empty nor holding) is present, then the arm must be empty. This is because there is no block that the arm could possibly hold here.\n\nUsing these rules, we can add all possible trivial edges, until no more trivial edges can be found. Further, these facts will discover all possible trivial edges in Blocks World, meaning the fully specified scene graph will be in its canonical form after fullySpecify.\n\nGripper Similarly, we can build a set of facts that operate on the Gripper domain:\n\n- If all balls are assigned a room (at ball room), then all unassigned grippers (no (free gripper) or (carry ball gripper)) must be free.   \n- If there is only one room, and if all grippers are already specified (either (free) or (carry ball gripper)), then any unspecified balls must be in the only room that exists.   \n- If there is only one room, the robbery must be in it (at-robby onlyRoom).\n\nThese are the only rules we can find. This is because, if a ball's position is unspecified, it can always be assigned to any arbitrary room. If the robbery is unspecified (no at-robby), then it too, can always be specified to any arbitrary room.\n\nFloor Tile In the standard Floor Tile, we know that:\n\n- A tile cannot be unpainted.   \n- All available colors (available-color color) are unchangeable and cannot be added.   \n- Relative positional propositions (right tile1 tile2) and (up tile1 tile2) are unchangeable and cannot be added.\n\nFurther, given our simplifications, we have the following characteristics in our domain:\n\n- Traversal is bidirectional.   \n- Painting a tile and other robots do not block path-finding.   \n- From the last two facts, robots cannot block themselves off through actions, so the only way the position of a robot is fixed is if:\n\n![](images/f70fb1895ef497bac640846511b4f4feb7ff4de5b0ca91fe6dd78501fe576fb5.jpg)\n\n![](images/0fefac5a295f919f109944c23611e178493c7a902bc226a043bb56933cc6fe95.jpg)\n\n![](images/4edb481bbb9edc528af9d6ccac030a542bfa65b3b7520466b1f326ea7024e584.jpg)\n\n![](images/5a423fbd8b3b51e4b89c923ffa2dda716ebb3d64ffa1c70cefc8511ba8cd01b8.jpg)  \n*Simplified graph representation used for clarity   \nFigure 5: An illustration of the algorithm to check if two PDDL problems are equivalent. It shows each of the stages of the algorithm: transforming to scene graphs, fully specifying the goal propositions, and checking for graph isomorphism.\n\n1. It is explicitly defined in the goal description.   \n2. The robot is on an isolated tile to begin with.\n\nApplying these rules allows us to fully specify a Floor Tile goal description.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.560::appendix::F",
+      "paper_id": "2025.naacl-long.560",
+      "section_number": "F",
+      "section_title": "fine-tuning",
+      "normalized_section_title": "fine-tuning",
+      "window_text": "Table 3: Training hyperparameters when fine-tuning all models included in the paper. The hyperparameters are separated into three parts: supervised fine-tuning, generation-related, and LoRA-related.   \n\n<table><tr><td>Hyperparameters</td><td>Value</td></tr><tr><td>Optimizer</td><td>adamw_torch</td></tr><tr><td>Learning rate</td><td>2e-5</td></tr><tr><td>Batch Size</td><td>1</td></tr><tr><td>Betas</td><td>(0.9, 0.999)</td></tr><tr><td>Epsilon</td><td>1e-8</td></tr><tr><td>Weight Decay</td><td>0.01</td></tr><tr><td>Max Sequence Length</td><td>1500</td></tr><tr><td>LoRA rank</td><td>16</td></tr><tr><td>LoRA alpha</td><td>32</td></tr><tr><td>LoRA Dropout</td><td>0.05</td></tr></table>\n\nWe fine-tuned the open-weight models using QLoRA with a rank of 16, adhering to the hyperparameter recommendations for small models provided by the original authors (Dettmers et al., 2023). Models were loaded with 4-bit precision and trained over the training set for a single epoch. Fine-tuning for each model used either two NVIDIA GeForce RTX 3090 GPUs or two\n\nNVIDIA A6000 GPUs, operating with data parallelization for approximately 15 hours. We truncate the longest $5\\%$ of our training dataset due to GPU memory constraints.\n\nTable 3 displays the hyperparameters used for fine-tuning across all models. In addition, models are loaded using 4-bit NF4 quantization with double quantization to reduce the average memory footprint. We also use the bffloat16 compute data type for faster training.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.naacl-long.560::appendix::F",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA GeForce RTX 3090",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "Table 3: Training hyperparameters when fine-tuning all models included in the paper. The hyperparameters are separated into three parts: supervised fine-tuning, generation-related, and LoRA-related.   \n\n<table><tr><td>Hyperparameters</td><td>Value</td></tr><tr><td>Optimizer</td><td>adamw_torch</td></tr><tr><td>Learning rate</td><td>2e-5</td></tr><tr><td>Batch Size</td><td>1</td></tr><tr><td>Betas</td><td>(0.9, 0.999)</td></tr><tr><td>Epsilon</td><td>1e-8</td></tr><tr><td>Weight Decay</td><td>0.01</td></tr><tr><td>Max Sequence Length</td><td>1500</td></tr><tr><td>LoRA rank</td><td>16</td></tr><tr><td>LoRA alpha</td><td>32</td></tr><tr><td>LoRA Dropout</td><td>0.05</td></tr></table>\n\nWe fine-tuned the open-weight models using QLoRA with a rank of 16, adhering to the hyperparameter recommendations for small models provided by the original authors (Dettmers et al., 2023). Models were loaded with 4-bit precision and trained over the training set for a single epoch. Fine-tuning for each model used either two NVIDIA GeForce RTX 3090 GPUs or two\n\nNVIDIA A6000 GPUs, operating with data parallelization for approximately 15 hours. We truncate the longest $5\\%$ of our training dataset due to GPU memory constraints.\n\nTable 3 displays the hyperparameters used for fine-tuning across all models. In addition, models are loaded using 4-bit NF4 quantization with double quantization to reduce the average memory footprint. We also use the bffloat16 compute data type for faster training.",
+      "section_number": "F",
+      "section_title": "fine-tuning",
+      "normalized_section_title": "fine-tuning"
+    },
+    {
+      "window_id": "2025.naacl-long.560::appendix::F",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A6000",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "Table 3: Training hyperparameters when fine-tuning all models included in the paper. The hyperparameters are separated into three parts: supervised fine-tuning, generation-related, and LoRA-related.   \n\n<table><tr><td>Hyperparameters</td><td>Value</td></tr><tr><td>Optimizer</td><td>adamw_torch</td></tr><tr><td>Learning rate</td><td>2e-5</td></tr><tr><td>Batch Size</td><td>1</td></tr><tr><td>Betas</td><td>(0.9, 0.999)</td></tr><tr><td>Epsilon</td><td>1e-8</td></tr><tr><td>Weight Decay</td><td>0.01</td></tr><tr><td>Max Sequence Length</td><td>1500</td></tr><tr><td>LoRA rank</td><td>16</td></tr><tr><td>LoRA alpha</td><td>32</td></tr><tr><td>LoRA Dropout</td><td>0.05</td></tr></table>\n\nWe fine-tuned the open-weight models using QLoRA with a rank of 16, adhering to the hyperparameter recommendations for small models provided by the original authors (Dettmers et al., 2023). Models were loaded with 4-bit precision and trained over the training set for a single epoch. Fine-tuning for each model used either two NVIDIA GeForce RTX 3090 GPUs or two\n\nNVIDIA A6000 GPUs, operating with data parallelization for approximately 15 hours. We truncate the longest $5\\%$ of our training dataset due to GPU memory constraints.\n\nTable 3 displays the hyperparameters used for fine-tuning across all models. In addition, models are loaded using 4-bit NF4 quantization with double quantization to reduce the average memory footprint. We also use the bffloat16 compute data type for faster training.",
+      "section_number": "F",
+      "section_title": "fine-tuning",
+      "normalized_section_title": "fine-tuning"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.naacl-long.560::appendix::F",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA GeForce RTX 3090",
+      "cleaned_hardware_name": "nvidia geforce rtx 3090",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 3090",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 3090",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "F",
+      "section_title": "fine-tuning",
+      "normalized_section_title": "fine-tuning",
+      "evidence": "Table 3: Training hyperparameters when fine-tuning all models included in the paper. The hyperparameters are separated into three parts: supervised fine-tuning, generation-related, and LoRA-related.   \n\n<table><tr><td>Hyperparameters</td><td>Value</td></tr><tr><td>Optimizer</td><td>adamw_torch</td></tr><tr><td>Learning rate</td><td>2e-5</td></tr><tr><td>Batch Size</td><td>1</td></tr><tr><td>Betas</td><td>(0.9, 0.999)</td></tr><tr><td>Epsilon</td><td>1e-8</td></tr><tr><td>Weight Decay</td><td>0.01</td></tr><tr><td>Max Sequence Length</td><td>1500</td></tr><tr><td>LoRA rank</td><td>16</td></tr><tr><td>LoRA alpha</td><td>32</td></tr><tr><td>LoRA Dropout</td><td>0.05</td></tr></table>\n\nWe fine-tuned the open-weight models using QLoRA with a rank of 16, adhering to the hyperparameter recommendations for small models provided by the original authors (Dettmers et al., 2023). Models were loaded with 4-bit precision and trained over the training set for a single epoch. Fine-tuning for each model used either two NVIDIA GeForce RTX 3090 GPUs or two\n\nNVIDIA A6000 GPUs, operating with data parallelization for approximately 15 hours. We truncate the longest $5\\%$ of our training dataset due to GPU memory constraints.\n\nTable 3 displays the hyperparameters used for fine-tuning across all models. In addition, models are loaded using 4-bit NF4 quantization with double quantization to reduce the average memory footprint. We also use the bffloat16 compute data type for faster training.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.naacl-long.560::appendix::F",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A6000",
+      "cleaned_hardware_name": "nvidia a6000",
+      "normalized_hardware_name": "NVIDIA RTX A6000",
+      "benchmark_hardware_name": "NVIDIA RTX A6000",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "F",
+      "section_title": "fine-tuning",
+      "normalized_section_title": "fine-tuning",
+      "evidence": "Table 3: Training hyperparameters when fine-tuning all models included in the paper. The hyperparameters are separated into three parts: supervised fine-tuning, generation-related, and LoRA-related.   \n\n<table><tr><td>Hyperparameters</td><td>Value</td></tr><tr><td>Optimizer</td><td>adamw_torch</td></tr><tr><td>Learning rate</td><td>2e-5</td></tr><tr><td>Batch Size</td><td>1</td></tr><tr><td>Betas</td><td>(0.9, 0.999)</td></tr><tr><td>Epsilon</td><td>1e-8</td></tr><tr><td>Weight Decay</td><td>0.01</td></tr><tr><td>Max Sequence Length</td><td>1500</td></tr><tr><td>LoRA rank</td><td>16</td></tr><tr><td>LoRA alpha</td><td>32</td></tr><tr><td>LoRA Dropout</td><td>0.05</td></tr></table>\n\nWe fine-tuned the open-weight models using QLoRA with a rank of 16, adhering to the hyperparameter recommendations for small models provided by the original authors (Dettmers et al., 2023). Models were loaded with 4-bit precision and trained over the training set for a single epoch. Fine-tuning for each model used either two NVIDIA GeForce RTX 3090 GPUs or two\n\nNVIDIA A6000 GPUs, operating with data parallelization for approximately 15 hours. We truncate the longest $5\\%$ of our training dataset due to GPU memory constraints.\n\nTable 3 displays the hyperparameters used for fine-tuning across all models. In addition, models are loaded using 4-bit NF4 quantization with double quantization to reduce the average memory footprint. We also use the bffloat16 compute data type for faster training.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "F"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce RTX 3090",
+        "num": 2
+      },
+      {
+        "name": "NVIDIA RTX A6000",
+        "num": 2
+      }
+    ]
+  }
+}

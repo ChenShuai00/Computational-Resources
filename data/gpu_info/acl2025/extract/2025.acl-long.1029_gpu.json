@@ -1,0 +1,204 @@
+{
+  "paper_id": "2025.acl-long.1029",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.1029::sections::4",
+      "paper_id": "2025.acl-long.1029",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1029::sections::4.1",
+      "paper_id": "2025.acl-long.1029",
+      "section_number": "4.1",
+      "section_title": "setup",
+      "normalized_section_title": "setup",
+      "window_text": "We evaluate our model in three settings: directly after diffusion adaptive pretraining, after instruction tuning, and with reward guidance applied.\n\nDiffusion Adaptation For diffusion adaptation training, we train the model on Dolma 1.7 (Soldaini et al., 2024), an open pretraining dataset, for up to 200,000 train steps, or approximately 45 billion tokens. We use a constant learning rate of $1 \\times 10^{-5}$ with a linear warmup of 5000 train steps, and a batch size of 112 samples. We adapt the Mistral-7B-v0.1 model (Jiang et al., 2023), based on model ablations explored in Sec. 4.2. We use a simplex value of 5 and self-conditioning as done in Karimi Mahabadi et al. (2024). We provide additional details in App. A.\n\nInstruction Tuning For instruction tuning, we use the Tulu 2 SFT mixture (Ivison et al., 2023), which consists of roughly 326k samples. We fine-tune for 3 epochs with a learning rate of $1 \\times 10^{-5}$ with linear warmup for the first $3\\%$ of training steps and linear cooldown for the rest of training, which we found worked best in pilot experiments.\n\nReward Guidance For reward guidance, we train a standard reward model on human preferences using Mistral-7B-v0.1 and the data and hyperparameters provided by Dong et al. (2023); Xiong et al. (2023). We provide training details in App. C.\n\nAdaptation Evaluation Following Han et al. (2022, 2023); Richemond et al. (2022), we evaluate our adaptation using perplexity, average distinct $n$ -grams in the output samples (d-1/2/3/4), unigram (per-token) entropy, and Mauve score (Pillutla et al., 2021). Perplexity is measured using a held-out model, following Han et al. (2022, 2023).\n\nDownstream Evaluation In addition to the adaptation evaluation, we evaluate our models on a diverse set of downstream tasks: (1) AlpacaEval (Li et al., 2023), which tests general instruction following capabilities; (2) GSM8k (Cobbe et al., 2021), which tests simple math word problems; (3) SQuAD (Rajpurkar et al., 2016) (with context), which tests general question-answering abilities; (4) TriviaQA (Joshi et al., 2017), a reading comprehension dataset; (5) IFEval (Zhou et al., 2023), which tests exact instruction-following; and (6) Big Bench Hard (BBH) (Suzgun et al., 2022), which tests general reasoning. For GSM8k, we additionally test the performance of our model after finetuning on the GSM8k symbolic data provided by Ye et al. (2024), following DiffuLLaMA (Gong et al., 2024). We provide further details in App. D.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1029::appendix::A",
+      "paper_id": "2025.acl-long.1029",
+      "section_number": "A",
+      "section_title": "adaptation training details",
+      "normalized_section_title": "adaptation training details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1029::appendix::A.1",
+      "paper_id": "2025.acl-long.1029",
+      "section_number": "A.1",
+      "section_title": "pretraining masking",
+      "normalized_section_title": "pretraining masking",
+      "window_text": "For pretraining, we use a UL2-inspired masking scheme (Tay et al., 2023), which involves randomly sampling different masking strategies. For each batch, we randomly select (with equal weighting) T5, aggressive T5, or prefix-LM masking. We detail each masking strategy below:\n\n- T5: This follows the T5 masking strategy (Raffel et al., 2020), in which non-overlapping mask spans consisting of 3 or 8 tokens are applied until roughly $15\\%$ of the input sequence is masked.\n\n- Aggressive T5: This is a more aggressive variant of the T5 strategy above. We apply masking spans consisting of 3, 8, or 48 tokens until roughly $50\\%$ of the input sequence is masked.\n\n- Prefix-LM: This follows the prefix-LM objective (Liu et al., 2018), where only the final tokens in the input sequence are masked, better resembling downstream usage (where we prompt an LM and want to generate a completion). We simply mask the first half of the input sequence and train the model to predict the rest.\n\nNote that even with UL2, our training objective is the usual cross-entropy loss, and there are no modifications required: we simply take the model predictions for all output positions and use those for cross-entropy loss. Concretely, we first mask out random spans from the input text according to UL2. Next, we add noise to produce noisy word embeddings. The model then has to predict the actual words given these inputs, where the softmax output is paired with the usual cross-entropy loss.\n\nIntuitively, adding span masks (1) acts as a strong regularizer that makes token prediction more difficult, (2) prepares the model for more flexible generation, e.g., filling, and (3) more directly encourages the use of bidirectional context during generation.\n\nFinally, we performed some early pilot experiments with masking ratios for UL2, primarily testing removing the \"aggressive T5\" option. We found that this underperformed the initial UL2 masking\n\nstrategy in AlpacaEval, albeit using slightly different hyperparameters and training data than used in the main text. As such, we did not remove the aggressive T5 masking.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1029::appendix::A.2",
+      "paper_id": "2025.acl-long.1029",
+      "section_number": "A.2",
+      "section_title": "infrastructure",
+      "normalized_section_title": "infrastructure",
+      "window_text": "We train all models on a cluster of H100s, with all jobs running on at most 1 node (8 GPUs). During training, we apply common techniques used during autoregressive training to reduce training time and improve overall efficiency: fused AdamW, Flash Attention 2 (Dao, 2024), gradient checkpointing, and bfloat16 training.\n\nRunning the diffusion adaptation training for 35,000 training steps (with sequence length 512) takes roughly 250 H100-hours, while running for 200,000 steps (with sequence length 2048) takes roughly 2,000 H100-hours. Based on commonly used training cost estimates from Kaplan et al. (2020), the estimated total FLOPs is given by\n\n$$\n\\begin{array}{l} C \\approx 6 N D \\\\ = 6 \\cdot \\left(7 \\times 1 0 ^ {9} \\text {p a r a m s}\\right) \\cdot \\left(4 5 \\times 1 0 ^ {9} \\text {t o k e n s}\\right) \\\\ = 1. 8 9 \\times 1 0 ^ {2 1} \\text {F L O P s}. \\\\ \\end{array}\n$$\n\nRunning instruction tuning (with sequence length 2048) takes roughly 280 H100 hours.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.acl-long.1029::appendix::C",
+      "paper_id": "2025.acl-long.1029",
+      "section_number": "C",
+      "section_title": "reward model training",
+      "normalized_section_title": "reward model training",
+      "window_text": "For reward model (RM) training, we use a standard setup following prior work (Ouyang et al., 2022; Ivison et al., 2024). Our RM is simply a causal decoder-only model with the LM head replaced with a regression head that predicts a score given a prompt and completion. We initialize our RM from a Mistral v0.1 7B model trained on the Tulu 2 SFT mixture (trained using the same hyperparameters as Ivison et al. (2023)). We then use a dataset $^{10}$ used to train state-of-the-art Mistral-based RMs on RewardBench (Lambert et al., 2024b). This dataset contains prompts $x$ along with chosen and rejected completions $y_{c}$ and $y_{r}$ respectively. We then optimize the RM with\n\n$$\n\\mathcal {L} = - \\mathbb {E} _ {(x, y _ {c}, y _ {r}) \\sim \\mathcal {D}} \\big [ \\log \\sigma \\big (R (x, y _ {c}) - R (x, y _ {r}) \\big) \\big ],\n$$\n\nwhere $R$ is the reward model and $D$ our overall dataset. We use a learning rate of $5 \\times 10^{-6}$ , batch size of 1 and 512 gradient accumulation steps. We train for 1 epoch, linearly warming up the learning rate for the first $3\\%$ of steps and linearly decaying to 0 over training afterwards. We use a maximum sample length of 2048 and filter out longer examples during training. The resulting model is used in our reward guidance experiments (Sec. 4.4).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1029::appendix::G",
+      "paper_id": "2025.acl-long.1029",
+      "section_number": "G",
+      "section_title": "sm8k example",
+      "normalized_section_title": "sm8k example",
+      "window_text": "User: James decides to run 3 sprints 3 times a week. He runs 60 meters each sprint. How many total meters does he run a week?\n\nTESS 2v0.1: James runs sprints 3 times each of 3 days for a total of 9 times per week. That means he runs for $60 * 3 = 140$ meters per day. So he runs a total of $540 * 9 * 3 = 11,280$ meters per week.\n\nMistral v0.1 AR: James runs a total of 3 $3 = 9$ sprints per week. Since each sprint is 60 meters, James runs a total of 60 $9 = 540$ meters per week.\n\nFigure 5: Generations from TESS 2 and Mistral AR v0.1. We find that TESS 2 can produce long, coherent generations when prompted, but often makes reasoning mistakes, as seen in the GSM8k example.Conversation 1 User: What is some cool music from the 1920s?\n\nAssistant: The 1920s were a time of change and innovation in music, with the rise of several new genres that are still popular today. Some examples of the cool music from the 1920s include:\n\n1. Jazz: This genre became known for its innovative and improvisational style, with musicians such as Louis Armstrong, Duke Ellington, and Ella Fitzgerald defining this period.   \n2. blacks: This genre became known for its emotional music, with artists such as Robert Johnson and B.B. King.   \n3. Ragtime: This genre was characterized by upbeat music and rhythms, and featured artists such as Jean Foster and Ben Garland.   \n4. Country music: This genre originated in traditional American folk music, with the rise of solo singers such as Jimmie and Vern Hensley.   \n5. Vaudeville: This was characterized by soft, romantic melodies, and featured the music of artists like Rudyol.   \nThese are just a few examples of the cool and innovative music that emerged during the 1920s.Conversation 2 User: Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did Natalia sell altogether in April and May?\n\nAssistant: In April, Natalia sold $48 / 2 = 48$ clips to her friends. Then, half that number of clips, she sold $48 / 2 = 24$ clips in May. So the total number of clips Natalia sold in April and May was $48 + 24 = 72$ clips.Conversation 3 User: Who was the man behind The Chipmunks?\n\nAssistant: The man behind The Chipmunks was David Seville. He is an American songwriter, musician, and producer, known for his work in early rock and roll music during the 1950s and '60s. Seville is known for producing popular songs like \"Beverly Beverly.\" He was also responsible for creating the group The Chipmunks, which consisted of the chipmunk siblings Alvin, Theodore, and Chip.\n\nFigure 6: Non-cherry picked sample generations from TESS 2. Note we use a shorter generation length (256 tokens) than during training and evaluation (2048 tokens) for ease of reading.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.1029::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "H100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "We train all models on a cluster of H100s, with all jobs running on at most 1 node (8 GPUs). During training, we apply common techniques used during autoregressive training to reduce training time and improve overall efficiency: fused AdamW, Flash Attention 2 (Dao, 2024), gradient checkpointing, and bfloat16 training.\n\nRunning the diffusion adaptation training for 35,000 training steps (with sequence length 512) takes roughly 250 H100-hours, while running for 200,000 steps (with sequence length 2048) takes roughly 2,000 H100-hours. Based on commonly used training cost estimates from Kaplan et al. (2020), the estimated total FLOPs is given by\n\n$$\n\\begin{array}{l} C \\approx 6 N D \\\\ = 6 \\cdot \\left(7 \\times 1 0 ^ {9} \\text {p a r a m s}\\right) \\cdot \\left(4 5 \\times 1 0 ^ {9} \\text {t o k e n s}\\right) \\\\ = 1. 8 9 \\times 1 0 ^ {2 1} \\text {F L O P s}. \\\\ \\end{array}\n$$\n\nRunning instruction tuning (with sequence length 2048) takes roughly 280 H100 hours.",
+      "section_number": "A.2",
+      "section_title": "infrastructure",
+      "normalized_section_title": "infrastructure"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.1029::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "H100",
+      "cleaned_hardware_name": "h100",
+      "normalized_hardware_name": "NVIDIA H100 PCIe",
+      "benchmark_hardware_name": "NVIDIA H100 PCIe",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "A.2",
+      "section_title": "infrastructure",
+      "normalized_section_title": "infrastructure",
+      "evidence": "We train all models on a cluster of H100s, with all jobs running on at most 1 node (8 GPUs). During training, we apply common techniques used during autoregressive training to reduce training time and improve overall efficiency: fused AdamW, Flash Attention 2 (Dao, 2024), gradient checkpointing, and bfloat16 training.\n\nRunning the diffusion adaptation training for 35,000 training steps (with sequence length 512) takes roughly 250 H100-hours, while running for 200,000 steps (with sequence length 2048) takes roughly 2,000 H100-hours. Based on commonly used training cost estimates from Kaplan et al. (2020), the estimated total FLOPs is given by\n\n$$\n\\begin{array}{l} C \\approx 6 N D \\\\ = 6 \\cdot \\left(7 \\times 1 0 ^ {9} \\text {p a r a m s}\\right) \\cdot \\left(4 5 \\times 1 0 ^ {9} \\text {t o k e n s}\\right) \\\\ = 1. 8 9 \\times 1 0 ^ {2 1} \\text {F L O P s}. \\\\ \\end{array}\n$$\n\nRunning instruction tuning (with sequence length 2048) takes roughly 280 H100 hours.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.1029::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.1029::sections::4.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "setup",
+      "evidence": "We evaluate our model in three settings: directly after diffusion adaptive pretraining, after instruction tuning, and with reward guidance applied.\n\nDiffusion Adaptation For diffusion adaptation training, we train the model on Dolma 1.7 (Soldaini et al., 2024), an open pretraining dataset, for up to 200,000 train steps, or approximately 45 billion tokens. We use a constant learning rate of $1 \\times 10^{-5}$ with a linear warmup of 5000 train steps, and a batch size of 112 samples. We adapt the Mistral-7B-v0.1 model (Jiang et al., 2023), based on model ablations explored in Sec. 4.2. We use a simplex value of 5 and self-conditioning as done in Karimi Mahabadi et al. (2024). We provide additional details in App. A.\n\nInstruction Tuning For instruction tuning, we use the Tulu 2 SFT mixture (Ivison et al., 2023), which consists of roughly 326k samples. We fine-tune for 3 epochs with a learning rate of $1 \\times 10^{-5}$ with linear warmup for the first $3\\%$ of training steps and linear cooldown for the rest of training, which we found worked best in pilot experiments.\n\nReward Guidance For reward guidance, we train a standard reward model on human preferences using Mistral-7B-v0.1 and the data and hyperparameters provided by Dong et al. (2023); Xiong et al. (2023). We provide training details in App. C.\n\nAdaptation Evaluation Following Han et al. (2022, 2023); Richemond et al. (2022), we evaluate our adaptation using perplexity, average distinct $n$ -grams in the output samples (d-1/2/3/4), unigram (per-token) entropy, and Mauve score (Pillutla et al., 2021). Perplexity is measured using a held-out model, following Han et al. (2022, 2023).\n\nDownstream Evaluation In addition to the adaptation evaluation, we evaluate our models on a diverse set of downstream tasks: (1) AlpacaEval (Li et al., 2023), which tests general instruction following capabilities; (2) GSM8k (Cobbe et al., 2021), which tests simple math word problems; (3) SQuAD (Rajpurkar et al., 2016) (with context), which tests general question-answering abilities; (4) TriviaQA (Joshi et al., 2017), a reading comprehension dataset; (5) IFEval (Zhou et al., 2023), which tests exact instruction-following; and (6) Big Bench Hard (BBH) (Suzgun et al., 2022), which tests general reasoning. For GSM8k, we additionally test the performance of our model after finetuning on the GSM8k symbolic data provided by Ye et al. (2024), following DiffuLLaMA (Gong et al., 2024). We provide further details in App. D."
+    },
+    {
+      "source_window_id": "2025.acl-long.1029::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "adaptation training details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.1029::appendix::A.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.1",
+      "section_title": "pretraining masking",
+      "evidence": "For pretraining, we use a UL2-inspired masking scheme (Tay et al., 2023), which involves randomly sampling different masking strategies. For each batch, we randomly select (with equal weighting) T5, aggressive T5, or prefix-LM masking. We detail each masking strategy below:\n\n- T5: This follows the T5 masking strategy (Raffel et al., 2020), in which non-overlapping mask spans consisting of 3 or 8 tokens are applied until roughly $15\\%$ of the input sequence is masked.\n\n- Aggressive T5: This is a more aggressive variant of the T5 strategy above. We apply masking spans consisting of 3, 8, or 48 tokens until roughly $50\\%$ of the input sequence is masked.\n\n- Prefix-LM: This follows the prefix-LM objective (Liu et al., 2018), where only the final tokens in the input sequence are masked, better resembling downstream usage (where we prompt an LM and want to generate a completion). We simply mask the first half of the input sequence and train the model to predict the rest.\n\nNote that even with UL2, our training objective is the usual cross-entropy loss, and there are no modifications required: we simply take the model predictions for all output positions and use those for cross-entropy loss. Concretely, we first mask out random spans from the input text according to UL2. Next, we add noise to produce noisy word embeddings. The model then has to predict the actual words given these inputs, where the softmax output is paired with the usual cross-entropy loss.\n\nIntuitively, adding span masks (1) acts as a strong regularizer that makes token prediction more difficult, (2) prepares the model for more flexible generation, e.g., filling, and (3) more directly encourages the use of bidirectional context during generation.\n\nFinally, we performed some early pilot experiments with masking ratios for UL2, primarily testing removing the \"aggressive T5\" option. We found that this underperformed the initial UL2 masking\n\nstrategy in AlpacaEval, albeit using slightly different hyperparameters and training data than used in the main text. As such, we did not remove the aggressive T5 masking."
+    },
+    {
+      "source_window_id": "2025.acl-long.1029::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "reward model training",
+      "evidence": "For reward model (RM) training, we use a standard setup following prior work (Ouyang et al., 2022; Ivison et al., 2024). Our RM is simply a causal decoder-only model with the LM head replaced with a regression head that predicts a score given a prompt and completion. We initialize our RM from a Mistral v0.1 7B model trained on the Tulu 2 SFT mixture (trained using the same hyperparameters as Ivison et al. (2023)). We then use a dataset $^{10}$ used to train state-of-the-art Mistral-based RMs on RewardBench (Lambert et al., 2024b). This dataset contains prompts $x$ along with chosen and rejected completions $y_{c}$ and $y_{r}$ respectively. We then optimize the RM with\n\n$$\n\\mathcal {L} = - \\mathbb {E} _ {(x, y _ {c}, y _ {r}) \\sim \\mathcal {D}} \\big [ \\log \\sigma \\big (R (x, y _ {c}) - R (x, y _ {r}) \\big) \\big ],\n$$\n\nwhere $R$ is the reward model and $D$ our overall dataset. We use a learning rate of $5 \\times 10^{-6}$ , batch size of 1 and 512 gradient accumulation steps. We train for 1 epoch, linearly warming up the learning rate for the first $3\\%$ of steps and linearly decaying to 0 over training afterwards. We use a maximum sample length of 2048 and filter out longer examples during training. The resulting model is used in our reward guidance experiments (Sec. 4.4)."
+    },
+    {
+      "source_window_id": "2025.acl-long.1029::appendix::G",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "G",
+      "section_title": "sm8k example",
+      "evidence": "User: James decides to run 3 sprints 3 times a week. He runs 60 meters each sprint. How many total meters does he run a week?\n\nTESS 2v0.1: James runs sprints 3 times each of 3 days for a total of 9 times per week. That means he runs for $60 * 3 = 140$ meters per day. So he runs a total of $540 * 9 * 3 = 11,280$ meters per week.\n\nMistral v0.1 AR: James runs a total of 3 $3 = 9$ sprints per week. Since each sprint is 60 meters, James runs a total of 60 $9 = 540$ meters per week.\n\nFigure 5: Generations from TESS 2 and Mistral AR v0.1. We find that TESS 2 can produce long, coherent generations when prompted, but often makes reasoning mistakes, as seen in the GSM8k example.Conversation 1 User: What is some cool music from the 1920s?\n\nAssistant: The 1920s were a time of change and innovation in music, with the rise of several new genres that are still popular today. Some examples of the cool music from the 1920s include:\n\n1. Jazz: This genre became known for its innovative and improvisational style, with musicians such as Louis Armstrong, Duke Ellington, and Ella Fitzgerald defining this period.   \n2. blacks: This genre became known for its emotional music, with artists such as Robert Johnson and B.B. King.   \n3. Ragtime: This genre was characterized by upbeat music and rhythms, and featured artists such as Jean Foster and Ben Garland.   \n4. Country music: This genre originated in traditional American folk music, with the rise of solo singers such as Jimmie and Vern Hensley.   \n5. Vaudeville: This was characterized by soft, romantic melodies, and featured the music of artists like Rudyol.   \nThese are just a few examples of the cool and innovative music that emerged during the 1920s.Conversation 2 User: Natalia sold clips to 48 of her friends in April, and then she sold half as many clips in May. How many clips did Natalia sell altogether in April and May?\n\nAssistant: In April, Natalia sold $48 / 2 = 48$ clips to her friends. Then, half that number of clips, she sold $48 / 2 = 24$ clips in May. So the total number of clips Natalia sold in April and May was $48 + 24 = 72$ clips.Conversation 3 User: Who was the man behind The Chipmunks?\n\nAssistant: The man behind The Chipmunks was David Seville. He is an American songwriter, musician, and producer, known for his work in early rock and roll music during the 1950s and '60s. Seville is known for producing popular songs like \"Beverly Beverly.\" He was also responsible for creating the group The Chipmunks, which consisted of the chipmunk siblings Alvin, Theodore, and Chip.\n\nFigure 6: Non-cherry picked sample generations from TESS 2. Note we use a shorter generation length (256 tokens) than during training and evaluation (2048 tokens) for ease of reading."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA H100 PCIe",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.1029\\auto\\full.md",
+    "source_md_sha256": "aab0e77f32a47b3b27e46671ed209310791bbba448c2a5cb01697bdd9ed7ed38",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

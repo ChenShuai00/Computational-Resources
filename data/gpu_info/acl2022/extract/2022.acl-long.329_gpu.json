@@ -1,0 +1,141 @@
+{
+  "paper_id": "2022.acl-long.329",
+  "candidate_windows": [
+    {
+      "window_id": "2022.acl-long.329::sections::4",
+      "paper_id": "2022.acl-long.329",
+      "section_number": "4",
+      "section_title": "contrastive-probe: cloze-style task as a self-retrieving game",
+      "normalized_section_title": "contrastive-probe: cloze-style task as a self-retrieving game",
+      "window_text": "To better transform the PLM encoders for the cloze-style probing task, we propose CONTRASTIVE\n\nPROBE which pre-trains on a small number of sentences sampled from the PLM's original pre-training corpora with a contrastive self-supervising objective, inspired by the Mirror-BERT (Liu et al., 2021b). Our contrastive pretraining does not require the MLM head or any additional external knowledge, and can be completed in less than one minute on $2 \\times 2080$ Ti GPUs.\n\nSelf-supervised Contrastive Rewiring. We randomly sample a small set of sentences (e.g. 10k, see §5.2 for stability analysis of CONTRASTIVE-PROBE on several randomly sampled sets), and replace their tail tokens (e.g. the last $50\\%$ excluding the full stop) with a [MASK] token. Then these transformed sentences are taken as the queries of the cloze-style self-retrieving game. In the following we show an example of transforming a sentence into a cloze-style query:\n\nSentence: Social-distancing largely reduces coronavirus infections.\n\nQuery: Social-distancing largely [MAsK].\n\nwhere \"reduces coronavirus infections\" is marked as a positive answer of this query.\n\nGiven a batch, the cloze-style self-retrieving game is to ask the PLMs to retrieve the positive answer from all the queries and answers in the same batch. Our CONTRASTIVE-PROBE tackles this by optimising an InfoNCE objective (Oord et al., 2018),\n\n$$\n\\mathcal {L} = - \\sum_ {i = 1} ^ {N} \\log \\frac {\\exp \\left(\\cos \\left(f \\left(x _ {i}\\right) , f \\left(x _ {p}\\right)\\right) / \\tau\\right)}{\\sum_ {x _ {j} \\in \\mathcal {N} _ {i}} \\exp \\left(\\cos \\left(f \\left(x _ {i}\\right) , f \\left(x _ {j}\\right)\\right) / \\tau\\right)}, \\tag {1}\n$$\n\nwhere $f(\\cdot)$ is the PLM encoder (with the MLM head chopped-off and [CLS] as the contextual representation), $N$ is batch size, $x_{i}$ and $x_{p}$ are from a query-answer pair (i.e., $x_{i}$ and $x_{p}$ are from the same sentence), $\\mathcal{N}_i$ contains queries and answers in the batch, and $\\tau$ is the temperature. This objective function encourages $f$ to create similar representations for any query-answer pairs from the same sentence and dissimilar representations for queries/answers belonging to different sentences.\n\nRetrieval-based Probing. For probing step, the query is created based on the prompt-based template for each knowledge triple, as shown in the following:\n\nTriple: <Elvitegravir, may-prevent, Epistaxis>\n\nQuery: Elvitegravir may prevent [MAsk].\n\nand we search for nearest neighbours from all the entity representations encoded by the same model.\n\n<table><tr><td rowspan=\"2\">Approach</td><td rowspan=\"2\">PLM</td><td colspan=\"2\">Full Set</td></tr><tr><td>acc@1</td><td>acc@10</td></tr><tr><td rowspan=\"5\">Generative PLMs</td><td>BART-base</td><td>0.16</td><td>1.39</td></tr><tr><td>SciFive-base</td><td>0.53</td><td>2.02</td></tr><tr><td>SciFive-large</td><td>0.55</td><td>2.03</td></tr><tr><td>T5-small</td><td>0.70</td><td>1.72</td></tr><tr><td>T5-base</td><td>0.06</td><td>0.19</td></tr><tr><td rowspan=\"3\">X-FACTR (Confidence)</td><td>BERT</td><td>0.05</td><td>-</td></tr><tr><td>BlueBERT</td><td>0.74</td><td>-</td></tr><tr><td>BioBERT</td><td>0.17</td><td>-</td></tr><tr><td rowspan=\"3\">X-FACTR (Order+Order)</td><td>BERT</td><td>0.06</td><td>-</td></tr><tr><td>BlueBERT</td><td>0.50</td><td>-</td></tr><tr><td>BioBERT</td><td>0.11</td><td>-</td></tr><tr><td rowspan=\"3\">Mask average</td><td>BERT</td><td>0.06</td><td>0.73</td></tr><tr><td>BlueBERT</td><td>0.05</td><td>1.39</td></tr><tr><td>BioBERT</td><td>0.28</td><td>3.03</td></tr><tr><td rowspan=\"4\">CONTRASTIVE-PROBE (Ours)</td><td>BERT</td><td>1.95</td><td>6.96</td></tr><tr><td>BlueBERT</td><td>4.87</td><td>19.87</td></tr><tr><td>BioBERT</td><td>3.28</td><td>15.46</td></tr><tr><td>PubMedBERT</td><td>5.71</td><td>24.31</td></tr></table>\n\nTable 4: Performance of different probing approaches on the full set of MedLAMA. Since the MLM head of PubMedBERT is not available, the mask predict and mask average approaches cannot be applied. Best results are in bold and the second bests are underlined.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.329::sections::5",
+      "paper_id": "2022.acl-long.329",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "In this section we conduct extensive experiments to verify whether CONTRASTIVE-PROBE is effective for probing biomedical PLMs. First, we experiment with CONTRASTIVE-PROBE and existing probing approaches on MedLAMA benchmark (§5.1). Then, we conduct in-depth analysis of the stability and applicability of CONTRASTIVE-PROBE in probing biomedical PLMs (§5.2). Finally, we report an evaluation of a biomedical expert on the probing predictions and highlight our findings (§5.3).\n\nCONTRASTIVE-PROBE Rewiring. We train our CONTRASTIVE-PROBE based on 10k sentences which are randomly sampled from the PubMed texts using a mask ratio of 0.5. The best hyperparameters and their tuning options are provided in Appendix.\n\nProbing Baselines. For the mask predict approach, we use the original implementation of X-FACTR (Jiang et al., 2020a), and set the beam size and the number of masks to 5. Both mask predict and retrieval-based approaches are tested under both the general domain and biomedical domain BERT models, i.e. Bert-based-uncased (Devlin et al., 2019), BlueBERT (Peng et al., 2019), BioBERT (Lee et al., 2020), PubMedBERT (Gu et al., 2020). For generation-based baselines, we test five PLMs, namely BART-base (Lewis et al.,\n\n2020), T5-small and T5-base (Raffel et al., 2020) that are general domain generation PLMs, and SciFive-base & SciFive-large (Phan et al., 2021) that are pre-trained on large biomedical corpora.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.329::appendix::A",
+      "paper_id": "2022.acl-long.329",
+      "section_number": "A",
+      "section_title": "appendix",
+      "normalized_section_title": "appendix",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.329::appendix::A.2",
+      "paper_id": "2022.acl-long.329",
+      "section_number": "A.2",
+      "section_title": "hyperparameters tuning",
+      "normalized_section_title": "hyperparameters tuning",
+      "window_text": "We train our CONTRASTIVE-PROBE based on 10k sentences which are randomly sampled from the original pre-training corpora of the corresponding PLMs. Since most of the biomedical BERTs use PubMed texts as their pre-training corpora, for all biomedical PLMs we sampled random sentences from a version of PubMed corpus used by BlueBERT model (Peng et al., 2019), while for BERT we sampled sentences from its original Wikitext corpora. For the hyperparameters of our CONTRASTIVE-PROBE, Table 8 lists our search options and the best parameters used in our paper.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.acl-long.329::sections::4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "2080 Ti",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "To better transform the PLM encoders for the cloze-style probing task, we propose CONTRASTIVE\n\nPROBE which pre-trains on a small number of sentences sampled from the PLM's original pre-training corpora with a contrastive self-supervising objective, inspired by the Mirror-BERT (Liu et al., 2021b). Our contrastive pretraining does not require the MLM head or any additional external knowledge, and can be completed in less than one minute on $2 \\times 2080$ Ti GPUs.\n\nSelf-supervised Contrastive Rewiring. We randomly sample a small set of sentences (e.g. 10k, see §5.2 for stability analysis of CONTRASTIVE-PROBE on several randomly sampled sets), and replace their tail tokens (e.g. the last $50\\%$ excluding the full stop) with a [MASK] token. Then these transformed sentences are taken as the queries of the cloze-style self-retrieving game. In the following we show an example of transforming a sentence into a cloze-style query:\n\nSentence: Social-distancing largely reduces coronavirus infections.\n\nQuery: Social-distancing largely [MAsK].\n\nwhere \"reduces coronavirus infections\" is marked as a positive answer of this query.\n\nGiven a batch, the cloze-style self-retrieving game is to ask the PLMs to retrieve the positive answer from all the queries and answers in the same batch. Our CONTRASTIVE-PROBE tackles this by optimising an InfoNCE objective (Oord et al., 2018),\n\n$$\n\\mathcal {L} = - \\sum_ {i = 1} ^ {N} \\log \\frac {\\exp \\left(\\cos \\left(f \\left(x _ {i}\\right) , f \\left(x _ {p}\\right)\\right) / \\tau\\right)}{\\sum_ {x _ {j} \\in \\mathcal {N} _ {i}} \\exp \\left(\\cos \\left(f \\left(x _ {i}\\right) , f \\left(x _ {j}\\right)\\right) / \\tau\\right)}, \\tag {1}\n$$\n\nwhere $f(\\cdot)$ is the PLM encoder (with the MLM head chopped-off and [CLS] as the contextual representation), $N$ is batch size, $x_{i}$ and $x_{p}$ are from a query-answer pair (i.e., $x_{i}$ and $x_{p}$ are from the same sentence), $\\mathcal{N}_i$ contains queries and answers in the batch, and $\\tau$ is the temperature. This objective function encourages $f$ to create similar representations for any query-answer pairs from the same sentence and dissimilar representations for queries/answers belonging to different sentences.\n\nRetrieval-based Probing. For probing step, the query is created based on the prompt-based template for each knowledge triple, as shown in the following:\n\nTriple: <Elvitegravir, may-prevent, Epistaxis>\n\nQuery: Elvitegravir may prevent [MAsk].\n\nand we search for nearest neighbours from all the entity representations encoded by the same model.\n\n<table><tr><td rowspan=\"2\">Approach</td><td rowspan=\"2\">PLM</td><td colspan=\"2\">Full Set</td></tr><tr><td>acc@1</td><td>acc@10</td></tr><tr><td rowspan=\"5\">Generative PLMs</td><td>BART-base</td><td>0.16</td><td>1.39</td></tr><tr><td>SciFive-base</td><td>0.53</td><td>2.02</td></tr><tr><td>SciFive-large</td><td>0.55</td><td>2.03</td></tr><tr><td>T5-small</td><td>0.70</td><td>1.72</td></tr><tr><td>T5-base</td><td>0.06</td><td>0.19</td></tr><tr><td rowspan=\"3\">X-FACTR (Confidence)</td><td>BERT</td><td>0.05</td><td>-</td></tr><tr><td>BlueBERT</td><td>0.74</td><td>-</td></tr><tr><td>BioBERT</td><td>0.17</td><td>-</td></tr><tr><td rowspan=\"3\">X-FACTR (Order+Order)</td><td>BERT</td><td>0.06</td><td>-</td></tr><tr><td>BlueBERT</td><td>0.50</td><td>-</td></tr><tr><td>BioBERT</td><td>0.11</td><td>-</td></tr><tr><td rowspan=\"3\">Mask average</td><td>BERT</td><td>0.06</td><td>0.73</td></tr><tr><td>BlueBERT</td><td>0.05</td><td>1.39</td></tr><tr><td>BioBERT</td><td>0.28</td><td>3.03</td></tr><tr><td rowspan=\"4\">CONTRASTIVE-PROBE (Ours)</td><td>BERT</td><td>1.95</td><td>6.96</td></tr><tr><td>BlueBERT</td><td>4.87</td><td>19.87</td></tr><tr><td>BioBERT</td><td>3.28</td><td>15.46</td></tr><tr><td>PubMedBERT</td><td>5.71</td><td>24.31</td></tr></table>\n\nTable 4: Performance of different probing approaches on the full set of MedLAMA. Since the MLM head of PubMedBERT is not available, the mask predict and mask average approaches cannot be applied. Best results are in bold and the second bests are underlined.",
+      "section_number": "4",
+      "section_title": "contrastive-probe: cloze-style task as a self-retrieving game",
+      "normalized_section_title": "contrastive-probe: cloze-style task as a self-retrieving game"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.acl-long.329::sections::4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "2080 Ti",
+      "cleaned_hardware_name": "2080 ti",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "4",
+      "section_title": "contrastive-probe: cloze-style task as a self-retrieving game",
+      "normalized_section_title": "contrastive-probe: cloze-style task as a self-retrieving game",
+      "evidence": "To better transform the PLM encoders for the cloze-style probing task, we propose CONTRASTIVE\n\nPROBE which pre-trains on a small number of sentences sampled from the PLM's original pre-training corpora with a contrastive self-supervising objective, inspired by the Mirror-BERT (Liu et al., 2021b). Our contrastive pretraining does not require the MLM head or any additional external knowledge, and can be completed in less than one minute on $2 \\times 2080$ Ti GPUs.\n\nSelf-supervised Contrastive Rewiring. We randomly sample a small set of sentences (e.g. 10k, see §5.2 for stability analysis of CONTRASTIVE-PROBE on several randomly sampled sets), and replace their tail tokens (e.g. the last $50\\%$ excluding the full stop) with a [MASK] token. Then these transformed sentences are taken as the queries of the cloze-style self-retrieving game. In the following we show an example of transforming a sentence into a cloze-style query:\n\nSentence: Social-distancing largely reduces coronavirus infections.\n\nQuery: Social-distancing largely [MAsK].\n\nwhere \"reduces coronavirus infections\" is marked as a positive answer of this query.\n\nGiven a batch, the cloze-style self-retrieving game is to ask the PLMs to retrieve the positive answer from all the queries and answers in the same batch. Our CONTRASTIVE-PROBE tackles this by optimising an InfoNCE objective (Oord et al., 2018),\n\n$$\n\\mathcal {L} = - \\sum_ {i = 1} ^ {N} \\log \\frac {\\exp \\left(\\cos \\left(f \\left(x _ {i}\\right) , f \\left(x _ {p}\\right)\\right) / \\tau\\right)}{\\sum_ {x _ {j} \\in \\mathcal {N} _ {i}} \\exp \\left(\\cos \\left(f \\left(x _ {i}\\right) , f \\left(x _ {j}\\right)\\right) / \\tau\\right)}, \\tag {1}\n$$\n\nwhere $f(\\cdot)$ is the PLM encoder (with the MLM head chopped-off and [CLS] as the contextual representation), $N$ is batch size, $x_{i}$ and $x_{p}$ are from a query-answer pair (i.e., $x_{i}$ and $x_{p}$ are from the same sentence), $\\mathcal{N}_i$ contains queries and answers in the batch, and $\\tau$ is the temperature. This objective function encourages $f$ to create similar representations for any query-answer pairs from the same sentence and dissimilar representations for queries/answers belonging to different sentences.\n\nRetrieval-based Probing. For probing step, the query is created based on the prompt-based template for each knowledge triple, as shown in the following:\n\nTriple: <Elvitegravir, may-prevent, Epistaxis>\n\nQuery: Elvitegravir may prevent [MAsk].\n\nand we search for nearest neighbours from all the entity representations encoded by the same model.\n\n<table><tr><td rowspan=\"2\">Approach</td><td rowspan=\"2\">PLM</td><td colspan=\"2\">Full Set</td></tr><tr><td>acc@1</td><td>acc@10</td></tr><tr><td rowspan=\"5\">Generative PLMs</td><td>BART-base</td><td>0.16</td><td>1.39</td></tr><tr><td>SciFive-base</td><td>0.53</td><td>2.02</td></tr><tr><td>SciFive-large</td><td>0.55</td><td>2.03</td></tr><tr><td>T5-small</td><td>0.70</td><td>1.72</td></tr><tr><td>T5-base</td><td>0.06</td><td>0.19</td></tr><tr><td rowspan=\"3\">X-FACTR (Confidence)</td><td>BERT</td><td>0.05</td><td>-</td></tr><tr><td>BlueBERT</td><td>0.74</td><td>-</td></tr><tr><td>BioBERT</td><td>0.17</td><td>-</td></tr><tr><td rowspan=\"3\">X-FACTR (Order+Order)</td><td>BERT</td><td>0.06</td><td>-</td></tr><tr><td>BlueBERT</td><td>0.50</td><td>-</td></tr><tr><td>BioBERT</td><td>0.11</td><td>-</td></tr><tr><td rowspan=\"3\">Mask average</td><td>BERT</td><td>0.06</td><td>0.73</td></tr><tr><td>BlueBERT</td><td>0.05</td><td>1.39</td></tr><tr><td>BioBERT</td><td>0.28</td><td>3.03</td></tr><tr><td rowspan=\"4\">CONTRASTIVE-PROBE (Ours)</td><td>BERT</td><td>1.95</td><td>6.96</td></tr><tr><td>BlueBERT</td><td>4.87</td><td>19.87</td></tr><tr><td>BioBERT</td><td>3.28</td><td>15.46</td></tr><tr><td>PubMedBERT</td><td>5.71</td><td>24.31</td></tr></table>\n\nTable 4: Performance of different probing approaches on the full set of MedLAMA. Since the MLM head of PubMedBERT is not available, the mask predict and mask average approaches cannot be applied. Best results are in bold and the second bests are underlined.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized GeForce RTX shorthand rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2022.acl-long.329::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiments",
+      "evidence": "In this section we conduct extensive experiments to verify whether CONTRASTIVE-PROBE is effective for probing biomedical PLMs. First, we experiment with CONTRASTIVE-PROBE and existing probing approaches on MedLAMA benchmark (§5.1). Then, we conduct in-depth analysis of the stability and applicability of CONTRASTIVE-PROBE in probing biomedical PLMs (§5.2). Finally, we report an evaluation of a biomedical expert on the probing predictions and highlight our findings (§5.3).\n\nCONTRASTIVE-PROBE Rewiring. We train our CONTRASTIVE-PROBE based on 10k sentences which are randomly sampled from the PubMed texts using a mask ratio of 0.5. The best hyperparameters and their tuning options are provided in Appendix.\n\nProbing Baselines. For the mask predict approach, we use the original implementation of X-FACTR (Jiang et al., 2020a), and set the beam size and the number of masks to 5. Both mask predict and retrieval-based approaches are tested under both the general domain and biomedical domain BERT models, i.e. Bert-based-uncased (Devlin et al., 2019), BlueBERT (Peng et al., 2019), BioBERT (Lee et al., 2020), PubMedBERT (Gu et al., 2020). For generation-based baselines, we test five PLMs, namely BART-base (Lewis et al.,\n\n2020), T5-small and T5-base (Raffel et al., 2020) that are general domain generation PLMs, and SciFive-base & SciFive-large (Phan et al., 2021) that are pre-trained on large biomedical corpora."
+    },
+    {
+      "source_window_id": "2022.acl-long.329::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "appendix",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2022.acl-long.329::appendix::A.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.2",
+      "section_title": "hyperparameters tuning",
+      "evidence": "We train our CONTRASTIVE-PROBE based on 10k sentences which are randomly sampled from the original pre-training corpora of the corresponding PLMs. Since most of the biomedical BERTs use PubMed texts as their pre-training corpora, for all biomedical PLMs we sampled random sentences from a version of PubMed corpus used by BlueBERT model (Peng et al., 2019), while for BERT we sampled sentences from its original Wikitext corpora. For the hyperparameters of our CONTRASTIVE-PROBE, Table 8 lists our search options and the best parameters used in our paper."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce RTX 2080 Ti",
+        "num": 2
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2022\\2022.acl-long.329\\auto\\full.md",
+    "source_md_sha256": "8cfbba05d51735a71c3809326992762124891392c548b60f5ede683863e2c4ea",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

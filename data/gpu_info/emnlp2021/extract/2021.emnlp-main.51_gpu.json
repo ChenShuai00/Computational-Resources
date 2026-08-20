@@ -1,0 +1,204 @@
+{
+  "paper_id": "2021.emnlp-main.51",
+  "candidate_windows": [
+    {
+      "window_id": "2021.emnlp-main.51::sections::3",
+      "paper_id": "2021.emnlp-main.51",
+      "section_number": "3",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.emnlp-main.51::sections::3.2",
+      "paper_id": "2021.emnlp-main.51",
+      "section_number": "3.2",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "We compare CAL against five baseline acquisition functions. The first method, ENTROPY is the most commonly used uncertainty-based baseline that acquires data points for which the model has the highest predictive entropy. As a diversity-based baseline, following Yuan et al. (2020), we use BERTKM that applies k-means clustering using the $l_{2}$ normalized BERT output embeddings of the fine-tuned model to select $b$ data points. We compare against BADGE (Ash et al., 2020), an acquisition function that aims to combine diversity and\n\nuncertainty sampling, by computing gradient embeddings $g_{x}$ for every candidate data point $x$ in $\\mathcal{D}_{\\mathrm{pool}}$ and then using clustering to select a batch. Each $g_{x}$ is computed as the gradient of the cross-entropy loss with respect to the parameters of the model's last layer, aiming to be the component that incorporates uncertainty in the acquisition function<sup>7</sup>. We also evaluate a recently introduced cold-start acquisition function called ALPS (Yuan et al., 2020) that uses the masked language model (MLM) loss of BERT as a proxy for model uncertainty in the downstream classification task. Specifically, aiming to leverage both uncertainty and diversity, ALPS forms a surprisal embedding $s_{x}$ for each $x$ , by passing the unmasked input $x$ through the BERT MLM head to compute the cross-entropy loss for a random 15% subsample of tokens against the target labels. ALPS clusters these embeddings to sample $b$ sentences for each AL iteration. Lastly, we include RANDOM, that samples data from the pool from a uniform distribution.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.emnlp-main.51::sections::3.3",
+      "paper_id": "2021.emnlp-main.51",
+      "section_number": "3.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "We use BERT-BASE (Devlin et al., 2019) adding a task-specific classification layer using the implementation from the HuggingFace library (Wolf et al., 2020). We evaluate the model 5 times per epoch on the development set following Dodge et al. (2020) and keep the one with the lowest validation loss. We use the standard splits provided for all datasets, if available, otherwise we randomly sample a validation set from the training set. We test all models on a held-out test set. We repeat all experiments with five different random seeds resulting into different initializations of the parameters of the model's extra task-specific output feedfor\n\n![](images/5b2df3228a291818aa46ff04b2661bda6d677314d7130ccca9ac35f24634b287.jpg)\n\n![](images/eaafb10928e52016e0657c606265a8b02200a063981921f1f5249e5a0786c07b.jpg)\n\n![](images/880321a7fb0eab7e64b7827f562f345719cb4cbd0088069209a281681d15cf21.jpg)\n\n![](images/4eb3c4197a2fd736ff05ccf9515849f2e35e5b0179687bd8930cccc834a586c6.jpg)\n\n![](images/c396d86fb3a97930c0a92ba995b5f52615300a2bd8d20a0b44fba3c9cf02b204.jpg)\n\n![](images/48cfcbc0143605d3926fc8e4ca6bd1cdd5c5ae2bb13ea913aa66c6e12d4d2ea3.jpg)\n\n![](images/77e2733be909b6d63f6ddeb2082d877c8f6b4805123d9a3902670d62d0a1e011.jpg)\n\n![](images/a19b8122efb885800531fe47d2426b2bc9b447424a049accf7980fa1f5d9ca73.jpg)  \nFigure 2: In-domain (ID) test accuracy during AL iterations for different acquisition functions.\n\nward layer and the initial $\\mathcal{D}_{\\mathrm{lab}}$ . For all datasets we use as budget the $15\\%$ of $\\mathcal{D}_{\\mathrm{pool}}$ , initial training set $1\\%$ and acquisition size $b = 2\\%$ . Each experiment is run on a single Nvidia Tesla V100 GPU. More details are provided in the Appendix A.1.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.emnlp-main.51::sections::6.2",
+      "paper_id": "2021.emnlp-main.51",
+      "section_number": "6.2",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "We first observe in Table 3 that ALPS acquires the most diverse data across all approaches. This is intuitive since ALPS is the most linguistically-informed method as it essentially acquires data that are difficult for the language modeling task, thus favoring data with a more diverse vocabulary. All other methods acquire similarly diverse data, except BADGE that has the lowest score. Interestingly, we observe a different pattern when evaluating diversity in the model feature space (using the [CLS] representations). BERTKM has the highest\n\nDIV.-F score, as expected, while CAL and ENTROPY have the lowest. This supports our hypothesis that uncertainty sampling tends to acquire uncertain but similar examples, while CAL by definition constrains its search in similar examples in the feature space that lie close to the decision boundary (contrastive examples). As for uncertainty, we observe that ENTROPY and CAL acquire the most uncertain examples, with average entropy almost twice as high as all other methods. Finally, regarding representativeness of the acquired batches, we see that CAL obtains the highest score, followed by ENTROPY, with the rest AL strategies to acquire less representative data.\n\nOverall, our analysis validates assumptions on the properties of data expected to be selected by the various acquisition functions. Our findings show that diversity in the raw text does not necessarily correlate with diversity in the feature space. In other words, low DIV.-F does not translate to low diversity in the distribution of acquired tokens (DIV.-I), suggesting that CAL can acquire similar examples in the feature space that have sufficiently diverse inputs. Furthermore, combining the results of our AL experiments (Figure 2) and our analysis (Table 3) we conclude that the best performance of CAL, followed by ENTROPY, is due to acquiring uncertain data. We observe that the most notable difference, in terms of selected data, between the two approaches and the rest is uncertainty (UNC.), suggesting perhaps the superiority of uncertainty over diversity sampling. We show that CAL improves over ENTROPY because our algorithm \"guides\" the focus of uncertainty sampling by not considering redundant uncertain data that lie away from the decision boundary and thus improving representativeness. We finally find that RANDOM is evidently the worst approach, as it selects the least diverse and uncertain data on average compared to all methods.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.emnlp-main.51::appendix::A",
+      "paper_id": "2021.emnlp-main.51",
+      "section_number": "A",
+      "section_title": "appendix",
+      "normalized_section_title": "appendix",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.emnlp-main.51::appendix::A.1",
+      "paper_id": "2021.emnlp-main.51",
+      "section_number": "A.1",
+      "section_title": "data & hyperparameters",
+      "normalized_section_title": "data & hyperparameters",
+      "window_text": "In this section we provide details of all the datasets we used in this work and the hyperparparameters used for training the model. For QNLI, IMDB and SST-2 we randomly sample $10\\%$ from the training set to serve as the validation set, while for AGNEWS and QQP we sample $5\\%$ . For the DBPEDIA dataset we undersample both training and validation datasets (from the standard splits) to facilitate our AL simulation (i.e. the original dataset consists of 560K training and 28K validation data examples). For all datasets we use the standard test set, apart from SST-2, QNLI and QQP datasets that are taken from the GLUE benchmark (Wang et al., 2019) we use the development set as the held-out test set and subsample a development set from the training set.\n\nFor all datasets we train BERT-BASE (Devlin et al., 2019) from the HuggingFace library (Wolf et al., 2020) in Pytorch (Paszke et al., 2019). We train all models with batch size 16, learning rate $2e - 5$ , no weight decay, AdamW optimizer with epsilon $1e - 8$ . For all datasets we use maximum sequence length of 128, except for IMDB that contain longer input texts, where we use 256. To ensure reproducibility and fair comparison between the various methods under evaluation, we run all experiments with the same five seeds that we randomly selected from the range [1, 9999]. We evaluate the model 5 times per epoch on the development set following Dodge et al. (2020) and keep the one with the lowest validation loss. We use the code provided by Yuan et al. (2020) for ALPS, BADGE and BERTKM.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.emnlp-main.51::appendix::A.3",
+      "paper_id": "2021.emnlp-main.51",
+      "section_number": "A.3",
+      "section_title": "reproducibility",
+      "normalized_section_title": "reproducibility",
+      "window_text": "All code for data preprocessing, model implementations, and active learning algorithms is made available at https://github.com/mourga/contrastive-active-learning. For questions regarding the implementation, please contact the first author.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2021.emnlp-main.51::sections::3.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia Tesla V100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We use BERT-BASE (Devlin et al., 2019) adding a task-specific classification layer using the implementation from the HuggingFace library (Wolf et al., 2020). We evaluate the model 5 times per epoch on the development set following Dodge et al. (2020) and keep the one with the lowest validation loss. We use the standard splits provided for all datasets, if available, otherwise we randomly sample a validation set from the training set. We test all models on a held-out test set. We repeat all experiments with five different random seeds resulting into different initializations of the parameters of the model's extra task-specific output feedfor\n\n![](images/5b2df3228a291818aa46ff04b2661bda6d677314d7130ccca9ac35f24634b287.jpg)\n\n![](images/eaafb10928e52016e0657c606265a8b02200a063981921f1f5249e5a0786c07b.jpg)\n\n![](images/880321a7fb0eab7e64b7827f562f345719cb4cbd0088069209a281681d15cf21.jpg)\n\n![](images/4eb3c4197a2fd736ff05ccf9515849f2e35e5b0179687bd8930cccc834a586c6.jpg)\n\n![](images/c396d86fb3a97930c0a92ba995b5f52615300a2bd8d20a0b44fba3c9cf02b204.jpg)\n\n![](images/48cfcbc0143605d3926fc8e4ca6bd1cdd5c5ae2bb13ea913aa66c6e12d4d2ea3.jpg)\n\n![](images/77e2733be909b6d63f6ddeb2082d877c8f6b4805123d9a3902670d62d0a1e011.jpg)\n\n![](images/a19b8122efb885800531fe47d2426b2bc9b447424a049accf7980fa1f5d9ca73.jpg)  \nFigure 2: In-domain (ID) test accuracy during AL iterations for different acquisition functions.\n\nward layer and the initial $\\mathcal{D}_{\\mathrm{lab}}$ . For all datasets we use as budget the $15\\%$ of $\\mathcal{D}_{\\mathrm{pool}}$ , initial training set $1\\%$ and acquisition size $b = 2\\%$ . Each experiment is run on a single Nvidia Tesla V100 GPU. More details are provided in the Appendix A.1.",
+      "section_number": "3.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2021.emnlp-main.51::sections::3.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia Tesla V100",
+      "cleaned_hardware_name": "nvidia tesla v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "3.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "We use BERT-BASE (Devlin et al., 2019) adding a task-specific classification layer using the implementation from the HuggingFace library (Wolf et al., 2020). We evaluate the model 5 times per epoch on the development set following Dodge et al. (2020) and keep the one with the lowest validation loss. We use the standard splits provided for all datasets, if available, otherwise we randomly sample a validation set from the training set. We test all models on a held-out test set. We repeat all experiments with five different random seeds resulting into different initializations of the parameters of the model's extra task-specific output feedfor\n\n![](images/5b2df3228a291818aa46ff04b2661bda6d677314d7130ccca9ac35f24634b287.jpg)\n\n![](images/eaafb10928e52016e0657c606265a8b02200a063981921f1f5249e5a0786c07b.jpg)\n\n![](images/880321a7fb0eab7e64b7827f562f345719cb4cbd0088069209a281681d15cf21.jpg)\n\n![](images/4eb3c4197a2fd736ff05ccf9515849f2e35e5b0179687bd8930cccc834a586c6.jpg)\n\n![](images/c396d86fb3a97930c0a92ba995b5f52615300a2bd8d20a0b44fba3c9cf02b204.jpg)\n\n![](images/48cfcbc0143605d3926fc8e4ca6bd1cdd5c5ae2bb13ea913aa66c6e12d4d2ea3.jpg)\n\n![](images/77e2733be909b6d63f6ddeb2082d877c8f6b4805123d9a3902670d62d0a1e011.jpg)\n\n![](images/a19b8122efb885800531fe47d2426b2bc9b447424a049accf7980fa1f5d9ca73.jpg)  \nFigure 2: In-domain (ID) test accuracy during AL iterations for different acquisition functions.\n\nward layer and the initial $\\mathcal{D}_{\\mathrm{lab}}$ . For all datasets we use as budget the $15\\%$ of $\\mathcal{D}_{\\mathrm{pool}}$ , initial training set $1\\%$ and acquisition size $b = 2\\%$ . Each experiment is run on a single Nvidia Tesla V100 GPU. More details are provided in the Appendix A.1.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2021.emnlp-main.51::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "experimental setup",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2021.emnlp-main.51::sections::3.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3.2",
+      "section_title": "baselines",
+      "evidence": "We compare CAL against five baseline acquisition functions. The first method, ENTROPY is the most commonly used uncertainty-based baseline that acquires data points for which the model has the highest predictive entropy. As a diversity-based baseline, following Yuan et al. (2020), we use BERTKM that applies k-means clustering using the $l_{2}$ normalized BERT output embeddings of the fine-tuned model to select $b$ data points. We compare against BADGE (Ash et al., 2020), an acquisition function that aims to combine diversity and\n\nuncertainty sampling, by computing gradient embeddings $g_{x}$ for every candidate data point $x$ in $\\mathcal{D}_{\\mathrm{pool}}$ and then using clustering to select a batch. Each $g_{x}$ is computed as the gradient of the cross-entropy loss with respect to the parameters of the model's last layer, aiming to be the component that incorporates uncertainty in the acquisition function<sup>7</sup>. We also evaluate a recently introduced cold-start acquisition function called ALPS (Yuan et al., 2020) that uses the masked language model (MLM) loss of BERT as a proxy for model uncertainty in the downstream classification task. Specifically, aiming to leverage both uncertainty and diversity, ALPS forms a surprisal embedding $s_{x}$ for each $x$ , by passing the unmasked input $x$ through the BERT MLM head to compute the cross-entropy loss for a random 15% subsample of tokens against the target labels. ALPS clusters these embeddings to sample $b$ sentences for each AL iteration. Lastly, we include RANDOM, that samples data from the pool from a uniform distribution."
+    },
+    {
+      "source_window_id": "2021.emnlp-main.51::sections::6.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6.2",
+      "section_title": "discussion",
+      "evidence": "We first observe in Table 3 that ALPS acquires the most diverse data across all approaches. This is intuitive since ALPS is the most linguistically-informed method as it essentially acquires data that are difficult for the language modeling task, thus favoring data with a more diverse vocabulary. All other methods acquire similarly diverse data, except BADGE that has the lowest score. Interestingly, we observe a different pattern when evaluating diversity in the model feature space (using the [CLS] representations). BERTKM has the highest\n\nDIV.-F score, as expected, while CAL and ENTROPY have the lowest. This supports our hypothesis that uncertainty sampling tends to acquire uncertain but similar examples, while CAL by definition constrains its search in similar examples in the feature space that lie close to the decision boundary (contrastive examples). As for uncertainty, we observe that ENTROPY and CAL acquire the most uncertain examples, with average entropy almost twice as high as all other methods. Finally, regarding representativeness of the acquired batches, we see that CAL obtains the highest score, followed by ENTROPY, with the rest AL strategies to acquire less representative data.\n\nOverall, our analysis validates assumptions on the properties of data expected to be selected by the various acquisition functions. Our findings show that diversity in the raw text does not necessarily correlate with diversity in the feature space. In other words, low DIV.-F does not translate to low diversity in the distribution of acquired tokens (DIV.-I), suggesting that CAL can acquire similar examples in the feature space that have sufficiently diverse inputs. Furthermore, combining the results of our AL experiments (Figure 2) and our analysis (Table 3) we conclude that the best performance of CAL, followed by ENTROPY, is due to acquiring uncertain data. We observe that the most notable difference, in terms of selected data, between the two approaches and the rest is uncertainty (UNC.), suggesting perhaps the superiority of uncertainty over diversity sampling. We show that CAL improves over ENTROPY because our algorithm \"guides\" the focus of uncertainty sampling by not considering redundant uncertain data that lie away from the decision boundary and thus improving representativeness. We finally find that RANDOM is evidently the worst approach, as it selects the least diverse and uncertain data on average compared to all methods."
+    },
+    {
+      "source_window_id": "2021.emnlp-main.51::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "appendix",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2021.emnlp-main.51::appendix::A.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.1",
+      "section_title": "data & hyperparameters",
+      "evidence": "In this section we provide details of all the datasets we used in this work and the hyperparparameters used for training the model. For QNLI, IMDB and SST-2 we randomly sample $10\\%$ from the training set to serve as the validation set, while for AGNEWS and QQP we sample $5\\%$ . For the DBPEDIA dataset we undersample both training and validation datasets (from the standard splits) to facilitate our AL simulation (i.e. the original dataset consists of 560K training and 28K validation data examples). For all datasets we use the standard test set, apart from SST-2, QNLI and QQP datasets that are taken from the GLUE benchmark (Wang et al., 2019) we use the development set as the held-out test set and subsample a development set from the training set.\n\nFor all datasets we train BERT-BASE (Devlin et al., 2019) from the HuggingFace library (Wolf et al., 2020) in Pytorch (Paszke et al., 2019). We train all models with batch size 16, learning rate $2e - 5$ , no weight decay, AdamW optimizer with epsilon $1e - 8$ . For all datasets we use maximum sequence length of 128, except for IMDB that contain longer input texts, where we use 256. To ensure reproducibility and fair comparison between the various methods under evaluation, we run all experiments with the same five seeds that we randomly selected from the range [1, 9999]. We evaluate the model 5 times per epoch on the development set following Dodge et al. (2020) and keep the one with the lowest validation loss. We use the code provided by Yuan et al. (2020) for ALPS, BADGE and BERTKM."
+    },
+    {
+      "source_window_id": "2021.emnlp-main.51::appendix::A.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.3",
+      "section_title": "reproducibility",
+      "evidence": "All code for data preprocessing, model implementations, and active learning algorithms is made available at https://github.com/mourga/contrastive-active-learning. For questions regarding the implementation, please contact the first author."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "3.3"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2021\\2021.emnlp-main.51\\auto\\full.md",
+    "source_md_sha256": "3b8a2bfd1b9b007e0aa1951a19033586e5087064dce60b02e286d9e04f4373b5",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "2f0b6bf06ed46b81ec464e45ed904d0601f1b38cbfb09fd385a8ac02d49c4859"
+  }
+}

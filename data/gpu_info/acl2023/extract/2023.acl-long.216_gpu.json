@@ -1,0 +1,246 @@
+{
+  "paper_id": "2023.acl-long.216",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.216::sections::4",
+      "paper_id": "2023.acl-long.216",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.216::sections::4.1",
+      "paper_id": "2023.acl-long.216",
+      "section_number": "4.1",
+      "section_title": "datasets",
+      "normalized_section_title": "datasets",
+      "window_text": "MuST-C We conduct experiments on the MuST-C dataset $^{3,4}$ (Di Gangi et al., 2019), one of the largest ST benchmark datasets containing translations from English to 8 languages collected from TED Talks. Each language direction involves around 400 hours of audio recordings. Limited by computing resources, we examine our method on three language directions: English-German/French/Spanish (En-De/Fr/Es).\n\nMuST-C Low-Resource To examine our method in the extremely low-resource settings, we manually create ASR and ST subsets from the MuST-C En-De training set. Specifically, we build 10-hour, 100-hour and 370-hour ASR subsets and 1-hour and 10-hour ST subsets respectively through random sampling.\n\nIWSLT Low-Resource We also evaluate our method on Maltese to English translation in IWSLT 2023 low-resource track<sup>5</sup>. We use the officially provided ST triplets as ST data and build the ASR dataset by combining the the audio-transcript part from the official ST data and CommonVoice (Ardila et al., 2020)<sup>6</sup>. We remove silences and randomly partition the data. Finally we obtain 1 hour of ST triplets and 10 hours of ASR pairs as training and development set and 0.1 hour of ST triplets as test set.\n\nExternal ASR We also introduce LibriSpeech (Panayotov et al., 2015) as the external ASR dataset. LibriSpeech is the de facto public English ASR benchmark containing 960 hours of audiobook speech. We build a 1330-hour English ASR dataset by combining MuST-C and LibriSpeech.\n\nExternal MT Additionally, we introduce external WMT En-De/Fr/Es datasets (Bojar et al., 2016)\n\nfor each language direction to pre-train text embedding and Transformer. We also introduce Flores200 (Costa-jussa et al., 2022), a massively multilingual machine translation dataset, for Mt-En direction. As shown in previous work (Xu et al., 2021; Ye et al., 2021), MT pre-training greatly improves ST performance.\n\nThe statistics of datasets above are listed in Appendix A.1.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.216::sections::4.2",
+      "paper_id": "2023.acl-long.216",
+      "section_number": "4.2",
+      "section_title": "experimental setups",
+      "normalized_section_title": "experimental setups",
+      "window_text": "Model Configurations In MuST-C experiments, we use wav2vec 2.0 base model in our speech encoder which is solely pre-trained on 960-hour English audio. It consists of a 7-layer convolutional feature extractor and 12 Transformer encoder blocks with 768 hidden units. Two down-sampling convolutional layers have kernel size 5, stride size 2 and hidden size 512 or 1024 depending on the Transformer hidden size. For En-De/Fr/Es directions, the Transformer encoder-decoder has 6 encoder and decoder layers with hidden size 512, 2048 FFN hidden units and 8 attention heads. For Mt-En direction, it has 12 layers each with hidden size 1024, 4096 FFN hidden units and 16 attention heads.\n\nPreprocessing The input speech is the raw 16-bit $16\\mathrm{kHz}$ mono-channel waveform. We filter speech that is either too long ( $>480\\mathrm{k}$ frames) or too short ( $<1\\mathrm{k}$ frames) out. This results in 388/471/480 hours of speech being retained as ST training data for En-De/Fr/Es directions. We jointly tokenize the transcripts and translations for each language direction using SentencePiece (Kudo and Richardson, 2018) with a vocabulary size set to $10\\mathrm{k}$ . To conduct forced alignment required by WACO (see section 3.3), we first remove punctuations and group whole words by identifying special space token in the vocabulary. Then we use the MFA to train forced aligners on $\\mathcal{D}^{\\mathrm{ASR}}$ to align English speech and words. The amount of ASR data used to train forced aligner is the same as that used for training WACO. Due to vocabulary mismatch between the MFA and our SentencePiece model, a small number of speeches and transcripts (e.g., 18h for En-De) cannot be aligned and we simply ignore them when doing contrastive learning.\n\nTraining Transformer and text embedding are pre-trained on the external WMT dataset for En\n\nTable 1: Case-sensitive detokenized BLEU scores on MuST-C En-De tst-COMMON set and manually created IWSLT Mt-En test set of models pre-trained on ASR data using different cross-modal methods and fine-tuned on ST data. All models share the same W2V2-Transformer architecture. Base ignores ASR data and only fine-tunes on ST data, while other baselines pre-train on ASR data using CTC, sentence-level contrastive (ConST) and word-aligned contrastive (WACO) losses.   \n\n<table><tr><td>Direction</td><td colspan=\"7\">En-De</td><td>Mt-En</td></tr><tr><td>ST Data</td><td colspan=\"4\">1h</td><td colspan=\"3\">10h</td><td>1h</td></tr><tr><td>ASR Data</td><td>10h</td><td>100h</td><td>370h</td><td>1330h</td><td>100h</td><td>370h</td><td>1330h</td><td>10h</td></tr><tr><td>Base</td><td>4.3</td><td>4.3</td><td>4.3</td><td>4.3</td><td>17.5</td><td>17.5</td><td>17.5</td><td>-</td></tr><tr><td>Base+CTC</td><td>0.2</td><td>12.6</td><td>14.6</td><td>14.7</td><td>18.3</td><td>20.4</td><td>20.0</td><td>3.0</td></tr><tr><td>ConST</td><td>3.0</td><td>7.3</td><td>11.7</td><td>13.7</td><td>16.9</td><td>18.6</td><td>19.6</td><td>4.0</td></tr><tr><td>WACO</td><td>14.1</td><td>16.2</td><td>16.6</td><td>17.5</td><td>21.0</td><td>22.7</td><td>22.9</td><td>13.3</td></tr></table>\n\nDe/Fr/Es (MT training details can be found in Appendix A.5). For Mt-En direction, we directly initialize the Transformer and text embedding with the NLLB-600M model (Costa-jussa et al., 2022)<sup>9</sup> pre-trained on Flores-200. For both cross-modal pre-training and multi-task fine-tuning, we set contrastive temperature $\\tau = 0.2$ and optimize our model by Adam optimizer (Kingma and Ba, 2015) $(\\beta_{1} = 0.9, \\beta_{2} = 0.98)$ with learning rate 1e-4 and 25k warm-up steps. After the warm-up, the learning rate is decayed following the inverse square root schedule. The effective batch size is 16 million frames. We set dropout rate to 0.1. For pretraining, we save the checkpoints with the best contrastive loss on the validation set. For fine-tuning, we save the checkpoints with the best BLEU on the validation set and average the last 10 saved checkpoints. Also, we set label smoothing to 0.1 for the cross-entropy losses, $\\lambda = 0$ in low-resource ST and $\\lambda = 1$ in ST with full data. All models are trained on Nvidia A6000 GPUs.\n\nInference and Evaluation During inference, we run beam search with beam size 10 and length penalty $0.6 / 1.0 / 0.1 / 0.3$ for En-De/Fr/Es and Mt-En directions respectively. For evaluation, we report case-sensitive detokenized BLEU scores on MuST-C tst-COMMON and IWSLT Mt-En test set using sacreBLEU (Post, 2018) $^{10}$ .\n\nBaselines In low-resource ST settings, we compare our method with three baselines:\n\n- Base: This baseline ignores $\\mathcal{D}^{\\mathrm{ASR}}$ and only optimizes cross entropy loss in Equation 6 on $\\mathcal{D}^{\\mathrm{ST}}$ .\n\n- Base+CTC: This baseline, on top of Base, applies CTC loss on $\\mathcal{D}^{\\mathrm{ASR}}$ to align speech and text representations. In particular, we add a linear layer after the speech encoder to predict the text BPE token at each frame and fix its weight with text embedding. We only include CTC with BPE tokenization here since it performs consistently better than its phoneme counterpart (details in Section 5.2).   \n- ConST: This baseline adds a coarse-grained contrastive loss on $\\mathcal{D}^{\\mathrm{ASR}}$ on top of Base to reduce modality gap as in Ye et al. (2022b). Instead of word-level alignment, ConST conducts contrastive learning on sentence-level average speech and text embeddings. Hyper-parameters are directly borrowed from Ye et al. (2022b).\n\nIn regular ST with full MuST-C data, we compare our method with other existing works.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.216::appendix::A",
+      "paper_id": "2023.acl-long.216",
+      "section_number": "A",
+      "section_title": "appendix",
+      "normalized_section_title": "appendix",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.216::appendix::A.1",
+      "paper_id": "2023.acl-long.216",
+      "section_number": "A.1",
+      "section_title": "statistics of datasets",
+      "normalized_section_title": "statistics of datasets",
+      "window_text": "We show statistics of MuST-C, IWSLT Mt-En, LibriSpeech and WMT datasets in Table 6,7,8 and 9.\n\nTable 6: Statistics of MuST-C.   \n\n<table><tr><td>Direction</td><td>Hours</td><td># Sentence</td></tr><tr><td>En-De</td><td>408</td><td>234K</td></tr><tr><td>En-Fr</td><td>492</td><td>280K</td></tr><tr><td>En-Es</td><td>504</td><td>270K</td></tr></table>\n\nTable 7: Statistics of ST and ASR subsets in MuST-C En-De Low-Resource and IWSLT Mt-En.   \n\n<table><tr><td>Type</td><td>Hours</td><td># Sentence</td></tr><tr><td rowspan=\"2\">En-De ST</td><td>1</td><td>0.6K</td></tr><tr><td>10</td><td>5.8K</td></tr><tr><td rowspan=\"4\">En ASR</td><td>10</td><td>5.8K</td></tr><tr><td>100</td><td>58K</td></tr><tr><td>370</td><td>216K</td></tr><tr><td>1330</td><td>497K</td></tr><tr><td>Mt-En ST</td><td>1</td><td>0.9K</td></tr><tr><td>Mt ASR</td><td>10</td><td>6.7K</td></tr></table>\n\nTable 8: Statistics of LibriSpeech.   \n\n<table><tr><td>Language</td><td>Hours</td><td># Sentence</td><td># Speaker</td></tr><tr><td>En</td><td>960</td><td>281K</td><td>2338</td></tr></table>\n\nTable 9: Statistics of WMT.   \n\n<table><tr><td>Direction</td><td>Name</td><td># Sentence</td></tr><tr><td>En-De</td><td>WMT16</td><td>4.6M</td></tr><tr><td>En-Fr</td><td>WMT14</td><td>40.8M</td></tr><tr><td>En-Es</td><td>WMT13</td><td>15.2M</td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.216::appendix::A.2",
+      "paper_id": "2023.acl-long.216",
+      "section_number": "A.2",
+      "section_title": "impact of hyperparameter",
+      "normalized_section_title": "impact of hyperparameter",
+      "window_text": "Temperature Figure 7 demonstrates BLEU scores produced by different temperature values\n\nTable 10: Case-sensitive detokenized BLEU scores on MuST-C En-De tst-COMMON set of WACO and Cascade ST. We initializes the speech encoder with wav2vec 2.0 or random weights instead.   \n\n<table><tr><td>ST Data</td><td colspan=\"3\">1h</td><td colspan=\"2\">10h</td></tr><tr><td>ASR Data</td><td>10h</td><td>100h</td><td>370h</td><td>100h</td><td>370h</td></tr><tr><td>Cascade w/o w2v2</td><td>&lt;1</td><td>4.7</td><td>10.7</td><td>4.7</td><td>10.7</td></tr><tr><td>WACO w/o w2v2</td><td>14.3</td><td>15.4</td><td>15.3</td><td>20.9</td><td>22.3</td></tr><tr><td>Cascade w/ w2v2</td><td>15.6</td><td>17.2</td><td>18.0</td><td>17.2</td><td>18.0</td></tr><tr><td>WACO w/ w2v2</td><td>14.1</td><td>16.2</td><td>16.6</td><td>21.0</td><td>22.7</td></tr></table>\n\nTable 11: Word Error Rate (WER) of WACO on ASR part of MuST-C En-De tst-COMMON set.   \n\n<table><tr><td>ST Data</td><td colspan=\"4\">1h</td><td colspan=\"3\">10h</td></tr><tr><td>ASR Data</td><td>10h</td><td>100h</td><td>370h</td><td>1330h</td><td>100h</td><td>370h</td><td>1330h</td></tr><tr><td>WACO</td><td>45.5</td><td>40.6</td><td>42.7</td><td>33.3</td><td>24.9</td><td>21.7</td><td>21.3</td></tr></table>\n\nin low-resource ST setting with 10h ASR and 1h ST data. Higher temperature in general leads to higher BLEU scores, but the marginal improvement becomes negligible when $\\tau > 0.5$ .\n\n![](images/6a2243de231a9e2807aa8d982369580e5024146bc4f8c83179bc37ed1ed4da7c.jpg)  \nFigure 7: Case-sensitive detokenized BLEU scores on MuST-C En-De tst-COMMON set with different temperature values.\n\nPooling and Layer Here we compare different pooling mechanisms used to aggregate word-level representation and also different layers used to extract representations (before or after joint Transformer encoder). Table 12 shows BLEU scores in low-resource ST setting with 10h ASR and 1h ST data. WACO is not very sensitive to pooling method, but sensitive to the layer selection. Aligning representations extracted before joint encoder delivers much better performance.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.216::appendix::A.4",
+      "paper_id": "2023.acl-long.216",
+      "section_number": "A.4",
+      "section_title": "loss curves for cross-modal pre-training",
+      "normalized_section_title": "loss curves for cross-modal pre-training",
+      "window_text": "We present pre-training loss curves of CTC with both BPE and phoneme tokenizations, and WACO in Figure 8.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.216::appendix::A.5",
+      "paper_id": "2023.acl-long.216",
+      "section_number": "A.5",
+      "section_title": "mt pre-training",
+      "normalized_section_title": "mt pre-training",
+      "window_text": "We use the same vocabulary and SentencePiece model described in Section 4.2 to tokenize the WMT datasets. The model is optimized with Adam. The learning rate starts at 1e-7, warmed up to 7e-4 by 4k steps and then decays following the inverse square root schedule with a minimum learning rate of 1e-9. The maximum number of tokens in a batch is 8192. We select the checkpoint with the highest BLEU (beam size 4, length penalty 0.6) on the WMT validation set.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.216::appendix::A.9",
+      "paper_id": "2023.acl-long.216",
+      "section_number": "A.9",
+      "section_title": "training efficiency",
+      "normalized_section_title": "training efficiency",
+      "window_text": "The computation cost of calculating WACO loss function is higher than that of sentence-level methods (e.g., ConST) and in our profiling results, it takes $20\\sim 30\\%$ time of a forward pass. However, WACO converges much faster, in terms of number of iterations, than ConST and CTC. In the 100h ASR data case, WACO only needs $< 25k$ iterations to converge while both ConST and CTC requires $>50k$ iterations. This makes WACO more time efficient overall.\n\n![](images/9fc65e0fb1e5ca416828198dbda5968e792d0accc3da9ae27c334017bd4f14ab.jpg)  \n(a) CTC with BPE tokenization\n\n![](images/fd0392ea8f0cd8abac61e714949224758d79fd55326a0ad2bd6d985fa766986d.jpg)  \n(b) CTC with phoneme tokenization\n\n![](images/6dd2bb996113802684f9b6ecc1f9258eee9518da55b49732359f7809297a67b7.jpg)  \n(c) WACO   \nFigure 8: Loss curves of various cross-modal pretraining method. CTC with BPE tokenization cannot generalize well to unseen speech (cannot reach below 2 on dev set).\n\n![](images/a14706162d8ef8eb402eb64caa7ef98ec4e40ca1e2021842632d74f6db253d5a.jpg)\n\n![](images/ae1dd2931eb4cf3d812b9ba3e03c9eee9635018b533511e72926cb6c2ba41b12.jpg)  \nFigure 9: Two additional examples with speech-text alignment matrices and translations of WACO and ConST.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.216::sections::4.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A6000",
+      "count": null,
+      "count_text": "",
+      "evidence": "Model Configurations In MuST-C experiments, we use wav2vec 2.0 base model in our speech encoder which is solely pre-trained on 960-hour English audio. It consists of a 7-layer convolutional feature extractor and 12 Transformer encoder blocks with 768 hidden units. Two down-sampling convolutional layers have kernel size 5, stride size 2 and hidden size 512 or 1024 depending on the Transformer hidden size. For En-De/Fr/Es directions, the Transformer encoder-decoder has 6 encoder and decoder layers with hidden size 512, 2048 FFN hidden units and 8 attention heads. For Mt-En direction, it has 12 layers each with hidden size 1024, 4096 FFN hidden units and 16 attention heads.\n\nPreprocessing The input speech is the raw 16-bit $16\\mathrm{kHz}$ mono-channel waveform. We filter speech that is either too long ( $>480\\mathrm{k}$ frames) or too short ( $<1\\mathrm{k}$ frames) out. This results in 388/471/480 hours of speech being retained as ST training data for En-De/Fr/Es directions. We jointly tokenize the transcripts and translations for each language direction using SentencePiece (Kudo and Richardson, 2018) with a vocabulary size set to $10\\mathrm{k}$ . To conduct forced alignment required by WACO (see section 3.3), we first remove punctuations and group whole words by identifying special space token in the vocabulary. Then we use the MFA to train forced aligners on $\\mathcal{D}^{\\mathrm{ASR}}$ to align English speech and words. The amount of ASR data used to train forced aligner is the same as that used for training WACO. Due to vocabulary mismatch between the MFA and our SentencePiece model, a small number of speeches and transcripts (e.g., 18h for En-De) cannot be aligned and we simply ignore them when doing contrastive learning.\n\nTraining Transformer and text embedding are pre-trained on the external WMT dataset for En\n\nTable 1: Case-sensitive detokenized BLEU scores on MuST-C En-De tst-COMMON set and manually created IWSLT Mt-En test set of models pre-trained on ASR data using different cross-modal methods and fine-tuned on ST data. All models share the same W2V2-Transformer architecture. Base ignores ASR data and only fine-tunes on ST data, while other baselines pre-train on ASR data using CTC, sentence-level contrastive (ConST) and word-aligned contrastive (WACO) losses.   \n\n<table><tr><td>Direction</td><td colspan=\"7\">En-De</td><td>Mt-En</td></tr><tr><td>ST Data</td><td colspan=\"4\">1h</td><td colspan=\"3\">10h</td><td>1h</td></tr><tr><td>ASR Data</td><td>10h</td><td>100h</td><td>370h</td><td>1330h</td><td>100h</td><td>370h</td><td>1330h</td><td>10h</td></tr><tr><td>Base</td><td>4.3</td><td>4.3</td><td>4.3</td><td>4.3</td><td>17.5</td><td>17.5</td><td>17.5</td><td>-</td></tr><tr><td>Base+CTC</td><td>0.2</td><td>12.6</td><td>14.6</td><td>14.7</td><td>18.3</td><td>20.4</td><td>20.0</td><td>3.0</td></tr><tr><td>ConST</td><td>3.0</td><td>7.3</td><td>11.7</td><td>13.7</td><td>16.9</td><td>18.6</td><td>19.6</td><td>4.0</td></tr><tr><td>WACO</td><td>14.1</td><td>16.2</td><td>16.6</td><td>17.5</td><td>21.0</td><td>22.7</td><td>22.9</td><td>13.3</td></tr></table>\n\nDe/Fr/Es (MT training details can be found in Appendix A.5). For Mt-En direction, we directly initialize the Transformer and text embedding with the NLLB-600M model (Costa-jussa et al., 2022)<sup>9</sup> pre-trained on Flores-200. For both cross-modal pre-training and multi-task fine-tuning, we set contrastive temperature $\\tau = 0.2$ and optimize our model by Adam optimizer (Kingma and Ba, 2015) $(\\beta_{1} = 0.9, \\beta_{2} = 0.98)$ with learning rate 1e-4 and 25k warm-up steps. After the warm-up, the learning rate is decayed following the inverse square root schedule. The effective batch size is 16 million frames. We set dropout rate to 0.1. For pretraining, we save the checkpoints with the best contrastive loss on the validation set. For fine-tuning, we save the checkpoints with the best BLEU on the validation set and average the last 10 saved checkpoints. Also, we set label smoothing to 0.1 for the cross-entropy losses, $\\lambda = 0$ in low-resource ST and $\\lambda = 1$ in ST with full data. All models are trained on Nvidia A6000 GPUs.\n\nInference and Evaluation During inference, we run beam search with beam size 10 and length penalty $0.6 / 1.0 / 0.1 / 0.3$ for En-De/Fr/Es and Mt-En directions respectively. For evaluation, we report case-sensitive detokenized BLEU scores on MuST-C tst-COMMON and IWSLT Mt-En test set using sacreBLEU (Post, 2018) $^{10}$ .\n\nBaselines In low-resource ST settings, we compare our method with three baselines:\n\n- Base: This baseline ignores $\\mathcal{D}^{\\mathrm{ASR}}$ and only optimizes cross entropy loss in Equation 6 on $\\mathcal{D}^{\\mathrm{ST}}$ .\n\n- Base+CTC: This baseline, on top of Base, applies CTC loss on $\\mathcal{D}^{\\mathrm{ASR}}$ to align speech and text representations. In particular, we add a linear layer after the speech encoder to predict the text BPE token at each frame and fix its weight with text embedding. We only include CTC with BPE tokenization here since it performs consistently better than its phoneme counterpart (details in Section 5.2).   \n- ConST: This baseline adds a coarse-grained contrastive loss on $\\mathcal{D}^{\\mathrm{ASR}}$ on top of Base to reduce modality gap as in Ye et al. (2022b). Instead of word-level alignment, ConST conducts contrastive learning on sentence-level average speech and text embeddings. Hyper-parameters are directly borrowed from Ye et al. (2022b).\n\nIn regular ST with full MuST-C data, we compare our method with other existing works.",
+      "section_number": "4.2",
+      "section_title": "experimental setups",
+      "normalized_section_title": "experimental setups"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.216::sections::4.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A6000",
+      "cleaned_hardware_name": "nvidia a6000",
+      "normalized_hardware_name": "NVIDIA RTX A6000",
+      "benchmark_hardware_name": "NVIDIA RTX A6000",
+      "count": null,
+      "count_text": "",
+      "section_number": "4.2",
+      "section_title": "experimental setups",
+      "normalized_section_title": "experimental setups",
+      "evidence": "Model Configurations In MuST-C experiments, we use wav2vec 2.0 base model in our speech encoder which is solely pre-trained on 960-hour English audio. It consists of a 7-layer convolutional feature extractor and 12 Transformer encoder blocks with 768 hidden units. Two down-sampling convolutional layers have kernel size 5, stride size 2 and hidden size 512 or 1024 depending on the Transformer hidden size. For En-De/Fr/Es directions, the Transformer encoder-decoder has 6 encoder and decoder layers with hidden size 512, 2048 FFN hidden units and 8 attention heads. For Mt-En direction, it has 12 layers each with hidden size 1024, 4096 FFN hidden units and 16 attention heads.\n\nPreprocessing The input speech is the raw 16-bit $16\\mathrm{kHz}$ mono-channel waveform. We filter speech that is either too long ( $>480\\mathrm{k}$ frames) or too short ( $<1\\mathrm{k}$ frames) out. This results in 388/471/480 hours of speech being retained as ST training data for En-De/Fr/Es directions. We jointly tokenize the transcripts and translations for each language direction using SentencePiece (Kudo and Richardson, 2018) with a vocabulary size set to $10\\mathrm{k}$ . To conduct forced alignment required by WACO (see section 3.3), we first remove punctuations and group whole words by identifying special space token in the vocabulary. Then we use the MFA to train forced aligners on $\\mathcal{D}^{\\mathrm{ASR}}$ to align English speech and words. The amount of ASR data used to train forced aligner is the same as that used for training WACO. Due to vocabulary mismatch between the MFA and our SentencePiece model, a small number of speeches and transcripts (e.g., 18h for En-De) cannot be aligned and we simply ignore them when doing contrastive learning.\n\nTraining Transformer and text embedding are pre-trained on the external WMT dataset for En\n\nTable 1: Case-sensitive detokenized BLEU scores on MuST-C En-De tst-COMMON set and manually created IWSLT Mt-En test set of models pre-trained on ASR data using different cross-modal methods and fine-tuned on ST data. All models share the same W2V2-Transformer architecture. Base ignores ASR data and only fine-tunes on ST data, while other baselines pre-train on ASR data using CTC, sentence-level contrastive (ConST) and word-aligned contrastive (WACO) losses.   \n\n<table><tr><td>Direction</td><td colspan=\"7\">En-De</td><td>Mt-En</td></tr><tr><td>ST Data</td><td colspan=\"4\">1h</td><td colspan=\"3\">10h</td><td>1h</td></tr><tr><td>ASR Data</td><td>10h</td><td>100h</td><td>370h</td><td>1330h</td><td>100h</td><td>370h</td><td>1330h</td><td>10h</td></tr><tr><td>Base</td><td>4.3</td><td>4.3</td><td>4.3</td><td>4.3</td><td>17.5</td><td>17.5</td><td>17.5</td><td>-</td></tr><tr><td>Base+CTC</td><td>0.2</td><td>12.6</td><td>14.6</td><td>14.7</td><td>18.3</td><td>20.4</td><td>20.0</td><td>3.0</td></tr><tr><td>ConST</td><td>3.0</td><td>7.3</td><td>11.7</td><td>13.7</td><td>16.9</td><td>18.6</td><td>19.6</td><td>4.0</td></tr><tr><td>WACO</td><td>14.1</td><td>16.2</td><td>16.6</td><td>17.5</td><td>21.0</td><td>22.7</td><td>22.9</td><td>13.3</td></tr></table>\n\nDe/Fr/Es (MT training details can be found in Appendix A.5). For Mt-En direction, we directly initialize the Transformer and text embedding with the NLLB-600M model (Costa-jussa et al., 2022)<sup>9</sup> pre-trained on Flores-200. For both cross-modal pre-training and multi-task fine-tuning, we set contrastive temperature $\\tau = 0.2$ and optimize our model by Adam optimizer (Kingma and Ba, 2015) $(\\beta_{1} = 0.9, \\beta_{2} = 0.98)$ with learning rate 1e-4 and 25k warm-up steps. After the warm-up, the learning rate is decayed following the inverse square root schedule. The effective batch size is 16 million frames. We set dropout rate to 0.1. For pretraining, we save the checkpoints with the best contrastive loss on the validation set. For fine-tuning, we save the checkpoints with the best BLEU on the validation set and average the last 10 saved checkpoints. Also, we set label smoothing to 0.1 for the cross-entropy losses, $\\lambda = 0$ in low-resource ST and $\\lambda = 1$ in ST with full data. All models are trained on Nvidia A6000 GPUs.\n\nInference and Evaluation During inference, we run beam search with beam size 10 and length penalty $0.6 / 1.0 / 0.1 / 0.3$ for En-De/Fr/Es and Mt-En directions respectively. For evaluation, we report case-sensitive detokenized BLEU scores on MuST-C tst-COMMON and IWSLT Mt-En test set using sacreBLEU (Post, 2018) $^{10}$ .\n\nBaselines In low-resource ST settings, we compare our method with three baselines:\n\n- Base: This baseline ignores $\\mathcal{D}^{\\mathrm{ASR}}$ and only optimizes cross entropy loss in Equation 6 on $\\mathcal{D}^{\\mathrm{ST}}$ .\n\n- Base+CTC: This baseline, on top of Base, applies CTC loss on $\\mathcal{D}^{\\mathrm{ASR}}$ to align speech and text representations. In particular, we add a linear layer after the speech encoder to predict the text BPE token at each frame and fix its weight with text embedding. We only include CTC with BPE tokenization here since it performs consistently better than its phoneme counterpart (details in Section 5.2).   \n- ConST: This baseline adds a coarse-grained contrastive loss on $\\mathcal{D}^{\\mathrm{ASR}}$ on top of Base to reduce modality gap as in Ye et al. (2022b). Instead of word-level alignment, ConST conducts contrastive learning on sentence-level average speech and text embeddings. Hyper-parameters are directly borrowed from Ye et al. (2022b).\n\nIn regular ST with full MuST-C data, we compare our method with other existing works.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.acl-long.216::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.216::sections::4.1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "datasets",
+      "evidence": "MuST-C We conduct experiments on the MuST-C dataset $^{3,4}$ (Di Gangi et al., 2019), one of the largest ST benchmark datasets containing translations from English to 8 languages collected from TED Talks. Each language direction involves around 400 hours of audio recordings. Limited by computing resources, we examine our method on three language directions: English-German/French/Spanish (En-De/Fr/Es).\n\nMuST-C Low-Resource To examine our method in the extremely low-resource settings, we manually create ASR and ST subsets from the MuST-C En-De training set. Specifically, we build 10-hour, 100-hour and 370-hour ASR subsets and 1-hour and 10-hour ST subsets respectively through random sampling.\n\nIWSLT Low-Resource We also evaluate our method on Maltese to English translation in IWSLT 2023 low-resource track<sup>5</sup>. We use the officially provided ST triplets as ST data and build the ASR dataset by combining the the audio-transcript part from the official ST data and CommonVoice (Ardila et al., 2020)<sup>6</sup>. We remove silences and randomly partition the data. Finally we obtain 1 hour of ST triplets and 10 hours of ASR pairs as training and development set and 0.1 hour of ST triplets as test set.\n\nExternal ASR We also introduce LibriSpeech (Panayotov et al., 2015) as the external ASR dataset. LibriSpeech is the de facto public English ASR benchmark containing 960 hours of audiobook speech. We build a 1330-hour English ASR dataset by combining MuST-C and LibriSpeech.\n\nExternal MT Additionally, we introduce external WMT En-De/Fr/Es datasets (Bojar et al., 2016)\n\nfor each language direction to pre-train text embedding and Transformer. We also introduce Flores200 (Costa-jussa et al., 2022), a massively multilingual machine translation dataset, for Mt-En direction. As shown in previous work (Xu et al., 2021; Ye et al., 2021), MT pre-training greatly improves ST performance.\n\nThe statistics of datasets above are listed in Appendix A.1."
+    },
+    {
+      "source_window_id": "2023.acl-long.216::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "appendix",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.216::appendix::A.1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.1",
+      "section_title": "statistics of datasets",
+      "evidence": "We show statistics of MuST-C, IWSLT Mt-En, LibriSpeech and WMT datasets in Table 6,7,8 and 9.\n\nTable 6: Statistics of MuST-C.   \n\n<table><tr><td>Direction</td><td>Hours</td><td># Sentence</td></tr><tr><td>En-De</td><td>408</td><td>234K</td></tr><tr><td>En-Fr</td><td>492</td><td>280K</td></tr><tr><td>En-Es</td><td>504</td><td>270K</td></tr></table>\n\nTable 7: Statistics of ST and ASR subsets in MuST-C En-De Low-Resource and IWSLT Mt-En.   \n\n<table><tr><td>Type</td><td>Hours</td><td># Sentence</td></tr><tr><td rowspan=\"2\">En-De ST</td><td>1</td><td>0.6K</td></tr><tr><td>10</td><td>5.8K</td></tr><tr><td rowspan=\"4\">En ASR</td><td>10</td><td>5.8K</td></tr><tr><td>100</td><td>58K</td></tr><tr><td>370</td><td>216K</td></tr><tr><td>1330</td><td>497K</td></tr><tr><td>Mt-En ST</td><td>1</td><td>0.9K</td></tr><tr><td>Mt ASR</td><td>10</td><td>6.7K</td></tr></table>\n\nTable 8: Statistics of LibriSpeech.   \n\n<table><tr><td>Language</td><td>Hours</td><td># Sentence</td><td># Speaker</td></tr><tr><td>En</td><td>960</td><td>281K</td><td>2338</td></tr></table>\n\nTable 9: Statistics of WMT.   \n\n<table><tr><td>Direction</td><td>Name</td><td># Sentence</td></tr><tr><td>En-De</td><td>WMT16</td><td>4.6M</td></tr><tr><td>En-Fr</td><td>WMT14</td><td>40.8M</td></tr><tr><td>En-Es</td><td>WMT13</td><td>15.2M</td></tr></table>"
+    },
+    {
+      "source_window_id": "2023.acl-long.216::appendix::A.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.2",
+      "section_title": "impact of hyperparameter",
+      "evidence": "Temperature Figure 7 demonstrates BLEU scores produced by different temperature values\n\nTable 10: Case-sensitive detokenized BLEU scores on MuST-C En-De tst-COMMON set of WACO and Cascade ST. We initializes the speech encoder with wav2vec 2.0 or random weights instead.   \n\n<table><tr><td>ST Data</td><td colspan=\"3\">1h</td><td colspan=\"2\">10h</td></tr><tr><td>ASR Data</td><td>10h</td><td>100h</td><td>370h</td><td>100h</td><td>370h</td></tr><tr><td>Cascade w/o w2v2</td><td>&lt;1</td><td>4.7</td><td>10.7</td><td>4.7</td><td>10.7</td></tr><tr><td>WACO w/o w2v2</td><td>14.3</td><td>15.4</td><td>15.3</td><td>20.9</td><td>22.3</td></tr><tr><td>Cascade w/ w2v2</td><td>15.6</td><td>17.2</td><td>18.0</td><td>17.2</td><td>18.0</td></tr><tr><td>WACO w/ w2v2</td><td>14.1</td><td>16.2</td><td>16.6</td><td>21.0</td><td>22.7</td></tr></table>\n\nTable 11: Word Error Rate (WER) of WACO on ASR part of MuST-C En-De tst-COMMON set.   \n\n<table><tr><td>ST Data</td><td colspan=\"4\">1h</td><td colspan=\"3\">10h</td></tr><tr><td>ASR Data</td><td>10h</td><td>100h</td><td>370h</td><td>1330h</td><td>100h</td><td>370h</td><td>1330h</td></tr><tr><td>WACO</td><td>45.5</td><td>40.6</td><td>42.7</td><td>33.3</td><td>24.9</td><td>21.7</td><td>21.3</td></tr></table>\n\nin low-resource ST setting with 10h ASR and 1h ST data. Higher temperature in general leads to higher BLEU scores, but the marginal improvement becomes negligible when $\\tau > 0.5$ .\n\n![](images/6a2243de231a9e2807aa8d982369580e5024146bc4f8c83179bc37ed1ed4da7c.jpg)  \nFigure 7: Case-sensitive detokenized BLEU scores on MuST-C En-De tst-COMMON set with different temperature values.\n\nPooling and Layer Here we compare different pooling mechanisms used to aggregate word-level representation and also different layers used to extract representations (before or after joint Transformer encoder). Table 12 shows BLEU scores in low-resource ST setting with 10h ASR and 1h ST data. WACO is not very sensitive to pooling method, but sensitive to the layer selection. Aligning representations extracted before joint encoder delivers much better performance."
+    },
+    {
+      "source_window_id": "2023.acl-long.216::appendix::A.4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.4",
+      "section_title": "loss curves for cross-modal pre-training",
+      "evidence": "We present pre-training loss curves of CTC with both BPE and phoneme tokenizations, and WACO in Figure 8."
+    },
+    {
+      "source_window_id": "2023.acl-long.216::appendix::A.5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.5",
+      "section_title": "mt pre-training",
+      "evidence": "We use the same vocabulary and SentencePiece model described in Section 4.2 to tokenize the WMT datasets. The model is optimized with Adam. The learning rate starts at 1e-7, warmed up to 7e-4 by 4k steps and then decays following the inverse square root schedule with a minimum learning rate of 1e-9. The maximum number of tokens in a batch is 8192. We select the checkpoint with the highest BLEU (beam size 4, length penalty 0.6) on the WMT validation set."
+    },
+    {
+      "source_window_id": "2023.acl-long.216::appendix::A.9",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.9",
+      "section_title": "training efficiency",
+      "evidence": "The computation cost of calculating WACO loss function is higher than that of sentence-level methods (e.g., ConST) and in our profiling results, it takes $20\\sim 30\\%$ time of a forward pass. However, WACO converges much faster, in terms of number of iterations, than ConST and CTC. In the 100h ASR data case, WACO only needs $< 25k$ iterations to converge while both ConST and CTC requires $>50k$ iterations. This makes WACO more time efficient overall.\n\n![](images/9fc65e0fb1e5ca416828198dbda5968e792d0accc3da9ae27c334017bd4f14ab.jpg)  \n(a) CTC with BPE tokenization\n\n![](images/fd0392ea8f0cd8abac61e714949224758d79fd55326a0ad2bd6d985fa766986d.jpg)  \n(b) CTC with phoneme tokenization\n\n![](images/6dd2bb996113802684f9b6ecc1f9258eee9518da55b49732359f7809297a67b7.jpg)  \n(c) WACO   \nFigure 8: Loss curves of various cross-modal pretraining method. CTC with BPE tokenization cannot generalize well to unseen speech (cannot reach below 2 on dev set).\n\n![](images/a14706162d8ef8eb402eb64caa7ef98ec4e40ca1e2021842632d74f6db253d5a.jpg)\n\n![](images/ae1dd2931eb4cf3d812b9ba3e03c9eee9635018b533511e72926cb6c2ba41b12.jpg)  \nFigure 9: Two additional examples with speech-text alignment matrices and translations of WACO and ConST."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA RTX A6000",
+        "num": null
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2023\\2023.acl-long.216\\auto\\full.md",
+    "source_md_sha256": "0b3437b0a60a8885f48e7ae930fc7ad1ff1fbbb6bc9478c71ceef72f38dfdc86",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

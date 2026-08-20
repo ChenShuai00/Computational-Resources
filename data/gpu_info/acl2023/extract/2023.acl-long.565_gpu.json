@@ -1,0 +1,241 @@
+{
+  "paper_id": "2023.acl-long.565",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.565::sections::1",
+      "paper_id": "2023.acl-long.565",
+      "section_number": "1",
+      "section_title": "introduction",
+      "normalized_section_title": "introduction",
+      "window_text": "Pre-training language models (LMs) on large-scale web text corpora (i.e., Common Crawl and Open-WebTextCorpus (Gokaslan and Cohen, 2019)) has significantly improved their language generation performances (Radford et al., 2019; Yang et al., 2019; Dai et al., 2019; Shoeybi et al., 2019; Li et al., 2020; Brown et al., 2020), by allowing them to learn meaningful relations between words. However, since the models are trained on massive web-crawled text data which is not exhaustively filtered,\n\n![](images/f203d7c73560cfd2536cdbda6b3cb106304ebd6541cffe6d986fc8aebdefa369.jpg)\n\n![](images/79342384902724df39230bbbad40a297cb0d712fee7f4ef4a37c224e215ffcc7.jpg)  \nFigure 1: Memory and computational efficiency vs. Exp. Max Toxicity. Comparison of toxicity of the generated texts between previous language detoxification methods and ours, on the number of model parameters and inference time per 100 generated texts with a single GPU. Toxicity is calculated on random-10K prompts from RealToxicityPrompts (Gehman et al., 2020). Our model achieves the best language detoxification performance while being time- and memory- efficient.\n\nthey are prone to generating unexpected and undesired texts (Sheng et al., 2019; Wallace et al., 2019) which are often also inappropriate (See Table 1).\n\nSpecifically, LMs trained on unfiltered texts can randomly generate racial slurs, sexually explicit and violent expressions, which are highly toxic (Groenwold et al., 2020; Luccioni and Viviano, 2021; Xu et al., 2021; Dale et al., 2021). This is one of the main obstacles in deploying pretrained LMs to real-world applications (e.g., conversational agents). Furthermore, as demonstrated in Gehman et al. (2020); Baheti et al. (2021); Dale et al. (2021), LMs are prone to generating toxic language even from the non-toxic prompts or contexts. One simple and straightforward approach to tackle this problem is to eliminate the toxic and biased texts by detecting them from the training dataset (Zhou et al., 2021; Zampieri et al., 2019). However, as the size of LMs increases, the training corpora have also expanded enormously (Brown et al., 2020; Du et al., 2021). Thoroughly removing or filtering out all toxic words or sentences from such a large-scale corpus and retraining the LM from scratch, could be costly and impractical (Ben\n\n![](images/a3b441cae3114643406b02a24a49a589aa59a2eb0653a08ab50413554c1ccb70.jpg)  \nFigure 2: Concept. Both non-toxic and toxic sentences are used as input. We tag the attribute information to each latent vector. Then, the discriminative projector (i.e. projection block) projects the new latent space where toxic and non-toxic are separable through the discriminator. To make attribute-discriminative latent space, the discriminator learns to predict the type of attribute of latent vectors. To preserve the relationship of learned word embedding and control the fluency, ADLM regularizes the projector with EWC between the latent (a) and (b). The result of attribute-discriminative features of discriminator is visualized in (c).",
+      "rule_tier": "soft_skip",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2023.acl-long.565::sections::4",
+      "paper_id": "2023.acl-long.565",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "To validate our ADLM, we conduct two detoxification experiments: the language generation task on RealToxicityPrompts (Gehman et al., 2020) and dialogue generation task on ToxiChat (Baheti et al., 2021) and DialogueSafe (Sun et al., 2022). Further, we show the general applicability of our\n\nmethod to attribute-controlled language generation on a sentiment-controlled text generation task (Appendix D). In this section, we will discuss the experimental setup and results for two tasks. For more detailed explanation of the experimental setups, please refer to Appendix B.1. The code is available at https://github.com/jin8/ADLM.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.565::sections::4.1",
+      "paper_id": "2023.acl-long.565",
+      "section_number": "4.1",
+      "section_title": "detoxification for language generation",
+      "normalized_section_title": "detoxification for language generation",
+      "window_text": "Baselines. We compare against the following baselines for generic language detoxification tasks, using GPT-2 as the base language model. All compared models, including ours, are trained on Jigsaw Unintended Bias in Toxicity Classification Kaggle challenge dataset and evaluated on random 10K prompts from RealToxicityPrompts (Gehman et al., 2020). The training dataset is imbalanced between non-toxic comments (91M tokens) and toxic comments (10M tokens), as mentioned in Liu et al. (2021a). To address this skewed distribution, we apply class weights to balance the update losses in Equation 6 and 7 to our model. The details of the hyperparameters used for each model are provided in Appendix B.2.\n\n- Domain-adaptive pre-training (DAPT; Gururangan et al. (2020)): This baseline further trains the LM on the dataset with desired attributes (e.g., non-toxic corpus).   \n- Attribute conditioning (ATCON; Gehman et al. (2020)): This baseline learns the distribution of the generated texts conditioned on the task-specific control codes (e.g., toxic or nontoxic) prepend to the texts.   \n- Plug-and-play language models (PPLM; Dathathri et al. (2020)): This baseline consists of a classifier that backpropagates the gradients to the LM multiple times to generate texts with desired attributes. Due to the high computational cost, we only sample 10 sentences per prompt as Gehman et al. (2020) setting.   \n- Generative discriminators (GeDi; Krause et al. (2021)): GeDi utilizes additional LM that is trained with ATCON (Gehman et al., 2020) to guide the base LM in the decoding time. GeDi weighs the attribute probability from ATCON using the Bayes rule on logits of the base LM.   \n- Decoding-time Experts (DExperts; Liu et al. (2021a)): DExperts employs expert (non-toxic\n\nTable 2: Performance of language detoxification. All toxicities are calculated based on Perspective API. All models generate 25 sentences for each single prompt from $10\\%$ subset of RealToxicityPrompts which is random-10k evaluation dataset. Exp. Max Toxicity is calculated by mean of max toxicity of 25 generations. Toxicity probability is probability of generating toxic sentence from 25 generations. The time (sec) is the time it takes to generate 100 sequences with a single GPU. Bold denotes improved performance compare to the baselines.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"2\">Exp. Max Toxicity (↓)</td><td colspan=\"2\">Toxicity Prob. (↓)</td><td colspan=\"3\">Efficiency (↓)</td><td colspan=\"3\">Diversity (↑)</td></tr><tr><td>Toxic</td><td>Non-Toxic</td><td>Toxic</td><td>Non-Toxic</td><td># LMs</td><td>Param</td><td>Time</td><td>Dist-1</td><td>Dist-2</td><td>Dist-3</td></tr><tr><td>GPT-2</td><td>0.75 ± 0.29</td><td>0.51 ± 0.22</td><td>0.88</td><td>0.48</td><td>1</td><td>124M</td><td>3.56</td><td>0.59</td><td>0.88</td><td>0.88</td></tr><tr><td>ATCON</td><td>0.57 ± 0.17</td><td>0.41 ± 0.16</td><td>0.63</td><td>0.26</td><td>1</td><td>124M</td><td>3.56</td><td>0.58</td><td>0.87</td><td>0.86</td></tr><tr><td>DAPT</td><td>0.50 ± 0.15</td><td>0.38 ± 0.14</td><td>0.47</td><td>0.19</td><td>1</td><td>124M</td><td>3.56</td><td>0.59</td><td>0.87</td><td>0.86</td></tr><tr><td>PPLM</td><td>0.52 ± 0.26</td><td>0.32 ± 0.19</td><td>0.49</td><td>0.17</td><td>1</td><td>354M</td><td>206.6</td><td>0.61</td><td>0.84</td><td>0.85</td></tr><tr><td>GeDi</td><td>0.31 ± 0.19</td><td>0.37 ± 0.19</td><td>0.17</td><td>0.23</td><td>2</td><td>709M</td><td>10.45</td><td>0.32</td><td>0.83</td><td>0.82</td></tr><tr><td>DExperts</td><td>0.42 ± 0.20</td><td>0.28 ± 0.14</td><td>0.32</td><td>0.08</td><td>3</td><td>372M</td><td>23.99</td><td>0.58</td><td>0.83</td><td>0.83</td></tr><tr><td>ADLM</td><td>0.28 ± 0.16</td><td>0.22 ± 0.12</td><td>0.12</td><td>0.04</td><td>1</td><td>131M</td><td>5.45</td><td>0.62</td><td>0.89</td><td>0.87</td></tr></table>\n\nDAPT (Gururangan et al., 2020)) and anti-expert (toxic DAPT (Gururangan et al., 2020)) LMs to guide the base LM at the decoding time. DExperts add expert's logit and subtract anti-expert's logit on the base LM's logit to detoxify.\n\nAutomatic Evaluation. To validate our language detoxification method, we evaluate the toxicity of the generated texts using it, as well as the efficiency. Moreover, we examine the diversity of the generated texts. To automatically measure the toxicity of the generated texts, we utilize Perspective API that returns the toxicity scores of given texts and further details are provided in Appendix A. To measure diversity, we calculate the mean of distance n-grams (Li et al., 2016) that is normalized by the total text length.\n\nThe results in Table 2 show that ADLM largely outperforms baselines in the language detoxification performance. Compared to GeDi, ADLM can lower the toxicity of the generated texts to 0.28 with a significantly smaller number of parameters (1/7) and $\\times 2$ faster inference time. Moreover, our model is able to generate more diverse texts compared to those generated by baselines.\n\nAblation study. We examine the effect of each component of our ADLM, i.e., architectural design, dataset design, and training modules, in Table 3. We observe that balancing the toxic and non-toxic data is the most important factor to construct a well discriminative latent space. Moreover, when we utilize a discriminator, our model is able to discriminate the texts more effectively along with the attribute embedding tokens which supports our hypothesis that obtaining a well-discriminated pro\n\nTable 3: Ablation study. We examine the effectiveness of each component via an ablation study on non-toxic prompts. w/o balancing denotes remove balancing in train dataset. w/o discriminator denotes the model that is removed Disc. finetuning denotes updating all parameters.   \n\n<table><tr><td rowspan=\"2\">Type</td><td rowspan=\"2\">Model</td><td colspan=\"2\">Toxicity (↓)</td></tr><tr><td>Exp. Max Toxicity</td><td>Toxicity prob.</td></tr><tr><td>-</td><td>GPT-2</td><td>0.51</td><td>0.48</td></tr><tr><td>-</td><td>Ours</td><td>0.22</td><td>0.04</td></tr><tr><td>Data</td><td>w/o balancing</td><td>0.43</td><td>0.31</td></tr><tr><td>Architecture</td><td>w/o discriminator</td><td>0.31</td><td>0.12</td></tr><tr><td>Training</td><td>finetuning</td><td>0.36</td><td>0.14</td></tr></table>\n\n![](images/f281172ce66c34d0044926c29fa5622757d2ed0bcbdc4a4fb48f64f6121454af.jpg)  \nFigure 4: Comparison of baselines and our performance based on GPT-2 on every type of toxicity from Perspective API. We set GPT-2's toxicity of each type as a $100\\%$ and calculate percentage of toxicity of DExperts, GeDi and Ours.\n\njected latent space is the key factor to success in detoxification.\n\nAnalysis of toxicity types. We further examine which types of toxic texts are highly suppressed by our model compared to GPT-2. As shown in Figure 4, our model suppresses all types of the toxic level of the generated texts compare to baselines. Notably, ADLM successfully suppresses toxicity on the threat type, which DExperts fail to detoxify. The threat is one of the frequent types of toxic sentences that GPT-2 generates with the highest probability (0.624). This explains why DExperts is vul\n\nTable 4: Performance of dialogue detoxification on ToxiChat. We evaluate percentage of bad (Bad), offensive (Off) response, respectively. Moreover, we check the stance of our response (Disagree/No-Stance) against provided context. BOLD denotes improved performance compare to baselines.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"2\">Toxicity (↓)</td><td colspan=\"2\">Stance</td></tr><tr><td>%Bad</td><td>%Off</td><td>%Disagree (↓)</td><td>%No-Stance (↑)</td></tr><tr><td>DialoGPT</td><td>46.8</td><td>64.2</td><td>11.6</td><td>38.2</td></tr><tr><td>ATCON</td><td>20.4</td><td>29.6</td><td>2.6</td><td>52.4</td></tr><tr><td>DAPT</td><td>5.8</td><td>10.6</td><td>1.0</td><td>60.0</td></tr><tr><td>ADLM</td><td>1.2</td><td>6.8</td><td>0.8</td><td>60.4</td></tr></table>\n\n![](images/61ccbc1e6aaa331d75136cf02ba97253f52e0bd543d2b80b665aaea0ee485eec.jpg)  \nFigure 5: Performance of dialogue detoxification on DiaSafety. Dark colors denote the proportion of context-sensitive unsafe texts and light colors denote the proportion of utterance-level unsafe texts. ADLM is shown to be more effective on both tasks compared to the baselines.\n\nnerable to threats, Since DExperts eventually employ the original latent space of GPT-2 and thus cannot significantly change its language generation behavior. On the other hand, our ADLM modifies the original latent space into attribute-discriminative ones, and thus can effectively suppress them. Another notable point is that all models, including ADLM, cannot handle flirtations well. However, by checking the generated examples, we found that the perspective API assign high flirtation scores on sentences with words such as women, her, she, like, etc. appear, which results in misclassifications of sentences that do not contain any flirting contexts since they are commonly used words.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2023.acl-long.565::appendix::B",
+      "paper_id": "2023.acl-long.565",
+      "section_number": "B",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.565::appendix::C.1",
+      "paper_id": "2023.acl-long.565",
+      "section_number": "C.1",
+      "section_title": "modeling details",
+      "normalized_section_title": "modeling details",
+      "window_text": "We use GPT-2 from HuggingFace Transformers version 4.2.0 (Wolf et al., 2020), implemented in the PyTorch framework. For RealToxicityPrompts (Gehman et al., 2020), our ADLM is trained with 128 block sizes, 32 batch sizes per GPU, $5e^{-5}$ learning rate, and 3 epochs. Same setting is used for sentiment-controlled text generation. Since the sizes of training datasets differ in dialogue generation tasks, the hyperparameters are empirically determined. For ToxiChat (Baheti et al., 2021), our ADLM and baselines are trained with 32 batch sizes per GPU, $2e^{-5}$ learning rate and three epochs. For DiaSafety (Sun et al., 2022), our ADLM and baselines are trained with eight batch sizes per GPU, $2e^{-5}$ learning rate and five epochs. The block sizes of both dialogue datasets are not truncated unless they exceed 512. For all datasets, we set $\\lambda$ as 0.1 for EWC loss and use AdamW optimizer with $1e^{-8}$ epsilon and a linear scheduler. Trainings are performed on a single NVIDIA RTX 2080 Ti or Quradro RTX 8000.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.565::appendix::D",
+      "paper_id": "2023.acl-long.565",
+      "section_number": "D",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.565::appendix::D.2",
+      "paper_id": "2023.acl-long.565",
+      "section_number": "D.2",
+      "section_title": "ablation experiment",
+      "normalized_section_title": "ablation experiment",
+      "window_text": "To evaluate fluency, we measure the mean perplexity of the continuations according to the GPT-2 XL model. We conduct the ablation experiment $\\alpha$\n\n![](images/c2b2677d6236ceb67b243cd66df484e8a00f9732289783b5aafa1e55104f67eb.jpg)  \n(a) Toxic prompts\n\n![](images/17591f5312ec155b787e3c25eb36ead29f941cd458b807fb02df63120efd1cfc.jpg)  \n(b) Non-toxic prompts   \nFigure 9: The relationship between fluency and probability of toxicity based ablation experiment on different values of $\\alpha$ and $\\lambda$ .\n\nin Eq. 11 and $\\lambda$ in Eq. 8. As shown in Figure 9, when alpha decreases and lambda increases, the toxicity increases while the perplexity decreases. The toxicity control performance and fluency are in somewhat a trade-off relationship, and we can increase and decrease them at the expense of the others by controlling the values $\\alpha$ and $\\lambda$ .",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.565::appendix::C.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 2080 Ti",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We use GPT-2 from HuggingFace Transformers version 4.2.0 (Wolf et al., 2020), implemented in the PyTorch framework. For RealToxicityPrompts (Gehman et al., 2020), our ADLM is trained with 128 block sizes, 32 batch sizes per GPU, $5e^{-5}$ learning rate, and 3 epochs. Same setting is used for sentiment-controlled text generation. Since the sizes of training datasets differ in dialogue generation tasks, the hyperparameters are empirically determined. For ToxiChat (Baheti et al., 2021), our ADLM and baselines are trained with 32 batch sizes per GPU, $2e^{-5}$ learning rate and three epochs. For DiaSafety (Sun et al., 2022), our ADLM and baselines are trained with eight batch sizes per GPU, $2e^{-5}$ learning rate and five epochs. The block sizes of both dialogue datasets are not truncated unless they exceed 512. For all datasets, we set $\\lambda$ as 0.1 for EWC loss and use AdamW optimizer with $1e^{-8}$ epsilon and a linear scheduler. Trainings are performed on a single NVIDIA RTX 2080 Ti or Quradro RTX 8000.",
+      "section_number": "C.1",
+      "section_title": "modeling details",
+      "normalized_section_title": "modeling details"
+    },
+    {
+      "window_id": "2023.acl-long.565::appendix::C.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Quradro RTX 8000",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We use GPT-2 from HuggingFace Transformers version 4.2.0 (Wolf et al., 2020), implemented in the PyTorch framework. For RealToxicityPrompts (Gehman et al., 2020), our ADLM is trained with 128 block sizes, 32 batch sizes per GPU, $5e^{-5}$ learning rate, and 3 epochs. Same setting is used for sentiment-controlled text generation. Since the sizes of training datasets differ in dialogue generation tasks, the hyperparameters are empirically determined. For ToxiChat (Baheti et al., 2021), our ADLM and baselines are trained with 32 batch sizes per GPU, $2e^{-5}$ learning rate and three epochs. For DiaSafety (Sun et al., 2022), our ADLM and baselines are trained with eight batch sizes per GPU, $2e^{-5}$ learning rate and five epochs. The block sizes of both dialogue datasets are not truncated unless they exceed 512. For all datasets, we set $\\lambda$ as 0.1 for EWC loss and use AdamW optimizer with $1e^{-8}$ epsilon and a linear scheduler. Trainings are performed on a single NVIDIA RTX 2080 Ti or Quradro RTX 8000.",
+      "section_number": "C.1",
+      "section_title": "modeling details",
+      "normalized_section_title": "modeling details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.565::appendix::C.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 2080 Ti",
+      "cleaned_hardware_name": "nvidia rtx 2080 ti",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "C.1",
+      "section_title": "modeling details",
+      "normalized_section_title": "modeling details",
+      "evidence": "We use GPT-2 from HuggingFace Transformers version 4.2.0 (Wolf et al., 2020), implemented in the PyTorch framework. For RealToxicityPrompts (Gehman et al., 2020), our ADLM is trained with 128 block sizes, 32 batch sizes per GPU, $5e^{-5}$ learning rate, and 3 epochs. Same setting is used for sentiment-controlled text generation. Since the sizes of training datasets differ in dialogue generation tasks, the hyperparameters are empirically determined. For ToxiChat (Baheti et al., 2021), our ADLM and baselines are trained with 32 batch sizes per GPU, $2e^{-5}$ learning rate and three epochs. For DiaSafety (Sun et al., 2022), our ADLM and baselines are trained with eight batch sizes per GPU, $2e^{-5}$ learning rate and five epochs. The block sizes of both dialogue datasets are not truncated unless they exceed 512. For all datasets, we set $\\lambda$ as 0.1 for EWC loss and use AdamW optimizer with $1e^{-8}$ epsilon and a linear scheduler. Trainings are performed on a single NVIDIA RTX 2080 Ti or Quradro RTX 8000.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized GeForce RTX shorthand rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.acl-long.565::appendix::C.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Quradro RTX 8000",
+      "cleaned_hardware_name": "quradro rtx 8000",
+      "normalized_hardware_name": "Quradro RTX 8000",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "C.1",
+      "section_title": "modeling details",
+      "normalized_section_title": "modeling details",
+      "evidence": "We use GPT-2 from HuggingFace Transformers version 4.2.0 (Wolf et al., 2020), implemented in the PyTorch framework. For RealToxicityPrompts (Gehman et al., 2020), our ADLM is trained with 128 block sizes, 32 batch sizes per GPU, $5e^{-5}$ learning rate, and 3 epochs. Same setting is used for sentiment-controlled text generation. Since the sizes of training datasets differ in dialogue generation tasks, the hyperparameters are empirically determined. For ToxiChat (Baheti et al., 2021), our ADLM and baselines are trained with 32 batch sizes per GPU, $2e^{-5}$ learning rate and three epochs. For DiaSafety (Sun et al., 2022), our ADLM and baselines are trained with eight batch sizes per GPU, $2e^{-5}$ learning rate and five epochs. The block sizes of both dialogue datasets are not truncated unless they exceed 512. For all datasets, we set $\\lambda$ as 0.1 for EWC loss and use AdamW optimizer with $1e^{-8}$ epsilon and a linear scheduler. Trainings are performed on a single NVIDIA RTX 2080 Ti or Quradro RTX 8000.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.acl-long.565::sections::1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "1",
+      "section_title": "introduction",
+      "evidence": "Pre-training language models (LMs) on large-scale web text corpora (i.e., Common Crawl and Open-WebTextCorpus (Gokaslan and Cohen, 2019)) has significantly improved their language generation performances (Radford et al., 2019; Yang et al., 2019; Dai et al., 2019; Shoeybi et al., 2019; Li et al., 2020; Brown et al., 2020), by allowing them to learn meaningful relations between words. However, since the models are trained on massive web-crawled text data which is not exhaustively filtered,\n\n![](images/f203d7c73560cfd2536cdbda6b3cb106304ebd6541cffe6d986fc8aebdefa369.jpg)\n\n![](images/79342384902724df39230bbbad40a297cb0d712fee7f4ef4a37c224e215ffcc7.jpg)  \nFigure 1: Memory and computational efficiency vs. Exp. Max Toxicity. Comparison of toxicity of the generated texts between previous language detoxification methods and ours, on the number of model parameters and inference time per 100 generated texts with a single GPU. Toxicity is calculated on random-10K prompts from RealToxicityPrompts (Gehman et al., 2020). Our model achieves the best language detoxification performance while being time- and memory- efficient.\n\nthey are prone to generating unexpected and undesired texts (Sheng et al., 2019; Wallace et al., 2019) which are often also inappropriate (See Table 1).\n\nSpecifically, LMs trained on unfiltered texts can randomly generate racial slurs, sexually explicit and violent expressions, which are highly toxic (Groenwold et al., 2020; Luccioni and Viviano, 2021; Xu et al., 2021; Dale et al., 2021). This is one of the main obstacles in deploying pretrained LMs to real-world applications (e.g., conversational agents). Furthermore, as demonstrated in Gehman et al. (2020); Baheti et al. (2021); Dale et al. (2021), LMs are prone to generating toxic language even from the non-toxic prompts or contexts. One simple and straightforward approach to tackle this problem is to eliminate the toxic and biased texts by detecting them from the training dataset (Zhou et al., 2021; Zampieri et al., 2019). However, as the size of LMs increases, the training corpora have also expanded enormously (Brown et al., 2020; Du et al., 2021). Thoroughly removing or filtering out all toxic words or sentences from such a large-scale corpus and retraining the LM from scratch, could be costly and impractical (Ben\n\n![](images/a3b441cae3114643406b02a24a49a589aa59a2eb0653a08ab50413554c1ccb70.jpg)  \nFigure 2: Concept. Both non-toxic and toxic sentences are used as input. We tag the attribute information to each latent vector. Then, the discriminative projector (i.e. projection block) projects the new latent space where toxic and non-toxic are separable through the discriminator. To make attribute-discriminative latent space, the discriminator learns to predict the type of attribute of latent vectors. To preserve the relationship of learned word embedding and control the fluency, ADLM regularizes the projector with EWC between the latent (a) and (b). The result of attribute-discriminative features of discriminator is visualized in (c)."
+    },
+    {
+      "source_window_id": "2023.acl-long.565::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": "To validate our ADLM, we conduct two detoxification experiments: the language generation task on RealToxicityPrompts (Gehman et al., 2020) and dialogue generation task on ToxiChat (Baheti et al., 2021) and DialogueSafe (Sun et al., 2022). Further, we show the general applicability of our\n\nmethod to attribute-controlled language generation on a sentiment-controlled text generation task (Appendix D). In this section, we will discuss the experimental setup and results for two tasks. For more detailed explanation of the experimental setups, please refer to Appendix B.1. The code is available at https://github.com/jin8/ADLM."
+    },
+    {
+      "source_window_id": "2023.acl-long.565::sections::4.1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "detoxification for language generation",
+      "evidence": "Baselines. We compare against the following baselines for generic language detoxification tasks, using GPT-2 as the base language model. All compared models, including ours, are trained on Jigsaw Unintended Bias in Toxicity Classification Kaggle challenge dataset and evaluated on random 10K prompts from RealToxicityPrompts (Gehman et al., 2020). The training dataset is imbalanced between non-toxic comments (91M tokens) and toxic comments (10M tokens), as mentioned in Liu et al. (2021a). To address this skewed distribution, we apply class weights to balance the update losses in Equation 6 and 7 to our model. The details of the hyperparameters used for each model are provided in Appendix B.2.\n\n- Domain-adaptive pre-training (DAPT; Gururangan et al. (2020)): This baseline further trains the LM on the dataset with desired attributes (e.g., non-toxic corpus).   \n- Attribute conditioning (ATCON; Gehman et al. (2020)): This baseline learns the distribution of the generated texts conditioned on the task-specific control codes (e.g., toxic or nontoxic) prepend to the texts.   \n- Plug-and-play language models (PPLM; Dathathri et al. (2020)): This baseline consists of a classifier that backpropagates the gradients to the LM multiple times to generate texts with desired attributes. Due to the high computational cost, we only sample 10 sentences per prompt as Gehman et al. (2020) setting.   \n- Generative discriminators (GeDi; Krause et al. (2021)): GeDi utilizes additional LM that is trained with ATCON (Gehman et al., 2020) to guide the base LM in the decoding time. GeDi weighs the attribute probability from ATCON using the Bayes rule on logits of the base LM.   \n- Decoding-time Experts (DExperts; Liu et al. (2021a)): DExperts employs expert (non-toxic\n\nTable 2: Performance of language detoxification. All toxicities are calculated based on Perspective API. All models generate 25 sentences for each single prompt from $10\\%$ subset of RealToxicityPrompts which is random-10k evaluation dataset. Exp. Max Toxicity is calculated by mean of max toxicity of 25 generations. Toxicity probability is probability of generating toxic sentence from 25 generations. The time (sec) is the time it takes to generate 100 sequences with a single GPU. Bold denotes improved performance compare to the baselines.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"2\">Exp. Max Toxicity (↓)</td><td colspan=\"2\">Toxicity Prob. (↓)</td><td colspan=\"3\">Efficiency (↓)</td><td colspan=\"3\">Diversity (↑)</td></tr><tr><td>Toxic</td><td>Non-Toxic</td><td>Toxic</td><td>Non-Toxic</td><td># LMs</td><td>Param</td><td>Time</td><td>Dist-1</td><td>Dist-2</td><td>Dist-3</td></tr><tr><td>GPT-2</td><td>0.75 ± 0.29</td><td>0.51 ± 0.22</td><td>0.88</td><td>0.48</td><td>1</td><td>124M</td><td>3.56</td><td>0.59</td><td>0.88</td><td>0.88</td></tr><tr><td>ATCON</td><td>0.57 ± 0.17</td><td>0.41 ± 0.16</td><td>0.63</td><td>0.26</td><td>1</td><td>124M</td><td>3.56</td><td>0.58</td><td>0.87</td><td>0.86</td></tr><tr><td>DAPT</td><td>0.50 ± 0.15</td><td>0.38 ± 0.14</td><td>0.47</td><td>0.19</td><td>1</td><td>124M</td><td>3.56</td><td>0.59</td><td>0.87</td><td>0.86</td></tr><tr><td>PPLM</td><td>0.52 ± 0.26</td><td>0.32 ± 0.19</td><td>0.49</td><td>0.17</td><td>1</td><td>354M</td><td>206.6</td><td>0.61</td><td>0.84</td><td>0.85</td></tr><tr><td>GeDi</td><td>0.31 ± 0.19</td><td>0.37 ± 0.19</td><td>0.17</td><td>0.23</td><td>2</td><td>709M</td><td>10.45</td><td>0.32</td><td>0.83</td><td>0.82</td></tr><tr><td>DExperts</td><td>0.42 ± 0.20</td><td>0.28 ± 0.14</td><td>0.32</td><td>0.08</td><td>3</td><td>372M</td><td>23.99</td><td>0.58</td><td>0.83</td><td>0.83</td></tr><tr><td>ADLM</td><td>0.28 ± 0.16</td><td>0.22 ± 0.12</td><td>0.12</td><td>0.04</td><td>1</td><td>131M</td><td>5.45</td><td>0.62</td><td>0.89</td><td>0.87</td></tr></table>\n\nDAPT (Gururangan et al., 2020)) and anti-expert (toxic DAPT (Gururangan et al., 2020)) LMs to guide the base LM at the decoding time. DExperts add expert's logit and subtract anti-expert's logit on the base LM's logit to detoxify.\n\nAutomatic Evaluation. To validate our language detoxification method, we evaluate the toxicity of the generated texts using it, as well as the efficiency. Moreover, we examine the diversity of the generated texts. To automatically measure the toxicity of the generated texts, we utilize Perspective API that returns the toxicity scores of given texts and further details are provided in Appendix A. To measure diversity, we calculate the mean of distance n-grams (Li et al., 2016) that is normalized by the total text length.\n\nThe results in Table 2 show that ADLM largely outperforms baselines in the language detoxification performance. Compared to GeDi, ADLM can lower the toxicity of the generated texts to 0.28 with a significantly smaller number of parameters (1/7) and $\\times 2$ faster inference time. Moreover, our model is able to generate more diverse texts compared to those generated by baselines.\n\nAblation study. We examine the effect of each component of our ADLM, i.e., architectural design, dataset design, and training modules, in Table 3. We observe that balancing the toxic and non-toxic data is the most important factor to construct a well discriminative latent space. Moreover, when we utilize a discriminator, our model is able to discriminate the texts more effectively along with the attribute embedding tokens which supports our hypothesis that obtaining a well-discriminated pro\n\nTable 3: Ablation study. We examine the effectiveness of each component via an ablation study on non-toxic prompts. w/o balancing denotes remove balancing in train dataset. w/o discriminator denotes the model that is removed Disc. finetuning denotes updating all parameters.   \n\n<table><tr><td rowspan=\"2\">Type</td><td rowspan=\"2\">Model</td><td colspan=\"2\">Toxicity (↓)</td></tr><tr><td>Exp. Max Toxicity</td><td>Toxicity prob.</td></tr><tr><td>-</td><td>GPT-2</td><td>0.51</td><td>0.48</td></tr><tr><td>-</td><td>Ours</td><td>0.22</td><td>0.04</td></tr><tr><td>Data</td><td>w/o balancing</td><td>0.43</td><td>0.31</td></tr><tr><td>Architecture</td><td>w/o discriminator</td><td>0.31</td><td>0.12</td></tr><tr><td>Training</td><td>finetuning</td><td>0.36</td><td>0.14</td></tr></table>\n\n![](images/f281172ce66c34d0044926c29fa5622757d2ed0bcbdc4a4fb48f64f6121454af.jpg)  \nFigure 4: Comparison of baselines and our performance based on GPT-2 on every type of toxicity from Perspective API. We set GPT-2's toxicity of each type as a $100\\%$ and calculate percentage of toxicity of DExperts, GeDi and Ours.\n\njected latent space is the key factor to success in detoxification.\n\nAnalysis of toxicity types. We further examine which types of toxic texts are highly suppressed by our model compared to GPT-2. As shown in Figure 4, our model suppresses all types of the toxic level of the generated texts compare to baselines. Notably, ADLM successfully suppresses toxicity on the threat type, which DExperts fail to detoxify. The threat is one of the frequent types of toxic sentences that GPT-2 generates with the highest probability (0.624). This explains why DExperts is vul\n\nTable 4: Performance of dialogue detoxification on ToxiChat. We evaluate percentage of bad (Bad), offensive (Off) response, respectively. Moreover, we check the stance of our response (Disagree/No-Stance) against provided context. BOLD denotes improved performance compare to baselines.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"2\">Toxicity (↓)</td><td colspan=\"2\">Stance</td></tr><tr><td>%Bad</td><td>%Off</td><td>%Disagree (↓)</td><td>%No-Stance (↑)</td></tr><tr><td>DialoGPT</td><td>46.8</td><td>64.2</td><td>11.6</td><td>38.2</td></tr><tr><td>ATCON</td><td>20.4</td><td>29.6</td><td>2.6</td><td>52.4</td></tr><tr><td>DAPT</td><td>5.8</td><td>10.6</td><td>1.0</td><td>60.0</td></tr><tr><td>ADLM</td><td>1.2</td><td>6.8</td><td>0.8</td><td>60.4</td></tr></table>\n\n![](images/61ccbc1e6aaa331d75136cf02ba97253f52e0bd543d2b80b665aaea0ee485eec.jpg)  \nFigure 5: Performance of dialogue detoxification on DiaSafety. Dark colors denote the proportion of context-sensitive unsafe texts and light colors denote the proportion of utterance-level unsafe texts. ADLM is shown to be more effective on both tasks compared to the baselines.\n\nnerable to threats, Since DExperts eventually employ the original latent space of GPT-2 and thus cannot significantly change its language generation behavior. On the other hand, our ADLM modifies the original latent space into attribute-discriminative ones, and thus can effectively suppress them. Another notable point is that all models, including ADLM, cannot handle flirtations well. However, by checking the generated examples, we found that the perspective API assign high flirtation scores on sentences with words such as women, her, she, like, etc. appear, which results in misclassifications of sentences that do not contain any flirting contexts since they are commonly used words."
+    },
+    {
+      "source_window_id": "2023.acl-long.565::appendix::B",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B",
+      "section_title": "experimental setup",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.565::appendix::D",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.565::appendix::D.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D.2",
+      "section_title": "ablation experiment",
+      "evidence": "To evaluate fluency, we measure the mean perplexity of the continuations according to the GPT-2 XL model. We conduct the ablation experiment $\\alpha$\n\n![](images/c2b2677d6236ceb67b243cd66df484e8a00f9732289783b5aafa1e55104f67eb.jpg)  \n(a) Toxic prompts\n\n![](images/17591f5312ec155b787e3c25eb36ead29f941cd458b807fb02df63120efd1cfc.jpg)  \n(b) Non-toxic prompts   \nFigure 9: The relationship between fluency and probability of toxicity based ablation experiment on different values of $\\alpha$ and $\\lambda$ .\n\nin Eq. 11 and $\\lambda$ in Eq. 8. As shown in Figure 9, when alpha decreases and lambda increases, the toxicity increases while the perplexity decreases. The toxicity control performance and fluency are in somewhat a trade-off relationship, and we can increase and decrease them at the expense of the others by controlling the values $\\alpha$ and $\\lambda$ ."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "C.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce RTX 2080 Ti",
+        "num": 1
+      },
+      {
+        "name": "Quradro RTX 8000",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2023\\2023.acl-long.565\\auto\\full.md",
+    "source_md_sha256": "844a9f9fdaa1357abf123c778ac1f1bac5215a17c623bd48a7f0b0ede03daf57",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

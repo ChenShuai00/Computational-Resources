@@ -1,0 +1,262 @@
+{
+  "paper_id": "2024.emnlp-main.731",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.731::sections::4.3",
+      "paper_id": "2024.emnlp-main.731",
+      "section_number": "4.3",
+      "section_title": "efficient computation",
+      "normalized_section_title": "efficient computation",
+      "window_text": "Considering the context of causal language modeling, the attention matrix $\\mathbf{A}$ is lower-triangular, and so is $\\mathbf{I} - \\gamma \\mathbf{A}$ . Moreover, as long as $\\gamma < 1$ , its eigenvalues are nonzero, meaning it is invertible. We can thus write the output $\\mathbf{Y}$ as the solution of:\n\n$$\n\\mathbf {B Y} = \\mathbf {C} \\tag {7}\n$$\n\nwhere $\\left\\{ \\begin{array}{ll}\\mathbf{B} = \\mathbf{I} - \\gamma \\mathbf{A}\\\\ \\mathbf{C} = (1 - \\gamma)\\cdot \\mathbf{A}\\mathbf{V} \\end{array} \\right.$\n\nThis has a unique solution and is easy to solve as it is a triangular system. Note that it does not require explicitly computing the inverse of the matrix, which leads to a more stable and efficient implementation. The algorithm however differs between training and inference, as inference involves decoding one token at a time.\n\nTraining The solution to Equation 7 can be computed efficiently using any triangular solver. We use torch.linalg.solve_TRIANGLE from the PyTorch library, which runs efficiently on GPU and automatically handles differentiation.\n\nInference When decoding, we solve one row of the triangular system per token decoded. This is done by forward substitution:\n\n$$\ny _ {t} = \\frac {1}{\\mathbf {B} _ {t t}} \\left[ \\mathbf {C} _ {t} - \\sum_ {i = 1} ^ {t - 1} \\mathbf {B} _ {m, i} y _ {i} \\right] \\tag {8}\n$$\n\nwhere $y_{t}$ denotes the $t$ -th row of $Y$ , i.e. the output vector at position $t$ in the sequence.\n\nMore generally, if we have already solved the system for the first $t$ tokens, and we want to solve the next $k$ tokens, we can use:\n\n$$\n\\begin{array}{l} \\mathbf {B Y} = \\mathbf {C} \\\\ \\Leftrightarrow \\left[ \\begin{array}{c c} \\mathbf {B} _ {0} & 0 \\\\ \\mathbf {B} _ {1} & \\mathbf {B} _ {2} \\end{array} \\right] \\left[ \\begin{array}{c} \\mathbf {Y} _ {1: t} \\\\ \\mathbf {Y} _ {t: t + k} \\end{array} \\right] = \\left[ \\begin{array}{c} \\mathbf {C} _ {1: t} \\\\ \\mathbf {C} _ {t: t + k} \\end{array} \\right] \\\\ \\Leftrightarrow \\left\\{ \\begin{array}{l} \\mathbf {B} _ {0} \\mathbf {Y} _ {1: t} = \\mathbf {C} _ {1: t} \\\\ \\mathbf {B} _ {2} \\mathbf {Y} _ {t: t + k} = \\mathbf {C} _ {t: t + k} - \\mathbf {B} _ {1} \\mathbf {Y} _ {1: t} \\end{array} \\right. \\tag {9} \\\\ \\end{array}\n$$\n\nIn other words, Equation 9 means that we can encode the first $t$ tokens (e.g. a text prompt) by solving a first triangular system, and then use the solution to compute the next tokens efficiently with a second triangular system.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.731::sections::5",
+      "paper_id": "2024.emnlp-main.731",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "Throughout all of our experiments, we base our models on the GPT-2 (Radford et al., 2019) architecture, which is the base of most modern LLMs. We compare standard transformer models and our proposed enhanced attention layer on 3 experiments: an abstract toy dataset, a textual entity tracking task, and fine-tuning on a standard language modeling task. While our method introduces a new hyperparameter $\\gamma$ , we used $\\gamma = 0.9$ , as we show in Appendix C that any value between 0.8 and 1 seems to work fine. Detailed experimental information is in Appendix D.\n\n![](images/e242ff90d509ba793824fb808c011d3ab45c352d5051c79617cb4814505509ae.jpg)  \nFigure 3: Test accuracy of transformer models during training on our toy dataset. The standard transformer architecture struggles to learn the task and needs 4 to 5 layers to reach $100\\%$ , while our enhanced attention consistently solves the task with only one layer. We show the average, min and max values over 4 runs for each model.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.731::sections::5.1.1",
+      "paper_id": "2024.emnlp-main.731",
+      "section_number": "5.1.1",
+      "section_title": "setup",
+      "normalized_section_title": "setup",
+      "window_text": "Task description We generate sequences of numbers $[x_1, \\ldots, x_n]$ . The first $k$ tokens contain random values. The next $k$ tokens contain the shuffled indices of the first $k$ tokens. We then repeat the process: the next $k$ tokens contain the shuffled indices of the previous $k$ tokens, and so on.\n\nThe goal of the model is to predict, for every position $\\mathbf{k}$ , the indices included in the reference chain: $[x_{k}, x_{x_{k}}, x_{x_{x_{k}}}, \\ldots]$ .\n\nGoals We define this abstract toy task to experimentally show the limitations of attention in a controlled and arbitrarily difficult setting. In our experiments, we take sequences of length $n = 128$ (16 blocks of size $k = 8$ ). Therefore, the longest reference chain will be of length 15, and we will expect from Theorem 1 that a transformer needs at least $L = \\log_2(16) = 4$ layers to solve the task.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.731::sections::6",
+      "paper_id": "2024.emnlp-main.731",
+      "section_number": "6",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "Our results correlate with the theoretical prediction that transformers require at least $\\log_2(n + 1)$ layers for entity tracking tasks with $n$ jumps. Indeed, our toy dataset has $n = 15$ and models only start reaching $100\\%$ accuracy at $L = 4 = \\log_2(16)$ . Similarly, our advanced version of the boxes dataset has $n \\leq 31$ and we notice that $L = 5 = \\log_2(32)$ layers are needed to get a perfect score. This confirms\n\nTable 2: Test loss and accuracy for the models evaluated on the default and advanced versions of the boxes dataset. We compare standard transformers with $L = 2$ to 5 layers, to a 2-layered transformer using our enhanced attention in the second layer.   \n\n<table><tr><td rowspan=\"2\">Attention layer</td><td rowspan=\"2\">L</td><td rowspan=\"2\">Size</td><td rowspan=\"2\">Training time</td><td colspan=\"2\">Default</td><td colspan=\"2\">Advanced</td></tr><tr><td>Loss</td><td>Exact match</td><td>Loss</td><td>Exact match</td></tr><tr><td rowspan=\"4\">Standard</td><td>2</td><td>6.4M</td><td>×1.00</td><td>0.0543</td><td>45.1% ± 2.5</td><td>0.0626</td><td>58.8% ± 1.2</td></tr><tr><td>3</td><td>9.6M</td><td>×1.46</td><td>0.0316</td><td>65.3% ± 19.2</td><td>0.0198</td><td>84.8% ± 6.4</td></tr><tr><td>4</td><td>12.7M</td><td>×1.90</td><td>0.0129</td><td>83.7% ± 1.6</td><td>0.0075</td><td>94.3% ± 4.0</td></tr><tr><td>5</td><td>15.9M</td><td>×2.37</td><td>0.0102</td><td>84.6% ± 5.2</td><td>0.0040</td><td>97.0% ± 1.7</td></tr><tr><td>ChaCAL (ours)</td><td>2</td><td>6.4M</td><td>×1.36</td><td>0.0234</td><td>70.6% ± 13.8</td><td>0.0012</td><td>99.1% ± 0.7</td></tr></table>\n\nTable 3: Perplexity of each model on a subset of the OpenWebText dataset, trained for causal language modeling.   \n\n<table><tr><td>Model</td><td>Perplexity</td></tr><tr><td>GPT-2 (pre-trained)</td><td>23.78</td></tr><tr><td>GPT-2 (fine-tuned)</td><td>20.15</td></tr><tr><td>GPT-2 + ChaCAL (fine-tuned)</td><td>21.46</td></tr></table>\n\nthat $i)$ transformers are indeed limited for long-term entity tracking tasks, and $ii)$ they can successfully learn the task even when they barely have enough layers.\n\nThe ChaCAL model, with our improved attention mechanism, successfully learns entity tracking tasks using the minimal number of layers, outperforming by far standard transformers on these specific datasets. This demonstrates the frugality and efficiency of our method, as it manages complex tasks with fewer resources compared to standard transformers. We however notice a slower convergence at the beginning of training and a greater variance in the training curves. We believe that ChaCAL could greatly benefit from understanding better its training dynamics (e.g. a more suited initialization, or regularization), which we leave as future work.\n\nWhile our modified attention mechanism does not significantly enhance general language modeling tasks, this observation is in line with several previous studies, such as Kim and Schuster (2023), Kim et al. (2024), and Muennighoff et al. (2023). Entity tracking is a relatively rare subtask within language modeling, indicating that pre-training on natural language alone does not foster robust entity-tracking capabilities. We also explain the absence of immediate benefits in language modeling by the large size of the models, which have an abundance of layers that allow them to handle most entity tracking tasks in theory. As ChaCAL was specially\n\ndesigned to reduce the number of attention layers, one may try to explore other architectural choices more suited to our purpose, involving shallower but wider models for instance.\n\nA notable finding is that our model with $\\gamma = 0.9$ across all layers reaches performances similar to standard transformers. Instead of fine-tuning a model that was pre-trained using standard attention, pre-training from scratch with our novel attention mechanism could lead to a more efficient attention structure optimized for entity tracking.\n\nFinally, the high computational efficiency of our method mainly relies on the attention matrix being lower-triangular, which is only the case in decoder transformers for causal language modeling. Further research may attempt to generalize ChaCAL to non-causal transformers such as BERT (Devlin et al., 2019) and many others (Vaswani et al., 2017; Liu et al., 2019; He et al., 2021; Raffel et al., 2020b).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.731::appendix::D",
+      "paper_id": "2024.emnlp-main.731",
+      "section_number": "D",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.731::appendix::D.1",
+      "paper_id": "2024.emnlp-main.731",
+      "section_number": "D.1",
+      "section_title": "hardware",
+      "normalized_section_title": "hardware",
+      "window_text": "We ran our experiments using Nvidia A40 and A100 GPUs. Each model was trained on a single GPU – the experiments did not require the use of distributed training schemes. We used mixed precision to speedup training.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2024.emnlp-main.731::appendix::D.2",
+      "paper_id": "2024.emnlp-main.731",
+      "section_number": "D.2",
+      "section_title": "training",
+      "normalized_section_title": "training",
+      "window_text": "All models were trained using the Adam (Kingma and Ba, 2014) optimizer, or AdamW (Loshchilov\n\nand Hutter, 2017) when using weight decay. We ensured that no model overfitted during training.\n\nAll models use the standard negative log-likelihood loss for learning their tasks. Apart from weight decay, no special regularization techniques were used - although we experimented with dropout and label smoothing.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.731::appendix::D.3",
+      "paper_id": "2024.emnlp-main.731",
+      "section_number": "D.3",
+      "section_title": "hyperparameters",
+      "normalized_section_title": "hyperparameters",
+      "window_text": "We report the hyperparameters set for the different experiments in Table 4. Unless stated otherwise, we use the default values from the original papers (e.g. GPT-2 or Adam).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.731::appendix::D.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A40",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We ran our experiments using Nvidia A40 and A100 GPUs. Each model was trained on a single GPU – the experiments did not require the use of distributed training schemes. We used mixed precision to speedup training.",
+      "section_number": "D.1",
+      "section_title": "hardware",
+      "normalized_section_title": "hardware"
+    },
+    {
+      "window_id": "2024.emnlp-main.731::appendix::D.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We ran our experiments using Nvidia A40 and A100 GPUs. Each model was trained on a single GPU – the experiments did not require the use of distributed training schemes. We used mixed precision to speedup training.",
+      "section_number": "D.1",
+      "section_title": "hardware",
+      "normalized_section_title": "hardware"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.731::appendix::D.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A40",
+      "cleaned_hardware_name": "nvidia a40",
+      "normalized_hardware_name": "NVIDIA A40 PCIe",
+      "benchmark_hardware_name": "NVIDIA A40 PCIe",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "D.1",
+      "section_title": "hardware",
+      "normalized_section_title": "hardware",
+      "evidence": "We ran our experiments using Nvidia A40 and A100 GPUs. Each model was trained on a single GPU – the experiments did not require the use of distributed training schemes. We used mixed precision to speedup training.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.emnlp-main.731::appendix::D.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100",
+      "benchmark_hardware_name": "NVIDIA A100",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "D.1",
+      "section_title": "hardware",
+      "normalized_section_title": "hardware",
+      "evidence": "We ran our experiments using Nvidia A40 and A100 GPUs. Each model was trained on a single GPU – the experiments did not require the use of distributed training schemes. We used mixed precision to speedup training.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.emnlp-main.731::sections::4.3",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.3",
+      "section_title": "efficient computation",
+      "evidence": "Considering the context of causal language modeling, the attention matrix $\\mathbf{A}$ is lower-triangular, and so is $\\mathbf{I} - \\gamma \\mathbf{A}$ . Moreover, as long as $\\gamma < 1$ , its eigenvalues are nonzero, meaning it is invertible. We can thus write the output $\\mathbf{Y}$ as the solution of:\n\n$$\n\\mathbf {B Y} = \\mathbf {C} \\tag {7}\n$$\n\nwhere $\\left\\{ \\begin{array}{ll}\\mathbf{B} = \\mathbf{I} - \\gamma \\mathbf{A}\\\\ \\mathbf{C} = (1 - \\gamma)\\cdot \\mathbf{A}\\mathbf{V} \\end{array} \\right.$\n\nThis has a unique solution and is easy to solve as it is a triangular system. Note that it does not require explicitly computing the inverse of the matrix, which leads to a more stable and efficient implementation. The algorithm however differs between training and inference, as inference involves decoding one token at a time.\n\nTraining The solution to Equation 7 can be computed efficiently using any triangular solver. We use torch.linalg.solve_TRIANGLE from the PyTorch library, which runs efficiently on GPU and automatically handles differentiation.\n\nInference When decoding, we solve one row of the triangular system per token decoded. This is done by forward substitution:\n\n$$\ny _ {t} = \\frac {1}{\\mathbf {B} _ {t t}} \\left[ \\mathbf {C} _ {t} - \\sum_ {i = 1} ^ {t - 1} \\mathbf {B} _ {m, i} y _ {i} \\right] \\tag {8}\n$$\n\nwhere $y_{t}$ denotes the $t$ -th row of $Y$ , i.e. the output vector at position $t$ in the sequence.\n\nMore generally, if we have already solved the system for the first $t$ tokens, and we want to solve the next $k$ tokens, we can use:\n\n$$\n\\begin{array}{l} \\mathbf {B Y} = \\mathbf {C} \\\\ \\Leftrightarrow \\left[ \\begin{array}{c c} \\mathbf {B} _ {0} & 0 \\\\ \\mathbf {B} _ {1} & \\mathbf {B} _ {2} \\end{array} \\right] \\left[ \\begin{array}{c} \\mathbf {Y} _ {1: t} \\\\ \\mathbf {Y} _ {t: t + k} \\end{array} \\right] = \\left[ \\begin{array}{c} \\mathbf {C} _ {1: t} \\\\ \\mathbf {C} _ {t: t + k} \\end{array} \\right] \\\\ \\Leftrightarrow \\left\\{ \\begin{array}{l} \\mathbf {B} _ {0} \\mathbf {Y} _ {1: t} = \\mathbf {C} _ {1: t} \\\\ \\mathbf {B} _ {2} \\mathbf {Y} _ {t: t + k} = \\mathbf {C} _ {t: t + k} - \\mathbf {B} _ {1} \\mathbf {Y} _ {1: t} \\end{array} \\right. \\tag {9} \\\\ \\end{array}\n$$\n\nIn other words, Equation 9 means that we can encode the first $t$ tokens (e.g. a text prompt) by solving a first triangular system, and then use the solution to compute the next tokens efficiently with a second triangular system."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.731::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiments",
+      "evidence": "Throughout all of our experiments, we base our models on the GPT-2 (Radford et al., 2019) architecture, which is the base of most modern LLMs. We compare standard transformer models and our proposed enhanced attention layer on 3 experiments: an abstract toy dataset, a textual entity tracking task, and fine-tuning on a standard language modeling task. While our method introduces a new hyperparameter $\\gamma$ , we used $\\gamma = 0.9$ , as we show in Appendix C that any value between 0.8 and 1 seems to work fine. Detailed experimental information is in Appendix D.\n\n![](images/e242ff90d509ba793824fb808c011d3ab45c352d5051c79617cb4814505509ae.jpg)  \nFigure 3: Test accuracy of transformer models during training on our toy dataset. The standard transformer architecture struggles to learn the task and needs 4 to 5 layers to reach $100\\%$ , while our enhanced attention consistently solves the task with only one layer. We show the average, min and max values over 4 runs for each model."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.731::sections::5.1.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.1.1",
+      "section_title": "setup",
+      "evidence": "Task description We generate sequences of numbers $[x_1, \\ldots, x_n]$ . The first $k$ tokens contain random values. The next $k$ tokens contain the shuffled indices of the first $k$ tokens. We then repeat the process: the next $k$ tokens contain the shuffled indices of the previous $k$ tokens, and so on.\n\nThe goal of the model is to predict, for every position $\\mathbf{k}$ , the indices included in the reference chain: $[x_{k}, x_{x_{k}}, x_{x_{x_{k}}}, \\ldots]$ .\n\nGoals We define this abstract toy task to experimentally show the limitations of attention in a controlled and arbitrarily difficult setting. In our experiments, we take sequences of length $n = 128$ (16 blocks of size $k = 8$ ). Therefore, the longest reference chain will be of length 15, and we will expect from Theorem 1 that a transformer needs at least $L = \\log_2(16) = 4$ layers to solve the task."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.731::sections::6",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6",
+      "section_title": "discussion",
+      "evidence": "Our results correlate with the theoretical prediction that transformers require at least $\\log_2(n + 1)$ layers for entity tracking tasks with $n$ jumps. Indeed, our toy dataset has $n = 15$ and models only start reaching $100\\%$ accuracy at $L = 4 = \\log_2(16)$ . Similarly, our advanced version of the boxes dataset has $n \\leq 31$ and we notice that $L = 5 = \\log_2(32)$ layers are needed to get a perfect score. This confirms\n\nTable 2: Test loss and accuracy for the models evaluated on the default and advanced versions of the boxes dataset. We compare standard transformers with $L = 2$ to 5 layers, to a 2-layered transformer using our enhanced attention in the second layer.   \n\n<table><tr><td rowspan=\"2\">Attention layer</td><td rowspan=\"2\">L</td><td rowspan=\"2\">Size</td><td rowspan=\"2\">Training time</td><td colspan=\"2\">Default</td><td colspan=\"2\">Advanced</td></tr><tr><td>Loss</td><td>Exact match</td><td>Loss</td><td>Exact match</td></tr><tr><td rowspan=\"4\">Standard</td><td>2</td><td>6.4M</td><td>×1.00</td><td>0.0543</td><td>45.1% ± 2.5</td><td>0.0626</td><td>58.8% ± 1.2</td></tr><tr><td>3</td><td>9.6M</td><td>×1.46</td><td>0.0316</td><td>65.3% ± 19.2</td><td>0.0198</td><td>84.8% ± 6.4</td></tr><tr><td>4</td><td>12.7M</td><td>×1.90</td><td>0.0129</td><td>83.7% ± 1.6</td><td>0.0075</td><td>94.3% ± 4.0</td></tr><tr><td>5</td><td>15.9M</td><td>×2.37</td><td>0.0102</td><td>84.6% ± 5.2</td><td>0.0040</td><td>97.0% ± 1.7</td></tr><tr><td>ChaCAL (ours)</td><td>2</td><td>6.4M</td><td>×1.36</td><td>0.0234</td><td>70.6% ± 13.8</td><td>0.0012</td><td>99.1% ± 0.7</td></tr></table>\n\nTable 3: Perplexity of each model on a subset of the OpenWebText dataset, trained for causal language modeling.   \n\n<table><tr><td>Model</td><td>Perplexity</td></tr><tr><td>GPT-2 (pre-trained)</td><td>23.78</td></tr><tr><td>GPT-2 (fine-tuned)</td><td>20.15</td></tr><tr><td>GPT-2 + ChaCAL (fine-tuned)</td><td>21.46</td></tr></table>\n\nthat $i)$ transformers are indeed limited for long-term entity tracking tasks, and $ii)$ they can successfully learn the task even when they barely have enough layers.\n\nThe ChaCAL model, with our improved attention mechanism, successfully learns entity tracking tasks using the minimal number of layers, outperforming by far standard transformers on these specific datasets. This demonstrates the frugality and efficiency of our method, as it manages complex tasks with fewer resources compared to standard transformers. We however notice a slower convergence at the beginning of training and a greater variance in the training curves. We believe that ChaCAL could greatly benefit from understanding better its training dynamics (e.g. a more suited initialization, or regularization), which we leave as future work.\n\nWhile our modified attention mechanism does not significantly enhance general language modeling tasks, this observation is in line with several previous studies, such as Kim and Schuster (2023), Kim et al. (2024), and Muennighoff et al. (2023). Entity tracking is a relatively rare subtask within language modeling, indicating that pre-training on natural language alone does not foster robust entity-tracking capabilities. We also explain the absence of immediate benefits in language modeling by the large size of the models, which have an abundance of layers that allow them to handle most entity tracking tasks in theory. As ChaCAL was specially\n\ndesigned to reduce the number of attention layers, one may try to explore other architectural choices more suited to our purpose, involving shallower but wider models for instance.\n\nA notable finding is that our model with $\\gamma = 0.9$ across all layers reaches performances similar to standard transformers. Instead of fine-tuning a model that was pre-trained using standard attention, pre-training from scratch with our novel attention mechanism could lead to a more efficient attention structure optimized for entity tracking.\n\nFinally, the high computational efficiency of our method mainly relies on the attention matrix being lower-triangular, which is only the case in decoder transformers for causal language modeling. Further research may attempt to generalize ChaCAL to non-causal transformers such as BERT (Devlin et al., 2019) and many others (Vaswani et al., 2017; Liu et al., 2019; He et al., 2021; Raffel et al., 2020b)."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.731::appendix::D",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D",
+      "section_title": "experimental setup",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.731::appendix::D.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D.2",
+      "section_title": "training",
+      "evidence": "All models were trained using the Adam (Kingma and Ba, 2014) optimizer, or AdamW (Loshchilov\n\nand Hutter, 2017) when using weight decay. We ensured that no model overfitted during training.\n\nAll models use the standard negative log-likelihood loss for learning their tasks. Apart from weight decay, no special regularization techniques were used - although we experimented with dropout and label smoothing."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.731::appendix::D.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D.3",
+      "section_title": "hyperparameters",
+      "evidence": "We report the hyperparameters set for the different experiments in Table 4. Unless stated otherwise, we use the default values from the original papers (e.g. GPT-2 or Adam)."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "D.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A40 PCIe",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA A100",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2024\\2024.emnlp-main.731\\auto\\full.md",
+    "source_md_sha256": "29179a62d1e4d5dc45ba6a800aac048e5640910a1a88f041ce7c0a69866988bc",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "749fdb433714bfa003499fb1c90f58c9bb6de4daf647bf52f54e32986186b91c"
+  }
+}

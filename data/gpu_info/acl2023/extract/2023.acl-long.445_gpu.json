@@ -1,0 +1,250 @@
+{
+  "paper_id": "2023.acl-long.445",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.445::sections::4.3",
+      "paper_id": "2023.acl-long.445",
+      "section_number": "4.3",
+      "section_title": "window (coarse)-proposal (fine) joint contrastive learning",
+      "normalized_section_title": "window (coarse)-proposal (fine) joint contrastive learning",
+      "window_text": "Since there are many excellent works in the VTG literature for short video input, we target CONE as a flexible plug-and-play framework on top of the existing proposed-based model. Existing models function as the base model to generate reliable candidate moment proposals for further processing. In our scenario, the base model takes window $W$ and the NL query $Q$ as inputs and outputs several moment proposal candidates. Each of them has a moment proposal $(p_i)$ and corresponding score $(s_i)$ , respectively.\n\nNevertheless, the training of the base model typically focuses only on the positive window and conducts intra-window relation learning but neglects plenty of negative windows for long videos. In real practice, negative windows are the majority during inference, which results in a discrepancy between training and inference. To mitigate the discrepancy, we further design inter-window contrastive learning to distinguish the positive and negative windows. As a result, the overall training loss consists of two parts: (1) the intra-window loss of the base model, and (2) the proposed inter-window contrastive loss.\n\nConcretely, each training instance has both a positive window and a random contrasting negative window from the long video. We discriminate the negative window from the positive window through proposal-level comparison. Proposals in the negative window should be assigned with minimized scores compared with positive proposals (e.g., the IoU with ground truth is large than 0.7) in the posi\n\nTable 1: Statistics of two benchmarks. $N_{vocab}$ is word vocabulary size, $\\overline{L}_{video}$ is average video length, $\\overline{L}_{query}$ is average query word number, $\\overline{L}_{moment}$ and $\\delta_{moment}$ are the average and median ground-truth moment length.   \n\n<table><tr><td>Dataset</td><td>Domain</td><td>#Query (train/val/test)</td><td>#Video</td><td>Nvocab</td><td>Lvideo</td><td>Lquery</td><td>Lmoment</td><td>δmoment</td></tr><tr><td>Ego4D-NLQ</td><td>Open</td><td>11,291 / 3,874 / 4,005</td><td>998 / 328 / 333</td><td>3.3K</td><td>8.25min</td><td>7.5</td><td>8.3s</td><td>2.8s</td></tr><tr><td>MAD</td><td>Movie</td><td>280,183 / 32,064 / 72,044</td><td>488 / 50 / 112</td><td>61.4K</td><td>110.77min</td><td>12.7</td><td>3.9s</td><td>3.2s</td></tr></table>\n\ntive window, as follows,\n\n$$\n\\mathcal {L} _ {\\text {c o n}} = - \\sum_ {p _ {i} ^ {+} \\in W ^ {+}} \\log \\left(s _ {i}\\right) - \\sum_ {p _ {i} ^ {-} \\in W ^ {-}} \\log \\left(1 - s _ {i}\\right) \\tag {3}\n$$\n\nwhere $L_{con}$ is the proposed contrastive loss, $p_i^+$ is each positive proposal from the positive window $W^+$ and $p_i^-$ is each proposal from the negative window $W^-$ , $s_i$ is the corresponding proposal score.\n\nThis mechanism can be generalized to different existing proposal-based models with different intrawindow losses. To show the generalization ability of CONE, we test on two kinds of base models: 2D-TAN (Zhang et al., 2020b) and Moment-DETR(Lei et al., 2021) due to their available codes and superior performances. Please refer to Appendix A.2 for comprehensive training details.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.445::sections::5",
+      "paper_id": "2023.acl-long.445",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "We conduct experiments to explore the effectiveness of CONE from the following aspects: (1) model comparison with SOTA methods ( $\\S 5.3$ ); (2) ablation study to analyze the impact of each component and different variants ( $\\S 5.4$ ); (3) efficiency analysis of acceleration with window selection ( $\\S 5.5$ ) and (4) qualitative analysis ( $\\S 5.6$ ). Implementation details are given in Appendix A.1.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.445::sections::5.2",
+      "paper_id": "2023.acl-long.445",
+      "section_number": "5.2",
+      "section_title": "experimental settings",
+      "normalized_section_title": "experimental settings",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.445::sections::5.5",
+      "paper_id": "2023.acl-long.445",
+      "section_number": "5.5",
+      "section_title": "efficiency analysis",
+      "normalized_section_title": "efficiency analysis",
+      "window_text": "![](images/73baddc364bd576b4a1f682204f39510572d89ab815a7e599d9acc7a83d6b49c.jpg)  \nFigure 4: Inference time w.r.t window numbers is denoted by red dashed lines for efficiency analysis. Performance (Recall k@IoU=0.3) w.r.t window numbers is shown with solid lines.\n\nFigure 4 shows inference speed with respect to different window numbers after the window selection stage on the val. sets of Ego4D-NLQ and MAD. We observe that the overall inference time is approximately linearly reduced with smaller window numbers, and the performance of CONE is relatively stable when the filtered window number becomes 10 for both datasets. Surprisingly, we also observe that CONE achieves the optimal performance (shown as the box with value in Fig. 4) at a modest size of window number rather than the full size. Those observations show that our query-guided window selection strategy can reliably filter the irrelevant windows and largely improve the efficiency of long video temporal grounding.\n\nConcretely, the average window numbers for full videos (before filtering) are 23.3 and 588 for Ego4D-NLQ and MAD, respectively. If we set the filtered window number to 10 for Ego4D-NLQ and 30 for MAD (better trade-off values obtained from Fig. 4), the total numbers of windows for inference are reduced by $2.3\\mathrm{x}$ and $19.6\\mathrm{x}$ , with a marginal performance variance $(R@1)$ by $-0.1\\%$ and $+0.2\\%$ for Ego4D-NLQ and MAD benchmarks, respectively. In real practice, we consider the effect of implementation methods and window selection time. When CONE is inferred using one P100 GPU, its running time (w/o feature extraction and post-processing time, because both time costs are the same for all methods) is largely reduced (74 s $\\xrightarrow{-2\\mathrm{x}}$ 36 s and 276 min. $\\xrightarrow{-15\\mathrm{x}}$ 18 min.) on the val. set of Ego4D-NLQ and MAD.\n\nFurthermore, we also conduct an inference comparison between VSLNet and CONE on Ego4D-NLQ. Using the official Ego4D released code, VSLNet takes approximately 12 seconds to infer the Ego4D validation split and achieves a Recall@1 score of 10.84 at IoU=0.3. In contrast, CONE, with\n\nthe extreme setting of selecting only the top 1 window, takes about 10.5 seconds to infer the Ego4D validation split and achieves a Recall@1 score of 12.4 at IoU=0.3. It demonstrates that CONE strikes an optimal tradeoff between accuracy and speed compared to sparse sampling-based baselines.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.445::appendix::A.1",
+      "paper_id": "2023.acl-long.445",
+      "section_number": "A.1",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "During training, we perform parameter optimization via AdamX and set the learning rate to 1e-4 for the base model and 1e-5 for the visual adapter. We set the batch size to 32 and adopt the early stopping strategy. During inference, we use Non-Maximum Suppression (NMS) with a threshold of 0.5 as post-processing.\n\nMoment-DETR Base Model. The experiments are conducted on one P100 GPU. For the hyperparameters of network architecture, we set the hidden size $d$ to 256, the transformer layer number in the encoder/decoder to 2, and the moment query number to 5. As a result, the total parameters of CONE are 4.35M (4.22M Moment-DETR + 0.13M visual adapter). We set the window length to 90 video features (48 seconds) and 125 video features (25 seconds) for the Ego4D-NLQ and MAD datasets, respectively. We train Ego4D-NLQ for 150 epochs and MAD for 30 epochs, and the training time is about 3 hours for the Ego4D-NLQ and 18 hours for the MAD dataset. During inference, we set the filtered window number to 10 and 30 for the Ego4D-NLQ and MAD datasets, respectively.\n\n2D-TAN Base Model. The experiments are conducted on two V100 GPUs. For the hyperparameters of network architecture, we set the hidden size $d$ to 256, the convolution network layer to 4, and the kernel size to 9. As a result, the total parameters of CONE are 23.99M (23.86M 2D-TAN + 0.13M visual adapter). We set the window length to 64 video features (34.1 seconds) and 128 video features (25.6 seconds) for the Ego4D-NLQ and MAD datasets, respectively. We train Ego4D-NLQ for 90 epochs and MAD for 6 epochs, and because of 6x more model parameters than Moment-DETR, the training time is quite larger, i.e., about 18 hours for the Ego4D-NLQ and 3 days for the MAD dataset. During inference, we set the filtered window number to 5 and 15 for the Ego4D-NLQ and MAD datasets, respectively.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.445::appendix::A.2",
+      "paper_id": "2023.acl-long.445",
+      "section_number": "A.2",
+      "section_title": "training loss details",
+      "normalized_section_title": "training loss details",
+      "window_text": "Moment-DETR Base Model. The original loss of Moment-DETR consists of three parts: moment localization, classification, and saliency losses. Localization loss requires ground truth moment to measure the discrepancy with the predictions and\n\ncan not be used in contrastive loss. Thus, we design two-level contrastive losses based on two other losses: (1) proposal-level loss and (2) frame-level loss with a randomly sampled negative window.\n\nFor the proposal-level contrastive loss $(\\mathcal{L}_p)$ , proposals in the negative window are assigned with minimized scores compared to positive proposal (i.e., the optimal proposal selected from the Hungarian algorithm) from the positive window, as follows,\n\n$$\n\\mathcal {L} _ {p} = - \\sum_ {p _ {i} ^ {+} \\in W ^ {+}} \\log (s _ {i}) - \\sum_ {p _ {i} ^ {-} \\in W ^ {-}} \\log (1 - s _ {i}) \\tag {6}\n$$\n\nwhere $p_i^+$ is the positive proposal from the positive window $W^{+}$ and $p_i^{-}$ is each proposal from the negative window $W^{-}$ , $s_i$ is the corresponding proposal score.\n\nFor the frame-level loss $\\mathcal{L}_f$ , we set the average saliency scores for frames located in the positive window is larger than the maximum saliency score of frames in the negative window over a margin $\\delta$ :\n\n$$\n\\mathcal {L} _ {f} = \\max  (0, \\delta + \\max  (S \\left(W ^ {-}, Q\\right)) - \\operatorname {m e a n} (S \\left(W ^ {+}, Q\\right)) \\tag {7}\n$$\n\nwhere $S()$ is its saliency scoring function. So the overall contrastive loss is $\\mathcal{L}_{con} = L_p + L_f$ .\n\n2D-TAN Base Model. The original loss of 2D-TAN consists of the binary cross-entropy loss, which learns to align each proposal score with its scaled IoU value. Thus, we assign each proposal in the negative window with minimized scores compared to the positive proposals (i.e., the IoU with ground truth is large than 0.7) from the positive window, as follows,\n\n$$\n\\mathcal {L} _ {p} = - \\sum_ {p _ {i} ^ {+} \\in W ^ {+}} \\log (s _ {i}) - \\sum_ {p _ {i} ^ {-} \\in W ^ {-}} \\log (1 - s _ {i}) \\tag {8}\n$$\n\nwhere $p_i^+$ is the positive proposal from the positive window $W^+$ and $p_i^-$ is each proposal from the negative window $W^-$ , $s_i$ is the corresponding proposal score. And the overall contrastive loss is $\\mathcal{L}_{con} = L_p$ .\n\nOverall Loss. In total, our training loss $(\\mathcal{L})$ consists of three parts: (1) original training loss of the base model; (2) contrastive loss to discriminate the negative window versus the positive window; (3) adapter loss (shown in Eq. 4) to tune visual representations from general pre-training to the current downstream task:\n\n$$\n\\mathcal {L} = L _ {\\text {o r i}} + \\lambda_ {\\text {c o n}} \\times L _ {\\text {c o n}} + \\lambda_ {\\text {a d a p t}} \\times L _ {\\text {a d a p t}} \\tag {9}\n$$\n\nExample-A: Now in a park, men and women relax in and around a small pavilion.\n\n![](images/fb178e9e415a6ffffc3586819203cb7e6cc8cd9d1861dd0b29f32d869b39cbbb.jpg)  \nFigure 6: Four success examples on the MAD dataset.\n\nwhere $\\lambda_{con}$ and $\\lambda_{adapt}$ are loss weight hyperparameters to control the loss value. During training, we set $\\lambda_{con}$ to 1 and $\\lambda_{adapt}$ to 0.2.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.445::sections::5.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "P100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "![](images/73baddc364bd576b4a1f682204f39510572d89ab815a7e599d9acc7a83d6b49c.jpg)  \nFigure 4: Inference time w.r.t window numbers is denoted by red dashed lines for efficiency analysis. Performance (Recall k@IoU=0.3) w.r.t window numbers is shown with solid lines.\n\nFigure 4 shows inference speed with respect to different window numbers after the window selection stage on the val. sets of Ego4D-NLQ and MAD. We observe that the overall inference time is approximately linearly reduced with smaller window numbers, and the performance of CONE is relatively stable when the filtered window number becomes 10 for both datasets. Surprisingly, we also observe that CONE achieves the optimal performance (shown as the box with value in Fig. 4) at a modest size of window number rather than the full size. Those observations show that our query-guided window selection strategy can reliably filter the irrelevant windows and largely improve the efficiency of long video temporal grounding.\n\nConcretely, the average window numbers for full videos (before filtering) are 23.3 and 588 for Ego4D-NLQ and MAD, respectively. If we set the filtered window number to 10 for Ego4D-NLQ and 30 for MAD (better trade-off values obtained from Fig. 4), the total numbers of windows for inference are reduced by $2.3\\mathrm{x}$ and $19.6\\mathrm{x}$ , with a marginal performance variance $(R@1)$ by $-0.1\\%$ and $+0.2\\%$ for Ego4D-NLQ and MAD benchmarks, respectively. In real practice, we consider the effect of implementation methods and window selection time. When CONE is inferred using one P100 GPU, its running time (w/o feature extraction and post-processing time, because both time costs are the same for all methods) is largely reduced (74 s $\\xrightarrow{-2\\mathrm{x}}$ 36 s and 276 min. $\\xrightarrow{-15\\mathrm{x}}$ 18 min.) on the val. set of Ego4D-NLQ and MAD.\n\nFurthermore, we also conduct an inference comparison between VSLNet and CONE on Ego4D-NLQ. Using the official Ego4D released code, VSLNet takes approximately 12 seconds to infer the Ego4D validation split and achieves a Recall@1 score of 10.84 at IoU=0.3. In contrast, CONE, with\n\nthe extreme setting of selecting only the top 1 window, takes about 10.5 seconds to infer the Ego4D validation split and achieves a Recall@1 score of 12.4 at IoU=0.3. It demonstrates that CONE strikes an optimal tradeoff between accuracy and speed compared to sparse sampling-based baselines.",
+      "section_number": "5.5",
+      "section_title": "efficiency analysis",
+      "normalized_section_title": "efficiency analysis"
+    },
+    {
+      "window_id": "2023.acl-long.445::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "P100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "During training, we perform parameter optimization via AdamX and set the learning rate to 1e-4 for the base model and 1e-5 for the visual adapter. We set the batch size to 32 and adopt the early stopping strategy. During inference, we use Non-Maximum Suppression (NMS) with a threshold of 0.5 as post-processing.\n\nMoment-DETR Base Model. The experiments are conducted on one P100 GPU. For the hyperparameters of network architecture, we set the hidden size $d$ to 256, the transformer layer number in the encoder/decoder to 2, and the moment query number to 5. As a result, the total parameters of CONE are 4.35M (4.22M Moment-DETR + 0.13M visual adapter). We set the window length to 90 video features (48 seconds) and 125 video features (25 seconds) for the Ego4D-NLQ and MAD datasets, respectively. We train Ego4D-NLQ for 150 epochs and MAD for 30 epochs, and the training time is about 3 hours for the Ego4D-NLQ and 18 hours for the MAD dataset. During inference, we set the filtered window number to 10 and 30 for the Ego4D-NLQ and MAD datasets, respectively.\n\n2D-TAN Base Model. The experiments are conducted on two V100 GPUs. For the hyperparameters of network architecture, we set the hidden size $d$ to 256, the convolution network layer to 4, and the kernel size to 9. As a result, the total parameters of CONE are 23.99M (23.86M 2D-TAN + 0.13M visual adapter). We set the window length to 64 video features (34.1 seconds) and 128 video features (25.6 seconds) for the Ego4D-NLQ and MAD datasets, respectively. We train Ego4D-NLQ for 90 epochs and MAD for 6 epochs, and because of 6x more model parameters than Moment-DETR, the training time is quite larger, i.e., about 18 hours for the Ego4D-NLQ and 3 days for the MAD dataset. During inference, we set the filtered window number to 5 and 15 for the Ego4D-NLQ and MAD datasets, respectively.",
+      "section_number": "A.1",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    },
+    {
+      "window_id": "2023.acl-long.445::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "During training, we perform parameter optimization via AdamX and set the learning rate to 1e-4 for the base model and 1e-5 for the visual adapter. We set the batch size to 32 and adopt the early stopping strategy. During inference, we use Non-Maximum Suppression (NMS) with a threshold of 0.5 as post-processing.\n\nMoment-DETR Base Model. The experiments are conducted on one P100 GPU. For the hyperparameters of network architecture, we set the hidden size $d$ to 256, the transformer layer number in the encoder/decoder to 2, and the moment query number to 5. As a result, the total parameters of CONE are 4.35M (4.22M Moment-DETR + 0.13M visual adapter). We set the window length to 90 video features (48 seconds) and 125 video features (25 seconds) for the Ego4D-NLQ and MAD datasets, respectively. We train Ego4D-NLQ for 150 epochs and MAD for 30 epochs, and the training time is about 3 hours for the Ego4D-NLQ and 18 hours for the MAD dataset. During inference, we set the filtered window number to 10 and 30 for the Ego4D-NLQ and MAD datasets, respectively.\n\n2D-TAN Base Model. The experiments are conducted on two V100 GPUs. For the hyperparameters of network architecture, we set the hidden size $d$ to 256, the convolution network layer to 4, and the kernel size to 9. As a result, the total parameters of CONE are 23.99M (23.86M 2D-TAN + 0.13M visual adapter). We set the window length to 64 video features (34.1 seconds) and 128 video features (25.6 seconds) for the Ego4D-NLQ and MAD datasets, respectively. We train Ego4D-NLQ for 90 epochs and MAD for 6 epochs, and because of 6x more model parameters than Moment-DETR, the training time is quite larger, i.e., about 18 hours for the Ego4D-NLQ and 3 days for the MAD dataset. During inference, we set the filtered window number to 5 and 15 for the Ego4D-NLQ and MAD datasets, respectively.",
+      "section_number": "A.1",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.445::sections::5.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "P100",
+      "cleaned_hardware_name": "p100",
+      "normalized_hardware_name": "NVIDIA Tesla P100 PCIe 16GB",
+      "benchmark_hardware_name": "NVIDIA Tesla P100 PCIe 16GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "5.5",
+      "section_title": "efficiency analysis",
+      "normalized_section_title": "efficiency analysis",
+      "evidence": "![](images/73baddc364bd576b4a1f682204f39510572d89ab815a7e599d9acc7a83d6b49c.jpg)  \nFigure 4: Inference time w.r.t window numbers is denoted by red dashed lines for efficiency analysis. Performance (Recall k@IoU=0.3) w.r.t window numbers is shown with solid lines.\n\nFigure 4 shows inference speed with respect to different window numbers after the window selection stage on the val. sets of Ego4D-NLQ and MAD. We observe that the overall inference time is approximately linearly reduced with smaller window numbers, and the performance of CONE is relatively stable when the filtered window number becomes 10 for both datasets. Surprisingly, we also observe that CONE achieves the optimal performance (shown as the box with value in Fig. 4) at a modest size of window number rather than the full size. Those observations show that our query-guided window selection strategy can reliably filter the irrelevant windows and largely improve the efficiency of long video temporal grounding.\n\nConcretely, the average window numbers for full videos (before filtering) are 23.3 and 588 for Ego4D-NLQ and MAD, respectively. If we set the filtered window number to 10 for Ego4D-NLQ and 30 for MAD (better trade-off values obtained from Fig. 4), the total numbers of windows for inference are reduced by $2.3\\mathrm{x}$ and $19.6\\mathrm{x}$ , with a marginal performance variance $(R@1)$ by $-0.1\\%$ and $+0.2\\%$ for Ego4D-NLQ and MAD benchmarks, respectively. In real practice, we consider the effect of implementation methods and window selection time. When CONE is inferred using one P100 GPU, its running time (w/o feature extraction and post-processing time, because both time costs are the same for all methods) is largely reduced (74 s $\\xrightarrow{-2\\mathrm{x}}$ 36 s and 276 min. $\\xrightarrow{-15\\mathrm{x}}$ 18 min.) on the val. set of Ego4D-NLQ and MAD.\n\nFurthermore, we also conduct an inference comparison between VSLNet and CONE on Ego4D-NLQ. Using the official Ego4D released code, VSLNet takes approximately 12 seconds to infer the Ego4D validation split and achieves a Recall@1 score of 10.84 at IoU=0.3. In contrast, CONE, with\n\nthe extreme setting of selecting only the top 1 window, takes about 10.5 seconds to infer the Ego4D validation split and achieves a Recall@1 score of 12.4 at IoU=0.3. It demonstrates that CONE strikes an optimal tradeoff between accuracy and speed compared to sparse sampling-based baselines.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.acl-long.445::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "P100",
+      "cleaned_hardware_name": "p100",
+      "normalized_hardware_name": "NVIDIA Tesla P100 PCIe 16GB",
+      "benchmark_hardware_name": "NVIDIA Tesla P100 PCIe 16GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.1",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "During training, we perform parameter optimization via AdamX and set the learning rate to 1e-4 for the base model and 1e-5 for the visual adapter. We set the batch size to 32 and adopt the early stopping strategy. During inference, we use Non-Maximum Suppression (NMS) with a threshold of 0.5 as post-processing.\n\nMoment-DETR Base Model. The experiments are conducted on one P100 GPU. For the hyperparameters of network architecture, we set the hidden size $d$ to 256, the transformer layer number in the encoder/decoder to 2, and the moment query number to 5. As a result, the total parameters of CONE are 4.35M (4.22M Moment-DETR + 0.13M visual adapter). We set the window length to 90 video features (48 seconds) and 125 video features (25 seconds) for the Ego4D-NLQ and MAD datasets, respectively. We train Ego4D-NLQ for 150 epochs and MAD for 30 epochs, and the training time is about 3 hours for the Ego4D-NLQ and 18 hours for the MAD dataset. During inference, we set the filtered window number to 10 and 30 for the Ego4D-NLQ and MAD datasets, respectively.\n\n2D-TAN Base Model. The experiments are conducted on two V100 GPUs. For the hyperparameters of network architecture, we set the hidden size $d$ to 256, the convolution network layer to 4, and the kernel size to 9. As a result, the total parameters of CONE are 23.99M (23.86M 2D-TAN + 0.13M visual adapter). We set the window length to 64 video features (34.1 seconds) and 128 video features (25.6 seconds) for the Ego4D-NLQ and MAD datasets, respectively. We train Ego4D-NLQ for 90 epochs and MAD for 6 epochs, and because of 6x more model parameters than Moment-DETR, the training time is quite larger, i.e., about 18 hours for the Ego4D-NLQ and 3 days for the MAD dataset. During inference, we set the filtered window number to 5 and 15 for the Ego4D-NLQ and MAD datasets, respectively.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.acl-long.445::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "cleaned_hardware_name": "v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "A.1",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "During training, we perform parameter optimization via AdamX and set the learning rate to 1e-4 for the base model and 1e-5 for the visual adapter. We set the batch size to 32 and adopt the early stopping strategy. During inference, we use Non-Maximum Suppression (NMS) with a threshold of 0.5 as post-processing.\n\nMoment-DETR Base Model. The experiments are conducted on one P100 GPU. For the hyperparameters of network architecture, we set the hidden size $d$ to 256, the transformer layer number in the encoder/decoder to 2, and the moment query number to 5. As a result, the total parameters of CONE are 4.35M (4.22M Moment-DETR + 0.13M visual adapter). We set the window length to 90 video features (48 seconds) and 125 video features (25 seconds) for the Ego4D-NLQ and MAD datasets, respectively. We train Ego4D-NLQ for 150 epochs and MAD for 30 epochs, and the training time is about 3 hours for the Ego4D-NLQ and 18 hours for the MAD dataset. During inference, we set the filtered window number to 10 and 30 for the Ego4D-NLQ and MAD datasets, respectively.\n\n2D-TAN Base Model. The experiments are conducted on two V100 GPUs. For the hyperparameters of network architecture, we set the hidden size $d$ to 256, the convolution network layer to 4, and the kernel size to 9. As a result, the total parameters of CONE are 23.99M (23.86M 2D-TAN + 0.13M visual adapter). We set the window length to 64 video features (34.1 seconds) and 128 video features (25.6 seconds) for the Ego4D-NLQ and MAD datasets, respectively. We train Ego4D-NLQ for 90 epochs and MAD for 6 epochs, and because of 6x more model parameters than Moment-DETR, the training time is quite larger, i.e., about 18 hours for the Ego4D-NLQ and 3 days for the MAD dataset. During inference, we set the filtered window number to 5 and 15 for the Ego4D-NLQ and MAD datasets, respectively.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.acl-long.445::sections::4.3",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.3",
+      "section_title": "window (coarse)-proposal (fine) joint contrastive learning",
+      "evidence": "Since there are many excellent works in the VTG literature for short video input, we target CONE as a flexible plug-and-play framework on top of the existing proposed-based model. Existing models function as the base model to generate reliable candidate moment proposals for further processing. In our scenario, the base model takes window $W$ and the NL query $Q$ as inputs and outputs several moment proposal candidates. Each of them has a moment proposal $(p_i)$ and corresponding score $(s_i)$ , respectively.\n\nNevertheless, the training of the base model typically focuses only on the positive window and conducts intra-window relation learning but neglects plenty of negative windows for long videos. In real practice, negative windows are the majority during inference, which results in a discrepancy between training and inference. To mitigate the discrepancy, we further design inter-window contrastive learning to distinguish the positive and negative windows. As a result, the overall training loss consists of two parts: (1) the intra-window loss of the base model, and (2) the proposed inter-window contrastive loss.\n\nConcretely, each training instance has both a positive window and a random contrasting negative window from the long video. We discriminate the negative window from the positive window through proposal-level comparison. Proposals in the negative window should be assigned with minimized scores compared with positive proposals (e.g., the IoU with ground truth is large than 0.7) in the posi\n\nTable 1: Statistics of two benchmarks. $N_{vocab}$ is word vocabulary size, $\\overline{L}_{video}$ is average video length, $\\overline{L}_{query}$ is average query word number, $\\overline{L}_{moment}$ and $\\delta_{moment}$ are the average and median ground-truth moment length.   \n\n<table><tr><td>Dataset</td><td>Domain</td><td>#Query (train/val/test)</td><td>#Video</td><td>Nvocab</td><td>Lvideo</td><td>Lquery</td><td>Lmoment</td><td>δmoment</td></tr><tr><td>Ego4D-NLQ</td><td>Open</td><td>11,291 / 3,874 / 4,005</td><td>998 / 328 / 333</td><td>3.3K</td><td>8.25min</td><td>7.5</td><td>8.3s</td><td>2.8s</td></tr><tr><td>MAD</td><td>Movie</td><td>280,183 / 32,064 / 72,044</td><td>488 / 50 / 112</td><td>61.4K</td><td>110.77min</td><td>12.7</td><td>3.9s</td><td>3.2s</td></tr></table>\n\ntive window, as follows,\n\n$$\n\\mathcal {L} _ {\\text {c o n}} = - \\sum_ {p _ {i} ^ {+} \\in W ^ {+}} \\log \\left(s _ {i}\\right) - \\sum_ {p _ {i} ^ {-} \\in W ^ {-}} \\log \\left(1 - s _ {i}\\right) \\tag {3}\n$$\n\nwhere $L_{con}$ is the proposed contrastive loss, $p_i^+$ is each positive proposal from the positive window $W^+$ and $p_i^-$ is each proposal from the negative window $W^-$ , $s_i$ is the corresponding proposal score.\n\nThis mechanism can be generalized to different existing proposal-based models with different intrawindow losses. To show the generalization ability of CONE, we test on two kinds of base models: 2D-TAN (Zhang et al., 2020b) and Moment-DETR(Lei et al., 2021) due to their available codes and superior performances. Please refer to Appendix A.2 for comprehensive training details."
+    },
+    {
+      "source_window_id": "2023.acl-long.445::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiments",
+      "evidence": "We conduct experiments to explore the effectiveness of CONE from the following aspects: (1) model comparison with SOTA methods ( $\\S 5.3$ ); (2) ablation study to analyze the impact of each component and different variants ( $\\S 5.4$ ); (3) efficiency analysis of acceleration with window selection ( $\\S 5.5$ ) and (4) qualitative analysis ( $\\S 5.6$ ). Implementation details are given in Appendix A.1."
+    },
+    {
+      "source_window_id": "2023.acl-long.445::sections::5.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.2",
+      "section_title": "experimental settings",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.445::appendix::A.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.2",
+      "section_title": "training loss details",
+      "evidence": "Moment-DETR Base Model. The original loss of Moment-DETR consists of three parts: moment localization, classification, and saliency losses. Localization loss requires ground truth moment to measure the discrepancy with the predictions and\n\ncan not be used in contrastive loss. Thus, we design two-level contrastive losses based on two other losses: (1) proposal-level loss and (2) frame-level loss with a randomly sampled negative window.\n\nFor the proposal-level contrastive loss $(\\mathcal{L}_p)$ , proposals in the negative window are assigned with minimized scores compared to positive proposal (i.e., the optimal proposal selected from the Hungarian algorithm) from the positive window, as follows,\n\n$$\n\\mathcal {L} _ {p} = - \\sum_ {p _ {i} ^ {+} \\in W ^ {+}} \\log (s _ {i}) - \\sum_ {p _ {i} ^ {-} \\in W ^ {-}} \\log (1 - s _ {i}) \\tag {6}\n$$\n\nwhere $p_i^+$ is the positive proposal from the positive window $W^{+}$ and $p_i^{-}$ is each proposal from the negative window $W^{-}$ , $s_i$ is the corresponding proposal score.\n\nFor the frame-level loss $\\mathcal{L}_f$ , we set the average saliency scores for frames located in the positive window is larger than the maximum saliency score of frames in the negative window over a margin $\\delta$ :\n\n$$\n\\mathcal {L} _ {f} = \\max  (0, \\delta + \\max  (S \\left(W ^ {-}, Q\\right)) - \\operatorname {m e a n} (S \\left(W ^ {+}, Q\\right)) \\tag {7}\n$$\n\nwhere $S()$ is its saliency scoring function. So the overall contrastive loss is $\\mathcal{L}_{con} = L_p + L_f$ .\n\n2D-TAN Base Model. The original loss of 2D-TAN consists of the binary cross-entropy loss, which learns to align each proposal score with its scaled IoU value. Thus, we assign each proposal in the negative window with minimized scores compared to the positive proposals (i.e., the IoU with ground truth is large than 0.7) from the positive window, as follows,\n\n$$\n\\mathcal {L} _ {p} = - \\sum_ {p _ {i} ^ {+} \\in W ^ {+}} \\log (s _ {i}) - \\sum_ {p _ {i} ^ {-} \\in W ^ {-}} \\log (1 - s _ {i}) \\tag {8}\n$$\n\nwhere $p_i^+$ is the positive proposal from the positive window $W^+$ and $p_i^-$ is each proposal from the negative window $W^-$ , $s_i$ is the corresponding proposal score. And the overall contrastive loss is $\\mathcal{L}_{con} = L_p$ .\n\nOverall Loss. In total, our training loss $(\\mathcal{L})$ consists of three parts: (1) original training loss of the base model; (2) contrastive loss to discriminate the negative window versus the positive window; (3) adapter loss (shown in Eq. 4) to tune visual representations from general pre-training to the current downstream task:\n\n$$\n\\mathcal {L} = L _ {\\text {o r i}} + \\lambda_ {\\text {c o n}} \\times L _ {\\text {c o n}} + \\lambda_ {\\text {a d a p t}} \\times L _ {\\text {a d a p t}} \\tag {9}\n$$\n\nExample-A: Now in a park, men and women relax in and around a small pavilion.\n\n![](images/fb178e9e415a6ffffc3586819203cb7e6cc8cd9d1861dd0b29f32d869b39cbbb.jpg)  \nFigure 6: Four success examples on the MAD dataset.\n\nwhere $\\lambda_{con}$ and $\\lambda_{adapt}$ are loss weight hyperparameters to control the loss value. During training, we set $\\lambda_{con}$ to 1 and $\\lambda_{adapt}$ to 0.2."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "5.5",
+      "A.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla P100 PCIe 16GB",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA Tesla P100 PCIe 16GB",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 2
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2023\\2023.acl-long.445\\auto\\full.md",
+    "source_md_sha256": "43792837497a655ab89892c4043e73e255e25ce9be55a315b2c6c29cf7432048",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

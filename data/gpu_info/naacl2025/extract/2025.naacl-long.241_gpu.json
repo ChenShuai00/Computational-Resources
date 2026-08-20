@@ -1,0 +1,83 @@
+{
+  "paper_id": "2025.naacl-long.241",
+  "candidate_windows": [
+    {
+      "window_id": "2025.naacl-long.241::sections::5",
+      "paper_id": "2025.naacl-long.241",
+      "section_number": "5",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Dataset We utilize the publically available PANC dataset (Vogt et al., 2021), designed for the eSPD task, which is based on PAN12 (Inches and Crestani, 2012) and ChatCoder2 (CC2) (McGhee et al., 2011; Cano et al., 2014). The dataset consists of three types of corpus: (1) positive (grooming) full-length chats from CC2, (2) negative (normal) segments from PAN12, and (3) positive segments that split the positive full-length chats into parts. Our experiments focus on training and evaluating the model using only the positive full-length chats and the negative segments. We use the turn-level strategy annotations from CC2, as labeled by McGhee et al. (2011), who assigned LCT strategy labels to both predator and victim turns when their content aligned with the LCT framework. According to PAN12, negative segments include cybersex conversations between consenting adults, which serve as hard negative samples since they closely resemble online grooming chats (see Appendix B). Additionally, they involve cutting the conversations at points where the exchange exceeds 25 minutes or marks a topic shift. Therefore, we treat the negative segments as negative full-length chats for training and testing purposes. Table 1 summarizes the PANC dataset statistics.\n\nBaseline Models We follow the two-tier method proposed by Vogt et al. (2021), representing the current state-of-the-art for the eSPD task. In Tier 1, we fine-tune three variants of BERT—BERT-large, BERT-base (Devlin, 2018), and MobileBERT (Sun et al., 2020)—using the positive and negative segments labeled at the dialogue level, same with Vogt et al. (2021). During evaluation, each model takes a sliding window of messages (window size = 50) and outputs a binary classification for grooming or non-grooming. In Tier 2, the model monitors the number of positively classified windows in the last 10-window span. If the count surpasses a predefined threshold, referred to as \"skepticism\" (set to 5 in our setup), the conversation is classified as\n\ngrooming. We trained the models using a cross-entropy loss function with the Adam optimizer (Kingma, 2014). The batch size was set to 16, with a training run for 10 epochs. The learning rates were $3 \\cdot 10^{-5}$ for BERT-large, and $5 \\cdot 10^{-3}$ for both BERT-base and MobileBERT.\n\nSFT Model Our SFT model was trained using turn-level risk labels for each turn. The dataset (Vogt et al., 2021) exhibited significant class imbalance, with negative chats outnumbering positive chats with turn-level risk label by more than 100:1. To mitigate this imbalance, we sampled negative chats for training, prioritizing conversations with more than 100 turns to enrich the turn-level information (see Table 1 for details). During training, the model processed up to 50 utterances of conversation history and a turn-level risk label for the current utterance. We used a RoBERTa-base model (Liu, 2019) as the binary classifier, which consists of 12 transformer encoder layers, each with 768 hidden units and 12 attention heads. A detection head with dimensions [768, 768, 2] was attached to perform binary classification at the utterance level. The model was trained with cross-entropy loss using the Adam optimizer (Kingma, 2014) for 10 epochs, with a batch size of 32 and a learning rate of 5e-05.\n\nSCoRL Model The SCoRL model continues processing turns in an episode until either $a_{t} = 1$ or the final turn of the conversation is reached. For each turn, the current utterance and the previous 50 utterances in the conversation history are concatenated, separated by special tokens, forming the current state. The RoBERTa-base encoder, pretrained in the SFT step, is used with frozen parameters. Only the detection head ([768, 768, 2]) is trained during this step. The model was trained with a batch size of 32 for 50 epochs, using a learning rate of 2e-4, a discount factor of 0.99, and the Adam optimizer. We employed the CosineAnnealingWarmUpRestarts $^{2}$ scheduler with the following parameters: $T_{0} = 10$ , $T_{mult} = 1$ , $eta_{max} = 0.1$ , $T_{up} = 1$ , and gamma $= 0.5$ .\n\nTable 2: Turn-level eSPD performance on the original and downsampled PANC dataset.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"5\">Turn-level eSPD (Original)</td><td colspan=\"5\">Turn-level eSPD (Downsampled)</td></tr><tr><td>Latency F1</td><td>Precision</td><td>Recall</td><td>F1</td><td>Speed</td><td>Latency F1</td><td>Precision</td><td>Recall</td><td>F1</td><td>Speed</td></tr><tr><td>SBERT-large (Vogt et al., 2021)</td><td>0.034</td><td>0.025</td><td>1.000</td><td>0.049</td><td>0.693</td><td>0.122</td><td>0.096</td><td>1.000</td><td>0.176</td><td>0.693</td></tr><tr><td>SBERT-base (Vogt et al., 2021)</td><td>0.062</td><td>0.047</td><td>1.000</td><td>0.089</td><td>0.688</td><td>0.217</td><td>0.188</td><td>1.000</td><td>0.316</td><td>0.689</td></tr><tr><td>SmobileBERT (Vogt et al., 2021)</td><td>0.025</td><td>0.017</td><td>1.000</td><td>0.034</td><td>0.734</td><td>0.134</td><td>0.100</td><td>1.000</td><td>0.182</td><td>0.734</td></tr><tr><td>SFT</td><td>0.002</td><td>0.001</td><td>1.000</td><td>0.002</td><td>0.940</td><td>0.023</td><td>0.012</td><td>1.000</td><td>0.024</td><td>0.940</td></tr><tr><td>SFT (w/ turn-level)</td><td>0.211</td><td>0.202</td><td>1.000</td><td>0.335</td><td>0.631</td><td>0.298</td><td>0.310</td><td>1.000</td><td>0.473</td><td>0.631</td></tr><tr><td>ScoRL</td><td>0.000</td><td>0.000</td><td>0.182</td><td>0.000</td><td>1.000</td><td>0.005</td><td>0.003</td><td>0.182</td><td>0.005</td><td>1.000</td></tr><tr><td>ScoRL (w/ turn-level)</td><td>0.365</td><td>0.475</td><td>0.983</td><td>0.641</td><td>0.569</td><td>0.509</td><td>0.819</td><td>0.983</td><td>0.894</td><td>0.569</td></tr></table>\n\nTable 3: eSPD performance on the PANC dataset based on previous chat-level metric.   \n\n<table><tr><td>Model</td><td>Latency F1</td><td>Precision</td><td>Recall</td><td>F1</td><td>Speed</td></tr><tr><td>SBERT-large</td><td>0.247</td><td>0.217</td><td>1.000</td><td>0.358</td><td>0.693</td></tr><tr><td>SBERT-base</td><td>0.244</td><td>0.215</td><td>1.000</td><td>0.355</td><td>0.688</td></tr><tr><td>SmobileBERT</td><td>0.156</td><td>0.119</td><td>1.000</td><td>0.212</td><td>0.734</td></tr><tr><td>SFT</td><td>0.018</td><td>0.010</td><td>1.000</td><td>0.019</td><td>0.939</td></tr><tr><td>SFT (w/ turn-level)</td><td>0.489</td><td>0.633</td><td>1.000</td><td>0.775</td><td>0.631</td></tr><tr><td>ScoRL</td><td>0.010</td><td>0.005</td><td>0.870</td><td>0.010</td><td>1.000</td></tr><tr><td>ScoRL (w/ turn-level)</td><td>0.401</td><td>0.548</td><td>0.986</td><td>0.705</td><td>0.569</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.241::appendix::A",
+      "paper_id": "2025.naacl-long.241",
+      "section_number": "A",
+      "section_title": "computational cost in scorl",
+      "normalized_section_title": "computational cost in scorl",
+      "window_text": "During inference, the model processes approximately one turn in $23~ms$ on a single RTX 3090 GPU, utilizing about 1 GB of GPU memory (with a total of 125M parameters). This highlights that the model is computationally efficient and suitable for real-time deployment in real-world systems. In RL training, the model requires one RTX 3090 GPU and completes training on the full dataset in approximately 5 hours.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.naacl-long.241::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 3090",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "During inference, the model processes approximately one turn in $23~ms$ on a single RTX 3090 GPU, utilizing about 1 GB of GPU memory (with a total of 125M parameters). This highlights that the model is computationally efficient and suitable for real-time deployment in real-world systems. In RL training, the model requires one RTX 3090 GPU and completes training on the full dataset in approximately 5 hours.",
+      "section_number": "A",
+      "section_title": "computational cost in scorl",
+      "normalized_section_title": "computational cost in scorl"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.naacl-long.241::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 3090",
+      "cleaned_hardware_name": "rtx 3090",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 3090",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 3090",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A",
+      "section_title": "computational cost in scorl",
+      "normalized_section_title": "computational cost in scorl",
+      "evidence": "During inference, the model processes approximately one turn in $23~ms$ on a single RTX 3090 GPU, utilizing about 1 GB of GPU memory (with a total of 125M parameters). This highlights that the model is computationally efficient and suitable for real-time deployment in real-world systems. In RL training, the model requires one RTX 3090 GPU and completes training on the full dataset in approximately 5 hours.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized GeForce RTX shorthand rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce RTX 3090",
+        "num": 1
+      }
+    ]
+  }
+}

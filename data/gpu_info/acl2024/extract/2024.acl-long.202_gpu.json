@@ -1,0 +1,171 @@
+{
+  "paper_id": "2024.acl-long.202",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.202::sections::5",
+      "paper_id": "2024.acl-long.202",
+      "section_number": "5",
+      "section_title": "experimental settings",
+      "normalized_section_title": "experimental settings",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.202::sections::5.1",
+      "paper_id": "2024.acl-long.202",
+      "section_number": "5.1",
+      "section_title": "data",
+      "normalized_section_title": "data",
+      "window_text": "To be comparable with previous works (Ren et al., 2020; Ma et al., 2020b; Zeng et al., 2021; Chen et al., 2021; Liu et al., 2021; Zhang and Feng, 2022; Indurthi et al., 2022; Papi et al., 2022a; Tang et al., 2023), we train our models on all languages of MuST-C v1.0 (Cattoni et al., 2021), namely English (en) to Dutch (nl), French (fr), German (de), Italian (it), Portuguese (pt), Romanian (ro), Russian (ru), and Spanish (es).\n\nTo optimize GPU RAM consumption and speed up training, we filter out segments longer than $30s$ from the training set. The resulting data statistics are presented in Table 1.\n\nTable 1: Number of sentences of the training set for each language of MuST-C v1.0.   \n\n<table><tr><td>de</td><td>es</td><td>fr</td><td>it</td><td>nl</td><td>pt</td><td>ro</td><td>ru</td></tr><tr><td>225K</td><td>260K</td><td>269K</td><td>248K</td><td>244K</td><td>201K</td><td>231K</td><td>260K</td></tr></table>\n\nWe also perform data augmentation by applying sequence-level knowledge distillation (Kim and Rush, 2016; Gaido et al., 2021b) as in previous work on SimulST (Liu et al., 2021; Tang et al., 2023), which consists of translating the transcripts of the training set (MuST-C) with an MT model and using them together with the gold reference during training. As a result, the final number of target sentences used during training is twice the original one, while the speech input remains unaltered. We use NLLB 3.3B (Costa-jussa et al., 2022) as the MT model, whose performance on the MuST-C dataset is presented in Appendix B.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.202::sections::5.3",
+      "paper_id": "2024.acl-long.202",
+      "section_number": "5.3",
+      "section_title": "inference, evaluation, and comparisons",
+      "normalized_section_title": "inference, evaluation, and comparisons",
+      "window_text": "As StreamAtt is the first StreamST solution, we compare it with a naive baseline that retains a fixed history both in terms of text and audio. This baseline assumes that each word has a duration of $280ms$ - following (Ma et al., 2020b) - and keeps the same (fixed) number of words in both the audio history and textual history. For the sake of a fair comparison, we set this number of words to 20, as for StreamAtt (see Section 3.2.1). We also compare StreamAtt with the corresponding state-of-the-art SimulST policy for offline-trained systems AlignAtt. For both AlignAtt and StreamAtt, we vary the hyperparameter $f$ in the range [2, 4, 6, 8] to obtain results for different latency regimes, while we set the size of the speech segment to $1s$ (the dimension of the incremental speech chunk) and extract the cross-attention scores from the $4^{\\mathrm{th}}$ decoder layer, as per (Papi et al., 2023a).\n\nWe use our extension of the SimulEval tool (Ma et al., 2020a) for both SimulST and StreamST evaluation. For the streaming approaches (StreamAtt and Baseline), we simulate streaming conditions by providing as input the entire TED talks of the MuST-C tst-COMMON set. Instead, for the SimulST AlignAtt policy, we provide the manually segmented audio provided for the same test set, following the standard SimulST evaluation settings. We use sacreBLEU (Post, 2018)<sup>6</sup> for translation quality, and LAAL - for AlignAtt - and StreamLAAL (Section 4) for latency. Moreover, as recommended by Ma et al. (2020b), we report computationally-aware (CA) StreamLAAL for our streaming comparison, which measures the real elapsed time instead of the ideal latency, as it also accounts for the time required for the model and policy computation. During inference, the features are computed on the fly and CMVN normalization is based on the global mean and variance estimated on the MuST-C training set. Inferences are executed on a NVIDIA K80 GPU with 12GB VRAM.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.202::appendix::C",
+      "paper_id": "2024.acl-long.202",
+      "section_number": "C",
+      "section_title": "model and training settings",
+      "normalized_section_title": "model and training settings",
+      "window_text": "The Conformer-based model is made of 12 Conformer encoder layers (Gulati et al., 2020) and 6 Transformer (Vaswani et al., 2017) decoder layers with a total of $\\sim 115\\mathrm{M}$ parameters. Each encoder/decoder layer has 8 attention heads, 512 as embedding size and 2,048 hidden neurons in the feed-forward layers. We set dropout at 0.1 for feed-forward, attention, and convolution layers. Also, in the convolution layer, we set 31 as the kernel size for the point- and depth-wise convolutions. The vocabularies are based on unigram SentencePiece models (Kudo and Richardson, 2018) with dimensions of 8,000 for the target side and 5,000 for the source side (en). We optimize with Adam (Kingma and Ba, 2015) by using the label-smoothed cross-entropy loss with 0.1 as the smoothing factor (Szegedy et al., 2016). We employ Connectionist Temporal Classification – or CTC – (Graves et al., 2006) as an auxiliary loss\n\nto avoid pre-training (Gaido et al., 2022) and also to compress the input audio, reducing RAM consumption and speeding up inference (Gaido et al., 2021a). Utterance-level Cepstral Mean and Variance Normalization (CMVN) and SpecAugment (Park et al., 2019) are applied during training. The learning rate is set to $5 \\cdot 10^{-3}$ with Noam scheduler (Vaswani et al., 2017) and warm-up steps of $25k$ . We stop the training after 15 epochs without loss decrease on the dev set and average 7 checkpoints around the best (best, three preceding, and three succeeding). Trainings are performed on 4 NVIDIA A40 GPUs with 40GB RAM. We set $40k$ as the maximum number of tokens per mini-batch, 2 as update frequency, and 100,000 as maximum updates ( $\\sim$ 23 hours).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.202::sections::5.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA K80 12GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "As StreamAtt is the first StreamST solution, we compare it with a naive baseline that retains a fixed history both in terms of text and audio. This baseline assumes that each word has a duration of $280ms$ - following (Ma et al., 2020b) - and keeps the same (fixed) number of words in both the audio history and textual history. For the sake of a fair comparison, we set this number of words to 20, as for StreamAtt (see Section 3.2.1). We also compare StreamAtt with the corresponding state-of-the-art SimulST policy for offline-trained systems AlignAtt. For both AlignAtt and StreamAtt, we vary the hyperparameter $f$ in the range [2, 4, 6, 8] to obtain results for different latency regimes, while we set the size of the speech segment to $1s$ (the dimension of the incremental speech chunk) and extract the cross-attention scores from the $4^{\\mathrm{th}}$ decoder layer, as per (Papi et al., 2023a).\n\nWe use our extension of the SimulEval tool (Ma et al., 2020a) for both SimulST and StreamST evaluation. For the streaming approaches (StreamAtt and Baseline), we simulate streaming conditions by providing as input the entire TED talks of the MuST-C tst-COMMON set. Instead, for the SimulST AlignAtt policy, we provide the manually segmented audio provided for the same test set, following the standard SimulST evaluation settings. We use sacreBLEU (Post, 2018)<sup>6</sup> for translation quality, and LAAL - for AlignAtt - and StreamLAAL (Section 4) for latency. Moreover, as recommended by Ma et al. (2020b), we report computationally-aware (CA) StreamLAAL for our streaming comparison, which measures the real elapsed time instead of the ideal latency, as it also accounts for the time required for the model and policy computation. During inference, the features are computed on the fly and CMVN normalization is based on the global mean and variance estimated on the MuST-C training set. Inferences are executed on a NVIDIA K80 GPU with 12GB VRAM.",
+      "section_number": "5.3",
+      "section_title": "inference, evaluation, and comparisons",
+      "normalized_section_title": "inference, evaluation, and comparisons"
+    },
+    {
+      "window_id": "2024.acl-long.202::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A40 40GB",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "The Conformer-based model is made of 12 Conformer encoder layers (Gulati et al., 2020) and 6 Transformer (Vaswani et al., 2017) decoder layers with a total of $\\sim 115\\mathrm{M}$ parameters. Each encoder/decoder layer has 8 attention heads, 512 as embedding size and 2,048 hidden neurons in the feed-forward layers. We set dropout at 0.1 for feed-forward, attention, and convolution layers. Also, in the convolution layer, we set 31 as the kernel size for the point- and depth-wise convolutions. The vocabularies are based on unigram SentencePiece models (Kudo and Richardson, 2018) with dimensions of 8,000 for the target side and 5,000 for the source side (en). We optimize with Adam (Kingma and Ba, 2015) by using the label-smoothed cross-entropy loss with 0.1 as the smoothing factor (Szegedy et al., 2016). We employ Connectionist Temporal Classification – or CTC – (Graves et al., 2006) as an auxiliary loss\n\nto avoid pre-training (Gaido et al., 2022) and also to compress the input audio, reducing RAM consumption and speeding up inference (Gaido et al., 2021a). Utterance-level Cepstral Mean and Variance Normalization (CMVN) and SpecAugment (Park et al., 2019) are applied during training. The learning rate is set to $5 \\cdot 10^{-3}$ with Noam scheduler (Vaswani et al., 2017) and warm-up steps of $25k$ . We stop the training after 15 epochs without loss decrease on the dev set and average 7 checkpoints around the best (best, three preceding, and three succeeding). Trainings are performed on 4 NVIDIA A40 GPUs with 40GB RAM. We set $40k$ as the maximum number of tokens per mini-batch, 2 as update frequency, and 100,000 as maximum updates ( $\\sim$ 23 hours).",
+      "section_number": "C",
+      "section_title": "model and training settings",
+      "normalized_section_title": "model and training settings"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.202::sections::5.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA K80 12GB",
+      "cleaned_hardware_name": "nvidia k80 12gb",
+      "normalized_hardware_name": "NVIDIA Tesla K80",
+      "benchmark_hardware_name": "NVIDIA Tesla K80",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "5.3",
+      "section_title": "inference, evaluation, and comparisons",
+      "normalized_section_title": "inference, evaluation, and comparisons",
+      "evidence": "As StreamAtt is the first StreamST solution, we compare it with a naive baseline that retains a fixed history both in terms of text and audio. This baseline assumes that each word has a duration of $280ms$ - following (Ma et al., 2020b) - and keeps the same (fixed) number of words in both the audio history and textual history. For the sake of a fair comparison, we set this number of words to 20, as for StreamAtt (see Section 3.2.1). We also compare StreamAtt with the corresponding state-of-the-art SimulST policy for offline-trained systems AlignAtt. For both AlignAtt and StreamAtt, we vary the hyperparameter $f$ in the range [2, 4, 6, 8] to obtain results for different latency regimes, while we set the size of the speech segment to $1s$ (the dimension of the incremental speech chunk) and extract the cross-attention scores from the $4^{\\mathrm{th}}$ decoder layer, as per (Papi et al., 2023a).\n\nWe use our extension of the SimulEval tool (Ma et al., 2020a) for both SimulST and StreamST evaluation. For the streaming approaches (StreamAtt and Baseline), we simulate streaming conditions by providing as input the entire TED talks of the MuST-C tst-COMMON set. Instead, for the SimulST AlignAtt policy, we provide the manually segmented audio provided for the same test set, following the standard SimulST evaluation settings. We use sacreBLEU (Post, 2018)<sup>6</sup> for translation quality, and LAAL - for AlignAtt - and StreamLAAL (Section 4) for latency. Moreover, as recommended by Ma et al. (2020b), we report computationally-aware (CA) StreamLAAL for our streaming comparison, which measures the real elapsed time instead of the ideal latency, as it also accounts for the time required for the model and policy computation. During inference, the features are computed on the fly and CMVN normalization is based on the global mean and variance estimated on the MuST-C training set. Inferences are executed on a NVIDIA K80 GPU with 12GB VRAM.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.acl-long.202::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A40 40GB",
+      "cleaned_hardware_name": "nvidia a40 40gb",
+      "normalized_hardware_name": "NVIDIA A40 PCIe",
+      "benchmark_hardware_name": "NVIDIA A40 PCIe",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "C",
+      "section_title": "model and training settings",
+      "normalized_section_title": "model and training settings",
+      "evidence": "The Conformer-based model is made of 12 Conformer encoder layers (Gulati et al., 2020) and 6 Transformer (Vaswani et al., 2017) decoder layers with a total of $\\sim 115\\mathrm{M}$ parameters. Each encoder/decoder layer has 8 attention heads, 512 as embedding size and 2,048 hidden neurons in the feed-forward layers. We set dropout at 0.1 for feed-forward, attention, and convolution layers. Also, in the convolution layer, we set 31 as the kernel size for the point- and depth-wise convolutions. The vocabularies are based on unigram SentencePiece models (Kudo and Richardson, 2018) with dimensions of 8,000 for the target side and 5,000 for the source side (en). We optimize with Adam (Kingma and Ba, 2015) by using the label-smoothed cross-entropy loss with 0.1 as the smoothing factor (Szegedy et al., 2016). We employ Connectionist Temporal Classification – or CTC – (Graves et al., 2006) as an auxiliary loss\n\nto avoid pre-training (Gaido et al., 2022) and also to compress the input audio, reducing RAM consumption and speeding up inference (Gaido et al., 2021a). Utterance-level Cepstral Mean and Variance Normalization (CMVN) and SpecAugment (Park et al., 2019) are applied during training. The learning rate is set to $5 \\cdot 10^{-3}$ with Noam scheduler (Vaswani et al., 2017) and warm-up steps of $25k$ . We stop the training after 15 epochs without loss decrease on the dev set and average 7 checkpoints around the best (best, three preceding, and three succeeding). Trainings are performed on 4 NVIDIA A40 GPUs with 40GB RAM. We set $40k$ as the maximum number of tokens per mini-batch, 2 as update frequency, and 100,000 as maximum updates ( $\\sim$ 23 hours).",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.acl-long.202::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experimental settings",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.acl-long.202::sections::5.1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.1",
+      "section_title": "data",
+      "evidence": "To be comparable with previous works (Ren et al., 2020; Ma et al., 2020b; Zeng et al., 2021; Chen et al., 2021; Liu et al., 2021; Zhang and Feng, 2022; Indurthi et al., 2022; Papi et al., 2022a; Tang et al., 2023), we train our models on all languages of MuST-C v1.0 (Cattoni et al., 2021), namely English (en) to Dutch (nl), French (fr), German (de), Italian (it), Portuguese (pt), Romanian (ro), Russian (ru), and Spanish (es).\n\nTo optimize GPU RAM consumption and speed up training, we filter out segments longer than $30s$ from the training set. The resulting data statistics are presented in Table 1.\n\nTable 1: Number of sentences of the training set for each language of MuST-C v1.0.   \n\n<table><tr><td>de</td><td>es</td><td>fr</td><td>it</td><td>nl</td><td>pt</td><td>ro</td><td>ru</td></tr><tr><td>225K</td><td>260K</td><td>269K</td><td>248K</td><td>244K</td><td>201K</td><td>231K</td><td>260K</td></tr></table>\n\nWe also perform data augmentation by applying sequence-level knowledge distillation (Kim and Rush, 2016; Gaido et al., 2021b) as in previous work on SimulST (Liu et al., 2021; Tang et al., 2023), which consists of translating the transcripts of the training set (MuST-C) with an MT model and using them together with the gold reference during training. As a result, the final number of target sentences used during training is twice the original one, while the speech input remains unaltered. We use NLLB 3.3B (Costa-jussa et al., 2022) as the MT model, whose performance on the MuST-C dataset is presented in Appendix B."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "5.3",
+      "C"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla K80",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA A40 PCIe",
+        "num": 4
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2024\\2024.acl-long.202\\auto\\full.md",
+    "source_md_sha256": "aa2b52aba275077dd508922785303e81b1c3193bdc49956e2bf585d5a6558794",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "ad96f3b6ca003898756db958dd17467668c845886fa3f1f835d26a866c8af3f0"
+  }
+}

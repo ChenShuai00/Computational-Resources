@@ -1,0 +1,204 @@
+{
+  "paper_id": "2023.acl-long.886",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.886::sections::5.1",
+      "paper_id": "2023.acl-long.886",
+      "section_number": "5.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Data splits. We divide the 200 MACCROBAT-EE documents according to an $80\\% /10\\% /10\\%$ split for the training, validation, and testing sets, respectively. For low-resource settings, we consider $10\\%$ , $25\\%$ , $50\\%$ , and $75\\%$ of the number of documents used to build the training dataset while retaining the original validation and testing sets for evaluation.\n\nEvaluation metrics. We follow previous EE works and report precision, recall and F1 scores for the following four tasks. 1) Trigger Identification: identified trigger span is correct. 2) Trigger Classification: identified trigger is correct and its predicted event type is correct. 3) Argument Identification: identified argument span is correct. 4) Argument Classification: identified event argument is correct and its predicted argument role is also correct.\n\nVariants. We term two variants of our model. We refer to pipelined ED and EAE modules without the mention enhancement techniques described in §4.2, with long-tail argument handling and text generation cross-entropy loss only as Vanilla DICE, and the full model as DICE.<sup>4</sup>\n\nBaselines. We benchmark the performance of the recent EE models on MACCROBAT-EE, including: Text2Event (Lu et al., 2021): a sequence-to-structure model that converts the input passage to a trie data structure to retrieve event arguments; OneIE (Li et al., 2013): a multi-task EE model trained with global features; and DEGREE (Hsu et al., 2022): a prompt-based generative model that consists of distinct ED and EAE modules\n\nTable 2: Event detection and event argument extraction performance (\\%). The EAE task takes the predicted event trigger and event type as input from the corresponding ED model in the pipeline style. DICE achieves the state-of-the-art event trigger and argument identification and classification performance.   \n\n<table><tr><td rowspan=\"3\">#</td><td rowspan=\"3\">Model</td><td colspan=\"6\">Trigger</td><td colspan=\"6\">Argument</td></tr><tr><td colspan=\"3\">Identification</td><td colspan=\"3\">Classification</td><td colspan=\"3\">Identification</td><td colspan=\"3\">Classification</td></tr><tr><td>Prec.</td><td>Recall</td><td>F1</td><td>Prec.</td><td>Recall</td><td>F1</td><td>Prec.</td><td>Recall</td><td>F1</td><td>Prec.</td><td>Recall</td><td>F1</td></tr><tr><td>1</td><td>Text2Event</td><td>-</td><td>-</td><td>-</td><td>66.64</td><td>60.57</td><td>63.46</td><td>-</td><td>-</td><td>-</td><td>55.29</td><td>47.89</td><td>51.33</td></tr><tr><td>2</td><td>OneIE</td><td>74.60</td><td>74.93</td><td>74.77</td><td>68.74</td><td>68.96</td><td>68.85</td><td>48.99</td><td>52.59</td><td>50.72</td><td>39.82</td><td>42.95</td><td>41.32</td></tr><tr><td>3</td><td>DEGREE</td><td>71.91</td><td>66.33</td><td>69.01</td><td>67.59</td><td>62.59</td><td>65.00</td><td>46.84</td><td>24.31</td><td>32.02</td><td>44.75</td><td>23.23</td><td>30.58</td></tr><tr><td>4</td><td>Vanilla DICE</td><td>65.03</td><td>74.08</td><td>69.26</td><td>60.51</td><td>70.28</td><td>65.03</td><td>49.10</td><td>53.60</td><td>51.25</td><td>45.95</td><td>50.76</td><td>48.24</td></tr><tr><td>5</td><td>DICE</td><td>73.53</td><td>76.98</td><td>75.22</td><td>68.12</td><td>72.97</td><td>70.46</td><td>55.41</td><td>57.87</td><td>56.61</td><td>53.02</td><td>55.03</td><td>54.01</td></tr></table>\n\nTable 3: Ablation study of the technique used to incorporate mention information. The argument extraction reported here uses ground-truth event trigger and type, which removes error propagation from the upstream ED result. $\\dagger$ indicates the settings use mention markers to wrap ground-truth mentions and they are not comparable with other lines.   \n\n<table><tr><td rowspan=\"3\">#</td><td rowspan=\"3\">Mention-enhancing techniques</td><td colspan=\"6\">Trigger</td><td colspan=\"6\">Argument</td></tr><tr><td colspan=\"3\">Identification</td><td colspan=\"3\">Classification</td><td colspan=\"3\">Identification</td><td colspan=\"3\">Classification</td></tr><tr><td>Prec.</td><td>Recall</td><td>F1</td><td>Prec.</td><td>Recall</td><td>F1</td><td>Prec.</td><td>Recall</td><td>F1</td><td>Prec.</td><td>Recall</td><td>F1</td></tr><tr><td>1</td><td>Vanilla DICE</td><td>65.03</td><td>74.08</td><td>69.26</td><td>60.51</td><td>70.28</td><td>65.03</td><td>70.76</td><td>76.48</td><td>73.51</td><td>66.47</td><td>72.71</td><td>69.45</td></tr><tr><td>2</td><td>Vanilla w/ aux. task</td><td>69.54</td><td>74.59</td><td>71.98</td><td>65.02</td><td>71.00</td><td>67.88</td><td>73.24</td><td>76.48</td><td>74.83</td><td>68.31</td><td>73.03</td><td>70.59</td></tr><tr><td>3</td><td>Vanilla w/ marker</td><td>72.91</td><td>70.71</td><td>71.79</td><td>68.58</td><td>67.70</td><td>68.14</td><td>74.27</td><td>76.91</td><td>75.57</td><td>69.66</td><td>72.82</td><td>71.20</td></tr><tr><td>4</td><td>Vanilla w/ contrastive</td><td>70.02</td><td>75.12</td><td>72.48</td><td>66.93</td><td>72.04</td><td>69.39</td><td>73.86</td><td>77.41</td><td>75.59</td><td>69.92</td><td>72.89</td><td>71.37</td></tr><tr><td>5</td><td>Vanilla w/ all three (Full DICE)</td><td>73.53</td><td>76.98</td><td>75.22</td><td>68.12</td><td>72.97</td><td>70.46</td><td>75.73</td><td>77.62</td><td>76.66</td><td>71.14</td><td>73.91</td><td>72.50</td></tr><tr><td>6</td><td>Vanilla w/ perfect marker†</td><td>97.04</td><td>94.11</td><td>95.55</td><td>85.23</td><td>88.66</td><td>86.91</td><td>91.91</td><td>90.72</td><td>91.31</td><td>81.71</td><td>86.73</td><td>84.14</td></tr></table>\n\nthat fill in event type-specific human written templates. To adapt DEGREE to the new dataset, we create the ED/EAE templates by concatenating event type/argument role phrases (e.g. \"Biological_structure is artery\").",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.886::sections::5.3",
+      "paper_id": "2023.acl-long.886",
+      "section_number": "5.3",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "window_text": "We show ablation studies about mention-enhancing techniques and MI module design in this section and more studies about input prompt segments and formulation in Appendix C.2.\n\nMention-enhancing techniques. We analyze the effects of the proposed mention-enhancing techniques in Table 3. We observe contrastive learning, auxiliary task, and mention markers contribute improvements of 1.92, 1.14 and 1.75 in the F1 score on argument classification, respectively. We observe that DICE improves over vanilla DICE by 5.43 and 3.05 in the F1 score for trigger and argument classification, respectively. We include an oracle setting on Line 6 that provides ground-truth mention markers during inference to illustrate the influence of the accuracy of the MI module.\n\nTable 4: Ablation study of MI module design.   \n\n<table><tr><td># Model</td><td>Prec.</td><td>Recall</td><td>F1</td></tr><tr><td>1 Yan et al. (2021)</td><td>72.00</td><td>72.70</td><td>72.30</td></tr><tr><td>2 OneIE entity identification module</td><td>75.88</td><td>77.86</td><td>76.86</td></tr><tr><td>3 DICE-MI without sliding window</td><td>71.71</td><td>67.13</td><td>69.34</td></tr><tr><td>4 DICE-MI without constrative learning</td><td>71.80</td><td>84.14</td><td>77.48</td></tr><tr><td>5 DICE-MI</td><td>74.20</td><td>86.04</td><td>79.68</td></tr></table>\n\nMI module design. We compare our MI module with the representative of sequence tagging model OneIE, which produces BIO label for each input token, and state-of-the-art generative named-entity recognition model Yan et al. (2021), which generates token indexes, on the entity identification task. We report the performance in Table 4. The results show that the sliding window technique significantly improves recall (Line 5 vs 3) and contrastive learning improves overall performance (Line 5 vs 4). Our MI module outperforms all baselines and achieves the best F1 score.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.886::appendix::C",
+      "paper_id": "2023.acl-long.886",
+      "section_number": "C",
+      "section_title": "additional experimental results",
+      "normalized_section_title": "additional experimental results",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.886::appendix::D",
+      "paper_id": "2023.acl-long.886",
+      "section_number": "D",
+      "section_title": "details of implementation and experiments",
+      "normalized_section_title": "details of implementation and experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.886::appendix::D.1",
+      "paper_id": "2023.acl-long.886",
+      "section_number": "D.1",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "Mention Identification. The sliding window scans the passage from beginning to end with a pre-defined window size and step size, which significantly boosts the coverage of the predicted mentions. During both training and inference, we retain the original full-length input passage in addition to the sliding window segments.\n\nTable 10: Performance on the downsampled training sets. We report the F1 score for each task using different downsampled training data. We create three random splits for each proportion and report the average performance.   \n\n<table><tr><td rowspan=\"2\">Model</td><td>10%</td><td>25%</td><td>50%</td><td>75%</td><td>10%</td><td>25%</td><td>50%</td><td>75%</td></tr><tr><td colspan=\"4\">Trigger Identification</td><td colspan=\"4\">Trigger Classification</td></tr><tr><td>Text2Event</td><td>-</td><td>-</td><td>-</td><td>-</td><td>52.54</td><td>53.72</td><td>59.21</td><td>62.78</td></tr><tr><td>OneIE</td><td>68.22</td><td>71.28</td><td>73.73</td><td>74.47</td><td>61.46</td><td>65.08</td><td>67.54</td><td>68.50</td></tr><tr><td>DEGREE</td><td>62.12</td><td>63.78</td><td>66.32</td><td>69.73</td><td>58.31</td><td>61.03</td><td>63.14</td><td>64.77</td></tr><tr><td>DICE</td><td>71.47</td><td>72.79</td><td>74.07</td><td>74.88</td><td>65.82</td><td>66.54</td><td>67.91</td><td>68.72</td></tr><tr><td></td><td colspan=\"4\">Argument Identification</td><td colspan=\"4\">Argument Classification</td></tr><tr><td>Text2Event</td><td>-</td><td>-</td><td>-</td><td>-</td><td>37.74</td><td>40.09</td><td>46.53</td><td>50.37</td></tr><tr><td>OneIE</td><td>32.13</td><td>39.65</td><td>43.75</td><td>47.12</td><td>24.95</td><td>32.36</td><td>35.70</td><td>38.55</td></tr><tr><td>DEGREE</td><td>26.60</td><td>30.41</td><td>31.06</td><td>31.63</td><td>26.60</td><td>28.43</td><td>29.48</td><td>29.59</td></tr><tr><td>DICE</td><td>49.97</td><td>53.55</td><td>54.42</td><td>55.83</td><td>45.67</td><td>48.97</td><td>50.42</td><td>52.83</td></tr></table>\n\nTraining and evaluation. We select the best epoch based on the highest F1 score of the most downstream MI/ED/EAE task on the validation set. When evaluating correctness, we only accept an exact match between the generated trigger/argument and the ground-truth trigger/argument as a correct prediction. We use beam search with 2 beams to generate the output sequences for all three generative tasks. The generation stops either when the \"end_ofsentence\" token is generated or the output length reaches 30.\n\nFrameworks. Our entire codebase is implemented in PyTorch. $^{7}$ The implementations of the transformer-based models are extended from the Huggingface $^{8}$ codebase (Wolf et al., 2020).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.886::appendix::D.2",
+      "paper_id": "2023.acl-long.886",
+      "section_number": "D.2",
+      "section_title": "experiments details",
+      "normalized_section_title": "experiments details",
+      "window_text": "We report the median result for five runs with different random seeds by default. For the low-resources result shown in Figure 3, we sample different selections of training data of corresponding proportion for each run. All the models in this work are trained on NVIDIA A6000 GPUs on a Ubuntu 20.04.2 operating system.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.886::appendix::D.4",
+      "paper_id": "2023.acl-long.886",
+      "section_number": "D.4",
+      "section_title": "hyperparameters",
+      "normalized_section_title": "hyperparameters",
+      "window_text": "For the ED module, we define positive instances as (PASSAGE, EVENT TYPE) pairs where the passage contains one or more event triggers of this event type. Negative instances are pairs in which the passage contains no event triggers of the event type. We create 10 negative instances for each positive instance. For the EAE module, we define positive instance as the (PASSAGE, EVENT TRIGGER, EVENT TYPE, ARGUMENT ROLE) tuple that there exists an argument text contained in the passage that meets the query criteria. We create 10 negative instances for each positive instance. For the MI module, we use a window size of 10 words, with a sliding step of 4 words. We retain the original full sequence in both training and evaluation. We use an AdamW optimizer with a 1e-5 learning rate without gradient accumulation. We show the hyperparameter search ranges and the final choices in Table 11.\n\nTable 11: Hyperparameter search ranges and the best settings.   \n\n<table><tr><td>Hyperparameter</td><td>Search Range</td><td>Best</td></tr><tr><td>Negative instance # for ED</td><td>1, 2, 3, 4, 5, 8, 10, all</td><td>10</td></tr><tr><td>Negative instance # for EAE</td><td>1, 2, 3, 4, 5, 8, 10, all</td><td>10</td></tr><tr><td>MI module sliding window size</td><td>4, 6, 8, 10, 12</td><td>10</td></tr><tr><td>MI module sliding window step</td><td>2, 4, 6, 8, 10</td><td>4</td></tr><tr><td>MI module sliding window retains original long sequence during training</td><td>True, False</td><td>True</td></tr><tr><td>MI module sliding window retains original long sequence during inference</td><td>True, False</td><td>False</td></tr><tr><td>Batch size</td><td>1, 2, 3, 4</td><td>4</td></tr><tr><td>Learning rate</td><td>1e-4, 5e-5, 1e-5, 5e-6, 1e-6</td><td>1e-5</td></tr><tr><td>Decoding method</td><td>beam search, greedy</td><td>beam search</td></tr><tr><td>Max epochs</td><td></td><td>70</td></tr></table>\n\nTable 12: Event types and corresponding argument roles in MACCROBAT-EE, the argument roles are ordered by their appearance frequency. The most appeared roles are listed first.   \n\n<table><tr><td>Event Type</td><td>Role</td></tr><tr><td>Sign_symptom</td><td>Biological_structure, Detailed_description, Severity, Lab_value, Distance, Shape, Area, Color, Texture, Frequency, Volume, Quantitative_structure, Qualitative_structure, Biological_attribute, Subject, Other-entity, History, Mass</td></tr><tr><td>Diagnostic_procedure</td><td>Lab_value, Biological_structure, Detailed_description, Qualitative_structure, Nonbiological_location, Frequency,Distance, Subject, Shape, Quantitative_structure, Texture, Severity, Age, Color, Area, Volume, Administration, Mass</td></tr><tr><td>Therapeutic_procedure</td><td>Detailed_description, Biological_structure, Lab_value, Dosage, Nonbiological_location, Frequency, Distance,Qualitative_structure, Subject, Quantitative_structure, Area, Administration, Other-entity</td></tr><tr><td>Disease_disorder</td><td>Detailed_description, Biological_structure, Severity, Lab_value, Quantitative_structure, Distance, Nonbiological_location, Shape, Volume, Qualitative_structure, Area, Subject, Biological_attribute</td></tr><tr><td>Medication</td><td>Dosage, Administration, Detailed_description, Frequency, Lab_value, Nonbiological_location, Quantitative_structure, Biological_structure, Volume</td></tr><tr><td>Clinical_event</td><td>Nonbiological_location, Detailed_description, Frequency, Biological_structure, Subject, Lab_value, Quantitative_structure, Volume</td></tr><tr><td>Lab_value</td><td>Biological_structure, Detailed_description, Color, Severity, Frequency</td></tr><tr><td>Activity</td><td>Detailed_description, Nonbiological_location, Biological_structure, Other-entity, Frequency, Lab_value, Quantitative_structure</td></tr><tr><td>Other_event</td><td>Biological_structure, Quantitative_structure, Nonbiological_location, Severity, Detailed_description</td></tr><tr><td>Outcome</td><td>Nonbiological_location, Subject, Detailed_description, Age</td></tr><tr><td>Date</td><td>-</td></tr><tr><td>Time</td><td>-</td></tr><tr><td>Duration</td><td>-</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.886::appendix::D.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A6000",
+      "count": null,
+      "count_text": "",
+      "evidence": "We report the median result for five runs with different random seeds by default. For the low-resources result shown in Figure 3, we sample different selections of training data of corresponding proportion for each run. All the models in this work are trained on NVIDIA A6000 GPUs on a Ubuntu 20.04.2 operating system.",
+      "section_number": "D.2",
+      "section_title": "experiments details",
+      "normalized_section_title": "experiments details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.886::appendix::D.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A6000",
+      "cleaned_hardware_name": "nvidia a6000",
+      "normalized_hardware_name": "NVIDIA RTX A6000",
+      "benchmark_hardware_name": "NVIDIA RTX A6000",
+      "count": null,
+      "count_text": "",
+      "section_number": "D.2",
+      "section_title": "experiments details",
+      "normalized_section_title": "experiments details",
+      "evidence": "We report the median result for five runs with different random seeds by default. For the low-resources result shown in Figure 3, we sample different selections of training data of corresponding proportion for each run. All the models in this work are trained on NVIDIA A6000 GPUs on a Ubuntu 20.04.2 operating system.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.acl-long.886::sections::5.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.1",
+      "section_title": "experimental setup",
+      "evidence": "Data splits. We divide the 200 MACCROBAT-EE documents according to an $80\\% /10\\% /10\\%$ split for the training, validation, and testing sets, respectively. For low-resource settings, we consider $10\\%$ , $25\\%$ , $50\\%$ , and $75\\%$ of the number of documents used to build the training dataset while retaining the original validation and testing sets for evaluation.\n\nEvaluation metrics. We follow previous EE works and report precision, recall and F1 scores for the following four tasks. 1) Trigger Identification: identified trigger span is correct. 2) Trigger Classification: identified trigger is correct and its predicted event type is correct. 3) Argument Identification: identified argument span is correct. 4) Argument Classification: identified event argument is correct and its predicted argument role is also correct.\n\nVariants. We term two variants of our model. We refer to pipelined ED and EAE modules without the mention enhancement techniques described in §4.2, with long-tail argument handling and text generation cross-entropy loss only as Vanilla DICE, and the full model as DICE.<sup>4</sup>\n\nBaselines. We benchmark the performance of the recent EE models on MACCROBAT-EE, including: Text2Event (Lu et al., 2021): a sequence-to-structure model that converts the input passage to a trie data structure to retrieve event arguments; OneIE (Li et al., 2013): a multi-task EE model trained with global features; and DEGREE (Hsu et al., 2022): a prompt-based generative model that consists of distinct ED and EAE modules\n\nTable 2: Event detection and event argument extraction performance (\\%). The EAE task takes the predicted event trigger and event type as input from the corresponding ED model in the pipeline style. DICE achieves the state-of-the-art event trigger and argument identification and classification performance.   \n\n<table><tr><td rowspan=\"3\">#</td><td rowspan=\"3\">Model</td><td colspan=\"6\">Trigger</td><td colspan=\"6\">Argument</td></tr><tr><td colspan=\"3\">Identification</td><td colspan=\"3\">Classification</td><td colspan=\"3\">Identification</td><td colspan=\"3\">Classification</td></tr><tr><td>Prec.</td><td>Recall</td><td>F1</td><td>Prec.</td><td>Recall</td><td>F1</td><td>Prec.</td><td>Recall</td><td>F1</td><td>Prec.</td><td>Recall</td><td>F1</td></tr><tr><td>1</td><td>Text2Event</td><td>-</td><td>-</td><td>-</td><td>66.64</td><td>60.57</td><td>63.46</td><td>-</td><td>-</td><td>-</td><td>55.29</td><td>47.89</td><td>51.33</td></tr><tr><td>2</td><td>OneIE</td><td>74.60</td><td>74.93</td><td>74.77</td><td>68.74</td><td>68.96</td><td>68.85</td><td>48.99</td><td>52.59</td><td>50.72</td><td>39.82</td><td>42.95</td><td>41.32</td></tr><tr><td>3</td><td>DEGREE</td><td>71.91</td><td>66.33</td><td>69.01</td><td>67.59</td><td>62.59</td><td>65.00</td><td>46.84</td><td>24.31</td><td>32.02</td><td>44.75</td><td>23.23</td><td>30.58</td></tr><tr><td>4</td><td>Vanilla DICE</td><td>65.03</td><td>74.08</td><td>69.26</td><td>60.51</td><td>70.28</td><td>65.03</td><td>49.10</td><td>53.60</td><td>51.25</td><td>45.95</td><td>50.76</td><td>48.24</td></tr><tr><td>5</td><td>DICE</td><td>73.53</td><td>76.98</td><td>75.22</td><td>68.12</td><td>72.97</td><td>70.46</td><td>55.41</td><td>57.87</td><td>56.61</td><td>53.02</td><td>55.03</td><td>54.01</td></tr></table>\n\nTable 3: Ablation study of the technique used to incorporate mention information. The argument extraction reported here uses ground-truth event trigger and type, which removes error propagation from the upstream ED result. $\\dagger$ indicates the settings use mention markers to wrap ground-truth mentions and they are not comparable with other lines.   \n\n<table><tr><td rowspan=\"3\">#</td><td rowspan=\"3\">Mention-enhancing techniques</td><td colspan=\"6\">Trigger</td><td colspan=\"6\">Argument</td></tr><tr><td colspan=\"3\">Identification</td><td colspan=\"3\">Classification</td><td colspan=\"3\">Identification</td><td colspan=\"3\">Classification</td></tr><tr><td>Prec.</td><td>Recall</td><td>F1</td><td>Prec.</td><td>Recall</td><td>F1</td><td>Prec.</td><td>Recall</td><td>F1</td><td>Prec.</td><td>Recall</td><td>F1</td></tr><tr><td>1</td><td>Vanilla DICE</td><td>65.03</td><td>74.08</td><td>69.26</td><td>60.51</td><td>70.28</td><td>65.03</td><td>70.76</td><td>76.48</td><td>73.51</td><td>66.47</td><td>72.71</td><td>69.45</td></tr><tr><td>2</td><td>Vanilla w/ aux. task</td><td>69.54</td><td>74.59</td><td>71.98</td><td>65.02</td><td>71.00</td><td>67.88</td><td>73.24</td><td>76.48</td><td>74.83</td><td>68.31</td><td>73.03</td><td>70.59</td></tr><tr><td>3</td><td>Vanilla w/ marker</td><td>72.91</td><td>70.71</td><td>71.79</td><td>68.58</td><td>67.70</td><td>68.14</td><td>74.27</td><td>76.91</td><td>75.57</td><td>69.66</td><td>72.82</td><td>71.20</td></tr><tr><td>4</td><td>Vanilla w/ contrastive</td><td>70.02</td><td>75.12</td><td>72.48</td><td>66.93</td><td>72.04</td><td>69.39</td><td>73.86</td><td>77.41</td><td>75.59</td><td>69.92</td><td>72.89</td><td>71.37</td></tr><tr><td>5</td><td>Vanilla w/ all three (Full DICE)</td><td>73.53</td><td>76.98</td><td>75.22</td><td>68.12</td><td>72.97</td><td>70.46</td><td>75.73</td><td>77.62</td><td>76.66</td><td>71.14</td><td>73.91</td><td>72.50</td></tr><tr><td>6</td><td>Vanilla w/ perfect marker†</td><td>97.04</td><td>94.11</td><td>95.55</td><td>85.23</td><td>88.66</td><td>86.91</td><td>91.91</td><td>90.72</td><td>91.31</td><td>81.71</td><td>86.73</td><td>84.14</td></tr></table>\n\nthat fill in event type-specific human written templates. To adapt DEGREE to the new dataset, we create the ED/EAE templates by concatenating event type/argument role phrases (e.g. \"Biological_structure is artery\")."
+    },
+    {
+      "source_window_id": "2023.acl-long.886::sections::5.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.3",
+      "section_title": "ablation studies",
+      "evidence": "We show ablation studies about mention-enhancing techniques and MI module design in this section and more studies about input prompt segments and formulation in Appendix C.2.\n\nMention-enhancing techniques. We analyze the effects of the proposed mention-enhancing techniques in Table 3. We observe contrastive learning, auxiliary task, and mention markers contribute improvements of 1.92, 1.14 and 1.75 in the F1 score on argument classification, respectively. We observe that DICE improves over vanilla DICE by 5.43 and 3.05 in the F1 score for trigger and argument classification, respectively. We include an oracle setting on Line 6 that provides ground-truth mention markers during inference to illustrate the influence of the accuracy of the MI module.\n\nTable 4: Ablation study of MI module design.   \n\n<table><tr><td># Model</td><td>Prec.</td><td>Recall</td><td>F1</td></tr><tr><td>1 Yan et al. (2021)</td><td>72.00</td><td>72.70</td><td>72.30</td></tr><tr><td>2 OneIE entity identification module</td><td>75.88</td><td>77.86</td><td>76.86</td></tr><tr><td>3 DICE-MI without sliding window</td><td>71.71</td><td>67.13</td><td>69.34</td></tr><tr><td>4 DICE-MI without constrative learning</td><td>71.80</td><td>84.14</td><td>77.48</td></tr><tr><td>5 DICE-MI</td><td>74.20</td><td>86.04</td><td>79.68</td></tr></table>\n\nMI module design. We compare our MI module with the representative of sequence tagging model OneIE, which produces BIO label for each input token, and state-of-the-art generative named-entity recognition model Yan et al. (2021), which generates token indexes, on the entity identification task. We report the performance in Table 4. The results show that the sliding window technique significantly improves recall (Line 5 vs 3) and contrastive learning improves overall performance (Line 5 vs 4). Our MI module outperforms all baselines and achieves the best F1 score."
+    },
+    {
+      "source_window_id": "2023.acl-long.886::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "additional experimental results",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.886::appendix::D",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D",
+      "section_title": "details of implementation and experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.886::appendix::D.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D.1",
+      "section_title": "implementation details",
+      "evidence": "Mention Identification. The sliding window scans the passage from beginning to end with a pre-defined window size and step size, which significantly boosts the coverage of the predicted mentions. During both training and inference, we retain the original full-length input passage in addition to the sliding window segments.\n\nTable 10: Performance on the downsampled training sets. We report the F1 score for each task using different downsampled training data. We create three random splits for each proportion and report the average performance.   \n\n<table><tr><td rowspan=\"2\">Model</td><td>10%</td><td>25%</td><td>50%</td><td>75%</td><td>10%</td><td>25%</td><td>50%</td><td>75%</td></tr><tr><td colspan=\"4\">Trigger Identification</td><td colspan=\"4\">Trigger Classification</td></tr><tr><td>Text2Event</td><td>-</td><td>-</td><td>-</td><td>-</td><td>52.54</td><td>53.72</td><td>59.21</td><td>62.78</td></tr><tr><td>OneIE</td><td>68.22</td><td>71.28</td><td>73.73</td><td>74.47</td><td>61.46</td><td>65.08</td><td>67.54</td><td>68.50</td></tr><tr><td>DEGREE</td><td>62.12</td><td>63.78</td><td>66.32</td><td>69.73</td><td>58.31</td><td>61.03</td><td>63.14</td><td>64.77</td></tr><tr><td>DICE</td><td>71.47</td><td>72.79</td><td>74.07</td><td>74.88</td><td>65.82</td><td>66.54</td><td>67.91</td><td>68.72</td></tr><tr><td></td><td colspan=\"4\">Argument Identification</td><td colspan=\"4\">Argument Classification</td></tr><tr><td>Text2Event</td><td>-</td><td>-</td><td>-</td><td>-</td><td>37.74</td><td>40.09</td><td>46.53</td><td>50.37</td></tr><tr><td>OneIE</td><td>32.13</td><td>39.65</td><td>43.75</td><td>47.12</td><td>24.95</td><td>32.36</td><td>35.70</td><td>38.55</td></tr><tr><td>DEGREE</td><td>26.60</td><td>30.41</td><td>31.06</td><td>31.63</td><td>26.60</td><td>28.43</td><td>29.48</td><td>29.59</td></tr><tr><td>DICE</td><td>49.97</td><td>53.55</td><td>54.42</td><td>55.83</td><td>45.67</td><td>48.97</td><td>50.42</td><td>52.83</td></tr></table>\n\nTraining and evaluation. We select the best epoch based on the highest F1 score of the most downstream MI/ED/EAE task on the validation set. When evaluating correctness, we only accept an exact match between the generated trigger/argument and the ground-truth trigger/argument as a correct prediction. We use beam search with 2 beams to generate the output sequences for all three generative tasks. The generation stops either when the \"end_ofsentence\" token is generated or the output length reaches 30.\n\nFrameworks. Our entire codebase is implemented in PyTorch. $^{7}$ The implementations of the transformer-based models are extended from the Huggingface $^{8}$ codebase (Wolf et al., 2020)."
+    },
+    {
+      "source_window_id": "2023.acl-long.886::appendix::D.4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D.4",
+      "section_title": "hyperparameters",
+      "evidence": "For the ED module, we define positive instances as (PASSAGE, EVENT TYPE) pairs where the passage contains one or more event triggers of this event type. Negative instances are pairs in which the passage contains no event triggers of the event type. We create 10 negative instances for each positive instance. For the EAE module, we define positive instance as the (PASSAGE, EVENT TRIGGER, EVENT TYPE, ARGUMENT ROLE) tuple that there exists an argument text contained in the passage that meets the query criteria. We create 10 negative instances for each positive instance. For the MI module, we use a window size of 10 words, with a sliding step of 4 words. We retain the original full sequence in both training and evaluation. We use an AdamW optimizer with a 1e-5 learning rate without gradient accumulation. We show the hyperparameter search ranges and the final choices in Table 11.\n\nTable 11: Hyperparameter search ranges and the best settings.   \n\n<table><tr><td>Hyperparameter</td><td>Search Range</td><td>Best</td></tr><tr><td>Negative instance # for ED</td><td>1, 2, 3, 4, 5, 8, 10, all</td><td>10</td></tr><tr><td>Negative instance # for EAE</td><td>1, 2, 3, 4, 5, 8, 10, all</td><td>10</td></tr><tr><td>MI module sliding window size</td><td>4, 6, 8, 10, 12</td><td>10</td></tr><tr><td>MI module sliding window step</td><td>2, 4, 6, 8, 10</td><td>4</td></tr><tr><td>MI module sliding window retains original long sequence during training</td><td>True, False</td><td>True</td></tr><tr><td>MI module sliding window retains original long sequence during inference</td><td>True, False</td><td>False</td></tr><tr><td>Batch size</td><td>1, 2, 3, 4</td><td>4</td></tr><tr><td>Learning rate</td><td>1e-4, 5e-5, 1e-5, 5e-6, 1e-6</td><td>1e-5</td></tr><tr><td>Decoding method</td><td>beam search, greedy</td><td>beam search</td></tr><tr><td>Max epochs</td><td></td><td>70</td></tr></table>\n\nTable 12: Event types and corresponding argument roles in MACCROBAT-EE, the argument roles are ordered by their appearance frequency. The most appeared roles are listed first.   \n\n<table><tr><td>Event Type</td><td>Role</td></tr><tr><td>Sign_symptom</td><td>Biological_structure, Detailed_description, Severity, Lab_value, Distance, Shape, Area, Color, Texture, Frequency, Volume, Quantitative_structure, Qualitative_structure, Biological_attribute, Subject, Other-entity, History, Mass</td></tr><tr><td>Diagnostic_procedure</td><td>Lab_value, Biological_structure, Detailed_description, Qualitative_structure, Nonbiological_location, Frequency,Distance, Subject, Shape, Quantitative_structure, Texture, Severity, Age, Color, Area, Volume, Administration, Mass</td></tr><tr><td>Therapeutic_procedure</td><td>Detailed_description, Biological_structure, Lab_value, Dosage, Nonbiological_location, Frequency, Distance,Qualitative_structure, Subject, Quantitative_structure, Area, Administration, Other-entity</td></tr><tr><td>Disease_disorder</td><td>Detailed_description, Biological_structure, Severity, Lab_value, Quantitative_structure, Distance, Nonbiological_location, Shape, Volume, Qualitative_structure, Area, Subject, Biological_attribute</td></tr><tr><td>Medication</td><td>Dosage, Administration, Detailed_description, Frequency, Lab_value, Nonbiological_location, Quantitative_structure, Biological_structure, Volume</td></tr><tr><td>Clinical_event</td><td>Nonbiological_location, Detailed_description, Frequency, Biological_structure, Subject, Lab_value, Quantitative_structure, Volume</td></tr><tr><td>Lab_value</td><td>Biological_structure, Detailed_description, Color, Severity, Frequency</td></tr><tr><td>Activity</td><td>Detailed_description, Nonbiological_location, Biological_structure, Other-entity, Frequency, Lab_value, Quantitative_structure</td></tr><tr><td>Other_event</td><td>Biological_structure, Quantitative_structure, Nonbiological_location, Severity, Detailed_description</td></tr><tr><td>Outcome</td><td>Nonbiological_location, Subject, Detailed_description, Age</td></tr><tr><td>Date</td><td>-</td></tr><tr><td>Time</td><td>-</td></tr><tr><td>Duration</td><td>-</td></tr></table>"
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "D.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA RTX A6000",
+        "num": null
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2023\\2023.acl-long.886\\auto\\full.md",
+    "source_md_sha256": "2fc09c00c3704214c44e12e226dd7c651f0fe87199308c4ab29dcb7d8abeb9fc",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

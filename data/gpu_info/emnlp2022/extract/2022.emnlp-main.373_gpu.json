@@ -1,0 +1,109 @@
+{
+  "paper_id": "2022.emnlp-main.373",
+  "candidate_windows": [
+    {
+      "window_id": "2022.emnlp-main.373::sections::6.1",
+      "paper_id": "2022.emnlp-main.373",
+      "section_number": "6.1",
+      "section_title": "experimental settings",
+      "normalized_section_title": "experimental settings",
+      "window_text": "Evaluation Metrics Following prior works (Chen et al., 2020a, 2021) on LogICNLG, we evaluate our models on both surface-level matching metrics and logical fidelity scores. Surface-level metrics include BLEU-1/2/3, which are based on n-gram matching between the model generations and gold references. In terms of fidelity scores, prior works adopt SP-Acc and NLI-Acc. For SP-Acc, a sentence is first parsed into a logical program and evaluated as the execution accuracy of the program. NLI-Acc is based on TableBERT, a table-entailment model pretrained on the TabFact dataset (Chen et al., 2019). The model can predict whether a table supports a sentence.\n\nHowever, these two fidelity metrics are not enough to verify the fidelity: we empirically find that the parsing algorithm for SP-Acc often generates irrelevant logical programs for the sentences, which renders the evaluation inaccurate. In addition, the TableBERT model used for NLI-Acc only achieves $65.1\\%$ accuracy on the TabFact dataset, and we find it overly positive about the predictions. To this end, we add two state-of-the-art table-entailment models for evaluation: TAPEX-large (Liu et al., 2021b) and TAPAS-large (Eisenschlos et al., 2020), which achieve $84.2\\%$ and $81.0\\%$ test accuracy on TabFact, respectively. We name the two metrics as TAPEX-Acc and TAPAS-Acc, respectively. We still evaluate SP-Acc and NLI-Acc to compare our method with previous studies. For CONTLOG, we adopt the evaluation metrics of LOGIC2TEXT: BLEU-4 and ROUGE-1/2/4/L to evaluate surface-level matching, and use TAPEX-Acc and TAPAS-Acc to evaluate the fidelity.\n\nModels for Comparison For LOGICNLG, we compare our method with the following models: GPT-TabGen (sm) and GPT-Coarse-to-Fine (sm) (Chen et al., 2020a) are two baselines based on pretrained GPT-2; DCVED+GPT-TabGen (Chen et al., 2021) is a de-confounded variational model with GPT-TabGen (sm) as the backbone. We also include pretrained BART-large, T5-base and T5-large as the baselines models for both LOGICNLG and CONTLOG, for which we adopt our data pre-processing method introduced in Section 5. Our models are named PLOG (BART\n\nlarge), PLog (T5-base) and PLog (T5-large) when using different backbones. We adopt the same input serialization strategy with numerical pre-computation for BART, T5, and PLog models.\n\nTraining Details We conduct our main experiments based on Transformers (Wolf et al., 2020) and PyTorch (Paszke et al., 2019). During training, the parameters of embedding layers of models are frozen. During inference, we adopt beam search with beam size 4 for all the experiments. We set the maximum length as 500 and 200 for source and target sequences, respectively. Each experiment was run only once because of the time cost. On LOGICNLG, model selection is based on the BLEU-3 score on the validation set, and on CONTLOG, it is based on validation BLEU-4 scores. The selection of pretraining checkpoints is based on the Execution Accuracy of generated logical forms on the validation set of pretraining tasks. We provide detailed hyperparameters in Appendix A.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.373::appendix::A",
+      "paper_id": "2022.emnlp-main.373",
+      "section_number": "A",
+      "section_title": "experimental setting details",
+      "normalized_section_title": "experimental setting details",
+      "window_text": "The following are the hyperparameters for different model configurations. During finetuning, each pair of base model and the corresponding PLogG model share the same hyperparameters for a fair comparison, while these hyperparameters are tuned only with the base model.\n\nT5-base and PLOG (T5-base): Hyperparameters are the same for both datasets.\n\n- Optimizer: AdamW (Loshchilov and Hutter, 2017).   \n- Learning rate: $2 \\times 10^{-4}$ for pretraining and $1 \\times 10^{-5}$ for finetuning.   \n- Batch size: 5 for both pretraining and finetuning.\n\nT5-large and PLOG (T5-large): Hyperparameters are the same for both datasets.\n\n- Optimizer: AdaFactor (Shazeer and Stern, 2018).   \n- Learning rate: $2 \\times 10^{-4}$ for both pretraining and finetuning.   \n- Batch size: $10(2 \\times 5$ gradient accumulation steps) for both pretraining and finetuning.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.373::appendix::B",
+      "paper_id": "2022.emnlp-main.373",
+      "section_number": "B",
+      "section_title": "art-large and plog (bart-large):",
+      "normalized_section_title": "art-large and plog (bart-large):",
+      "window_text": "- Optimizer: AdaFactor for both datasets.   \n- Learning rate: $5 \\times 10^{-4}$ for pretraining on LOGICNLG and $2 \\times 10^{-4}$ on CONTLOG; $2 \\times 10^{-4}$ for fine-tuning on both datasets.   \n- Batch size: 256 $(4 \\times 64)$ for pretraining on LOGICNLG and 32 $(4 \\times 8)$ on CONTLOG; 32 $(4 \\times 8)$ for fine-tuning on both datasets.\n\nThe following is the additional information of each pretrained model.\n\nT5-base: 220M parameters with 12-layer, 768-hidden-state, 3072 feed-forward hidden-state, 12-heads.   \nT5-large: 770M parameters with 24-layer, 1024-hidden-state, 4096 feed-forward hidden-state, 16-heads.   \n- BART-large: 406M parameters with 24-layer, 1024-hidden-state, 16-heads,\n\n![](images/a0eeb5ec1cc7f292491d8c96f8cb9f834f13d63eaf427a907327fc2173368c46.jpg)\n\n![](images/8e96ced62e487bab21fcb731285542f2473dfd1669b690b0d658a94c46ed1e7f.jpg)\n\n![](images/7e92e112936125a897909bafd404128aa6ed484bfd01e6a7940835a9a92922c1.jpg)\n\n![](images/396c5cf25a76453ca15804cab7fe72da3d00947926c3912ec849b31d1314d51a.jpg)  \nFigure 4: Validation results of table-to-logic pretraining with T5-base and T5-large as the backbones. The results of LOGICNLG pretraining and CONTLOG pretraining are shown at different intervals for better illustration. The results within the first 160k steps are not computed.\n\nPretraining Details We pretrain our models on the collected table-to-logic data and evaluate their Execution Accuracy on the validation set (pretraining corpora) at an interval of a certain number of steps. We take the best pretraining checkpoints to finetune them on downstream tasks. Figure 4 presents the validation results of pretraining during the training process. We can observe that the models achieve higher accuracy when trained for more epochs. The pretraining is very time-consuming because of the large-scale pretraining data and models. For example, it takes approximately 17 hours to train PLOG (T5-base) for one epoch on the CONTLOG pretraining data, while it takes 5 days to train one epoch of PLOG (T5-large). Each experiment was done on a single NVIDIA V100 GPU. We suppose the time cost can be reduced by using more GPU resources.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.373::appendix::C",
+      "paper_id": "2022.emnlp-main.373",
+      "section_number": "C",
+      "section_title": "details of pretraining data collection",
+      "normalized_section_title": "details of pretraining data collection",
+      "window_text": "Here, we provide more details of the pretraining data collection procedure, including examples of abstract templates and the complete rules for logi\n\nTable 6: Function definitions of the logic schema borrowed from (Chen et al., 2020b).   \n\n<table><tr><td>Name</td><td>Arguments</td><td>Output</td><td>Description</td></tr><tr><td>count</td><td>view</td><td>number</td><td>returns the number of rows in the view</td></tr><tr><td>only</td><td>view</td><td>bool</td><td>returns whether there is exactly one row in the view</td></tr><tr><td>hop</td><td>row, header string</td><td>object</td><td>returns the value under the header column of the row</td></tr><tr><td>and</td><td>bool, bool</td><td>bool</td><td>returns the boolean operation result of two arguments</td></tr><tr><td>max/min/avg/sum</td><td>view, header string</td><td>number</td><td>returns the max/min/average/sum of the values under the header column</td></tr><tr><td>nth_max/nth_min</td><td>view, header string</td><td>number</td><td>returns the n-th max/n-th min of the values under the header column</td></tr><tr><td>argmax/argmin</td><td>view, header string</td><td>row</td><td>returns the row with the max/min value in header column</td></tr><tr><td>nth_argmax/nth_argmin</td><td>view, header string</td><td>row</td><td>returns the row with the n-th max/min value in header column</td></tr><tr><td>eq/not_eq</td><td>object, object</td><td>bool</td><td>returns if the two arguments are equal</td></tr><tr><td>round_eq</td><td>object, object</td><td>bool</td><td>returns if the two arguments are roughly equal under certain tolerance</td></tr><tr><td>greater/less</td><td>object, object</td><td>bool</td><td>returns if argument 1 is greater/less than argument 2</td></tr><tr><td>diff</td><td>object, object</td><td>object</td><td>returns the difference between two arguments</td></tr><tr><td>filter_eq/not_eq</td><td>view, header string, object</td><td>view</td><td>returns the subview whose values under the header column is equal/not equal to argument 3</td></tr><tr><td>filtergreater/less</td><td>view, header string, object</td><td>view</td><td>returns the subview whose values under the header column is greater/less than argument 3</td></tr><tr><td>filtergreater_eq/less_eq</td><td>view, header string, object</td><td>view</td><td>returns the subview whose values under the header column is greater/less or equal than argument 3</td></tr><tr><td>filter_all</td><td>view, header string</td><td>view</td><td>returns the view itself for the case of describing the whole table</td></tr><tr><td>all_eq/not_eq</td><td>view, header string, object</td><td>bool</td><td>returns whether all the values under the header column are equal/not equal to argument 3</td></tr><tr><td>all Greater/less</td><td>view, header string, object</td><td>bool</td><td>returns whether all the values under the header column are greater/less than argument 3</td></tr><tr><td>all Greater_eq/less EQ</td><td>view, header string, object</td><td>bool</td><td>returns whether all the values under the header column are greater/less or equal to argument 3</td></tr><tr><td>most_eq/not_eq</td><td>view, header string, object</td><td>bool</td><td>returns whether most of the values under the header column are equal/not equal to argument 3</td></tr><tr><td>most Greater/less</td><td>view, header string, object</td><td>bool</td><td>returns whether most of the values under the header column are greater/less than argument 3</td></tr><tr><td>most Greater_eq/less EQ</td><td>view, header string, object</td><td>bool</td><td>returns whether most of the values under the header column are greater/less or equal to argument 3</td></tr></table>\n\nTable 7: The categorized functions for template abstraction. Functions in the same category have the same argument definitions.   \n\n<table><tr><td>Category</td><td>Function</td></tr><tr><td>FILTER</td><td>filter_eq, filter_not_eq, filtergreater, ...</td></tr><tr><td>SUPERLATIVE</td><td>max, min</td></tr><tr><td>ORDINAL</td><td>nth_max, nth_min</td></tr><tr><td>SUPERARG</td><td>argmax, argmin</td></tr><tr><td>ORDARG</td><td>nth_argmax, nth_argmin</td></tr><tr><td>COMPARE</td><td>greater, less, eq, not_eq</td></tr><tr><td>MAJORITY</td><td>all_eq, all_not_eq, most_eq, all_greater, ...</td></tr><tr><td>AGGREGATE</td><td>avg, sum</td></tr></table>\n\ncal form sampling. Table 7 lists the function-type placeholders.\n\nTemplates We provide in Table 8 some examples of our logical form templates. These examples are all based on the example table in Figure 1.\n\nInstantiation Here we provide the main rules we design for instantiating a logical form template by sampling from a table.\n\n1. For placeholder type Column, we randomly sample a column header from the current input (sub-) table.   \n2. For placeholder type Object, the instantiation depends on the parent function node of this placeholder. If the function node is only or belongs to the category FILTER or MAJORITY, the placeholder is instantiated as a sampled value from a certain column of the\n\ncurrent input (sub-) table. Otherwise, if the function node is eq, this placeholder is instantiated as the execution result of its brother node. This is to guarantee the correctness of equality judgements.\n\n3. The instantiation of a function-type placeholder depends on its function category, as listed in Table 7. If the placeholder belongs to the function category COMPARE or MAJORITY, we choose the specific function name based on the real relationships among its arguments. For example, the arguments of COMPRE functions are two objects whose relationship (equal, greater, less, etc.) can be pre-computed. Hence we can determine the actual function based on this relationship. If the placeholder belongs to another category, the function can be uniformly sampled from the function set.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.emnlp-main.373::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA V100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "- Optimizer: AdaFactor for both datasets.   \n- Learning rate: $5 \\times 10^{-4}$ for pretraining on LOGICNLG and $2 \\times 10^{-4}$ on CONTLOG; $2 \\times 10^{-4}$ for fine-tuning on both datasets.   \n- Batch size: 256 $(4 \\times 64)$ for pretraining on LOGICNLG and 32 $(4 \\times 8)$ on CONTLOG; 32 $(4 \\times 8)$ for fine-tuning on both datasets.\n\nThe following is the additional information of each pretrained model.\n\nT5-base: 220M parameters with 12-layer, 768-hidden-state, 3072 feed-forward hidden-state, 12-heads.   \nT5-large: 770M parameters with 24-layer, 1024-hidden-state, 4096 feed-forward hidden-state, 16-heads.   \n- BART-large: 406M parameters with 24-layer, 1024-hidden-state, 16-heads,\n\n![](images/a0eeb5ec1cc7f292491d8c96f8cb9f834f13d63eaf427a907327fc2173368c46.jpg)\n\n![](images/8e96ced62e487bab21fcb731285542f2473dfd1669b690b0d658a94c46ed1e7f.jpg)\n\n![](images/7e92e112936125a897909bafd404128aa6ed484bfd01e6a7940835a9a92922c1.jpg)\n\n![](images/396c5cf25a76453ca15804cab7fe72da3d00947926c3912ec849b31d1314d51a.jpg)  \nFigure 4: Validation results of table-to-logic pretraining with T5-base and T5-large as the backbones. The results of LOGICNLG pretraining and CONTLOG pretraining are shown at different intervals for better illustration. The results within the first 160k steps are not computed.\n\nPretraining Details We pretrain our models on the collected table-to-logic data and evaluate their Execution Accuracy on the validation set (pretraining corpora) at an interval of a certain number of steps. We take the best pretraining checkpoints to finetune them on downstream tasks. Figure 4 presents the validation results of pretraining during the training process. We can observe that the models achieve higher accuracy when trained for more epochs. The pretraining is very time-consuming because of the large-scale pretraining data and models. For example, it takes approximately 17 hours to train PLOG (T5-base) for one epoch on the CONTLOG pretraining data, while it takes 5 days to train one epoch of PLOG (T5-large). Each experiment was done on a single NVIDIA V100 GPU. We suppose the time cost can be reduced by using more GPU resources.",
+      "section_number": "B",
+      "section_title": "art-large and plog (bart-large):",
+      "normalized_section_title": "art-large and plog (bart-large):"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.emnlp-main.373::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA V100",
+      "cleaned_hardware_name": "nvidia v100",
+      "normalized_hardware_name": "NVIDIA V100",
+      "benchmark_hardware_name": "NVIDIA V100",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "B",
+      "section_title": "art-large and plog (bart-large):",
+      "normalized_section_title": "art-large and plog (bart-large):",
+      "evidence": "- Optimizer: AdaFactor for both datasets.   \n- Learning rate: $5 \\times 10^{-4}$ for pretraining on LOGICNLG and $2 \\times 10^{-4}$ on CONTLOG; $2 \\times 10^{-4}$ for fine-tuning on both datasets.   \n- Batch size: 256 $(4 \\times 64)$ for pretraining on LOGICNLG and 32 $(4 \\times 8)$ on CONTLOG; 32 $(4 \\times 8)$ for fine-tuning on both datasets.\n\nThe following is the additional information of each pretrained model.\n\nT5-base: 220M parameters with 12-layer, 768-hidden-state, 3072 feed-forward hidden-state, 12-heads.   \nT5-large: 770M parameters with 24-layer, 1024-hidden-state, 4096 feed-forward hidden-state, 16-heads.   \n- BART-large: 406M parameters with 24-layer, 1024-hidden-state, 16-heads,\n\n![](images/a0eeb5ec1cc7f292491d8c96f8cb9f834f13d63eaf427a907327fc2173368c46.jpg)\n\n![](images/8e96ced62e487bab21fcb731285542f2473dfd1669b690b0d658a94c46ed1e7f.jpg)\n\n![](images/7e92e112936125a897909bafd404128aa6ed484bfd01e6a7940835a9a92922c1.jpg)\n\n![](images/396c5cf25a76453ca15804cab7fe72da3d00947926c3912ec849b31d1314d51a.jpg)  \nFigure 4: Validation results of table-to-logic pretraining with T5-base and T5-large as the backbones. The results of LOGICNLG pretraining and CONTLOG pretraining are shown at different intervals for better illustration. The results within the first 160k steps are not computed.\n\nPretraining Details We pretrain our models on the collected table-to-logic data and evaluate their Execution Accuracy on the validation set (pretraining corpora) at an interval of a certain number of steps. We take the best pretraining checkpoints to finetune them on downstream tasks. Figure 4 presents the validation results of pretraining during the training process. We can observe that the models achieve higher accuracy when trained for more epochs. The pretraining is very time-consuming because of the large-scale pretraining data and models. For example, it takes approximately 17 hours to train PLOG (T5-base) for one epoch on the CONTLOG pretraining data, while it takes 5 days to train one epoch of PLOG (T5-large). Each experiment was done on a single NVIDIA V100 GPU. We suppose the time cost can be reduced by using more GPU resources.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA V100",
+        "num": 1
+      }
+    ]
+  }
+}

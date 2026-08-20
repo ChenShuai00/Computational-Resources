@@ -1,0 +1,306 @@
+{
+  "paper_id": "2022.emnlp-main.43",
+  "candidate_windows": [
+    {
+      "window_id": "2022.emnlp-main.43::sections::4",
+      "paper_id": "2022.emnlp-main.43",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "We test our EDMem framework on two testbeds of entity knowledge: open-domain QA and entity-intensive generation tasks.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.43::sections::4.1.4",
+      "paper_id": "2022.emnlp-main.43",
+      "section_number": "4.1.4",
+      "section_title": "inference efficiency",
+      "normalized_section_title": "inference efficiency",
+      "window_text": "We compare the time efficiency of different models during inference in Table 3. We run EDMem, BART and the open-book model FiD on the test set of TQA (11K questions) with $8 \\times \\mathrm{V}100$ GPUs. Compared to BART, EDMem needs to access a large entity memory multiple times, which slows down the inference time from 10s to 28s. However, such a time cost is much smaller than the gap between closed-book models and the open-book FiD (85min). In the open-book setting, the model needs to (1) load the pre-computed index from disk to\n\nTable 3: Inference time on TriviaQA test set. $T_{ind}$ is the time for loading the index, which is a fixed amount of time; $T_{ret}$ and $T_{pred}$ denote time for document retrieval and answer prediction, which will linearly increase as the number of test examples increases. Inference time of EDMem-stat. is the accumulation of the entity linking step and the constrained generation step.   \n\n<table><tr><td>Type</td><td>Model</td><td>\\(T_{ind}\\)</td><td>\\(T_{ret}\\)</td><td>\\(T_{pred}\\)</td><td>EM</td></tr><tr><td rowspan=\"4\">Closed-book</td><td>BART</td><td>0</td><td>0</td><td>17s</td><td>25.02</td></tr><tr><td>EDMem-free</td><td>0</td><td>0</td><td>28s</td><td>42.24</td></tr><tr><td>EDMem-dyn.</td><td>0</td><td>0</td><td>48s</td><td>43.82</td></tr><tr><td>EDMem-stat.</td><td>0</td><td>0</td><td>59s</td><td>46.19</td></tr><tr><td>Open-book</td><td>FiD</td><td>29min</td><td>15min</td><td>41min</td><td>67.60</td></tr></table>\n\nthe RAM, (2) retrieve evidence documents from the index, and (3) read all evidence documents to generate an answer. In addition to the overhead caused by accessing the index, the model needs to encode the raw text of all evidence documents (i.e., 100 documents for FiD) before generating an answer with the decoder, but EDMem and BART only needs to encode the question itself. Thus, EDMem is able to achieve significant improvement over traditional encoder-decoder models while retaining the efficiency advantage of closed-book models.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.43::appendix::A",
+      "paper_id": "2022.emnlp-main.43",
+      "section_number": "A",
+      "section_title": "pre-training",
+      "normalized_section_title": "pre-training",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.43::appendix::A.1",
+      "paper_id": "2022.emnlp-main.43",
+      "section_number": "A.1",
+      "section_title": "pre-training data",
+      "normalized_section_title": "pre-training data",
+      "window_text": "We pre-train our model on the Wikipedia corpus of over 5 million documents. All documents are split into 128-token passages. The last passage is round up to 128 tokens by appending tokens from the beginning of the same document, so there are no cross-document passages. In addition, we set a 10-token sliding window between passages to avoid an entity being split into two adjacent chunks. Such a setting yields a total of 39 million passages, of which we hold out $0.5\\%$ of them as the validation set during the pre-training process. For supervision signals on the entity memory, we leverage Wikipedia hyperlinks as gold annotations. Each hyperlink provides the boundaries of a mention, and also the corresponding entity<sup>5</sup> that the mention is linked to.\n\nHowever, the average density of Wikipedia hyperlinks is only one in 21 words, which means 6 mentions per passage. This is because in a specific page, (1) only the first mention of an entity is linked and (2) the title entity is not linked since a hyperlink always redirects to a different page. To provide more supervision signals for entity embedding learning, we label the missing mentions using heuristic rules. We use the alias table $\\mathcal{T}$ to label all mentions in a Wikipedia page if they match either (1) a linked entity in the same page, or (2) the title entity of this page. After such heuristic labeling, the hyperlink density increases to one in 11 words, with a passage having 12 mentions on average. We manually checked 50 passages and found the precision of such heuristic labeling to be $92\\%$ , a pretty acceptable rate.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.43::appendix::A.2",
+      "paper_id": "2022.emnlp-main.43",
+      "section_number": "A.2",
+      "section_title": "pre-training settings",
+      "normalized_section_title": "pre-training settings",
+      "window_text": "We pre-train our model on the Wikipedia corpus containing 39 million passages for 1 million steps using a batch size of 2048. AdamW (Loshchilov and Hutter, 2019) optimizer is used with maximal learning rate $1 \\times 10^{-4}$ and the weight decay coefficient is 0.01. The learning rate is scheduled to be warmed up for $10\\%$ of the training steps and then linearly decay. The mask rate for random token masking is $P_{rtm} = 0.3$ , and the mask rate for salient span masking is $P_{ssm} = 0.5$ (ablations in Appendix E.1). The maximum length of input\n\nsequence is set to 128. The coefficient of the entity linking objective is set to $\\lambda_{EL} = 1.0$ and the dropout rate is 0.1. The whole model is trained from scratch. We tried to initialize the encoder-decoder model with BART (Lewis et al., 2020a) and derive entity embeddings from BART embeddings, but the model showed up to be unstable in further training. We use the mixed precision floating point arithmetic (Micikevicius et al., 2018) to speed-up training. The full setting of EDMem takes about two weeks to train on $16\\times \\mathrm{A}100$ GPUs.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.43::appendix::B",
+      "paper_id": "2022.emnlp-main.43",
+      "section_number": "B",
+      "section_title": "fine-tuning",
+      "normalized_section_title": "fine-tuning",
+      "window_text": "Different from pre-training on Wikipedia, in open-domain QA and generation tasks, there are no gold annotations of mention boundaries in the input and output. Therefore, we annotate mention boundaries as well as the linked entities using a state-of-the-art neural entity linker ELQ (Li et al., 2020). For generation datasets, we pass the source sequence and the target sequence into the ELQ model respectively, and obtain their mention annotations. For open-domain QA datasets, since the answers are usually short, we concatenate the question and the answer as input to the ELQ model. During fine-tuning, we tune the hyperparameters within the following ranges: learning rate $\\in$ {5e-6, 1e-5, 2e-5, 3e-5}, $\\lambda_{EL} \\in$ {0.5, 1.0, 2.0}, dropout rate $\\in$ {0.1, 0.2, 0.3}, beam size $\\in$ {1, 3, 5}, #candidate entities (in static/dynamic entity linking) $\\in$ {1, 3, 5}. They are tuned based on on the main evaluation metric of the specific task (open-domain QA: EM; WoW: F1; other generation datasets: ROUGE-L) on the dev set. Batch size is fixed to 256 unless it exceeds GPU memory or the dataset is too small (e.g., CBREAK and WQ). Early stopping is used with 20 waiting steps on the dev set. Fine-tuning EDMem usually costs a few hours (e.g., ~3 hours on TQA) on $8 \\times \\mathrm{V}100$ GPUs.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.43::appendix::E",
+      "paper_id": "2022.emnlp-main.43",
+      "section_number": "E",
+      "section_title": "additional experiments",
+      "normalized_section_title": "additional experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.43::appendix::E.1",
+      "paper_id": "2022.emnlp-main.43",
+      "section_number": "E.1",
+      "section_title": "pre-training mask rates",
+      "normalized_section_title": "pre-training mask rates",
+      "window_text": "We test the performance of EDMem on different mask rates during pre-training, and list the results in Table 10. In pre-training, we adopt two masked language modeling objectives: random token masking (RTM) and salient span masking (SSM). When using smaller mask rates, there is more visible contextual information to the model. Therefore, when evaluating the model on the validation set during pre-training, smaller mask rates lead to lower language model perplexity and better entity linking performances. However, larger mask rates finally lead to better performances on the downstream task. With larger mask rates, more training signals are applied to the model and thus the model is more sufficiently trained. Specifically, in SSM, the model is encouraged to leverage the entity knowledge from the entity memory to predict the masked mention. Therefore, a larger SSM rate leads to more sufficient learning of the entity memory, where the contextual information of masked mentions is integrated into the corresponding entity embedding.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.43::appendix::E.2",
+      "paper_id": "2022.emnlp-main.43",
+      "section_number": "E.2",
+      "section_title": "pre-training steps",
+      "normalized_section_title": "pre-training steps",
+      "window_text": "We fine-tune EDMem on TQA using pre-trained checkpoints of different number of training steps. As is shown in Figure 5, longer pre-training leads to better performance on the downstream task. Although there is no sign of overfitting, as the learning rate gradually decays and the model gradually converges, there is not much improvement of the model performance after 500K steps.\n\nTable 10: Performance of EDMem with different pretraining mask rates. PPL: perplexity of the masked tokens on validation set (lower is better); ACC: entity linking accuracy of masked mention spans on validation set; EM: overall exact match scores; Entity: exact match scores on entity answers.   \n\n<table><tr><td rowspan=\"2\">Prtm</td><td rowspan=\"2\">Pssm</td><td colspan=\"2\">Pre-Train</td><td colspan=\"2\">TQA</td></tr><tr><td>PPL↓</td><td>ACC↑</td><td>EM↑</td><td>Entity↑</td></tr><tr><td>0.1</td><td>0.3</td><td>1.14</td><td>73.33</td><td>41.01</td><td>46.86</td></tr><tr><td>0.2</td><td>0.4</td><td>1.31</td><td>72.94</td><td>41.52</td><td>47.03</td></tr><tr><td>0.3</td><td>0.5</td><td>1.51</td><td>71.37</td><td>42.24</td><td>48.27</td></tr></table>\n\n![](images/32b34e8bf81cfb52c4f5d17f4d97119776a78cdd0a5b7c0c7cd24d80fe03673c.jpg)  \nFigure 5: TQA performance of EDMem with different pre-training steps.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.emnlp-main.43::sections::4.1.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "We compare the time efficiency of different models during inference in Table 3. We run EDMem, BART and the open-book model FiD on the test set of TQA (11K questions) with $8 \\times \\mathrm{V}100$ GPUs. Compared to BART, EDMem needs to access a large entity memory multiple times, which slows down the inference time from 10s to 28s. However, such a time cost is much smaller than the gap between closed-book models and the open-book FiD (85min). In the open-book setting, the model needs to (1) load the pre-computed index from disk to\n\nTable 3: Inference time on TriviaQA test set. $T_{ind}$ is the time for loading the index, which is a fixed amount of time; $T_{ret}$ and $T_{pred}$ denote time for document retrieval and answer prediction, which will linearly increase as the number of test examples increases. Inference time of EDMem-stat. is the accumulation of the entity linking step and the constrained generation step.   \n\n<table><tr><td>Type</td><td>Model</td><td>\\(T_{ind}\\)</td><td>\\(T_{ret}\\)</td><td>\\(T_{pred}\\)</td><td>EM</td></tr><tr><td rowspan=\"4\">Closed-book</td><td>BART</td><td>0</td><td>0</td><td>17s</td><td>25.02</td></tr><tr><td>EDMem-free</td><td>0</td><td>0</td><td>28s</td><td>42.24</td></tr><tr><td>EDMem-dyn.</td><td>0</td><td>0</td><td>48s</td><td>43.82</td></tr><tr><td>EDMem-stat.</td><td>0</td><td>0</td><td>59s</td><td>46.19</td></tr><tr><td>Open-book</td><td>FiD</td><td>29min</td><td>15min</td><td>41min</td><td>67.60</td></tr></table>\n\nthe RAM, (2) retrieve evidence documents from the index, and (3) read all evidence documents to generate an answer. In addition to the overhead caused by accessing the index, the model needs to encode the raw text of all evidence documents (i.e., 100 documents for FiD) before generating an answer with the decoder, but EDMem and BART only needs to encode the question itself. Thus, EDMem is able to achieve significant improvement over traditional encoder-decoder models while retaining the efficiency advantage of closed-book models.",
+      "section_number": "4.1.4",
+      "section_title": "inference efficiency",
+      "normalized_section_title": "inference efficiency"
+    },
+    {
+      "window_id": "2022.emnlp-main.43::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "count": 16,
+      "count_text": "16",
+      "evidence": "We pre-train our model on the Wikipedia corpus containing 39 million passages for 1 million steps using a batch size of 2048. AdamW (Loshchilov and Hutter, 2019) optimizer is used with maximal learning rate $1 \\times 10^{-4}$ and the weight decay coefficient is 0.01. The learning rate is scheduled to be warmed up for $10\\%$ of the training steps and then linearly decay. The mask rate for random token masking is $P_{rtm} = 0.3$ , and the mask rate for salient span masking is $P_{ssm} = 0.5$ (ablations in Appendix E.1). The maximum length of input\n\nsequence is set to 128. The coefficient of the entity linking objective is set to $\\lambda_{EL} = 1.0$ and the dropout rate is 0.1. The whole model is trained from scratch. We tried to initialize the encoder-decoder model with BART (Lewis et al., 2020a) and derive entity embeddings from BART embeddings, but the model showed up to be unstable in further training. We use the mixed precision floating point arithmetic (Micikevicius et al., 2018) to speed-up training. The full setting of EDMem takes about two weeks to train on $16\\times \\mathrm{A}100$ GPUs.",
+      "section_number": "A.2",
+      "section_title": "pre-training settings",
+      "normalized_section_title": "pre-training settings"
+    },
+    {
+      "window_id": "2022.emnlp-main.43::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Different from pre-training on Wikipedia, in open-domain QA and generation tasks, there are no gold annotations of mention boundaries in the input and output. Therefore, we annotate mention boundaries as well as the linked entities using a state-of-the-art neural entity linker ELQ (Li et al., 2020). For generation datasets, we pass the source sequence and the target sequence into the ELQ model respectively, and obtain their mention annotations. For open-domain QA datasets, since the answers are usually short, we concatenate the question and the answer as input to the ELQ model. During fine-tuning, we tune the hyperparameters within the following ranges: learning rate $\\in$ {5e-6, 1e-5, 2e-5, 3e-5}, $\\lambda_{EL} \\in$ {0.5, 1.0, 2.0}, dropout rate $\\in$ {0.1, 0.2, 0.3}, beam size $\\in$ {1, 3, 5}, #candidate entities (in static/dynamic entity linking) $\\in$ {1, 3, 5}. They are tuned based on on the main evaluation metric of the specific task (open-domain QA: EM; WoW: F1; other generation datasets: ROUGE-L) on the dev set. Batch size is fixed to 256 unless it exceeds GPU memory or the dataset is too small (e.g., CBREAK and WQ). Early stopping is used with 20 waiting steps on the dev set. Fine-tuning EDMem usually costs a few hours (e.g., ~3 hours on TQA) on $8 \\times \\mathrm{V}100$ GPUs.",
+      "section_number": "B",
+      "section_title": "fine-tuning",
+      "normalized_section_title": "fine-tuning"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.emnlp-main.43::sections::4.1.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "cleaned_hardware_name": "v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "4.1.4",
+      "section_title": "inference efficiency",
+      "normalized_section_title": "inference efficiency",
+      "evidence": "We compare the time efficiency of different models during inference in Table 3. We run EDMem, BART and the open-book model FiD on the test set of TQA (11K questions) with $8 \\times \\mathrm{V}100$ GPUs. Compared to BART, EDMem needs to access a large entity memory multiple times, which slows down the inference time from 10s to 28s. However, such a time cost is much smaller than the gap between closed-book models and the open-book FiD (85min). In the open-book setting, the model needs to (1) load the pre-computed index from disk to\n\nTable 3: Inference time on TriviaQA test set. $T_{ind}$ is the time for loading the index, which is a fixed amount of time; $T_{ret}$ and $T_{pred}$ denote time for document retrieval and answer prediction, which will linearly increase as the number of test examples increases. Inference time of EDMem-stat. is the accumulation of the entity linking step and the constrained generation step.   \n\n<table><tr><td>Type</td><td>Model</td><td>\\(T_{ind}\\)</td><td>\\(T_{ret}\\)</td><td>\\(T_{pred}\\)</td><td>EM</td></tr><tr><td rowspan=\"4\">Closed-book</td><td>BART</td><td>0</td><td>0</td><td>17s</td><td>25.02</td></tr><tr><td>EDMem-free</td><td>0</td><td>0</td><td>28s</td><td>42.24</td></tr><tr><td>EDMem-dyn.</td><td>0</td><td>0</td><td>48s</td><td>43.82</td></tr><tr><td>EDMem-stat.</td><td>0</td><td>0</td><td>59s</td><td>46.19</td></tr><tr><td>Open-book</td><td>FiD</td><td>29min</td><td>15min</td><td>41min</td><td>67.60</td></tr></table>\n\nthe RAM, (2) retrieve evidence documents from the index, and (3) read all evidence documents to generate an answer. In addition to the overhead caused by accessing the index, the model needs to encode the raw text of all evidence documents (i.e., 100 documents for FiD) before generating an answer with the decoder, but EDMem and BART only needs to encode the question itself. Thus, EDMem is able to achieve significant improvement over traditional encoder-decoder models while retaining the efficiency advantage of closed-book models.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2022.emnlp-main.43::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "cleaned_hardware_name": "a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": null,
+      "count": 16,
+      "count_text": "16",
+      "section_number": "A.2",
+      "section_title": "pre-training settings",
+      "normalized_section_title": "pre-training settings",
+      "evidence": "We pre-train our model on the Wikipedia corpus containing 39 million passages for 1 million steps using a batch size of 2048. AdamW (Loshchilov and Hutter, 2019) optimizer is used with maximal learning rate $1 \\times 10^{-4}$ and the weight decay coefficient is 0.01. The learning rate is scheduled to be warmed up for $10\\%$ of the training steps and then linearly decay. The mask rate for random token masking is $P_{rtm} = 0.3$ , and the mask rate for salient span masking is $P_{ssm} = 0.5$ (ablations in Appendix E.1). The maximum length of input\n\nsequence is set to 128. The coefficient of the entity linking objective is set to $\\lambda_{EL} = 1.0$ and the dropout rate is 0.1. The whole model is trained from scratch. We tried to initialize the encoder-decoder model with BART (Lewis et al., 2020a) and derive entity embeddings from BART embeddings, but the model showed up to be unstable in further training. We use the mixed precision floating point arithmetic (Micikevicius et al., 2018) to speed-up training. The full setting of EDMem takes about two weeks to train on $16\\times \\mathrm{A}100$ GPUs.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2022.emnlp-main.43::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "cleaned_hardware_name": "v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "B",
+      "section_title": "fine-tuning",
+      "normalized_section_title": "fine-tuning",
+      "evidence": "Different from pre-training on Wikipedia, in open-domain QA and generation tasks, there are no gold annotations of mention boundaries in the input and output. Therefore, we annotate mention boundaries as well as the linked entities using a state-of-the-art neural entity linker ELQ (Li et al., 2020). For generation datasets, we pass the source sequence and the target sequence into the ELQ model respectively, and obtain their mention annotations. For open-domain QA datasets, since the answers are usually short, we concatenate the question and the answer as input to the ELQ model. During fine-tuning, we tune the hyperparameters within the following ranges: learning rate $\\in$ {5e-6, 1e-5, 2e-5, 3e-5}, $\\lambda_{EL} \\in$ {0.5, 1.0, 2.0}, dropout rate $\\in$ {0.1, 0.2, 0.3}, beam size $\\in$ {1, 3, 5}, #candidate entities (in static/dynamic entity linking) $\\in$ {1, 3, 5}. They are tuned based on on the main evaluation metric of the specific task (open-domain QA: EM; WoW: F1; other generation datasets: ROUGE-L) on the dev set. Batch size is fixed to 256 unless it exceeds GPU memory or the dataset is too small (e.g., CBREAK and WQ). Early stopping is used with 20 waiting steps on the dev set. Fine-tuning EDMem usually costs a few hours (e.g., ~3 hours on TQA) on $8 \\times \\mathrm{V}100$ GPUs.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2022.emnlp-main.43::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": "We test our EDMem framework on two testbeds of entity knowledge: open-domain QA and entity-intensive generation tasks."
+    },
+    {
+      "source_window_id": "2022.emnlp-main.43::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "pre-training",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2022.emnlp-main.43::appendix::A.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.1",
+      "section_title": "pre-training data",
+      "evidence": "We pre-train our model on the Wikipedia corpus of over 5 million documents. All documents are split into 128-token passages. The last passage is round up to 128 tokens by appending tokens from the beginning of the same document, so there are no cross-document passages. In addition, we set a 10-token sliding window between passages to avoid an entity being split into two adjacent chunks. Such a setting yields a total of 39 million passages, of which we hold out $0.5\\%$ of them as the validation set during the pre-training process. For supervision signals on the entity memory, we leverage Wikipedia hyperlinks as gold annotations. Each hyperlink provides the boundaries of a mention, and also the corresponding entity<sup>5</sup> that the mention is linked to.\n\nHowever, the average density of Wikipedia hyperlinks is only one in 21 words, which means 6 mentions per passage. This is because in a specific page, (1) only the first mention of an entity is linked and (2) the title entity is not linked since a hyperlink always redirects to a different page. To provide more supervision signals for entity embedding learning, we label the missing mentions using heuristic rules. We use the alias table $\\mathcal{T}$ to label all mentions in a Wikipedia page if they match either (1) a linked entity in the same page, or (2) the title entity of this page. After such heuristic labeling, the hyperlink density increases to one in 11 words, with a passage having 12 mentions on average. We manually checked 50 passages and found the precision of such heuristic labeling to be $92\\%$ , a pretty acceptable rate."
+    },
+    {
+      "source_window_id": "2022.emnlp-main.43::appendix::E",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "E",
+      "section_title": "additional experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2022.emnlp-main.43::appendix::E.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "E.1",
+      "section_title": "pre-training mask rates",
+      "evidence": "We test the performance of EDMem on different mask rates during pre-training, and list the results in Table 10. In pre-training, we adopt two masked language modeling objectives: random token masking (RTM) and salient span masking (SSM). When using smaller mask rates, there is more visible contextual information to the model. Therefore, when evaluating the model on the validation set during pre-training, smaller mask rates lead to lower language model perplexity and better entity linking performances. However, larger mask rates finally lead to better performances on the downstream task. With larger mask rates, more training signals are applied to the model and thus the model is more sufficiently trained. Specifically, in SSM, the model is encouraged to leverage the entity knowledge from the entity memory to predict the masked mention. Therefore, a larger SSM rate leads to more sufficient learning of the entity memory, where the contextual information of masked mentions is integrated into the corresponding entity embedding."
+    },
+    {
+      "source_window_id": "2022.emnlp-main.43::appendix::E.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "E.2",
+      "section_title": "pre-training steps",
+      "evidence": "We fine-tune EDMem on TQA using pre-trained checkpoints of different number of training steps. As is shown in Figure 5, longer pre-training leads to better performance on the downstream task. Although there is no sign of overfitting, as the learning rate gradually decays and the model gradually converges, there is not much improvement of the model performance after 500K steps.\n\nTable 10: Performance of EDMem with different pretraining mask rates. PPL: perplexity of the masked tokens on validation set (lower is better); ACC: entity linking accuracy of masked mention spans on validation set; EM: overall exact match scores; Entity: exact match scores on entity answers.   \n\n<table><tr><td rowspan=\"2\">Prtm</td><td rowspan=\"2\">Pssm</td><td colspan=\"2\">Pre-Train</td><td colspan=\"2\">TQA</td></tr><tr><td>PPL↓</td><td>ACC↑</td><td>EM↑</td><td>Entity↑</td></tr><tr><td>0.1</td><td>0.3</td><td>1.14</td><td>73.33</td><td>41.01</td><td>46.86</td></tr><tr><td>0.2</td><td>0.4</td><td>1.31</td><td>72.94</td><td>41.52</td><td>47.03</td></tr><tr><td>0.3</td><td>0.5</td><td>1.51</td><td>71.37</td><td>42.24</td><td>48.27</td></tr></table>\n\n![](images/32b34e8bf81cfb52c4f5d17f4d97119776a78cdd0a5b7c0c7cd24d80fe03673c.jpg)  \nFigure 5: TQA performance of EDMem with different pre-training steps."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.1.4",
+      "A.2",
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 8
+      },
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 16
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2022\\2022.emnlp-main.43\\auto\\full.md",
+    "source_md_sha256": "984555d62f7eb8dd8531a169824995949aaa0b5a7cf61a9de5a2ee185c3be8a3",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "44ecc0af216a9e5fe6ff4e8a000ce2b17b722bcc41b386c829c53021783d2d05"
+  }
+}

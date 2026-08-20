@@ -1,0 +1,120 @@
+{
+  "paper_id": "2023.acl-long.310",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.310::sections::2.1",
+      "paper_id": "2023.acl-long.310",
+      "section_number": "2.1",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "Latent diffusion models (Rombach et al., 2022) are a class of denoising generative models that are trained to synthesize high-fidelity images from ran-\n\ndom noise through a gradual denoising process, optionally conditioned on text. They generally comprise three components: a deep language model like CLIP (Radford et al., 2021) for producing word embeddings; a variational autoencoder (VAE; Kingma and Welling, 2013) which encodes and decodes latent vectors for images; and a time-conditional U-Net (Ronneberger et al., 2015) for gradually denoising latent vectors. To generate an image, we initialize the latent vectors to random noise, feed in a text prompt, then iteratively denoise the latent vectors with the U-Net and decode the final vector into an image with the VAE.\n\nFormally, given an image, the VAE encodes it as a latent vector $\\ell_{t_0} \\in \\mathbb{R}^d$ . Define a forward \"noise injecting\" Markov chain $p(\\ell_{t_i} | \\ell_{t_{i-1}}) \\coloneqq \\mathcal{N}(\\ell_{t_i}; \\sqrt{1 - \\alpha_{t_i}} \\ell_{t_0}, \\alpha_{t_i} I)$ where $\\{\\alpha_{t_i}\\}_{i=1}^T$ is defined following a schedule so that $p(\\ell_{t_T})$ is approximately zero-mean isotropic. The corresponding denoising reverse chain is then parameterized as\n\n$$\np \\left(\\boldsymbol {\\ell} _ {t _ {i - 1}} \\mid \\boldsymbol {\\ell} _ {t _ {i}}\\right) := \\mathcal {N} \\left(\\boldsymbol {\\ell} _ {t _ {i - 1}}; \\frac {1}{\\sqrt {1 - \\alpha_ {t _ {i}}}} \\left(\\boldsymbol {\\ell} _ {t _ {i}} + \\alpha_ {t _ {i}} \\epsilon_ {\\theta} \\left(\\boldsymbol {\\ell} _ {t _ {i}}, t _ {i}\\right), \\alpha_ {t _ {i}} \\boldsymbol {I}\\right), \\right. \\tag {1}\n$$\n\nfor some denoising network $\\epsilon_{\\theta}(\\ell, t)$ with parameters $\\theta$ . Intuitively, the forward process iteratively adds noise to some signal at a fixed rate, while the reverse process, using a neural network, removes noise until recovering the signal. To train the network, given caption-image pairs, we optimize\n\n$$\n\\min  _ {\\theta} \\sum_ {i = 1} ^ {T} \\zeta_ {i} \\mathbb {E} _ {p \\left(\\boldsymbol {\\ell} _ {t _ {i}} \\mid \\boldsymbol {\\ell} _ {t _ {0}}\\right)} \\| \\epsilon_ {\\theta} \\left(\\boldsymbol {\\ell} _ {t _ {i}}, t _ {i}\\right) - \\nabla_ {\\boldsymbol {\\ell} _ {t _ {i}}} \\log p \\left(\\boldsymbol {\\ell} _ {t _ {i}} \\mid \\boldsymbol {\\ell} _ {t _ {0}}\\right) \\| _ {2} ^ {2}, \\tag {2}\n$$\n\nwhere $\\{\\zeta_i\\}_{i = 1}^T$ are constants computed as $\\zeta_{i}\\coloneqq 1 - \\prod_{j = 1}^{i}(1 - \\alpha_{j})$ . The objective is a reweighted form of the evidence lower bound for score matching (Song et al., 2021). To generate a latent vector, we initialize $\\hat{\\ell}_{t_T}$ as Gaussian noise and iterate\n\n$$\n\\hat {\\ell} _ {t _ {i - 1}} = \\frac {1}{\\sqrt {1 - \\alpha_ {t _ {i}}}} \\left(\\hat {\\ell} _ {t _ {i}} + \\alpha_ {t _ {i}} \\epsilon_ {\\theta} \\left(\\hat {\\ell} _ {t _ {i}}, t _ {i}\\right)\\right) + \\sqrt {\\alpha_ {t _ {i}}} z _ {t _ {i}}. \\tag {3}\n$$\n\nIn practice, we apply various optimizations to improve the convergence of the above step, like modeling the reverse process as an ODE (Song et al., 2021), but this definition suffices for us. We can additionally condition the latent vectors on text and pass word embeddings $\\mathbf{X} \\coloneqq [x_1; \\dots; x_{l_W}]$ to $\\epsilon_{\\theta}(\\ell, t; \\mathbf{X})$ . Finally, the VAE decodes the denoised latent $\\hat{\\ell}_{t_0}$ to an image. For this paper, we use the publicly available weights of the state-of-the-art, 1.1 billion-parameter Stable Diffusion 2.0 model (Rombach et al., 2022), trained on 5 billion caption-image pairs (Schuhmann et al., 2022) and implemented in HuggingFace's Diffusers library (von Platen et al., 2022).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.310::appendix::A.1",
+      "paper_id": "2023.acl-long.310",
+      "section_number": "A.1",
+      "section_title": "object attribution",
+      "normalized_section_title": "object attribution",
+      "window_text": "Generation setup. For all images, we ran the Stable Diffusion 2.0 base model (512 by 512 pixels) with 30 inference steps, the default 7.5 classifier guidance score, and the state-of-the-art DPM solver. We automatically filtered out all offensive images, against which the 2.0 model has both training-time and after-inference protection. We also steered clear of offensive prompts, which were absent to start with in COCO. Our computational environment consisted of PyTorch 1.11.0 and CUDA 11.4, running on Titan RTX and A6000 graphics cards. Our spaCy model was en_core_web_md.\n\nSegmentation process. To draw the ground-truth segmentation masks, we used the object selection tool, the quick selection tool, and the brush from Adobe Photoshop CC 2022 to fill in a black mask for each area corresponding to a present noun. We then exported each mask (without the background image) as a binary PNG mask and attached it to the relevant noun—see Figure 10 for some examples. Two trained annotators worked on the total set of 1000 image-prompt pairs, with one completing 180 on each dataset and the other 320 on each.\n\nLayer and time step ablation. We conducted ablation studies to see if summing across all time steps and layers, as in Eqn. 6, is necessary. We searched both sides of the summation: for one study, we restricted DAAM to $j \\leq j^{*}$ , as $j^{*} = 1 \\rightarrow T$ ; for its dual study, we constrained $j \\geq j^{*}$ . We applied the same methods to layer resolution,\n\n![](images/9408b93d3dd9fb44f8c284e6b2266dbea95f4d7182fc87d738e88efdebd7ee4e.jpg)\n\n![](images/df413d3c677975e0261120a09b89d9b8180115be32840c94da1d7a56539a1e75.jpg)  \nFigure 11: On the left, taking the first $n$ or last $n$ time steps; on the right, the equivalent for layer resolution.\n\ni.e., $c^i$ . We present our results in Fig. 11, which suggests that all time steps and layers contribute positively to segmentation quality.\n\nDice score and pixel accuracy. We also ran COCO-Gen experiments with pixel accuracy and dice score metrics, two less common ones in the segmentation literature. In terms of pixel accuracy, CLIPSeg attained $90\\%$ , DAAM-0.4 $90\\%$ , and Mask2former $85\\%$ , which largely agrees with our mIoU $^{\\infty}$ findings. We conjecture that DAAM and Mask2former improve against CLIPSeg because pixel accuracy penalizes outliers less. For dice score, CLIPSeg achieved 72, DAAM-0.4 68, and Mask2former 30, which also agrees with our mIoU $^{\\infty}$ results. We conclude that, in addition to mIoU, both metrics support the use of DAAM.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.310::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Titan RTX",
+      "count": null,
+      "count_text": "",
+      "evidence": "Generation setup. For all images, we ran the Stable Diffusion 2.0 base model (512 by 512 pixels) with 30 inference steps, the default 7.5 classifier guidance score, and the state-of-the-art DPM solver. We automatically filtered out all offensive images, against which the 2.0 model has both training-time and after-inference protection. We also steered clear of offensive prompts, which were absent to start with in COCO. Our computational environment consisted of PyTorch 1.11.0 and CUDA 11.4, running on Titan RTX and A6000 graphics cards. Our spaCy model was en_core_web_md.\n\nSegmentation process. To draw the ground-truth segmentation masks, we used the object selection tool, the quick selection tool, and the brush from Adobe Photoshop CC 2022 to fill in a black mask for each area corresponding to a present noun. We then exported each mask (without the background image) as a binary PNG mask and attached it to the relevant noun—see Figure 10 for some examples. Two trained annotators worked on the total set of 1000 image-prompt pairs, with one completing 180 on each dataset and the other 320 on each.\n\nLayer and time step ablation. We conducted ablation studies to see if summing across all time steps and layers, as in Eqn. 6, is necessary. We searched both sides of the summation: for one study, we restricted DAAM to $j \\leq j^{*}$ , as $j^{*} = 1 \\rightarrow T$ ; for its dual study, we constrained $j \\geq j^{*}$ . We applied the same methods to layer resolution,\n\n![](images/9408b93d3dd9fb44f8c284e6b2266dbea95f4d7182fc87d738e88efdebd7ee4e.jpg)\n\n![](images/df413d3c677975e0261120a09b89d9b8180115be32840c94da1d7a56539a1e75.jpg)  \nFigure 11: On the left, taking the first $n$ or last $n$ time steps; on the right, the equivalent for layer resolution.\n\ni.e., $c^i$ . We present our results in Fig. 11, which suggests that all time steps and layers contribute positively to segmentation quality.\n\nDice score and pixel accuracy. We also ran COCO-Gen experiments with pixel accuracy and dice score metrics, two less common ones in the segmentation literature. In terms of pixel accuracy, CLIPSeg attained $90\\%$ , DAAM-0.4 $90\\%$ , and Mask2former $85\\%$ , which largely agrees with our mIoU $^{\\infty}$ findings. We conjecture that DAAM and Mask2former improve against CLIPSeg because pixel accuracy penalizes outliers less. For dice score, CLIPSeg achieved 72, DAAM-0.4 68, and Mask2former 30, which also agrees with our mIoU $^{\\infty}$ results. We conclude that, in addition to mIoU, both metrics support the use of DAAM.",
+      "section_number": "A.1",
+      "section_title": "object attribution",
+      "normalized_section_title": "object attribution"
+    },
+    {
+      "window_id": "2023.acl-long.310::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A6000",
+      "count": null,
+      "count_text": "",
+      "evidence": "Generation setup. For all images, we ran the Stable Diffusion 2.0 base model (512 by 512 pixels) with 30 inference steps, the default 7.5 classifier guidance score, and the state-of-the-art DPM solver. We automatically filtered out all offensive images, against which the 2.0 model has both training-time and after-inference protection. We also steered clear of offensive prompts, which were absent to start with in COCO. Our computational environment consisted of PyTorch 1.11.0 and CUDA 11.4, running on Titan RTX and A6000 graphics cards. Our spaCy model was en_core_web_md.\n\nSegmentation process. To draw the ground-truth segmentation masks, we used the object selection tool, the quick selection tool, and the brush from Adobe Photoshop CC 2022 to fill in a black mask for each area corresponding to a present noun. We then exported each mask (without the background image) as a binary PNG mask and attached it to the relevant noun—see Figure 10 for some examples. Two trained annotators worked on the total set of 1000 image-prompt pairs, with one completing 180 on each dataset and the other 320 on each.\n\nLayer and time step ablation. We conducted ablation studies to see if summing across all time steps and layers, as in Eqn. 6, is necessary. We searched both sides of the summation: for one study, we restricted DAAM to $j \\leq j^{*}$ , as $j^{*} = 1 \\rightarrow T$ ; for its dual study, we constrained $j \\geq j^{*}$ . We applied the same methods to layer resolution,\n\n![](images/9408b93d3dd9fb44f8c284e6b2266dbea95f4d7182fc87d738e88efdebd7ee4e.jpg)\n\n![](images/df413d3c677975e0261120a09b89d9b8180115be32840c94da1d7a56539a1e75.jpg)  \nFigure 11: On the left, taking the first $n$ or last $n$ time steps; on the right, the equivalent for layer resolution.\n\ni.e., $c^i$ . We present our results in Fig. 11, which suggests that all time steps and layers contribute positively to segmentation quality.\n\nDice score and pixel accuracy. We also ran COCO-Gen experiments with pixel accuracy and dice score metrics, two less common ones in the segmentation literature. In terms of pixel accuracy, CLIPSeg attained $90\\%$ , DAAM-0.4 $90\\%$ , and Mask2former $85\\%$ , which largely agrees with our mIoU $^{\\infty}$ findings. We conjecture that DAAM and Mask2former improve against CLIPSeg because pixel accuracy penalizes outliers less. For dice score, CLIPSeg achieved 72, DAAM-0.4 68, and Mask2former 30, which also agrees with our mIoU $^{\\infty}$ results. We conclude that, in addition to mIoU, both metrics support the use of DAAM.",
+      "section_number": "A.1",
+      "section_title": "object attribution",
+      "normalized_section_title": "object attribution"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.310::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Titan RTX",
+      "cleaned_hardware_name": "titan rtx",
+      "normalized_hardware_name": "NVIDIA TITAN RTX",
+      "benchmark_hardware_name": "NVIDIA TITAN RTX",
+      "count": null,
+      "count_text": "",
+      "section_number": "A.1",
+      "section_title": "object attribution",
+      "normalized_section_title": "object attribution",
+      "evidence": "Generation setup. For all images, we ran the Stable Diffusion 2.0 base model (512 by 512 pixels) with 30 inference steps, the default 7.5 classifier guidance score, and the state-of-the-art DPM solver. We automatically filtered out all offensive images, against which the 2.0 model has both training-time and after-inference protection. We also steered clear of offensive prompts, which were absent to start with in COCO. Our computational environment consisted of PyTorch 1.11.0 and CUDA 11.4, running on Titan RTX and A6000 graphics cards. Our spaCy model was en_core_web_md.\n\nSegmentation process. To draw the ground-truth segmentation masks, we used the object selection tool, the quick selection tool, and the brush from Adobe Photoshop CC 2022 to fill in a black mask for each area corresponding to a present noun. We then exported each mask (without the background image) as a binary PNG mask and attached it to the relevant noun—see Figure 10 for some examples. Two trained annotators worked on the total set of 1000 image-prompt pairs, with one completing 180 on each dataset and the other 320 on each.\n\nLayer and time step ablation. We conducted ablation studies to see if summing across all time steps and layers, as in Eqn. 6, is necessary. We searched both sides of the summation: for one study, we restricted DAAM to $j \\leq j^{*}$ , as $j^{*} = 1 \\rightarrow T$ ; for its dual study, we constrained $j \\geq j^{*}$ . We applied the same methods to layer resolution,\n\n![](images/9408b93d3dd9fb44f8c284e6b2266dbea95f4d7182fc87d738e88efdebd7ee4e.jpg)\n\n![](images/df413d3c677975e0261120a09b89d9b8180115be32840c94da1d7a56539a1e75.jpg)  \nFigure 11: On the left, taking the first $n$ or last $n$ time steps; on the right, the equivalent for layer resolution.\n\ni.e., $c^i$ . We present our results in Fig. 11, which suggests that all time steps and layers contribute positively to segmentation quality.\n\nDice score and pixel accuracy. We also ran COCO-Gen experiments with pixel accuracy and dice score metrics, two less common ones in the segmentation literature. In terms of pixel accuracy, CLIPSeg attained $90\\%$ , DAAM-0.4 $90\\%$ , and Mask2former $85\\%$ , which largely agrees with our mIoU $^{\\infty}$ findings. We conjecture that DAAM and Mask2former improve against CLIPSeg because pixel accuracy penalizes outliers less. For dice score, CLIPSeg achieved 72, DAAM-0.4 68, and Mask2former 30, which also agrees with our mIoU $^{\\infty}$ results. We conclude that, in addition to mIoU, both metrics support the use of DAAM.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.acl-long.310::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A6000",
+      "cleaned_hardware_name": "a6000",
+      "normalized_hardware_name": "NVIDIA RTX A6000",
+      "benchmark_hardware_name": "NVIDIA RTX A6000",
+      "count": null,
+      "count_text": "",
+      "section_number": "A.1",
+      "section_title": "object attribution",
+      "normalized_section_title": "object attribution",
+      "evidence": "Generation setup. For all images, we ran the Stable Diffusion 2.0 base model (512 by 512 pixels) with 30 inference steps, the default 7.5 classifier guidance score, and the state-of-the-art DPM solver. We automatically filtered out all offensive images, against which the 2.0 model has both training-time and after-inference protection. We also steered clear of offensive prompts, which were absent to start with in COCO. Our computational environment consisted of PyTorch 1.11.0 and CUDA 11.4, running on Titan RTX and A6000 graphics cards. Our spaCy model was en_core_web_md.\n\nSegmentation process. To draw the ground-truth segmentation masks, we used the object selection tool, the quick selection tool, and the brush from Adobe Photoshop CC 2022 to fill in a black mask for each area corresponding to a present noun. We then exported each mask (without the background image) as a binary PNG mask and attached it to the relevant noun—see Figure 10 for some examples. Two trained annotators worked on the total set of 1000 image-prompt pairs, with one completing 180 on each dataset and the other 320 on each.\n\nLayer and time step ablation. We conducted ablation studies to see if summing across all time steps and layers, as in Eqn. 6, is necessary. We searched both sides of the summation: for one study, we restricted DAAM to $j \\leq j^{*}$ , as $j^{*} = 1 \\rightarrow T$ ; for its dual study, we constrained $j \\geq j^{*}$ . We applied the same methods to layer resolution,\n\n![](images/9408b93d3dd9fb44f8c284e6b2266dbea95f4d7182fc87d738e88efdebd7ee4e.jpg)\n\n![](images/df413d3c677975e0261120a09b89d9b8180115be32840c94da1d7a56539a1e75.jpg)  \nFigure 11: On the left, taking the first $n$ or last $n$ time steps; on the right, the equivalent for layer resolution.\n\ni.e., $c^i$ . We present our results in Fig. 11, which suggests that all time steps and layers contribute positively to segmentation quality.\n\nDice score and pixel accuracy. We also ran COCO-Gen experiments with pixel accuracy and dice score metrics, two less common ones in the segmentation literature. In terms of pixel accuracy, CLIPSeg attained $90\\%$ , DAAM-0.4 $90\\%$ , and Mask2former $85\\%$ , which largely agrees with our mIoU $^{\\infty}$ findings. We conjecture that DAAM and Mask2former improve against CLIPSeg because pixel accuracy penalizes outliers less. For dice score, CLIPSeg achieved 72, DAAM-0.4 68, and Mask2former 30, which also agrees with our mIoU $^{\\infty}$ results. We conclude that, in addition to mIoU, both metrics support the use of DAAM.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA TITAN RTX",
+        "num": null
+      },
+      {
+        "name": "NVIDIA RTX A6000",
+        "num": null
+      }
+    ]
+  }
+}

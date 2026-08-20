@@ -1,0 +1,96 @@
+{
+  "paper_id": "2025.emnlp-main.1609",
+  "candidate_windows": [
+    {
+      "window_id": "2025.emnlp-main.1609::sections::3.2",
+      "paper_id": "2025.emnlp-main.1609",
+      "section_number": "3.2",
+      "section_title": "synthetic dataset",
+      "normalized_section_title": "synthetic dataset",
+      "window_text": "A central contribution of our work is to generate and provide a synthetic dataset that reflects the two roles in the context of medical event reporting: patients and healthcare professionals. To this end, we generate RENOdeTrain-Synth to evaluate how well the models perform in scenarios where real data is limited or unavailable.This will allow us to compare model performance on real and synthetic datasets to assess the usefulness,reliability, and po tential limitations of using LLM-generated text in MedDRA entity linking. To maintain consistency with real data, we follow the same MedDRALLT distribution when generating synthetic phrases. To ensure that the generated data is consistent with a realistic pharmacovigilance scenario, we model two personae:\n\n1. First, the patient perspective, where phrases are formulated in layman's terms, using nontechnical language that reflects how patients typically describe symptoms, conditions or reactions.Regarding this group of persons, the focus is on subjective experiences,sensations and emotional expressions rather than clinical terminology.\n\n2. Second, the perspective of healthcare professionals,where phrases are generated using formal medical language that reflects how professionals name, describe,and discuss diagnoses, symptoms,and treatments.\n\nTo enforce this binary distinction,we include a one-shot example in the prompt to demonstrate the expected language style for each persona (see Appendix A for the prompt). Additionally，we apply guided decoding in vLLM to structure the output in JSON format for consistent extraction. We set the temperature to O.8 to encourage diverse expressions.However, since guided decoding is not always perfectly reliable due to JSON format errors, we attempt generation five times for each MedDRA term. If extraction fails on all five attempts, we discard the term. This occurs in approximately $15 \\%$ of the cases.\n\nFor synthetic data generation, we use Llama-3.1- Nemotron-7OB-Instruct-HF in combination with vLLM for efficient and scalable generation. The synthetic data generation took approximately 14 hours and was executed (as well as the later fine tuning and re-ranking) on a cluster of four NVIDIA A100 GPUs (GA100, 20b5 reV a1, 80GB HBM2e). See Table 2 for an example of the synthetic data generated and Appendix B (Table 4) for a more detailed statistic of the RENOdeTrain-Synth dataset.\n\n![](images/d1b0fcc4a965839aa873f75b687187f98273aa5033c49f3ffabb645bd33906e0.jpg)  \nFigure 3:Fine-tuning approach for embedding model.Abbrevations: ${ \\mathrm { S O C } } { = } { \\mathrm { S } }$ ystem Organ Class; HLGT $\\varprojlim =$ High Level Group Term; HLT $\\mathbf { \\bar { \\rho } } = \\mathbf { \\bar { \\rho } }$ High Level Term; PT=Preferred Term; LLT $\\mathrm { \\dot { \\bar { \\rho } } = } 1$ Lowest Level Term; Augm $! = .$ Augmented; FT $\\fallingdotseq$ Fine-Tuned",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1609::sections::3.3.1",
+      "paper_id": "2025.emnlp-main.1609",
+      "section_number": "3.3.1",
+      "section_title": "setup",
+      "normalized_section_title": "setup",
+      "window_text": "Both reported reactions and all MedDRA terms at the LLT level are embedded using a pretrained model, specifically the M3 embedding model6 (Chen et al., 2024). Cosine similarity is then computed between the embeddings to identify the most relevant matches. To optimize retrieval efficiency, we employ $k$ -nearest neighbors search.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1609::sections::5",
+      "paper_id": "2025.emnlp-main.1609",
+      "section_number": "5",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "Our results demonstrate that MedDRA entity linking can be significantly improved by combining customized embedding fine-tuning with guided (CoT） re-ranking. In particular, our embedding model, fine-tuned on approximately 22k synthetic training pairs，outperforms general biomedical models such as BioLORD-2023-M,which relies on over 1OO million concept-definition pairs,for higher $\\operatorname { A c c } @ n$ . This highlights the importance of incorporating the reporter perspective- such as that of patients and clinicians - into synthetic data generation to better account for linguistic variability, rather than relying solely on formal ontology definitions. Our approach was particularly effective on the RENODeTest dataset, which consists of adverse reaction reports from patients and healthcare professionals. Our findings indicate significant potential for scaling this approach to all $6 0 \\mathrm { k + }$ LLTs within MedDRA. With respect to the re-ranking component, the incorporation of re-ranking signifcantly mitigated the challenges of embedding models with lower $\\operatorname { A c c } @ n$ scores. Our results illustrate that human coding guidelines can be effectively integrated into prompts, either in a guided fashion or supplemented by CoT reasoning.Explicitly embedding these guidelines in prompts effectively guides the reasoning processes of LLMs, seems promising for improving semantic alignment and decision accuracy. The improvements achieved through our re-ranking are substantially larger (around $10 \\%$ ） on RENODeTest compared to the publicly availableMantra-MedDRA-DE dataset. We attribute this to the fact that Mantra-MedDRA-DE primarily consists of short, simple phrases,which make the entity linking task relatively easier. In such cases, embedding-based models like BioLORD already perform reasonably well. In contrast, many realworld clinical texts consist of noisier and more ambiguous phrases under which our guided re-ranking approach demonstrates clearer advantages. Our findings also highlight that existing benchmarks may underestimate the true complexity of MedDRA entity linking tasks.\n\nWe conducted a power analysis using the statsmodels Python packagell to assess the statistical strength of our evaluation. Using the current test dataset, RENOdeTest, which contains 2OO entries, we estimated the power of McNemar's test for comparing guided CoT prompt reranking on top-1 accuracy results from two embedding models: one trained exclusively on synthetic data $( 7 1 . 7 8 \\%$ accuracy） and the other on real data $( 7 4 . 7 5 \\%$ accuracy). The resulting power is $1 2 . 3 \\%$ . To achieve the threshold of $80 \\%$ power, approximately 2,000 entries would be required. These results suggest a promising direction in using embedding models trained on persona-based synthetic data combined with guided CoT reranking, but also highlight the need for further validation using larger datasets.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.emnlp-main.1609::sections::3.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "A central contribution of our work is to generate and provide a synthetic dataset that reflects the two roles in the context of medical event reporting: patients and healthcare professionals. To this end, we generate RENOdeTrain-Synth to evaluate how well the models perform in scenarios where real data is limited or unavailable.This will allow us to compare model performance on real and synthetic datasets to assess the usefulness,reliability, and po tential limitations of using LLM-generated text in MedDRA entity linking. To maintain consistency with real data, we follow the same MedDRALLT distribution when generating synthetic phrases. To ensure that the generated data is consistent with a realistic pharmacovigilance scenario, we model two personae:\n\n1. First, the patient perspective, where phrases are formulated in layman's terms, using nontechnical language that reflects how patients typically describe symptoms, conditions or reactions.Regarding this group of persons, the focus is on subjective experiences,sensations and emotional expressions rather than clinical terminology.\n\n2. Second, the perspective of healthcare professionals,where phrases are generated using formal medical language that reflects how professionals name, describe,and discuss diagnoses, symptoms,and treatments.\n\nTo enforce this binary distinction,we include a one-shot example in the prompt to demonstrate the expected language style for each persona (see Appendix A for the prompt). Additionally，we apply guided decoding in vLLM to structure the output in JSON format for consistent extraction. We set the temperature to O.8 to encourage diverse expressions.However, since guided decoding is not always perfectly reliable due to JSON format errors, we attempt generation five times for each MedDRA term. If extraction fails on all five attempts, we discard the term. This occurs in approximately $15 \\%$ of the cases.\n\nFor synthetic data generation, we use Llama-3.1- Nemotron-7OB-Instruct-HF in combination with vLLM for efficient and scalable generation. The synthetic data generation took approximately 14 hours and was executed (as well as the later fine tuning and re-ranking) on a cluster of four NVIDIA A100 GPUs (GA100, 20b5 reV a1, 80GB HBM2e). See Table 2 for an example of the synthetic data generated and Appendix B (Table 4) for a more detailed statistic of the RENOdeTrain-Synth dataset.\n\n![](images/d1b0fcc4a965839aa873f75b687187f98273aa5033c49f3ffabb645bd33906e0.jpg)  \nFigure 3:Fine-tuning approach for embedding model.Abbrevations: ${ \\mathrm { S O C } } { = } { \\mathrm { S } }$ ystem Organ Class; HLGT $\\varprojlim =$ High Level Group Term; HLT $\\mathbf { \\bar { \\rho } } = \\mathbf { \\bar { \\rho } }$ High Level Term; PT=Preferred Term; LLT $\\mathrm { \\dot { \\bar { \\rho } } = } 1$ Lowest Level Term; Augm $! = .$ Augmented; FT $\\fallingdotseq$ Fine-Tuned",
+      "section_number": "3.2",
+      "section_title": "synthetic dataset",
+      "normalized_section_title": "synthetic dataset"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.emnlp-main.1609::sections::3.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "3.2",
+      "section_title": "synthetic dataset",
+      "normalized_section_title": "synthetic dataset",
+      "evidence": "A central contribution of our work is to generate and provide a synthetic dataset that reflects the two roles in the context of medical event reporting: patients and healthcare professionals. To this end, we generate RENOdeTrain-Synth to evaluate how well the models perform in scenarios where real data is limited or unavailable.This will allow us to compare model performance on real and synthetic datasets to assess the usefulness,reliability, and po tential limitations of using LLM-generated text in MedDRA entity linking. To maintain consistency with real data, we follow the same MedDRALLT distribution when generating synthetic phrases. To ensure that the generated data is consistent with a realistic pharmacovigilance scenario, we model two personae:\n\n1. First, the patient perspective, where phrases are formulated in layman's terms, using nontechnical language that reflects how patients typically describe symptoms, conditions or reactions.Regarding this group of persons, the focus is on subjective experiences,sensations and emotional expressions rather than clinical terminology.\n\n2. Second, the perspective of healthcare professionals,where phrases are generated using formal medical language that reflects how professionals name, describe,and discuss diagnoses, symptoms,and treatments.\n\nTo enforce this binary distinction,we include a one-shot example in the prompt to demonstrate the expected language style for each persona (see Appendix A for the prompt). Additionally，we apply guided decoding in vLLM to structure the output in JSON format for consistent extraction. We set the temperature to O.8 to encourage diverse expressions.However, since guided decoding is not always perfectly reliable due to JSON format errors, we attempt generation five times for each MedDRA term. If extraction fails on all five attempts, we discard the term. This occurs in approximately $15 \\%$ of the cases.\n\nFor synthetic data generation, we use Llama-3.1- Nemotron-7OB-Instruct-HF in combination with vLLM for efficient and scalable generation. The synthetic data generation took approximately 14 hours and was executed (as well as the later fine tuning and re-ranking) on a cluster of four NVIDIA A100 GPUs (GA100, 20b5 reV a1, 80GB HBM2e). See Table 2 for an example of the synthetic data generated and Appendix B (Table 4) for a more detailed statistic of the RENOdeTrain-Synth dataset.\n\n![](images/d1b0fcc4a965839aa873f75b687187f98273aa5033c49f3ffabb645bd33906e0.jpg)  \nFigure 3:Fine-tuning approach for embedding model.Abbrevations: ${ \\mathrm { S O C } } { = } { \\mathrm { S } }$ ystem Organ Class; HLGT $\\varprojlim =$ High Level Group Term; HLT $\\mathbf { \\bar { \\rho } } = \\mathbf { \\bar { \\rho } }$ High Level Term; PT=Preferred Term; LLT $\\mathrm { \\dot { \\bar { \\rho } } = } 1$ Lowest Level Term; Augm $! = .$ Augmented; FT $\\fallingdotseq$ Fine-Tuned",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "3.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 4
+      }
+    ]
+  }
+}

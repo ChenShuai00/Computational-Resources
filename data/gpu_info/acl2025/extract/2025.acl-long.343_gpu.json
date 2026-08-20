@@ -1,0 +1,141 @@
+{
+  "paper_id": "2025.acl-long.343",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.343::sections::2.1",
+      "paper_id": "2025.acl-long.343",
+      "section_number": "2.1",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "The unit test-based majority voting framework follows a standard best-of-N strategy (Cobbe et al., 2021; Lightman et al., 2024). Given a programming question $Q$ , the policy model generates $N$ candidate code solutions:\n\n$$\n\\left\\{C _ {1}, C _ {2}, \\dots , C _ {N} \\right\\},\n$$\n\nwhere $C_i$ represents the $i$ -th candidate solution. Based on the programming question and the candidate code solution, an auxiliary LLM generates $M$ unit tests:\n\n$$\n\\{T _ {1}, T _ {2}, \\ldots , T _ {M} \\}\n$$\n\nEach unit test $T_{j}$ consists of a set of test cases:\n\n$$\nT _ {j} = \\{(x _ {j, 1}, y _ {j, 1}), (x _ {j, 2}, y _ {j, 2}), \\ldots , (x _ {j, K _ {j}}, y _ {j, K _ {j}}) \\},\n$$\n\nwhere $x_{j,k}$ is the input for the $k$ -th test case in $T_j$ , and $y_{j,k}$ is the corresponding expected output. $K_j$ represents the number of test cases in $T_j$ . Each candidate solution $C_i$ is executed on the unit tests $\\{T_1, T_2, \\ldots, T_M\\}$ . For a given unit test $T_j$ , the execution of $C_i$ produces a binary result:\n\n$$\nr _ {i, j} = \\left\\{ \\begin{array}{l l} 1, & \\text {i f C _ {i} p a s s e s a l l t e s t c a s e s i n T _ {j} ;} \\\\ 0, & \\text {o t h e r w i s e .} \\end{array} \\right.\n$$\n\nThe binary results for all unit tests form a reward signal for each candidate solution:\n\n$$\n\\mathbf {R} _ {i} = \\left\\{r _ {i, 1}, r _ {i, 2}, \\dots , r _ {i, M} \\right\\}.\n$$\n\nFinally, we select the optimal candidate solution $C_{\\mathrm{opt}}$ based on majority voting (Wang et al., 2023). This voting process determines $C_{\\mathrm{opt}}$ as the solution that passes the maximum number of unit tests:\n\n$$\nC _ {\\text {o p t}} = \\underset {C _ {i}} {\\operatorname {a r g m a x}} \\sum_ {j = 1} ^ {M} r _ {i, j}. \\tag {1}\n$$\n\n![](images/1814fd670046fce63ff883399d63d649769fdb2f82f602f004fa7d8c4ab448e0.jpg)  \nFigure 1: Scaling the quantities of unit tests for majority voting leads to improvements in performance across different policy models and reward models. Policy refers to the model that produces code solutions, while reward denotes the model that generates unit tests.\n\n![](images/1ba72a9687b00b6fa4c8f63f3f4546e422c50996ce69f986efd516e35060c510.jpg)  \nFigure 2: The correlation between the quantities of unit tests and the performance on different unit test generators (reward model) with 200 candidate code solutions.\n\nWe utilize HumanEval Plus (Liu et al., 2023), a widely adopted dataset comprising handwritten Python programming questions with comprehensive unit tests. For each question, an LLM (policy model) generates $N = 200$ code solutions, while another LLM (reward model) produces $M = 100$ unit tests for supervision. The optimal solution is selected using Equation (1) and validated against the ground truth unit tests in the dataset. To compute the results for $n$ solutions $(0 \\leq n \\leq N)$ and $m$ unit tests $(0 \\leq m \\leq M)$ , we employ the bootstrap resampling method (Efron, 1979), generating 100 bootstrap samples to compute mean values and confidence intervals, as shown in Figure 1 and 2.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.343::sections::4",
+      "paper_id": "2025.acl-long.343",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.343::sections::4.1",
+      "paper_id": "2025.acl-long.343",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Datasets and Metrics. We conduct extensive experiments on three widely used benchmarks, including HumanEval Plus (Liu et al., 2023), MBPP Plus (Liu et al., 2023), and LiveCodeBench (Jain et al., 2024). HumanEval Plus and MBPP Plus are derived from HumanEval (Chen et al., 2021) and MBPP (Austin et al., 2021) with additional test cases. LiveCodeBench is a contamination-free dataset that continuously collects new problems over time. We select the queries from 2024-01 to 2024-09 to avoid the contamination problem with our training data. We focus on the queries with solutions in functional format, ultimately yielding 168 queries. The evaluation metric is Pass@k (Chen et al., 2021), with $k$ set to 1 in our experiments.\n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"4\">Policy Model</td></tr><tr><td>Llama3-8B</td><td>Llama3-70B</td><td>GPT-3.5</td><td>GPT-4o-m</td></tr><tr><td colspan=\"5\">HumanEval Plus</td></tr><tr><td>Vanilla</td><td>53.58</td><td>73.74</td><td>67.83</td><td>82.96</td></tr><tr><td>Grading RM</td><td>62.20 +8.62</td><td>75.00 +1.26</td><td>70.12 +2.29</td><td>83.50 +0.54</td></tr><tr><td>MBR-Exec</td><td>60.30 +6.72</td><td>75.80 +2.06</td><td>70.60 +2.77</td><td>85.20 +2.24</td></tr><tr><td>CodeT</td><td>65.30 +11.72</td><td>76.20 +2.46</td><td>73.89 +6.06</td><td>85.30 +2.34</td></tr><tr><td>MPSC</td><td>59.72 +6.14</td><td>75.51 +1.77</td><td>72.76 +4.93</td><td>84.82 +1.86</td></tr><tr><td>Llama3.1-70B</td><td>72.04 +18.46</td><td>78.54 +4.80</td><td>79.76 +11.93</td><td>85.45 +2.49</td></tr><tr><td>CodeRM-8B</td><td>72.01 +18.43</td><td>78.69 +4.95</td><td>78.01 +10.18</td><td>86.38 +3.42</td></tr><tr><td colspan=\"5\">MBPP Plus</td></tr><tr><td>Vanilla</td><td>49.20</td><td>69.33</td><td>70.53</td><td>71.59</td></tr><tr><td>Grading RM</td><td>48.40 -0.80</td><td>70.60 +1.27</td><td>66.67 -3.86</td><td>69.00 -2.59</td></tr><tr><td>MBR-Exec</td><td>50.00 +0.80</td><td>69.80 +0.47</td><td>70.53 +0.00</td><td>72.30 +0.71</td></tr><tr><td>CodeT</td><td>59.20 +10.00</td><td>69.90 +0.57</td><td>69.92 -0.61</td><td>73.40 +1.81</td></tr><tr><td>MPSC</td><td>53.32 +4.12</td><td>70.91 +1.58</td><td>71.59 +1.06</td><td>73.20 +1.61</td></tr><tr><td>Llama3.1-70B</td><td>65.26 +16.06</td><td>71.85 +2.52</td><td>75.72 +5.19</td><td>74.96 +3.37</td></tr><tr><td>CodeRM-8B</td><td>66.71 +17.51</td><td>72.44 +3.11</td><td>75.96 +5.43</td><td>75.20 +3.61</td></tr><tr><td colspan=\"5\">LiveCodeBench</td></tr><tr><td>Vanilla</td><td>11.98</td><td>25.30</td><td>20.55</td><td>34.83</td></tr><tr><td>Grading RM</td><td>13.10 +1.12</td><td>26.19 +0.89</td><td>20.83 +0.28</td><td>36.31 +1.48</td></tr><tr><td>MBR-Exec</td><td>12.04 +0.06</td><td>25.37 +0.07</td><td>20.52 -0.03</td><td>34.83 +0.00</td></tr><tr><td>CodeT</td><td>12.61 +0.63</td><td>25.89 +0.59</td><td>20.58 +0.03</td><td>35.13 +0.30</td></tr><tr><td>MPSC</td><td>11.98 +0.00</td><td>25.30 +0.00</td><td>20.55 +0.00</td><td>34.83 +0.00</td></tr><tr><td>Llama3.1-70B</td><td>13.28 +1.30</td><td>28.46 +3.16</td><td>22.80 +2.25</td><td>38.60 +3.77</td></tr><tr><td>CodeRM-8B</td><td>15.21 +3.23</td><td>27.73 +2.43</td><td>21.76 +1.21</td><td>39.20 +4.37</td></tr></table>\n\nTable 1: The main result of our approach and other baselines over three code generation benchmarks. GPT-4o-m stands for GPT-4o-mini. The improvements are calculated between methods and vanilla. The top two performances for each dataset and policy model are marked in **bold** and **underlined**.\n\nBaselines and Implementations. We compare several baselines on four policy models, including Llama3-8B (Dubey et al., 2024), Llama3-70B (Dubey et al., 2024), GPT-3.5-turbo $^3$ , and GPT-4o-mini (Achiam et al., 2023). The baselines include the vanilla method that randomly selects a solution, the grading reward model, MBR-Exec (Shi et al., 2022), CodeT (Chen et al., 2023), and MPSC (Huang et al., 2024a). For the grading reward model, we employ ArmoRM-Llama3-8Bv0.1 (Wang et al., 2024) and generate a scalar score for each candidate solution. For other baselines, we utilize Llama3.1-70B to generate test cases, using the same computation budget to conduct fair comparisons. For our method, we employ the majority voting framework in Section 2.1 and utilize Llama3.1-70B and CodeRM-8B as unit test generator. Appendix C presents the detailed experimental\n\n![](images/73e1003897c604a5f8cf7ddb06de863fa4950a5553ff1b8f4e148e9191b9f17a.jpg)  \nFigure 5: The performance of three different unit test generators (reward model) on different quantities of unit tests, while employing Llama3-8B as the policy model.\n\nsetting and the implementation of all baselines.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.343::appendix::C",
+      "paper_id": "2025.acl-long.343",
+      "section_number": "C",
+      "section_title": "experiment settings and baselines",
+      "normalized_section_title": "experiment settings and baselines",
+      "window_text": "The experiments employ four policy models of various parameter sizes and types, including Llama3-8B-Instruct, Llama3-70B-Instruct, GPT-3.5-turbo, and GPT-4o-mini. For each policy model, we generate 100 candidate code solutions, following the hyperparameters in Table 4. All models are deployed and inferred using vLLM (Kwon et al., 2023) and 8 NVIDIA A800 GPUs.\n\nFor the baselines, we first utilize a grading reward model, which takes a candidate code solution as input and outputs a scalar score representing the quality of the solution. Specifically, we employ ArmoRM-Llama3-8B-v0.1, a powerful reward model that leverages mixture-of-experts (MoE) aggregation across multiple reward objectives. In addition, we include several baselines that use unit tests as verifiers to identify correct code solutions:\n\n- MBR-Exec: This method ranks solutions using minimum Bayes risk (MBR) decoding based on the execution results of LLM\n\nTable 4: The hyperparameters of LLMs for solution and unit test generation.   \n\n<table><tr><td>Hyperparameters</td><td>Value</td></tr><tr><td>Temperature</td><td>0.8</td></tr><tr><td>Top P</td><td>0.95</td></tr><tr><td>Frequency Penalty</td><td>0</td></tr><tr><td>Presence Penalty</td><td>0</td></tr></table>\n\ngenerated test cases. For our experiments, we adopt the hard loss variant of this approach.\n\n- CodeT: This baseline evaluates the consistency of outputs with generated test cases and assesses concordance among candidate code solutions through a dual execution agreement mechanism.\n\n- MPSC: This method evaluates candidate code solutions from three perspectives: solution, specification, and test case. It constructs a 3-partite graph to identify the optimal solution.\n\nTo ensure a fair comparison, all baselines leveraging unit tests are provided with the same computational budget of 100 inferences. For MBR-Exec and CodeT, we perform 100 inferences and prompt the LLM to generate 10 test cases for each inference, following the setup of CodeT. For MPSC, under the same computational constraints, we instruct the LLM to generate 50 test cases and 50 specifications.\n\nBecause we follow previous research (Chen et al., 2023; Huang et al., 2024a) that conducts experiments on function-level Python code generation benchmarks, we do not employ symbolic-based or deep learning-based test case generation models designed for other programming languages (Alagarsamy et al., 2024; Chen et al., 2024b), such as Java, as this would introduce domain discrepancies, making direct comparisons methodologically challenging.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.343::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A800",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "The experiments employ four policy models of various parameter sizes and types, including Llama3-8B-Instruct, Llama3-70B-Instruct, GPT-3.5-turbo, and GPT-4o-mini. For each policy model, we generate 100 candidate code solutions, following the hyperparameters in Table 4. All models are deployed and inferred using vLLM (Kwon et al., 2023) and 8 NVIDIA A800 GPUs.\n\nFor the baselines, we first utilize a grading reward model, which takes a candidate code solution as input and outputs a scalar score representing the quality of the solution. Specifically, we employ ArmoRM-Llama3-8B-v0.1, a powerful reward model that leverages mixture-of-experts (MoE) aggregation across multiple reward objectives. In addition, we include several baselines that use unit tests as verifiers to identify correct code solutions:\n\n- MBR-Exec: This method ranks solutions using minimum Bayes risk (MBR) decoding based on the execution results of LLM\n\nTable 4: The hyperparameters of LLMs for solution and unit test generation.   \n\n<table><tr><td>Hyperparameters</td><td>Value</td></tr><tr><td>Temperature</td><td>0.8</td></tr><tr><td>Top P</td><td>0.95</td></tr><tr><td>Frequency Penalty</td><td>0</td></tr><tr><td>Presence Penalty</td><td>0</td></tr></table>\n\ngenerated test cases. For our experiments, we adopt the hard loss variant of this approach.\n\n- CodeT: This baseline evaluates the consistency of outputs with generated test cases and assesses concordance among candidate code solutions through a dual execution agreement mechanism.\n\n- MPSC: This method evaluates candidate code solutions from three perspectives: solution, specification, and test case. It constructs a 3-partite graph to identify the optimal solution.\n\nTo ensure a fair comparison, all baselines leveraging unit tests are provided with the same computational budget of 100 inferences. For MBR-Exec and CodeT, we perform 100 inferences and prompt the LLM to generate 10 test cases for each inference, following the setup of CodeT. For MPSC, under the same computational constraints, we instruct the LLM to generate 50 test cases and 50 specifications.\n\nBecause we follow previous research (Chen et al., 2023; Huang et al., 2024a) that conducts experiments on function-level Python code generation benchmarks, we do not employ symbolic-based or deep learning-based test case generation models designed for other programming languages (Alagarsamy et al., 2024; Chen et al., 2024b), such as Java, as this would introduce domain discrepancies, making direct comparisons methodologically challenging.",
+      "section_number": "C",
+      "section_title": "experiment settings and baselines",
+      "normalized_section_title": "experiment settings and baselines"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.343::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A800",
+      "cleaned_hardware_name": "nvidia a800",
+      "normalized_hardware_name": "NVIDIA A800 PCIe 40 GB",
+      "benchmark_hardware_name": "NVIDIA A800 PCIe 40 GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "C",
+      "section_title": "experiment settings and baselines",
+      "normalized_section_title": "experiment settings and baselines",
+      "evidence": "The experiments employ four policy models of various parameter sizes and types, including Llama3-8B-Instruct, Llama3-70B-Instruct, GPT-3.5-turbo, and GPT-4o-mini. For each policy model, we generate 100 candidate code solutions, following the hyperparameters in Table 4. All models are deployed and inferred using vLLM (Kwon et al., 2023) and 8 NVIDIA A800 GPUs.\n\nFor the baselines, we first utilize a grading reward model, which takes a candidate code solution as input and outputs a scalar score representing the quality of the solution. Specifically, we employ ArmoRM-Llama3-8B-v0.1, a powerful reward model that leverages mixture-of-experts (MoE) aggregation across multiple reward objectives. In addition, we include several baselines that use unit tests as verifiers to identify correct code solutions:\n\n- MBR-Exec: This method ranks solutions using minimum Bayes risk (MBR) decoding based on the execution results of LLM\n\nTable 4: The hyperparameters of LLMs for solution and unit test generation.   \n\n<table><tr><td>Hyperparameters</td><td>Value</td></tr><tr><td>Temperature</td><td>0.8</td></tr><tr><td>Top P</td><td>0.95</td></tr><tr><td>Frequency Penalty</td><td>0</td></tr><tr><td>Presence Penalty</td><td>0</td></tr></table>\n\ngenerated test cases. For our experiments, we adopt the hard loss variant of this approach.\n\n- CodeT: This baseline evaluates the consistency of outputs with generated test cases and assesses concordance among candidate code solutions through a dual execution agreement mechanism.\n\n- MPSC: This method evaluates candidate code solutions from three perspectives: solution, specification, and test case. It constructs a 3-partite graph to identify the optimal solution.\n\nTo ensure a fair comparison, all baselines leveraging unit tests are provided with the same computational budget of 100 inferences. For MBR-Exec and CodeT, we perform 100 inferences and prompt the LLM to generate 10 test cases for each inference, following the setup of CodeT. For MPSC, under the same computational constraints, we instruct the LLM to generate 50 test cases and 50 specifications.\n\nBecause we follow previous research (Chen et al., 2023; Huang et al., 2024a) that conducts experiments on function-level Python code generation benchmarks, we do not employ symbolic-based or deep learning-based test case generation models designed for other programming languages (Alagarsamy et al., 2024; Chen et al., 2024b), such as Java, as this would introduce domain discrepancies, making direct comparisons methodologically challenging.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.343::sections::2.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "2.1",
+      "section_title": "methodology",
+      "evidence": "The unit test-based majority voting framework follows a standard best-of-N strategy (Cobbe et al., 2021; Lightman et al., 2024). Given a programming question $Q$ , the policy model generates $N$ candidate code solutions:\n\n$$\n\\left\\{C _ {1}, C _ {2}, \\dots , C _ {N} \\right\\},\n$$\n\nwhere $C_i$ represents the $i$ -th candidate solution. Based on the programming question and the candidate code solution, an auxiliary LLM generates $M$ unit tests:\n\n$$\n\\{T _ {1}, T _ {2}, \\ldots , T _ {M} \\}\n$$\n\nEach unit test $T_{j}$ consists of a set of test cases:\n\n$$\nT _ {j} = \\{(x _ {j, 1}, y _ {j, 1}), (x _ {j, 2}, y _ {j, 2}), \\ldots , (x _ {j, K _ {j}}, y _ {j, K _ {j}}) \\},\n$$\n\nwhere $x_{j,k}$ is the input for the $k$ -th test case in $T_j$ , and $y_{j,k}$ is the corresponding expected output. $K_j$ represents the number of test cases in $T_j$ . Each candidate solution $C_i$ is executed on the unit tests $\\{T_1, T_2, \\ldots, T_M\\}$ . For a given unit test $T_j$ , the execution of $C_i$ produces a binary result:\n\n$$\nr _ {i, j} = \\left\\{ \\begin{array}{l l} 1, & \\text {i f C _ {i} p a s s e s a l l t e s t c a s e s i n T _ {j} ;} \\\\ 0, & \\text {o t h e r w i s e .} \\end{array} \\right.\n$$\n\nThe binary results for all unit tests form a reward signal for each candidate solution:\n\n$$\n\\mathbf {R} _ {i} = \\left\\{r _ {i, 1}, r _ {i, 2}, \\dots , r _ {i, M} \\right\\}.\n$$\n\nFinally, we select the optimal candidate solution $C_{\\mathrm{opt}}$ based on majority voting (Wang et al., 2023). This voting process determines $C_{\\mathrm{opt}}$ as the solution that passes the maximum number of unit tests:\n\n$$\nC _ {\\text {o p t}} = \\underset {C _ {i}} {\\operatorname {a r g m a x}} \\sum_ {j = 1} ^ {M} r _ {i, j}. \\tag {1}\n$$\n\n![](images/1814fd670046fce63ff883399d63d649769fdb2f82f602f004fa7d8c4ab448e0.jpg)  \nFigure 1: Scaling the quantities of unit tests for majority voting leads to improvements in performance across different policy models and reward models. Policy refers to the model that produces code solutions, while reward denotes the model that generates unit tests.\n\n![](images/1ba72a9687b00b6fa4c8f63f3f4546e422c50996ce69f986efd516e35060c510.jpg)  \nFigure 2: The correlation between the quantities of unit tests and the performance on different unit test generators (reward model) with 200 candidate code solutions.\n\nWe utilize HumanEval Plus (Liu et al., 2023), a widely adopted dataset comprising handwritten Python programming questions with comprehensive unit tests. For each question, an LLM (policy model) generates $N = 200$ code solutions, while another LLM (reward model) produces $M = 100$ unit tests for supervision. The optimal solution is selected using Equation (1) and validated against the ground truth unit tests in the dataset. To compute the results for $n$ solutions $(0 \\leq n \\leq N)$ and $m$ unit tests $(0 \\leq m \\leq M)$ , we employ the bootstrap resampling method (Efron, 1979), generating 100 bootstrap samples to compute mean values and confidence intervals, as shown in Figure 1 and 2."
+    },
+    {
+      "source_window_id": "2025.acl-long.343::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.343::sections::4.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "evidence": "Datasets and Metrics. We conduct extensive experiments on three widely used benchmarks, including HumanEval Plus (Liu et al., 2023), MBPP Plus (Liu et al., 2023), and LiveCodeBench (Jain et al., 2024). HumanEval Plus and MBPP Plus are derived from HumanEval (Chen et al., 2021) and MBPP (Austin et al., 2021) with additional test cases. LiveCodeBench is a contamination-free dataset that continuously collects new problems over time. We select the queries from 2024-01 to 2024-09 to avoid the contamination problem with our training data. We focus on the queries with solutions in functional format, ultimately yielding 168 queries. The evaluation metric is Pass@k (Chen et al., 2021), with $k$ set to 1 in our experiments.\n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"4\">Policy Model</td></tr><tr><td>Llama3-8B</td><td>Llama3-70B</td><td>GPT-3.5</td><td>GPT-4o-m</td></tr><tr><td colspan=\"5\">HumanEval Plus</td></tr><tr><td>Vanilla</td><td>53.58</td><td>73.74</td><td>67.83</td><td>82.96</td></tr><tr><td>Grading RM</td><td>62.20 +8.62</td><td>75.00 +1.26</td><td>70.12 +2.29</td><td>83.50 +0.54</td></tr><tr><td>MBR-Exec</td><td>60.30 +6.72</td><td>75.80 +2.06</td><td>70.60 +2.77</td><td>85.20 +2.24</td></tr><tr><td>CodeT</td><td>65.30 +11.72</td><td>76.20 +2.46</td><td>73.89 +6.06</td><td>85.30 +2.34</td></tr><tr><td>MPSC</td><td>59.72 +6.14</td><td>75.51 +1.77</td><td>72.76 +4.93</td><td>84.82 +1.86</td></tr><tr><td>Llama3.1-70B</td><td>72.04 +18.46</td><td>78.54 +4.80</td><td>79.76 +11.93</td><td>85.45 +2.49</td></tr><tr><td>CodeRM-8B</td><td>72.01 +18.43</td><td>78.69 +4.95</td><td>78.01 +10.18</td><td>86.38 +3.42</td></tr><tr><td colspan=\"5\">MBPP Plus</td></tr><tr><td>Vanilla</td><td>49.20</td><td>69.33</td><td>70.53</td><td>71.59</td></tr><tr><td>Grading RM</td><td>48.40 -0.80</td><td>70.60 +1.27</td><td>66.67 -3.86</td><td>69.00 -2.59</td></tr><tr><td>MBR-Exec</td><td>50.00 +0.80</td><td>69.80 +0.47</td><td>70.53 +0.00</td><td>72.30 +0.71</td></tr><tr><td>CodeT</td><td>59.20 +10.00</td><td>69.90 +0.57</td><td>69.92 -0.61</td><td>73.40 +1.81</td></tr><tr><td>MPSC</td><td>53.32 +4.12</td><td>70.91 +1.58</td><td>71.59 +1.06</td><td>73.20 +1.61</td></tr><tr><td>Llama3.1-70B</td><td>65.26 +16.06</td><td>71.85 +2.52</td><td>75.72 +5.19</td><td>74.96 +3.37</td></tr><tr><td>CodeRM-8B</td><td>66.71 +17.51</td><td>72.44 +3.11</td><td>75.96 +5.43</td><td>75.20 +3.61</td></tr><tr><td colspan=\"5\">LiveCodeBench</td></tr><tr><td>Vanilla</td><td>11.98</td><td>25.30</td><td>20.55</td><td>34.83</td></tr><tr><td>Grading RM</td><td>13.10 +1.12</td><td>26.19 +0.89</td><td>20.83 +0.28</td><td>36.31 +1.48</td></tr><tr><td>MBR-Exec</td><td>12.04 +0.06</td><td>25.37 +0.07</td><td>20.52 -0.03</td><td>34.83 +0.00</td></tr><tr><td>CodeT</td><td>12.61 +0.63</td><td>25.89 +0.59</td><td>20.58 +0.03</td><td>35.13 +0.30</td></tr><tr><td>MPSC</td><td>11.98 +0.00</td><td>25.30 +0.00</td><td>20.55 +0.00</td><td>34.83 +0.00</td></tr><tr><td>Llama3.1-70B</td><td>13.28 +1.30</td><td>28.46 +3.16</td><td>22.80 +2.25</td><td>38.60 +3.77</td></tr><tr><td>CodeRM-8B</td><td>15.21 +3.23</td><td>27.73 +2.43</td><td>21.76 +1.21</td><td>39.20 +4.37</td></tr></table>\n\nTable 1: The main result of our approach and other baselines over three code generation benchmarks. GPT-4o-m stands for GPT-4o-mini. The improvements are calculated between methods and vanilla. The top two performances for each dataset and policy model are marked in **bold** and **underlined**.\n\nBaselines and Implementations. We compare several baselines on four policy models, including Llama3-8B (Dubey et al., 2024), Llama3-70B (Dubey et al., 2024), GPT-3.5-turbo $^3$ , and GPT-4o-mini (Achiam et al., 2023). The baselines include the vanilla method that randomly selects a solution, the grading reward model, MBR-Exec (Shi et al., 2022), CodeT (Chen et al., 2023), and MPSC (Huang et al., 2024a). For the grading reward model, we employ ArmoRM-Llama3-8Bv0.1 (Wang et al., 2024) and generate a scalar score for each candidate solution. For other baselines, we utilize Llama3.1-70B to generate test cases, using the same computation budget to conduct fair comparisons. For our method, we employ the majority voting framework in Section 2.1 and utilize Llama3.1-70B and CodeRM-8B as unit test generator. Appendix C presents the detailed experimental\n\n![](images/73e1003897c604a5f8cf7ddb06de863fa4950a5553ff1b8f4e148e9191b9f17a.jpg)  \nFigure 5: The performance of three different unit test generators (reward model) on different quantities of unit tests, while employing Llama3-8B as the policy model.\n\nsetting and the implementation of all baselines."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "C"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A800 PCIe 40 GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.343\\auto\\full.md",
+    "source_md_sha256": "d2218033c15fde0d5d85d512aefabebff19c292b0fdc46f3a6ca1337079a28e6",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

@@ -1,0 +1,161 @@
+{
+  "paper_id": "2023.acl-long.40",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.40::sections::4",
+      "paper_id": "2023.acl-long.40",
+      "section_number": "4",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "In a nutshell, we hope to train a class-aware score network that estimates the gradient of log-density data distribution and separates the adversarial samples by the drift value of the sample distribution during the reverse denoising process. In §4.1, we will introduce the application of denoising score matching function and supervised contrastive learning to train the class-aware score network. By performing the denoising process on all samples using the score network, the drift distance of the samples before and after denoising can be calculated as an adversarial confidence score (§4.2).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.40::sections::5",
+      "paper_id": "2023.acl-long.40",
+      "section_number": "5",
+      "section_title": "experimental settings",
+      "normalized_section_title": "experimental settings",
+      "window_text": "Considering the attack algorithms on text classification models, we selected three representative text classification datasets to verify the effectiveness of the proposed method. They are SST-2 (Socher et al., 2013), IMDB (Maas et al., 2011) and AGNEWS (Zhang et al., 2015). The first two datasets are both for binary sentiment analysis. In SST-2, most sentences are short texts, while in IMDB, they are long. AGNEWS is a four-category topic classification dataset that includes the world, sports, business, and sci/tech.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.40::sections::5.1",
+      "paper_id": "2023.acl-long.40",
+      "section_number": "5.1",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "We compare our method with five recent text adversarial detection approaches. Four of these methods, DISP, FGWS, RDE and MDRE have already been introduced in §2.2. We also add a detection method, MD, which simultaneously detects out-of-distribution and adversarial samples (Lee et al., 2018). It first calculates the class-conditional Gaussian distribution of the features and then gives the adversarial confidence score of the samples by Mahalanobis distance.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.40::sections::5.3",
+      "paper_id": "2023.acl-long.40",
+      "section_number": "5.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "We fine-tune two pre-trained language models, BERT (Devlin et al., 2019) and RoBERTa (Liu et al., 2019), as the sentence encoder. We use the general text classification paradigm of the two pretrained models, i.e., the encoder followed by the linear classifier with hyperparameters consistent with the original paper. For the three datasets, we use $90\\%$ of the original training set for training and the remaining $10\\%$ as the validation set. Following previous works, the attack algorithms will attack 3000 text samples to generate a balanced detection set. Since the original SST has only 872 labeled validation samples, we attack the full validation set. The XLNET (Yang et al., 2019) is adopted as the backbone of the score network with sentence encoder representations as input. All the attack algorithms are implemented by TextAttack (Morris et al., 2020b) framework and use the default settings. More details can be found in Appendix A.3.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.40::appendix::A",
+      "paper_id": "2023.acl-long.40",
+      "section_number": "A",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "This section introduces the implementation details of the training and inference phases. It includes the selection of hyperparameters for training the CASN and the denoising process for inference. In addition, there are some other settings such as the choice of the adversarial algorithm and the finetuning strategy of the agent model.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.40::appendix::A.1",
+      "paper_id": "2023.acl-long.40",
+      "section_number": "A.1",
+      "section_title": "training casn",
+      "normalized_section_title": "training casn",
+      "window_text": "The training method is greatly inspired by previous work on denoising diffusion models (Ho et al., 2020; Sohl-Dickstein et al., 2015) and denoising score matching from SDE perspective (Song et al., 2021). In fact, we are able to describe the original denoising score function (Eq.3) and the diffusion model uniformly using SDE.\n\nWe bring each $\\alpha_{i}\\in \\{\\alpha_{i}\\}_{i = 1}^{T}$ into Eq.4 individually, while recording the noise perturbation feature in $\\alpha_{i}$ as $h_i$ with $h_0$ as the initial feature. It can be seen that at this point, Eq.4 is optimizing the score function under the following Gaussian noise perturbation:\n\n$$\np _ {\\alpha_ {i}} \\left(h _ {i} \\mid h _ {0}\\right) = \\mathcal {N} \\left(h _ {i}; \\sqrt {\\alpha_ {i}} h _ {0}, (1 - \\alpha_ {i}) I\\right) \\tag {10}\n$$\n\nNoticing that the coefficient $\\alpha_{i}$ decreases from 1 to 0 as $i$ increases from $i = 0$ to $T$ , the noise perturbed distribution (Eq.10) will approach a pure Gaussian noise distribution as $i$ increases to $T$ . Due to the independence between the individual Gaussian perturbation distributions, we can consider the features with different levels of noise perturbed as a Markov process in the generation of the time series. According to Eq.10, the Markov process can be written as:\n\n$$\n\\begin{array}{l} p _ {\\beta_ {i}} \\left(h _ {i} \\mid h _ {i - 1}\\right) = \\mathcal {N} \\left(h _ {i}; \\sqrt {1 - \\beta_ {i}} h _ {i - 1}, \\beta_ {i} I\\right) \\tag {11} \\\\ w h e r e \\quad \\alpha_ {i} := \\prod_ {j = 1} ^ {i} (1 - \\beta_ {i}) \\\\ \\end{array}\n$$\n\nThis Markov process is a classical denoising diffusion model (Ho et al., 2020). At this point, the parameters $\\alpha \\in \\{\\alpha_{i}\\}_{i = 1}^{T}$ in Eq.4 for different noise levels are converted to Gaussian noise coefficients $\\beta \\in \\{\\beta_i\\}_{i = 1}^T$ in the diffusion model. We refer to the previous work (Song et al., 2021) to calculate the parameters $\\beta \\in \\{\\beta_i\\}_{i = 1}^T$\n\n$$\n\\beta_ {i} = \\frac {\\bar {\\beta} _ {m i n}}{T} + \\frac {i - 1}{T (T - 1)} \\left(\\bar {\\beta} _ {m a x} - \\bar {\\beta} _ {m i n}\\right) \\tag {12}\n$$\n\nwhere $\\overline{\\beta}_{min} = 0.1, \\overline{\\beta}_{max} = 20$ and $T = 1000$ .\n\nOnce we bring the parameters $\\alpha_{i}\\coloneqq \\prod_{j = 1}^{\\lambda}(1 - \\beta_{i})$ into Eq.4, we can calculate the loss of the denoising score matching. Noting that the final training objective, Eq.7, needs to add the supervised contrastive learning loss function, the choice of hyperparameter $\\lambda$ is crucial to make the trade-off. We list the selection of this parameter on different datasets and models in Table 5.\n\nTable 5: The two main hyperparameters of CASN during training and inference on different datasets and models. The $\\lambda$ is the coefficient in the training objective (Eq.7) and $start(k)$ denotes the start point of denoising process.   \n\n<table><tr><td>Models</td><td>Datasets</td><td>λ</td><td>start(k)</td></tr><tr><td rowspan=\"3\">BERT</td><td>SST-2</td><td>0.15</td><td>120</td></tr><tr><td>IMDB</td><td>0.1</td><td>90</td></tr><tr><td>AGNEWS</td><td>0.2</td><td>90</td></tr><tr><td rowspan=\"3\">RoBERTa</td><td>SST-2</td><td>0.2</td><td>120</td></tr><tr><td>IMDB</td><td>0.1</td><td>90</td></tr><tr><td>AGNEWS</td><td>0.1</td><td>90</td></tr></table>\n\nIn addition, we use XLNET (Yang et al., 2019) as the backbone of the class-aware score network. For all datasets and victim models, we train the score network 20 epochs using AdamW optimizer with $2e^{-5}$ as learning rate, 0.1 as dropout probability, 64 as batch size, 42 as the random seed. Regardless of how large the loss calculated by Eq.7 is, we use the network saved in the last round as the final scoring network.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.40::appendix::A.3",
+      "paper_id": "2023.acl-long.40",
+      "section_number": "A.3",
+      "section_title": "other details",
+      "normalized_section_title": "other details",
+      "window_text": "We fine-tune the BERT-base-uncased and RoBERTa-base model as the victim models, the main hyperparameters are listed in Table 6. According to the general paradigm, we connect a linear classifier after the encoder which is initialized with pre-trained weights. In the training period for CASN, we keep the encoder frozen and trained the score network using encoder representations on the clean dataset. In the detection phase, the encoder would produce sentence representation $h$ for each sentence, no matter if it is adversarial or not. The parameters for a CASN are about one million float32 type floating point numbers, and it takes about 3 hours to train 20 epochs on the IMDB dataset using a single NVIDIA A100 GPU, and 1 hour to predict 3000 samples. For the three datasets, SST-2 has 67,349 training data and 872 validation data. IMDB has both 25,000 training and test data. AGNEWS has 120,000 training data and 7,600 test data.\n\nTable 6: Hyperparameters used for fine-tuning the BERT-base-uncased and RoBERTa-base model.   \n\n<table><tr><td>Hyperparameters</td><td>Values</td></tr><tr><td>Optimizer</td><td>Adamw(Loshchilov and Hutter, 2019)</td></tr><tr><td>Learning rate</td><td>2 × 10-5</td></tr><tr><td>Dropout</td><td>0.1</td></tr><tr><td>Weight decay</td><td>1 × 10-2</td></tr><tr><td>Batch size</td><td>64</td></tr><tr><td>Gradient clip</td><td>(-1,1)</td></tr><tr><td>Epochs</td><td>3</td></tr><tr><td>Bias-correction</td><td>True</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.40::appendix::B",
+      "paper_id": "2023.acl-long.40",
+      "section_number": "B",
+      "section_title": "more experimental results",
+      "normalized_section_title": "more experimental results",
+      "window_text": "This section complements the experimental results in the main text. Firstly, in §B.1, we present the performance of CASN when using the RoBERTa as the victim model for detection under scenario 1. Secondly, we will post the detection performance of the two victim models under scenario 2 (only detect the adversarial samples that successfully change the model output). Finally, we will show the performance of CASN for non-domain detection, illustrating some disadvantages of this approach.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.40::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We fine-tune the BERT-base-uncased and RoBERTa-base model as the victim models, the main hyperparameters are listed in Table 6. According to the general paradigm, we connect a linear classifier after the encoder which is initialized with pre-trained weights. In the training period for CASN, we keep the encoder frozen and trained the score network using encoder representations on the clean dataset. In the detection phase, the encoder would produce sentence representation $h$ for each sentence, no matter if it is adversarial or not. The parameters for a CASN are about one million float32 type floating point numbers, and it takes about 3 hours to train 20 epochs on the IMDB dataset using a single NVIDIA A100 GPU, and 1 hour to predict 3000 samples. For the three datasets, SST-2 has 67,349 training data and 872 validation data. IMDB has both 25,000 training and test data. AGNEWS has 120,000 training data and 7,600 test data.\n\nTable 6: Hyperparameters used for fine-tuning the BERT-base-uncased and RoBERTa-base model.   \n\n<table><tr><td>Hyperparameters</td><td>Values</td></tr><tr><td>Optimizer</td><td>Adamw(Loshchilov and Hutter, 2019)</td></tr><tr><td>Learning rate</td><td>2 × 10-5</td></tr><tr><td>Dropout</td><td>0.1</td></tr><tr><td>Weight decay</td><td>1 × 10-2</td></tr><tr><td>Batch size</td><td>64</td></tr><tr><td>Gradient clip</td><td>(-1,1)</td></tr><tr><td>Epochs</td><td>3</td></tr><tr><td>Bias-correction</td><td>True</td></tr></table>",
+      "section_number": "A.3",
+      "section_title": "other details",
+      "normalized_section_title": "other details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.40::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.3",
+      "section_title": "other details",
+      "normalized_section_title": "other details",
+      "evidence": "We fine-tune the BERT-base-uncased and RoBERTa-base model as the victim models, the main hyperparameters are listed in Table 6. According to the general paradigm, we connect a linear classifier after the encoder which is initialized with pre-trained weights. In the training period for CASN, we keep the encoder frozen and trained the score network using encoder representations on the clean dataset. In the detection phase, the encoder would produce sentence representation $h$ for each sentence, no matter if it is adversarial or not. The parameters for a CASN are about one million float32 type floating point numbers, and it takes about 3 hours to train 20 epochs on the IMDB dataset using a single NVIDIA A100 GPU, and 1 hour to predict 3000 samples. For the three datasets, SST-2 has 67,349 training data and 872 validation data. IMDB has both 25,000 training and test data. AGNEWS has 120,000 training data and 7,600 test data.\n\nTable 6: Hyperparameters used for fine-tuning the BERT-base-uncased and RoBERTa-base model.   \n\n<table><tr><td>Hyperparameters</td><td>Values</td></tr><tr><td>Optimizer</td><td>Adamw(Loshchilov and Hutter, 2019)</td></tr><tr><td>Learning rate</td><td>2 × 10-5</td></tr><tr><td>Dropout</td><td>0.1</td></tr><tr><td>Weight decay</td><td>1 × 10-2</td></tr><tr><td>Batch size</td><td>64</td></tr><tr><td>Gradient clip</td><td>(-1,1)</td></tr><tr><td>Epochs</td><td>3</td></tr><tr><td>Bias-correction</td><td>True</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.3"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 1
+      }
+    ]
+  }
+}

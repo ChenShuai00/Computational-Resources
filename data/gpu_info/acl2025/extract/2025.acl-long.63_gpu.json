@@ -1,0 +1,120 @@
+{
+  "paper_id": "2025.acl-long.63",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.63::appendix::A",
+      "paper_id": "2025.acl-long.63",
+      "section_number": "A",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.63::appendix::B",
+      "paper_id": "2025.acl-long.63",
+      "section_number": "B",
+      "section_title": "parallelization experiment details",
+      "normalized_section_title": "parallelization experiment details",
+      "window_text": "In the parallelization experiments, we test both OpenAI APIs and the locally deployed Llama-7B model running on SGLang's backend SRT. The OpenAI model we use is gpt-3.5-turbo-1106. For local SRT benchmarking, we use one NVIDIA RTX 3090 with 24 GiB memory.\n\nCoT-SC The CoT-SC (Wang et al., 2022) example shown in Figure 7a will launch multiple branches to generate different answers, which can be parallelized. In this experiment, we set the number of branches as ten. The source code is included in Section 5.1.\n\nSkeleton-of-Thought Skeleton-of-Thought (SoT) (Ning et al., 2023) is a prompting technique used in generating long paragraphs consisting of multiple points. It first generates the outline and expands each point separately. The generation of each point can be parallelized. The dataset we use contains the top 20 data instances of the vicuna-80 dataset from the original SoT paper. The main part of SoT is shown in Figure 14.\n\nHierarchical Summarization MemWalker (Chen et al., 2023) is a new technique addressing the challenge of extremely long contexts. Given a very long text, MemWalker will first divide it into multiple segments, summarize each segment, and further summarize the combination of multiple segments, forming a hierarchical summarization. This summarization will be used in future navigation. The steps without inter-dependency can be parallelized. In this experiment, we use the first 20 articles from the QuALITY dataset (Pang et al., 2022) and compute the average time required to summarize these articles. The summarization has three layers. Each leaf node summarizes 4,000 characters. Every four leaf nodes are summarized into one intermediate node, and two intermediate nodes are summarized into one top-level node. The implementation can be found in Figure 15.\n\n1 @ppl   \n2 def skeleton_prompt(question):   \n3 \"You're an organizer responsible for only giving the skeleton (not the full content) for answering the question. Provide the $\\leftrightarrow$ skeleton in a list of points (numbered 1., 2., 3., etc.) to answer the question. Instead of writing a full sentence, $\\leftrightarrow$ each skeleton point should be very short with only 3~5 words. Generally, the skeleton should have 3~10 points. Now, $\\leftrightarrow$ please provide the skeleton for the following question.\"   \n4 question   \n5 \"Skeleton:\"   \n6 \"Please start your answer from \"1.\" and do not output other things before that.'   \n8 return gen()   \n9   \n10 @ppl   \n11 def point_expanding_prompt(question, skeleton, point_index, point_outline):   \n12 \"You're responsible for continuing the writing of one and only one point in the overall answer to the following question.\"   \n13 question   \n14 \"The skeleton of the answer is\"   \n15 skeleton   \n16 f\"Continue and only continue the writing of point {point_index}. Write it in 1~2 sentence and do not continue with other $\\leftrightarrow$ points!\"   \n17   \n18 f'Please start your answer from {\"{point_index}. {point_outline}\" and do not output other things before that.'   \n19 return gen()\n\nFigure 14: The APPL prompt functions used in SoT. Given a question, it first generates a skeleton with multiple points by calling skeleton_prompt. It then calls point_expanding_prompt for each point to expand them independently, which is parallelized. Synchronization would not happen until it needs to gather the expanded paragraph of each point in the end.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.63::appendix::F.1",
+      "paper_id": "2025.acl-long.63",
+      "section_number": "F.1",
+      "section_title": "implementation",
+      "normalized_section_title": "implementation",
+      "window_text": "To implement tracing and failure recovery correctly, robustness (the program might fail at any time) and reproducibility must be guaranteed. Reproducibility can be further categorized into two levels, namely strict and non-strict.\n\nStrict reproducibility requires the execution path of the program to be identical when being re-run. This can be achieved given that the main thread of APPL is sequential. We annotate each generation request with a unique identifier and record a SendRequest event when it's created, and we record a FinishRequest event together with the generation results when it's finished. Note that SendRequest are in order and FinishRequest can be out of order, so their correspondence depends on the request identifier.\n\nNon-strict reproducibility requires the re-run generations to be statistically correct during the sampling process. For example, multiple requests sharing the same prompt and sampling parameters might have different generation outputs, and during re-run their results are exchangeable, which is still considered correct. Therefore, APPL groups cached requests according to their generation parameters, and each time a cache hit happens, one cached request is popped from the group. A nuance here is that when a generation request is created, its parameters might not yet be ready (e.g. its prompt can be a StringFuture). Therefore we add another type of event called CommitRequest to denote the generation requests are ready and record its parameters.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.63::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 3090 24GiB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "In the parallelization experiments, we test both OpenAI APIs and the locally deployed Llama-7B model running on SGLang's backend SRT. The OpenAI model we use is gpt-3.5-turbo-1106. For local SRT benchmarking, we use one NVIDIA RTX 3090 with 24 GiB memory.\n\nCoT-SC The CoT-SC (Wang et al., 2022) example shown in Figure 7a will launch multiple branches to generate different answers, which can be parallelized. In this experiment, we set the number of branches as ten. The source code is included in Section 5.1.\n\nSkeleton-of-Thought Skeleton-of-Thought (SoT) (Ning et al., 2023) is a prompting technique used in generating long paragraphs consisting of multiple points. It first generates the outline and expands each point separately. The generation of each point can be parallelized. The dataset we use contains the top 20 data instances of the vicuna-80 dataset from the original SoT paper. The main part of SoT is shown in Figure 14.\n\nHierarchical Summarization MemWalker (Chen et al., 2023) is a new technique addressing the challenge of extremely long contexts. Given a very long text, MemWalker will first divide it into multiple segments, summarize each segment, and further summarize the combination of multiple segments, forming a hierarchical summarization. This summarization will be used in future navigation. The steps without inter-dependency can be parallelized. In this experiment, we use the first 20 articles from the QuALITY dataset (Pang et al., 2022) and compute the average time required to summarize these articles. The summarization has three layers. Each leaf node summarizes 4,000 characters. Every four leaf nodes are summarized into one intermediate node, and two intermediate nodes are summarized into one top-level node. The implementation can be found in Figure 15.\n\n1 @ppl   \n2 def skeleton_prompt(question):   \n3 \"You're an organizer responsible for only giving the skeleton (not the full content) for answering the question. Provide the $\\leftrightarrow$ skeleton in a list of points (numbered 1., 2., 3., etc.) to answer the question. Instead of writing a full sentence, $\\leftrightarrow$ each skeleton point should be very short with only 3~5 words. Generally, the skeleton should have 3~10 points. Now, $\\leftrightarrow$ please provide the skeleton for the following question.\"   \n4 question   \n5 \"Skeleton:\"   \n6 \"Please start your answer from \"1.\" and do not output other things before that.'   \n8 return gen()   \n9   \n10 @ppl   \n11 def point_expanding_prompt(question, skeleton, point_index, point_outline):   \n12 \"You're responsible for continuing the writing of one and only one point in the overall answer to the following question.\"   \n13 question   \n14 \"The skeleton of the answer is\"   \n15 skeleton   \n16 f\"Continue and only continue the writing of point {point_index}. Write it in 1~2 sentence and do not continue with other $\\leftrightarrow$ points!\"   \n17   \n18 f'Please start your answer from {\"{point_index}. {point_outline}\" and do not output other things before that.'   \n19 return gen()\n\nFigure 14: The APPL prompt functions used in SoT. Given a question, it first generates a skeleton with multiple points by calling skeleton_prompt. It then calls point_expanding_prompt for each point to expand them independently, which is parallelized. Synchronization would not happen until it needs to gather the expanded paragraph of each point in the end.",
+      "section_number": "B",
+      "section_title": "parallelization experiment details",
+      "normalized_section_title": "parallelization experiment details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.63::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 3090 24GiB",
+      "cleaned_hardware_name": "nvidia rtx 3090 24gb",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 3090",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 3090",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "B",
+      "section_title": "parallelization experiment details",
+      "normalized_section_title": "parallelization experiment details",
+      "evidence": "In the parallelization experiments, we test both OpenAI APIs and the locally deployed Llama-7B model running on SGLang's backend SRT. The OpenAI model we use is gpt-3.5-turbo-1106. For local SRT benchmarking, we use one NVIDIA RTX 3090 with 24 GiB memory.\n\nCoT-SC The CoT-SC (Wang et al., 2022) example shown in Figure 7a will launch multiple branches to generate different answers, which can be parallelized. In this experiment, we set the number of branches as ten. The source code is included in Section 5.1.\n\nSkeleton-of-Thought Skeleton-of-Thought (SoT) (Ning et al., 2023) is a prompting technique used in generating long paragraphs consisting of multiple points. It first generates the outline and expands each point separately. The generation of each point can be parallelized. The dataset we use contains the top 20 data instances of the vicuna-80 dataset from the original SoT paper. The main part of SoT is shown in Figure 14.\n\nHierarchical Summarization MemWalker (Chen et al., 2023) is a new technique addressing the challenge of extremely long contexts. Given a very long text, MemWalker will first divide it into multiple segments, summarize each segment, and further summarize the combination of multiple segments, forming a hierarchical summarization. This summarization will be used in future navigation. The steps without inter-dependency can be parallelized. In this experiment, we use the first 20 articles from the QuALITY dataset (Pang et al., 2022) and compute the average time required to summarize these articles. The summarization has three layers. Each leaf node summarizes 4,000 characters. Every four leaf nodes are summarized into one intermediate node, and two intermediate nodes are summarized into one top-level node. The implementation can be found in Figure 15.\n\n1 @ppl   \n2 def skeleton_prompt(question):   \n3 \"You're an organizer responsible for only giving the skeleton (not the full content) for answering the question. Provide the $\\leftrightarrow$ skeleton in a list of points (numbered 1., 2., 3., etc.) to answer the question. Instead of writing a full sentence, $\\leftrightarrow$ each skeleton point should be very short with only 3~5 words. Generally, the skeleton should have 3~10 points. Now, $\\leftrightarrow$ please provide the skeleton for the following question.\"   \n4 question   \n5 \"Skeleton:\"   \n6 \"Please start your answer from \"1.\" and do not output other things before that.'   \n8 return gen()   \n9   \n10 @ppl   \n11 def point_expanding_prompt(question, skeleton, point_index, point_outline):   \n12 \"You're responsible for continuing the writing of one and only one point in the overall answer to the following question.\"   \n13 question   \n14 \"The skeleton of the answer is\"   \n15 skeleton   \n16 f\"Continue and only continue the writing of point {point_index}. Write it in 1~2 sentence and do not continue with other $\\leftrightarrow$ points!\"   \n17   \n18 f'Please start your answer from {\"{point_index}. {point_outline}\" and do not output other things before that.'   \n19 return gen()\n\nFigure 14: The APPL prompt functions used in SoT. Given a question, it first generates a skeleton with multiple points by calling skeleton_prompt. It then calls point_expanding_prompt for each point to expand them independently, which is parallelized. Synchronization would not happen until it needs to gather the expanded paragraph of each point in the end.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized GeForce RTX shorthand rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.63::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "implementation details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.63::appendix::F.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "F.1",
+      "section_title": "implementation",
+      "evidence": "To implement tracing and failure recovery correctly, robustness (the program might fail at any time) and reproducibility must be guaranteed. Reproducibility can be further categorized into two levels, namely strict and non-strict.\n\nStrict reproducibility requires the execution path of the program to be identical when being re-run. This can be achieved given that the main thread of APPL is sequential. We annotate each generation request with a unique identifier and record a SendRequest event when it's created, and we record a FinishRequest event together with the generation results when it's finished. Note that SendRequest are in order and FinishRequest can be out of order, so their correspondence depends on the request identifier.\n\nNon-strict reproducibility requires the re-run generations to be statistically correct during the sampling process. For example, multiple requests sharing the same prompt and sampling parameters might have different generation outputs, and during re-run their results are exchangeable, which is still considered correct. Therefore, APPL groups cached requests according to their generation parameters, and each time a cache hit happens, one cached request is popped from the group. A nuance here is that when a generation request is created, its parameters might not yet be ready (e.g. its prompt can be a StringFuture). Therefore we add another type of event called CommitRequest to denote the generation requests are ready and record its parameters."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce RTX 3090",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.63\\auto\\full.md",
+    "source_md_sha256": "a06abf0146b136e7682a0a236cd496b44c227543113592baf5001721fca4c0d3",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "ad96f3b6ca003898756db958dd17467668c845886fa3f1f835d26a866c8af3f0"
+  }
+}

@@ -1,0 +1,183 @@
+{
+  "paper_id": "2025.acl-long.1168",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.1168::sections::3",
+      "paper_id": "2025.acl-long.1168",
+      "section_number": "3",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "We propose MEXMA, a novel cross-lingual sentence encoder trained with both token- and sentence-level objectives. The goal is to create a sentence representation that is able to encode the syntactic, semantic and lexical information in a sentence, with representations well aligned across languages. To achieve this goal, inspired by monolingual masked auto-encoding techniques (Xiao et al., 2022), we use the sentence representation in one language to unmask the tokens in another language, updating both the sentence and individual tokens. The masking allows us to use a noncontrastive loss to align sentence representations, since it prevents the collapse. Our architecture is depicted in Figure 1, and is composed of several components that we describe now. In the following, we refer to inputs, models and outputs that have no masking as clean, and masked for their masked counterparts. We consider two languages, language $\\mathcal{A}$ and language $\\mathcal{B}$ , and two clean parallel sentence representations $S_{\\mathcal{A}}$ and $S_{\\mathcal{B}}$ .\n\nCROSS-UNMASKING To ensure that our sentence vector captures the meaningful information of the sentence, we mask a significant portion of the input tokens in language $\\mathcal{A}$ . This makes it challenging for the MLM head to recover the missing tokens without any additional context. To overcome this challenge, we provide the unmasking head with the sentence vector $S_{\\mathcal{B}}$ , derived from the clean sentence in language $\\mathcal{B}$ . This forces the model to leverage the information in $S_{\\mathcal{B}}$ to predict the masked tokens in language $\\mathcal{A}$ . By doing so, we encourage the sentence vector to capture the essential information of the sentence that is useful across languages. We formulate this component into a symmetrical cross-entropy loss (CE), applied over the outputs of the encoders:\n\n$$\n\\mathcal {L} _ {m l m} = C E ([ S _ {\\mathcal {B}}, \\hat {A} ], A) + C E ([ S _ {\\mathcal {A}}, \\hat {B} ], B),\n$$\n\nwhere $\\hat{A}$ and $\\hat{B}$ are the outputs of the masked encoders without the CLS embedding, A and B the masked tokens' targets, and $[X,Y]$ represents the concatenation of X and Y.\n\nALIGNMENT LOSS The cross-unmasking generates an implicit alignment due to the switching of languages to perform the unmasking. However, it does not strongly enforce the same sentence representations in two different languages to be close in the embedding space. Following SONAR (Duquenne et al., 2023), to further reinforce the spatial proximity of semantically equivalent sentences across languages, we use an additional non-contrastive alignment objective. We formulate this component as a Mean Squared Error (MSE) loss between sentence representations:\n\n$$\n\\mathcal {L} _ {a l i g n m e n t} = M S E (S _ {\\mathcal {A}}, S _ {\\mathcal {B}}),\n$$\n\nThe two losses, unmasking and alignment, complement each other to provide both aligned and meaningful vector representations of sentences in multiple languages.\n\nSYMMETRICAL ARCHITECTURE To align all languages and maximize data usage, we adopt a symmetrical approach that unmasks the tokens of language $\\mathcal{A}$ with $S_{\\mathcal{B}}$ , and vice versa, simultaneously. We thus create four instances of the encoder (with shared parameters). For each language, we have two versions of each sentence: one heavily masked and one clean. This allows us to generate two clean sentence vectors, $S_{\\mathcal{A}}$ and $S_{\\mathcal{B}}$ , which is essential for aligning representations between languages. The clean encoders generate the clean embeddings that are further used to align the multilingual representations.\n\nKoLeo Loss In preliminary experiments, we noticed that our representations exhibited more anisotropy than those learned with contrastive approaches. This has been shown to impact the quality of the representations (Godey et al., 2024). Inspired by DINOv2 (Oquab et al., 2024), we employ the KoLeo loss (Beirlant et al., 1997; Sablayrolles et al., 2019) to encourage sentence representations to spread out evenly in the latent space (details in Appendix A).\n\nOur training loss is a weighted combination of all previous losses:\n\n$$\n\\mathcal {L} _ {M E X M A} = \\alpha \\cdot \\mathcal {L} _ {\\text {a l i g n m e n t}} + \\beta \\cdot \\mathcal {L} _ {m l m} + \\gamma \\cdot \\mathcal {L} _ {K}\n$$\n\nwhere $\\alpha$ , $\\beta$ and $\\gamma$ are hyper-parameters that control the weight of each loss term. To show that MEXMA can be used on top of existing alignment approaches, we provide, in Section 5.2, experimental results when replacing the MSE alignment loss in MEXMA with a contrastive loss.\n\n![](images/d661cf3a98e08f76a23e29c4ef4e8b42808218797545afb9b3b5838b2457b359.jpg)  \nFigure 1: MEXMA architecture. Given two translations, we create two views for each, a masked and a clean version (symmetrical architecture), and use the sentence representations from one language to unmask the other (cross-unmasking). We align the clean sentence representations via the alignment loss, and increase the usage of the space with the KoLeo loss.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1168::sections::3.1",
+      "paper_id": "2025.acl-long.1168",
+      "section_number": "3.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Encoder Backbone As our encoder, we utilize a modified version of the XLM-RoBERTa model (Conneau et al., 2020) provided by Hugging-Face that uses a more efficient attention (details in Appendix A). Our sentence representation from the encoder is obtained via the CLS embedding of the last layer, without any further processing.\n\nTRAINING DATA Our training dataset is a subset of the NLLB-200 corpus (NLLB Team et al., 2022), which comprises 200 languages. We cover 81 languages, utilizing only publicly available data, all sourced from Opus (Tiedemann, 2012). The specific languages used are listed in Appendix C. We always train using one sentence in English associated with its translation in one of the remaining 80 languages, as done in SONAR. The dataset consists of a combination of human-translated and synthetic data, where we attempt to impose a minimum of 15 million sentences per language. For languages with limited human-annotated data, we supplemented the dataset with mined data from NLLB (Schwenk et al., 2020; Fan et al., 2020; NLLB Team et al., 2022) to reach the 15 million sentence threshold. Conversely, to ensure that our dataset is somewhat balanced across languages, for languages with abundant human-annotated data,\n\nwe capped the dataset at 25 million sentences per language. The datasets used are in Table 15.\n\nWe provide details about the parameters and configurations of our model in Appendix A.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1168::appendix::A",
+      "paper_id": "2025.acl-long.1168",
+      "section_number": "A",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1168::appendix::A.2",
+      "paper_id": "2025.acl-long.1168",
+      "section_number": "A.2",
+      "section_title": "encoder backbone",
+      "normalized_section_title": "encoder backbone",
+      "window_text": "The available implementation of XLM-RoBERTa in HuggingFace employs an inefficient attention mechanism, which we have modified to incorporate the memory-efficient attention from xFormers (Lefaudeaux et al., 2022). This modification was necessary due to the random batching process used in our training, which results in a significant amount of padding and increased computational cost. To address this issue and eliminate padding, we have employed the BlockDiagonal-Mask $^{2}$ , which through custom CUDA kernels, avoids computations in padding altogether. With this change we are able to increase our batch size in each GPU by a factor of $\\approx 8$ .",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1168::appendix::A.4",
+      "paper_id": "2025.acl-long.1168",
+      "section_number": "A.4",
+      "section_title": "compute and training length",
+      "normalized_section_title": "compute and training length",
+      "window_text": "Our models were trained on a single node of 8 A100 GPUs. Each GPU had a batch size of 150, totalling 1,200 batch size across all GPUs. We accumulated two gradients, making our effective batch size 2,400. We trained our models for 300k steps.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.acl-long.1168::appendix::A.6",
+      "paper_id": "2025.acl-long.1168",
+      "section_number": "A.6",
+      "section_title": "training parameters",
+      "normalized_section_title": "training parameters",
+      "window_text": "We utilize the AdamW optimizer for our training process. The learning rate is linearly increased\n\nfrom 1e-5 for the 300k steps. To optimize memory usage, we employ mixed precision training, where the model is stored in float32, while most computations are performed in float16. The maximum sequence length for our input data is set to 200 tokens. Finally, we apply a masking ratio of $40\\%$ to the input data.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.1168::appendix::A.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Our models were trained on a single node of 8 A100 GPUs. Each GPU had a batch size of 150, totalling 1,200 batch size across all GPUs. We accumulated two gradients, making our effective batch size 2,400. We trained our models for 300k steps.",
+      "section_number": "A.4",
+      "section_title": "compute and training length",
+      "normalized_section_title": "compute and training length"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.1168::appendix::A.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "cleaned_hardware_name": "a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "A.4",
+      "section_title": "compute and training length",
+      "normalized_section_title": "compute and training length",
+      "evidence": "Our models were trained on a single node of 8 A100 GPUs. Each GPU had a batch size of 150, totalling 1,200 batch size across all GPUs. We accumulated two gradients, making our effective batch size 2,400. We trained our models for 300k steps.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.1168::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methodology",
+      "evidence": "We propose MEXMA, a novel cross-lingual sentence encoder trained with both token- and sentence-level objectives. The goal is to create a sentence representation that is able to encode the syntactic, semantic and lexical information in a sentence, with representations well aligned across languages. To achieve this goal, inspired by monolingual masked auto-encoding techniques (Xiao et al., 2022), we use the sentence representation in one language to unmask the tokens in another language, updating both the sentence and individual tokens. The masking allows us to use a noncontrastive loss to align sentence representations, since it prevents the collapse. Our architecture is depicted in Figure 1, and is composed of several components that we describe now. In the following, we refer to inputs, models and outputs that have no masking as clean, and masked for their masked counterparts. We consider two languages, language $\\mathcal{A}$ and language $\\mathcal{B}$ , and two clean parallel sentence representations $S_{\\mathcal{A}}$ and $S_{\\mathcal{B}}$ .\n\nCROSS-UNMASKING To ensure that our sentence vector captures the meaningful information of the sentence, we mask a significant portion of the input tokens in language $\\mathcal{A}$ . This makes it challenging for the MLM head to recover the missing tokens without any additional context. To overcome this challenge, we provide the unmasking head with the sentence vector $S_{\\mathcal{B}}$ , derived from the clean sentence in language $\\mathcal{B}$ . This forces the model to leverage the information in $S_{\\mathcal{B}}$ to predict the masked tokens in language $\\mathcal{A}$ . By doing so, we encourage the sentence vector to capture the essential information of the sentence that is useful across languages. We formulate this component into a symmetrical cross-entropy loss (CE), applied over the outputs of the encoders:\n\n$$\n\\mathcal {L} _ {m l m} = C E ([ S _ {\\mathcal {B}}, \\hat {A} ], A) + C E ([ S _ {\\mathcal {A}}, \\hat {B} ], B),\n$$\n\nwhere $\\hat{A}$ and $\\hat{B}$ are the outputs of the masked encoders without the CLS embedding, A and B the masked tokens' targets, and $[X,Y]$ represents the concatenation of X and Y.\n\nALIGNMENT LOSS The cross-unmasking generates an implicit alignment due to the switching of languages to perform the unmasking. However, it does not strongly enforce the same sentence representations in two different languages to be close in the embedding space. Following SONAR (Duquenne et al., 2023), to further reinforce the spatial proximity of semantically equivalent sentences across languages, we use an additional non-contrastive alignment objective. We formulate this component as a Mean Squared Error (MSE) loss between sentence representations:\n\n$$\n\\mathcal {L} _ {a l i g n m e n t} = M S E (S _ {\\mathcal {A}}, S _ {\\mathcal {B}}),\n$$\n\nThe two losses, unmasking and alignment, complement each other to provide both aligned and meaningful vector representations of sentences in multiple languages.\n\nSYMMETRICAL ARCHITECTURE To align all languages and maximize data usage, we adopt a symmetrical approach that unmasks the tokens of language $\\mathcal{A}$ with $S_{\\mathcal{B}}$ , and vice versa, simultaneously. We thus create four instances of the encoder (with shared parameters). For each language, we have two versions of each sentence: one heavily masked and one clean. This allows us to generate two clean sentence vectors, $S_{\\mathcal{A}}$ and $S_{\\mathcal{B}}$ , which is essential for aligning representations between languages. The clean encoders generate the clean embeddings that are further used to align the multilingual representations.\n\nKoLeo Loss In preliminary experiments, we noticed that our representations exhibited more anisotropy than those learned with contrastive approaches. This has been shown to impact the quality of the representations (Godey et al., 2024). Inspired by DINOv2 (Oquab et al., 2024), we employ the KoLeo loss (Beirlant et al., 1997; Sablayrolles et al., 2019) to encourage sentence representations to spread out evenly in the latent space (details in Appendix A).\n\nOur training loss is a weighted combination of all previous losses:\n\n$$\n\\mathcal {L} _ {M E X M A} = \\alpha \\cdot \\mathcal {L} _ {\\text {a l i g n m e n t}} + \\beta \\cdot \\mathcal {L} _ {m l m} + \\gamma \\cdot \\mathcal {L} _ {K}\n$$\n\nwhere $\\alpha$ , $\\beta$ and $\\gamma$ are hyper-parameters that control the weight of each loss term. To show that MEXMA can be used on top of existing alignment approaches, we provide, in Section 5.2, experimental results when replacing the MSE alignment loss in MEXMA with a contrastive loss.\n\n![](images/d661cf3a98e08f76a23e29c4ef4e8b42808218797545afb9b3b5838b2457b359.jpg)  \nFigure 1: MEXMA architecture. Given two translations, we create two views for each, a masked and a clean version (symmetrical architecture), and use the sentence representations from one language to unmask the other (cross-unmasking). We align the clean sentence representations via the alignment loss, and increase the usage of the space with the KoLeo loss."
+    },
+    {
+      "source_window_id": "2025.acl-long.1168::sections::3.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3.1",
+      "section_title": "experimental setup",
+      "evidence": "Encoder Backbone As our encoder, we utilize a modified version of the XLM-RoBERTa model (Conneau et al., 2020) provided by Hugging-Face that uses a more efficient attention (details in Appendix A). Our sentence representation from the encoder is obtained via the CLS embedding of the last layer, without any further processing.\n\nTRAINING DATA Our training dataset is a subset of the NLLB-200 corpus (NLLB Team et al., 2022), which comprises 200 languages. We cover 81 languages, utilizing only publicly available data, all sourced from Opus (Tiedemann, 2012). The specific languages used are listed in Appendix C. We always train using one sentence in English associated with its translation in one of the remaining 80 languages, as done in SONAR. The dataset consists of a combination of human-translated and synthetic data, where we attempt to impose a minimum of 15 million sentences per language. For languages with limited human-annotated data, we supplemented the dataset with mined data from NLLB (Schwenk et al., 2020; Fan et al., 2020; NLLB Team et al., 2022) to reach the 15 million sentence threshold. Conversely, to ensure that our dataset is somewhat balanced across languages, for languages with abundant human-annotated data,\n\nwe capped the dataset at 25 million sentences per language. The datasets used are in Table 15.\n\nWe provide details about the parameters and configurations of our model in Appendix A."
+    },
+    {
+      "source_window_id": "2025.acl-long.1168::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "experimental setup",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.1168::appendix::A.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.2",
+      "section_title": "encoder backbone",
+      "evidence": "The available implementation of XLM-RoBERTa in HuggingFace employs an inefficient attention mechanism, which we have modified to incorporate the memory-efficient attention from xFormers (Lefaudeaux et al., 2022). This modification was necessary due to the random batching process used in our training, which results in a significant amount of padding and increased computational cost. To address this issue and eliminate padding, we have employed the BlockDiagonal-Mask $^{2}$ , which through custom CUDA kernels, avoids computations in padding altogether. With this change we are able to increase our batch size in each GPU by a factor of $\\approx 8$ ."
+    },
+    {
+      "source_window_id": "2025.acl-long.1168::appendix::A.6",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.6",
+      "section_title": "training parameters",
+      "evidence": "We utilize the AdamW optimizer for our training process. The learning rate is linearly increased\n\nfrom 1e-5 for the 300k steps. To optimize memory usage, we employ mixed precision training, where the model is stored in float32, while most computations are performed in float16. The maximum sequence length for our input data is set to 200 tokens. Finally, we apply a masking ratio of $40\\%$ to the input data."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.4"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.1168\\auto\\full.md",
+    "source_md_sha256": "d3f669182690061be2f099a5bd36050415387dce34d9909142a0e434d3dbca48",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

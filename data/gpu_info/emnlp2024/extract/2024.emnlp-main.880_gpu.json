@@ -1,0 +1,213 @@
+{
+  "paper_id": "2024.emnlp-main.880",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.880::sections::6",
+      "paper_id": "2024.emnlp-main.880",
+      "section_number": "6",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.880::sections::6.1",
+      "paper_id": "2024.emnlp-main.880",
+      "section_number": "6.1",
+      "section_title": "setup",
+      "normalized_section_title": "setup",
+      "window_text": "We conduct experiments on SCITOOLBENCH to evaluate the tool-augmented scientific reasoning abilities of LLMs. We report results categorized by both question domains and construction methods for fine-grained analysis. We also employ CREATION Challenge (Qian et al., 2023) as the second benchmark. It comprises 2,047 samples, with each sample consisting of a question and a ground-truth function. We re-purpose all functions to assemble a global toolkit (thus including 2,047 functions). We report accuracy as the metric in all experiments.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.880::sections::6.2",
+      "paper_id": "2024.emnlp-main.880",
+      "section_number": "6.2",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "We compare SCIAGENT series with six open-source LLMs: (1) CodeLlama (Rozière et al., 2023), (2) MAmmoTH-Coder (Yue et al., 2023b), (3) ToRA-Coder (Gou et al., 2023b), (4) Mistral (Jiang et al., 2023), (5) Deepseek-Math (Shao et al., 2024), (6) Llama-3 (Touvron et al., 2023). We also list the performance of ChatGPT and GPT-4 for reference. For fair comparison, we provide all LLMs the same retriever in Section 3.2 to retrieve functions from toolset (if attached). Please see more details in Appendix C.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.880::appendix::B",
+      "paper_id": "2024.emnlp-main.880",
+      "section_number": "B",
+      "section_title": "training details",
+      "normalized_section_title": "training details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.880::appendix::B.1",
+      "paper_id": "2024.emnlp-main.880",
+      "section_number": "B.1",
+      "section_title": "retriever",
+      "normalized_section_title": "retriever",
+      "window_text": "To fine-tune a retriever, we construct the training samples from MATHFUNC. We concatenate the question and its planning as the query, and view the generated functions as the keys. We finally collect a total of 8,603 query-key pairs for training, and split $10\\%$ training samples as validation set.\n\n$$\n\\operatorname {q u e r y} = [ q; G _ {q} ]\n$$\n\n$$\n\\mathrm {k e y} = f \\in \\tilde {F} _ {q}\n$$\n\nWe follow DPR (Karpukhin et al., 2020) to train a dense retriever $R$ . We use ROBERTA-BASE (Liu et al., 2019) as the backbone. We set the training step as 500, the batch size as 128 and the learning rate as 2e-5. We also set the temperature coefficient of the InfoNCE loss (van den Oord et al., 2019) as 0.07. We run this experiment on a single NVIDIA Quadro RTX8000 GPU. The whole training process lasts for about 20 minutes.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.880::appendix::B.2",
+      "paper_id": "2024.emnlp-main.880",
+      "section_number": "B.2",
+      "section_title": "planning and action",
+      "normalized_section_title": "planning and action",
+      "window_text": "We fine-tune CodeLlama (Rozière et al., 2023), Mistral (Jiang et al., 2023), Llama-3 (Touvron et al., 2023) and DeepMath (Shao et al., 2024) on MATH-FUNC to develop the planning and action modules in our tool-augmented agents SCIAGENT series. We set the global batch size as 128. We use the learning rate as 2e-5 for CodeLlama, 2e-6 for Mistral and Llama-3, and 5e-6 for DeepMath. We use a cosine scheduler with a $3\\%$ warm-up period for 2 epochs. We train all models with ZeRO Stage3 (Rajbhandari et al., 2021) on 8 V100 GPUs. The whole training process lasts for about 3 hours for 7B LLMs and 7.5 hours for 13B LLMs.\n\nThe planning and action modules share the same model but act differently with different input instructions. We detail the format of planning and action instructions as below:\n\nPlanning. Given a question $q$ , we construct a planning sample as $(I_{\\mathrm{plan}}(q), G_q)$ , where $I_{\\mathrm{plan}}(q)$ is the input instruction, $G_q$ is the output, and $I_{\\mathrm{plan}}(.)$ is the template for planning module. We provide an example of planning instruction as below:\n\nListing 1: An example of the planning sample. We separate the input instruction and output answer by the dashed line.\n\nRead the following question and provide a high-level, step-by-step plan for this problem.\n\nQuestion: Two complementary angles are in a ratio of $3:2$ . What is the measure, in degrees, of the smaller angle?Answer: To solve this problem, we need to perform the following steps:\n\n- Set up an equation using the given ratio and the fact that the angles are complementary.   \n- Solve the equation for the variable representing the ratio.   \n- Calculate the measure of the smaller angle using the found variable value.\n\nAction. Given a question $q$ , we construct an action sample as $(I_{\\text{action}}(q, F_q), S_q)$ , where $I_{\\text{action}}(q, F_q)$ is the input instruction, $S_q$ is the output answer, and $I_{\\text{action}}(.)$ is the template for action module. $F_q$ are retrieved functions from the toolset in MATHFUNC. We adopt the retriever in Appendix B.1 to retrieve three functions in the toolset. We provide an example of action instruction as below:\n\nListing 2: An example of the action sample. We separate the input instruction and output answer by the dashed line. We only show one retrieved function in this sample for visualization convenience.\n\nRead the following mathematical question and answer it. Please note that you could (optionally, not required) call the following functions when writing the code:\n\ndef angle_ratio_to Degrees(ratio):\n\nComputes the angle measures in degrees given their ratio.\n\nParameters: - ratio (tuple): The ratio of the angles.\n\nReturns: - tuple: The angle measures in degrees.\n\nFormula:  \n- angle_1 = ratio[0] $\\star x$ - angle_2 = ratio[1] $\\star x$ - angle_3 = ratio[2] $\\star x$ - where $x$ is the common variable such that angle_1 + angle_2 + angle_3 = 180 degrees  \n```\nsum RATios = sum(ratio) $x = 180 / \\text{sum\\_ratios}$ return tuple(angle $\\star x$ for angle in ratio)\n\n[...Two more retrieved functions...]\n\nQuestion: Two complementary angles are in a ratio of $3:2$ . What is the measure, in degrees, of the smaller angle?Answer: Define the ratio of the angles. ratio $= (3,2)$ # Since the angles are complementary, they add up to 90 degrees.We can find the value of each part of the ratio by dividing 90 by the sum of the parts of the ratio. value_of_each_part $= 90$ /sum(ratio)The measure of the smaller angle is the value of each part times the smaller part of the ratio. smaller_angle $=$ value_of_each_part $\\star$ min (ratio)Print the result. print(smaller_angle)",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.880::appendix::B.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Quadro RTX8000",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "To fine-tune a retriever, we construct the training samples from MATHFUNC. We concatenate the question and its planning as the query, and view the generated functions as the keys. We finally collect a total of 8,603 query-key pairs for training, and split $10\\%$ training samples as validation set.\n\n$$\n\\operatorname {q u e r y} = [ q; G _ {q} ]\n$$\n\n$$\n\\mathrm {k e y} = f \\in \\tilde {F} _ {q}\n$$\n\nWe follow DPR (Karpukhin et al., 2020) to train a dense retriever $R$ . We use ROBERTA-BASE (Liu et al., 2019) as the backbone. We set the training step as 500, the batch size as 128 and the learning rate as 2e-5. We also set the temperature coefficient of the InfoNCE loss (van den Oord et al., 2019) as 0.07. We run this experiment on a single NVIDIA Quadro RTX8000 GPU. The whole training process lasts for about 20 minutes.",
+      "section_number": "B.1",
+      "section_title": "retriever",
+      "normalized_section_title": "retriever"
+    },
+    {
+      "window_id": "2024.emnlp-main.880::appendix::B.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "We fine-tune CodeLlama (Rozière et al., 2023), Mistral (Jiang et al., 2023), Llama-3 (Touvron et al., 2023) and DeepMath (Shao et al., 2024) on MATH-FUNC to develop the planning and action modules in our tool-augmented agents SCIAGENT series. We set the global batch size as 128. We use the learning rate as 2e-5 for CodeLlama, 2e-6 for Mistral and Llama-3, and 5e-6 for DeepMath. We use a cosine scheduler with a $3\\%$ warm-up period for 2 epochs. We train all models with ZeRO Stage3 (Rajbhandari et al., 2021) on 8 V100 GPUs. The whole training process lasts for about 3 hours for 7B LLMs and 7.5 hours for 13B LLMs.\n\nThe planning and action modules share the same model but act differently with different input instructions. We detail the format of planning and action instructions as below:\n\nPlanning. Given a question $q$ , we construct a planning sample as $(I_{\\mathrm{plan}}(q), G_q)$ , where $I_{\\mathrm{plan}}(q)$ is the input instruction, $G_q$ is the output, and $I_{\\mathrm{plan}}(.)$ is the template for planning module. We provide an example of planning instruction as below:\n\nListing 1: An example of the planning sample. We separate the input instruction and output answer by the dashed line.\n\nRead the following question and provide a high-level, step-by-step plan for this problem.\n\nQuestion: Two complementary angles are in a ratio of $3:2$ . What is the measure, in degrees, of the smaller angle?Answer: To solve this problem, we need to perform the following steps:\n\n- Set up an equation using the given ratio and the fact that the angles are complementary.   \n- Solve the equation for the variable representing the ratio.   \n- Calculate the measure of the smaller angle using the found variable value.\n\nAction. Given a question $q$ , we construct an action sample as $(I_{\\text{action}}(q, F_q), S_q)$ , where $I_{\\text{action}}(q, F_q)$ is the input instruction, $S_q$ is the output answer, and $I_{\\text{action}}(.)$ is the template for action module. $F_q$ are retrieved functions from the toolset in MATHFUNC. We adopt the retriever in Appendix B.1 to retrieve three functions in the toolset. We provide an example of action instruction as below:\n\nListing 2: An example of the action sample. We separate the input instruction and output answer by the dashed line. We only show one retrieved function in this sample for visualization convenience.\n\nRead the following mathematical question and answer it. Please note that you could (optionally, not required) call the following functions when writing the code:\n\ndef angle_ratio_to Degrees(ratio):\n\nComputes the angle measures in degrees given their ratio.\n\nParameters: - ratio (tuple): The ratio of the angles.\n\nReturns: - tuple: The angle measures in degrees.\n\nFormula:  \n- angle_1 = ratio[0] $\\star x$ - angle_2 = ratio[1] $\\star x$ - angle_3 = ratio[2] $\\star x$ - where $x$ is the common variable such that angle_1 + angle_2 + angle_3 = 180 degrees  \n```\nsum RATios = sum(ratio) $x = 180 / \\text{sum\\_ratios}$ return tuple(angle $\\star x$ for angle in ratio)\n\n[...Two more retrieved functions...]\n\nQuestion: Two complementary angles are in a ratio of $3:2$ . What is the measure, in degrees, of the smaller angle?Answer: Define the ratio of the angles. ratio $= (3,2)$ # Since the angles are complementary, they add up to 90 degrees.We can find the value of each part of the ratio by dividing 90 by the sum of the parts of the ratio. value_of_each_part $= 90$ /sum(ratio)The measure of the smaller angle is the value of each part times the smaller part of the ratio. smaller_angle $=$ value_of_each_part $\\star$ min (ratio)Print the result. print(smaller_angle)",
+      "section_number": "B.2",
+      "section_title": "planning and action",
+      "normalized_section_title": "planning and action"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.880::appendix::B.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Quadro RTX8000",
+      "cleaned_hardware_name": "nvidia quadro rtx 8000",
+      "normalized_hardware_name": "NVIDIA Quadro RTX 8000",
+      "benchmark_hardware_name": "NVIDIA Quadro RTX 8000",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "B.1",
+      "section_title": "retriever",
+      "normalized_section_title": "retriever",
+      "evidence": "To fine-tune a retriever, we construct the training samples from MATHFUNC. We concatenate the question and its planning as the query, and view the generated functions as the keys. We finally collect a total of 8,603 query-key pairs for training, and split $10\\%$ training samples as validation set.\n\n$$\n\\operatorname {q u e r y} = [ q; G _ {q} ]\n$$\n\n$$\n\\mathrm {k e y} = f \\in \\tilde {F} _ {q}\n$$\n\nWe follow DPR (Karpukhin et al., 2020) to train a dense retriever $R$ . We use ROBERTA-BASE (Liu et al., 2019) as the backbone. We set the training step as 500, the batch size as 128 and the learning rate as 2e-5. We also set the temperature coefficient of the InfoNCE loss (van den Oord et al., 2019) as 0.07. We run this experiment on a single NVIDIA Quadro RTX8000 GPU. The whole training process lasts for about 20 minutes.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.emnlp-main.880::appendix::B.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "cleaned_hardware_name": "v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "B.2",
+      "section_title": "planning and action",
+      "normalized_section_title": "planning and action",
+      "evidence": "We fine-tune CodeLlama (Rozière et al., 2023), Mistral (Jiang et al., 2023), Llama-3 (Touvron et al., 2023) and DeepMath (Shao et al., 2024) on MATH-FUNC to develop the planning and action modules in our tool-augmented agents SCIAGENT series. We set the global batch size as 128. We use the learning rate as 2e-5 for CodeLlama, 2e-6 for Mistral and Llama-3, and 5e-6 for DeepMath. We use a cosine scheduler with a $3\\%$ warm-up period for 2 epochs. We train all models with ZeRO Stage3 (Rajbhandari et al., 2021) on 8 V100 GPUs. The whole training process lasts for about 3 hours for 7B LLMs and 7.5 hours for 13B LLMs.\n\nThe planning and action modules share the same model but act differently with different input instructions. We detail the format of planning and action instructions as below:\n\nPlanning. Given a question $q$ , we construct a planning sample as $(I_{\\mathrm{plan}}(q), G_q)$ , where $I_{\\mathrm{plan}}(q)$ is the input instruction, $G_q$ is the output, and $I_{\\mathrm{plan}}(.)$ is the template for planning module. We provide an example of planning instruction as below:\n\nListing 1: An example of the planning sample. We separate the input instruction and output answer by the dashed line.\n\nRead the following question and provide a high-level, step-by-step plan for this problem.\n\nQuestion: Two complementary angles are in a ratio of $3:2$ . What is the measure, in degrees, of the smaller angle?Answer: To solve this problem, we need to perform the following steps:\n\n- Set up an equation using the given ratio and the fact that the angles are complementary.   \n- Solve the equation for the variable representing the ratio.   \n- Calculate the measure of the smaller angle using the found variable value.\n\nAction. Given a question $q$ , we construct an action sample as $(I_{\\text{action}}(q, F_q), S_q)$ , where $I_{\\text{action}}(q, F_q)$ is the input instruction, $S_q$ is the output answer, and $I_{\\text{action}}(.)$ is the template for action module. $F_q$ are retrieved functions from the toolset in MATHFUNC. We adopt the retriever in Appendix B.1 to retrieve three functions in the toolset. We provide an example of action instruction as below:\n\nListing 2: An example of the action sample. We separate the input instruction and output answer by the dashed line. We only show one retrieved function in this sample for visualization convenience.\n\nRead the following mathematical question and answer it. Please note that you could (optionally, not required) call the following functions when writing the code:\n\ndef angle_ratio_to Degrees(ratio):\n\nComputes the angle measures in degrees given their ratio.\n\nParameters: - ratio (tuple): The ratio of the angles.\n\nReturns: - tuple: The angle measures in degrees.\n\nFormula:  \n- angle_1 = ratio[0] $\\star x$ - angle_2 = ratio[1] $\\star x$ - angle_3 = ratio[2] $\\star x$ - where $x$ is the common variable such that angle_1 + angle_2 + angle_3 = 180 degrees  \n```\nsum RATios = sum(ratio) $x = 180 / \\text{sum\\_ratios}$ return tuple(angle $\\star x$ for angle in ratio)\n\n[...Two more retrieved functions...]\n\nQuestion: Two complementary angles are in a ratio of $3:2$ . What is the measure, in degrees, of the smaller angle?Answer: Define the ratio of the angles. ratio $= (3,2)$ # Since the angles are complementary, they add up to 90 degrees.We can find the value of each part of the ratio by dividing 90 by the sum of the parts of the ratio. value_of_each_part $= 90$ /sum(ratio)The measure of the smaller angle is the value of each part times the smaller part of the ratio. smaller_angle $=$ value_of_each_part $\\star$ min (ratio)Print the result. print(smaller_angle)",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.emnlp-main.880::sections::6",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.880::sections::6.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6.1",
+      "section_title": "setup",
+      "evidence": "We conduct experiments on SCITOOLBENCH to evaluate the tool-augmented scientific reasoning abilities of LLMs. We report results categorized by both question domains and construction methods for fine-grained analysis. We also employ CREATION Challenge (Qian et al., 2023) as the second benchmark. It comprises 2,047 samples, with each sample consisting of a question and a ground-truth function. We re-purpose all functions to assemble a global toolkit (thus including 2,047 functions). We report accuracy as the metric in all experiments."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.880::sections::6.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6.2",
+      "section_title": "baselines",
+      "evidence": "We compare SCIAGENT series with six open-source LLMs: (1) CodeLlama (Rozière et al., 2023), (2) MAmmoTH-Coder (Yue et al., 2023b), (3) ToRA-Coder (Gou et al., 2023b), (4) Mistral (Jiang et al., 2023), (5) Deepseek-Math (Shao et al., 2024), (6) Llama-3 (Touvron et al., 2023). We also list the performance of ChatGPT and GPT-4 for reference. For fair comparison, we provide all LLMs the same retriever in Section 3.2 to retrieve functions from toolset (if attached). Please see more details in Appendix C."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.880::appendix::B",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B",
+      "section_title": "training details",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B.1",
+      "B.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Quadro RTX 8000",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2024\\2024.emnlp-main.880\\auto\\full.md",
+    "source_md_sha256": "c6c50f0601d2d5c2936e29b05a6a9029dfa56c136020d7ab5579748ab882ed53",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "749fdb433714bfa003499fb1c90f58c9bb6de4daf647bf52f54e32986186b91c"
+  }
+}

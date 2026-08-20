@@ -1,0 +1,204 @@
+{
+  "paper_id": "2023.acl-long.418",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.418::sections::3",
+      "paper_id": "2023.acl-long.418",
+      "section_number": "3",
+      "section_title": "methods",
+      "normalized_section_title": "methods",
+      "window_text": "In this section, we first give an introduction to parameter-efficient transfer learning (PETL). We then present our method PROPETL, depicted in Figure 2, which combines the techniques of parameter-sharing and pruning to further improve the parameter efficiency compared to existing PETL methods.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.418::sections::3.1",
+      "paper_id": "2023.acl-long.418",
+      "section_number": "3.1",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "In parameter-efficient transfer learning, we freeze the parameters $\\theta_{lm}$ of the pre-trained language model and then introduce additional fine-tunable parameters denoted as $\\theta_t$ . Given dataset $\\{X_i,Y_i\\}_{i = 1}^N$ , the goal of parameter-efficient finetuning is to maximize the following likelihood of the label $Y$ by only updating the additional parameters $\\theta_t$ :\n\n$$\n\\max  _ {\\theta_ {t}} \\sum_ {i = 1} ^ {N} \\log P \\left(Y _ {i} \\mid X _ {i}; \\theta_ {l m}, \\theta_ {t}\\right) \\tag {1}\n$$\n\nSuch parameter-efficient methods suggest a more effective way to adapt pre-trained language models over downstream tasks than fully finetuning. We give a brief introduction of the three most widely used PETL modules, namely adapter (Houlsby et al., 2019), prefix-tuning (Li and Liang, 2021), and LoRA (Hu et al., 2022) in Appendix A. However, there is still a storage limitation when we handle a large range of tasks using these methods. In this paper, we investigate the potential for further enhancing parameter efficiency in neural network models by reducing storage requirements. While previous PETL methods have primarily focused on decreasing the number of parameters to improve efficiency, our approach posits that employing varying bit lengths (e.g., 1-bit, 8-bit, 32-bit) during storage can lead to significant improvements in parameter efficiency by reducing the overall number of bits used by the parameters. To this end, we use bits to measure the storage, which we call Bit-Level Storage (BLS), to take into account the fact that different parameters may have different bit lengths. Consider a neural model, where each parameter has a specific bit length. Then we divide these parameters into $N$ distinct groups based on their respective bit lengths. Let $\\{\\rho_i\\}_{i=1}^N$ denote the number of parameters within the group $i$ , with corresponding bit lengths $\\{b_i\\}_{i=1}^N$ . The BLS for these parameters can subsequently be determined as follows:\n\n$$\n\\text {B i t - L e v e l S t o r a g e} = \\sum_ {i = 1} ^ {N} \\rho_ {i} b _ {i} \\tag {2}\n$$",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.418::sections::4",
+      "paper_id": "2023.acl-long.418",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "We briefly summarize the experimental setup in this section. More details can be found in Appendix C.\n\nDatasets We evaluate PROPETL on a wide range of benchmarks, including language understanding (GLUE (Wang et al., 2018)), text summarization (XSum (Narayan et al., 2018)), and machine translation (WMT16 Ro-En (Bojar et al., 2016)).\n\nBackbones We use RoBERTa<sub>BASE</sub> (Liu et al., 2019) for single-task learning on GLUE. During fine-tuning, we only tune our PROPETL module and the text classification head. For generation and multi-task learning benchmark, we use T5<sub>BASE</sub> (Raffel et al., 2020) and only tune the PROPETL module. Note that some previous works also tune the layer norms (Houlsby et al., 2019; Mahabadi et al., 2021) while we keep them frozen during fine-tuning.\n\nPETL Modules and PROPETL We use the Pfeiffer adapter (Pfeiffer et al., 2021) as our adapter module and set the bottleneck dimension as 64 by default. For prefix-tuning, we follow Li and Liang (2021) and choose the prefix length to be 64. As for LoRA tuning (Hu et al., 2022), the bottleneck dimension and the scaling factor $\\alpha$ are both set to 32. In PROPETL, we increase the value of $\\alpha$ to 48 to scale the representation, as the sparse network will decrease the norm of the output representation. We give a brief summary of these PETL modules and how PROPETL is implemented on top of them in Appendix A. Following Ramanujan et al. (2020), we choose the sparsity ratio $k\\%$ of PROPETL as 0.5, which we will also further discuss in Section 6.\n\n<table><tr><td>Model</td><td>% FT Params</td><td>%BLS</td><td>CoLA</td><td>SST-2</td><td>MRPC</td><td>QQP</td><td>STS-B</td><td>MNLI</td><td>QNLI</td><td>RTE</td><td>Avg</td></tr><tr><td>RoBERTaBASE</td><td>100.00%</td><td>100.00%</td><td>60.94</td><td>94.04</td><td>87.25/90.76</td><td>91.34/88.53</td><td>90.96/90.70</td><td>87.57</td><td>92.53</td><td>73.14</td><td>86.16</td></tr><tr><td>Prefix (l=64)</td><td>0.95%</td><td>0.95%</td><td>63.27</td><td>94.42</td><td>89.05/92.01</td><td>88.86/85.18</td><td>90.46/90.39</td><td>85.76</td><td>91.46</td><td>63.79</td><td>84.97</td></tr><tr><td>LoRA (bn=32)</td><td>0.95%</td><td>0.95%</td><td>62.24</td><td>93.81</td><td>86.76/90.48</td><td>88.79/85.15</td><td>90.73/90.49</td><td>86.59</td><td>91.85</td><td>67.63</td><td>84.96</td></tr><tr><td>Adapter (bn=64)</td><td>0.95%</td><td>0.95%</td><td>63.15</td><td>94.00</td><td>86.93/90.49</td><td>89.78/86.52</td><td>90.84/90.65</td><td>87.10</td><td>92.23</td><td>70.50</td><td>85.65</td></tr><tr><td>PROPETL Prefix (l=64)</td><td>1.03%</td><td>0.11%</td><td>61.81</td><td>94.00</td><td>87.42/91.00</td><td>88.85/85.22</td><td>90.48/90.47</td><td>85.73</td><td>91.05</td><td>63.79</td><td>84.53</td></tr><tr><td>PROPETL LoRA (bn=32)</td><td>1.04%</td><td>0.11%</td><td>62.16</td><td>93.62</td><td>88.73/91.80</td><td>87.59/83.71</td><td>90.92/90.83</td><td>85.30</td><td>91.75</td><td>72.66</td><td>85.37</td></tr><tr><td>PROPETL Adapter (bn=64)</td><td>1.04%</td><td>0.11%</td><td>65.43</td><td>94.15</td><td>88.24/91.41</td><td>89.40/86.04</td><td>91.34/90.95</td><td>86.53</td><td>92.58</td><td>76.50</td><td>86.60</td></tr></table>\n\nTable 1: Performance of all models based on RoBERTa on the GLUE tasks under single task settings. Bold fonts indicate the best results. \"bn\" stands for the bottleneck dimension and \"l\" refers to the number of prefixes. Here % $FT\\text{Params}$ refers to the percentage of fine-tunable parameters during training (including the underlying floating point score of each pruning mask). % $BLS$ indicates the task-specific Bit-Level Storage (defined in Sec 3) calculated against the fully-finetuned counterparts when saving the model weights and during the inference time.\n\nIn multi-task learning, we aim to maintain an expected $k\\%$ around 0.5 for the hybrid mask, so we set the $k\\%$ to 0.3 for both the layer and task masks.\n\nEvaluation For text generation, we report ROUGE-2 (Lin, 2004) on the XSUM test set and BLEU (Papineni et al., 2002) score on the Ro-Entest set. Since the test sets of GLUE are not released publicly, following Zhang et al. (2021) and Mao et al. (2022), when the sample number of the datasets is fewer than $10\\mathrm{k}$ (RTE, MRPC, STS-B, CoLA), we divide the original validation set into halves - the first half for validation and the second for testing. As for the other datasets in GLUE, we randomly choose 1k samples from the training set as our validation data and test on the original validation set. We report both accuracy and F1 for MRPC and QQP in GLUE. For STS-B, we report both Pearson and Spearman correlation coefficients. For CoLA, we report Matthews correlation. For all remaining sub-tasks in GLUE, we report accuracy. Due to high training overhead for generation tasks, we report experimental results with one run for XSum and Ro-En. For GLUE, we report the mean of three different random runs.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.418::sections::6",
+      "paper_id": "2023.acl-long.418",
+      "section_number": "6",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "How does PROPETL Scale Differently to Adapter? Figure 3 presents the results when we\n\n![](images/29fa88e69e9215d27c79420b9c7e976afee17f09d6eaa74191292819b1ac203c.jpg)  \n(a) XSum\n\n![](images/e5bce29dbb4ddcedaecb8ee31475777b0d9d66bb9e76266b9333df8dca9c0c67.jpg)  \n(b) Ro-En\n\n![](images/09d4c31e145b0f2ec368866f627d663d92a52ea30191257b0da3881130ee3f5a.jpg)  \n(c) GLUE   \nFigure 3: Performance of adapter and PROPETLAdapter on XSum (left), Ro-En (middle), and GLUE (right) with $\\mathrm{T5}_{\\mathrm{BASE}}$ model. We train on XSum and Ro-En under single-task settings for 1 run. We train GLUE under multi-task learning and report the average score with 3 runs. We additionally provide these results in table format in Appendix E.\n\nadjust the size of the adapter and $\\mathrm{PROPETL_{Adapter}}$ on three different datasets. Despite the difference in tasks and methods, we discover that adapter and $\\mathrm{PROPETL_{Adapter}}$ show similar scaling trends on all three datasets when we increase the proportion of the task-specific bit-level storage. Their performance increases linearly with respect to the log scale of the extra storage in the beginning. When the adapter and $\\mathrm{PROPETL_{Adapter}}$ reach close to the performance of the fully fine-tuned model, their performance gradually converges. Even though $\\mathrm{PROPETL_{Adapter}}$ and adapter tuning can slightly exceed the fully fine-tuned performance on some datasets, their performance is still bounded to the same level and cannot outperform the fully fine-tuned model by a large margin. For instance, the performance of both adapter and $\\mathrm{PROPETL}$ starts to drop when the task-specific storage exceeds $0.4\\%$ per task on GLUE (Figure 3 (c)). However, $\\mathrm{PROPETL_{Adapter}}$ is able to reach the fully fine-tuned level much earlier in the scaling curves. Given a fixed amount of task-specific storage, $\\mathrm{PROPETL_{Adapter}}$ is also able to achieve better results than the adapter. These results indicate that our share-and-mask method is overall more efficient than the adapter across almost all scales.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.418::appendix::A",
+      "paper_id": "2023.acl-long.418",
+      "section_number": "A",
+      "section_title": "implementation details of the three variants of propetl",
+      "normalized_section_title": "implementation details of the three variants of propetl",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.418::appendix::C",
+      "paper_id": "2023.acl-long.418",
+      "section_number": "C",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "window_text": "We briefly introduce the benchmark datasets used in this work. Their statistics can be found in Table 7.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.418::appendix::C.2",
+      "paper_id": "2023.acl-long.418",
+      "section_number": "C.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "Single-Task Learning on RoBERTa<sub>BASE</sub> Our models are implemented based on the Adapter-Hub package (Pfeiffer et al., 2020). We use the datasets (Lhoest et al., 2021) library to calculate each sub-task's scores in GLUE.\n\nThe learning rate of the PETL module is set to 1e-4, and we detail the learning rate of pruning masks in Table 8. We find that it is important to set a higher learning rate for the masks than the learning rate of the PELT network. The batch size is set to 128 and the weight decay is 0.1 in all experiments with Roberta. When conducting experiments on GLUE datasets, we train 10 epochs when the dataset is large (MNLI, QNLI, QQP, SST-2), while training 20 epochs on the small dataset (RTE, MRPC, STS-B, CoLA). Table 9 shows the training time taken on a single A100 GPU.\n\nSingle and Multi-Task Learning on $\\mathbf{T5}_{\\mathrm{BASE}}$ We implement T5 based on the transformers library (Wolf et al., 2020). We use the ROUGE package (Lin, 2004) for ROUGE-2 calculation and sacrebleu (Post, 2018) for the BLEU score. Table 10 shows the training time on a single A100 GPU and the detailed hyperparameters used. We mainly follow He et al. (2022a) and Mahabadi et al. (2021) to select the hyperparameters and do not perform an exhaustive search. The same set of hyperparameters is used across the fully-finetuning, adapter tuning, and PROPETL models. For GLUE, we follow Mahabadi et al. (2021) to sample data from each GLUE sub-task with a temperature of 10. Specifically, a sub-task is sampled with probability $p_{\\tau}^{1 / T}$ where $p_{\\tau} = \\frac{N_{\\tau}}{\\sum_{i = 1}^{T}N_{\\tau}}$ and $T = 10$",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.418::appendix::C.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Single-Task Learning on RoBERTa<sub>BASE</sub> Our models are implemented based on the Adapter-Hub package (Pfeiffer et al., 2020). We use the datasets (Lhoest et al., 2021) library to calculate each sub-task's scores in GLUE.\n\nThe learning rate of the PETL module is set to 1e-4, and we detail the learning rate of pruning masks in Table 8. We find that it is important to set a higher learning rate for the masks than the learning rate of the PELT network. The batch size is set to 128 and the weight decay is 0.1 in all experiments with Roberta. When conducting experiments on GLUE datasets, we train 10 epochs when the dataset is large (MNLI, QNLI, QQP, SST-2), while training 20 epochs on the small dataset (RTE, MRPC, STS-B, CoLA). Table 9 shows the training time taken on a single A100 GPU.\n\nSingle and Multi-Task Learning on $\\mathbf{T5}_{\\mathrm{BASE}}$ We implement T5 based on the transformers library (Wolf et al., 2020). We use the ROUGE package (Lin, 2004) for ROUGE-2 calculation and sacrebleu (Post, 2018) for the BLEU score. Table 10 shows the training time on a single A100 GPU and the detailed hyperparameters used. We mainly follow He et al. (2022a) and Mahabadi et al. (2021) to select the hyperparameters and do not perform an exhaustive search. The same set of hyperparameters is used across the fully-finetuning, adapter tuning, and PROPETL models. For GLUE, we follow Mahabadi et al. (2021) to sample data from each GLUE sub-task with a temperature of 10. Specifically, a sub-task is sampled with probability $p_{\\tau}^{1 / T}$ where $p_{\\tau} = \\frac{N_{\\tau}}{\\sum_{i = 1}^{T}N_{\\tau}}$ and $T = 10$",
+      "section_number": "C.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.418::appendix::C.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "cleaned_hardware_name": "a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "C.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "Single-Task Learning on RoBERTa<sub>BASE</sub> Our models are implemented based on the Adapter-Hub package (Pfeiffer et al., 2020). We use the datasets (Lhoest et al., 2021) library to calculate each sub-task's scores in GLUE.\n\nThe learning rate of the PETL module is set to 1e-4, and we detail the learning rate of pruning masks in Table 8. We find that it is important to set a higher learning rate for the masks than the learning rate of the PELT network. The batch size is set to 128 and the weight decay is 0.1 in all experiments with Roberta. When conducting experiments on GLUE datasets, we train 10 epochs when the dataset is large (MNLI, QNLI, QQP, SST-2), while training 20 epochs on the small dataset (RTE, MRPC, STS-B, CoLA). Table 9 shows the training time taken on a single A100 GPU.\n\nSingle and Multi-Task Learning on $\\mathbf{T5}_{\\mathrm{BASE}}$ We implement T5 based on the transformers library (Wolf et al., 2020). We use the ROUGE package (Lin, 2004) for ROUGE-2 calculation and sacrebleu (Post, 2018) for the BLEU score. Table 10 shows the training time on a single A100 GPU and the detailed hyperparameters used. We mainly follow He et al. (2022a) and Mahabadi et al. (2021) to select the hyperparameters and do not perform an exhaustive search. The same set of hyperparameters is used across the fully-finetuning, adapter tuning, and PROPETL models. For GLUE, we follow Mahabadi et al. (2021) to sample data from each GLUE sub-task with a temperature of 10. Specifically, a sub-task is sampled with probability $p_{\\tau}^{1 / T}$ where $p_{\\tau} = \\frac{N_{\\tau}}{\\sum_{i = 1}^{T}N_{\\tau}}$ and $T = 10$",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.acl-long.418::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methods",
+      "evidence": "In this section, we first give an introduction to parameter-efficient transfer learning (PETL). We then present our method PROPETL, depicted in Figure 2, which combines the techniques of parameter-sharing and pruning to further improve the parameter efficiency compared to existing PETL methods."
+    },
+    {
+      "source_window_id": "2023.acl-long.418::sections::3.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3.1",
+      "section_title": "preliminaries",
+      "evidence": "In parameter-efficient transfer learning, we freeze the parameters $\\theta_{lm}$ of the pre-trained language model and then introduce additional fine-tunable parameters denoted as $\\theta_t$ . Given dataset $\\{X_i,Y_i\\}_{i = 1}^N$ , the goal of parameter-efficient finetuning is to maximize the following likelihood of the label $Y$ by only updating the additional parameters $\\theta_t$ :\n\n$$\n\\max  _ {\\theta_ {t}} \\sum_ {i = 1} ^ {N} \\log P \\left(Y _ {i} \\mid X _ {i}; \\theta_ {l m}, \\theta_ {t}\\right) \\tag {1}\n$$\n\nSuch parameter-efficient methods suggest a more effective way to adapt pre-trained language models over downstream tasks than fully finetuning. We give a brief introduction of the three most widely used PETL modules, namely adapter (Houlsby et al., 2019), prefix-tuning (Li and Liang, 2021), and LoRA (Hu et al., 2022) in Appendix A. However, there is still a storage limitation when we handle a large range of tasks using these methods. In this paper, we investigate the potential for further enhancing parameter efficiency in neural network models by reducing storage requirements. While previous PETL methods have primarily focused on decreasing the number of parameters to improve efficiency, our approach posits that employing varying bit lengths (e.g., 1-bit, 8-bit, 32-bit) during storage can lead to significant improvements in parameter efficiency by reducing the overall number of bits used by the parameters. To this end, we use bits to measure the storage, which we call Bit-Level Storage (BLS), to take into account the fact that different parameters may have different bit lengths. Consider a neural model, where each parameter has a specific bit length. Then we divide these parameters into $N$ distinct groups based on their respective bit lengths. Let $\\{\\rho_i\\}_{i=1}^N$ denote the number of parameters within the group $i$ , with corresponding bit lengths $\\{b_i\\}_{i=1}^N$ . The BLS for these parameters can subsequently be determined as follows:\n\n$$\n\\text {B i t - L e v e l S t o r a g e} = \\sum_ {i = 1} ^ {N} \\rho_ {i} b _ {i} \\tag {2}\n$$"
+    },
+    {
+      "source_window_id": "2023.acl-long.418::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "evidence": "We briefly summarize the experimental setup in this section. More details can be found in Appendix C.\n\nDatasets We evaluate PROPETL on a wide range of benchmarks, including language understanding (GLUE (Wang et al., 2018)), text summarization (XSum (Narayan et al., 2018)), and machine translation (WMT16 Ro-En (Bojar et al., 2016)).\n\nBackbones We use RoBERTa<sub>BASE</sub> (Liu et al., 2019) for single-task learning on GLUE. During fine-tuning, we only tune our PROPETL module and the text classification head. For generation and multi-task learning benchmark, we use T5<sub>BASE</sub> (Raffel et al., 2020) and only tune the PROPETL module. Note that some previous works also tune the layer norms (Houlsby et al., 2019; Mahabadi et al., 2021) while we keep them frozen during fine-tuning.\n\nPETL Modules and PROPETL We use the Pfeiffer adapter (Pfeiffer et al., 2021) as our adapter module and set the bottleneck dimension as 64 by default. For prefix-tuning, we follow Li and Liang (2021) and choose the prefix length to be 64. As for LoRA tuning (Hu et al., 2022), the bottleneck dimension and the scaling factor $\\alpha$ are both set to 32. In PROPETL, we increase the value of $\\alpha$ to 48 to scale the representation, as the sparse network will decrease the norm of the output representation. We give a brief summary of these PETL modules and how PROPETL is implemented on top of them in Appendix A. Following Ramanujan et al. (2020), we choose the sparsity ratio $k\\%$ of PROPETL as 0.5, which we will also further discuss in Section 6.\n\n<table><tr><td>Model</td><td>% FT Params</td><td>%BLS</td><td>CoLA</td><td>SST-2</td><td>MRPC</td><td>QQP</td><td>STS-B</td><td>MNLI</td><td>QNLI</td><td>RTE</td><td>Avg</td></tr><tr><td>RoBERTaBASE</td><td>100.00%</td><td>100.00%</td><td>60.94</td><td>94.04</td><td>87.25/90.76</td><td>91.34/88.53</td><td>90.96/90.70</td><td>87.57</td><td>92.53</td><td>73.14</td><td>86.16</td></tr><tr><td>Prefix (l=64)</td><td>0.95%</td><td>0.95%</td><td>63.27</td><td>94.42</td><td>89.05/92.01</td><td>88.86/85.18</td><td>90.46/90.39</td><td>85.76</td><td>91.46</td><td>63.79</td><td>84.97</td></tr><tr><td>LoRA (bn=32)</td><td>0.95%</td><td>0.95%</td><td>62.24</td><td>93.81</td><td>86.76/90.48</td><td>88.79/85.15</td><td>90.73/90.49</td><td>86.59</td><td>91.85</td><td>67.63</td><td>84.96</td></tr><tr><td>Adapter (bn=64)</td><td>0.95%</td><td>0.95%</td><td>63.15</td><td>94.00</td><td>86.93/90.49</td><td>89.78/86.52</td><td>90.84/90.65</td><td>87.10</td><td>92.23</td><td>70.50</td><td>85.65</td></tr><tr><td>PROPETL Prefix (l=64)</td><td>1.03%</td><td>0.11%</td><td>61.81</td><td>94.00</td><td>87.42/91.00</td><td>88.85/85.22</td><td>90.48/90.47</td><td>85.73</td><td>91.05</td><td>63.79</td><td>84.53</td></tr><tr><td>PROPETL LoRA (bn=32)</td><td>1.04%</td><td>0.11%</td><td>62.16</td><td>93.62</td><td>88.73/91.80</td><td>87.59/83.71</td><td>90.92/90.83</td><td>85.30</td><td>91.75</td><td>72.66</td><td>85.37</td></tr><tr><td>PROPETL Adapter (bn=64)</td><td>1.04%</td><td>0.11%</td><td>65.43</td><td>94.15</td><td>88.24/91.41</td><td>89.40/86.04</td><td>91.34/90.95</td><td>86.53</td><td>92.58</td><td>76.50</td><td>86.60</td></tr></table>\n\nTable 1: Performance of all models based on RoBERTa on the GLUE tasks under single task settings. Bold fonts indicate the best results. \"bn\" stands for the bottleneck dimension and \"l\" refers to the number of prefixes. Here % $FT\\text{Params}$ refers to the percentage of fine-tunable parameters during training (including the underlying floating point score of each pruning mask). % $BLS$ indicates the task-specific Bit-Level Storage (defined in Sec 3) calculated against the fully-finetuned counterparts when saving the model weights and during the inference time.\n\nIn multi-task learning, we aim to maintain an expected $k\\%$ around 0.5 for the hybrid mask, so we set the $k\\%$ to 0.3 for both the layer and task masks.\n\nEvaluation For text generation, we report ROUGE-2 (Lin, 2004) on the XSUM test set and BLEU (Papineni et al., 2002) score on the Ro-Entest set. Since the test sets of GLUE are not released publicly, following Zhang et al. (2021) and Mao et al. (2022), when the sample number of the datasets is fewer than $10\\mathrm{k}$ (RTE, MRPC, STS-B, CoLA), we divide the original validation set into halves - the first half for validation and the second for testing. As for the other datasets in GLUE, we randomly choose 1k samples from the training set as our validation data and test on the original validation set. We report both accuracy and F1 for MRPC and QQP in GLUE. For STS-B, we report both Pearson and Spearman correlation coefficients. For CoLA, we report Matthews correlation. For all remaining sub-tasks in GLUE, we report accuracy. Due to high training overhead for generation tasks, we report experimental results with one run for XSum and Ro-En. For GLUE, we report the mean of three different random runs."
+    },
+    {
+      "source_window_id": "2023.acl-long.418::sections::6",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6",
+      "section_title": "discussion",
+      "evidence": "How does PROPETL Scale Differently to Adapter? Figure 3 presents the results when we\n\n![](images/29fa88e69e9215d27c79420b9c7e976afee17f09d6eaa74191292819b1ac203c.jpg)  \n(a) XSum\n\n![](images/e5bce29dbb4ddcedaecb8ee31475777b0d9d66bb9e76266b9333df8dca9c0c67.jpg)  \n(b) Ro-En\n\n![](images/09d4c31e145b0f2ec368866f627d663d92a52ea30191257b0da3881130ee3f5a.jpg)  \n(c) GLUE   \nFigure 3: Performance of adapter and PROPETLAdapter on XSum (left), Ro-En (middle), and GLUE (right) with $\\mathrm{T5}_{\\mathrm{BASE}}$ model. We train on XSum and Ro-En under single-task settings for 1 run. We train GLUE under multi-task learning and report the average score with 3 runs. We additionally provide these results in table format in Appendix E.\n\nadjust the size of the adapter and $\\mathrm{PROPETL_{Adapter}}$ on three different datasets. Despite the difference in tasks and methods, we discover that adapter and $\\mathrm{PROPETL_{Adapter}}$ show similar scaling trends on all three datasets when we increase the proportion of the task-specific bit-level storage. Their performance increases linearly with respect to the log scale of the extra storage in the beginning. When the adapter and $\\mathrm{PROPETL_{Adapter}}$ reach close to the performance of the fully fine-tuned model, their performance gradually converges. Even though $\\mathrm{PROPETL_{Adapter}}$ and adapter tuning can slightly exceed the fully fine-tuned performance on some datasets, their performance is still bounded to the same level and cannot outperform the fully fine-tuned model by a large margin. For instance, the performance of both adapter and $\\mathrm{PROPETL}$ starts to drop when the task-specific storage exceeds $0.4\\%$ per task on GLUE (Figure 3 (c)). However, $\\mathrm{PROPETL_{Adapter}}$ is able to reach the fully fine-tuned level much earlier in the scaling curves. Given a fixed amount of task-specific storage, $\\mathrm{PROPETL_{Adapter}}$ is also able to achieve better results than the adapter. These results indicate that our share-and-mask method is overall more efficient than the adapter across almost all scales."
+    },
+    {
+      "source_window_id": "2023.acl-long.418::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "implementation details of the three variants of propetl",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.418::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "experimental details",
+      "evidence": "We briefly introduce the benchmark datasets used in this work. Their statistics can be found in Table 7."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "C.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2023\\2023.acl-long.418\\auto\\full.md",
+    "source_md_sha256": "407c23d03d2dc1cc0d9780b0a8e60e8188e5ff571830f942e292efe12dcf0720",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

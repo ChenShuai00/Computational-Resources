@@ -1,0 +1,171 @@
+{
+  "paper_id": "2024.acl-long.828",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.828::sections::6",
+      "paper_id": "2024.acl-long.828",
+      "section_number": "6",
+      "section_title": "comparison to finetuning",
+      "normalized_section_title": "comparison to finetuning",
+      "window_text": "To understand how CAA compares to supervised finetuning, we finetune Llama 2 7B Chat on both\n\nTable 3: Effect of CAA in Llama 2 13B Chat on multiple-choice behavioral evaluation when combined with system prompts designed to elicit the behavior or its opposite. Steering is performed at layer 13. Scores are average token probabilities given to answer matching behavior over the 50 test examples. Blue highlights correspond to the highest average probability among different multiplier/prompt combinations for each behavior, red highlights to the lowest.   \n\n<table><tr><td rowspan=\"2\">System prompt Steering multiplier</td><td colspan=\"3\">None</td><td colspan=\"3\">Positive</td><td colspan=\"3\">Negative</td></tr><tr><td>-1</td><td>0</td><td>+1</td><td>-1</td><td>0</td><td>+1</td><td>-1</td><td>0</td><td>+1</td></tr><tr><td>AI Coordination</td><td>0.20</td><td>0.22</td><td>0.39</td><td>0.28</td><td>0.34</td><td>0.54</td><td>0.21</td><td>0.22</td><td>0.43</td></tr><tr><td>Corrigibility</td><td>0.45</td><td>0.57</td><td>0.83</td><td>0.54</td><td>0.79</td><td>0.93</td><td>0.32</td><td>0.53</td><td>0.59</td></tr><tr><td>Hallucination</td><td>0.42</td><td>0.54</td><td>0.78</td><td>0.47</td><td>0.52</td><td>0.87</td><td>0.42</td><td>0.47</td><td>0.68</td></tr><tr><td>Myopic Reward</td><td>0.44</td><td>0.49</td><td>0.66</td><td>0.48</td><td>0.81</td><td>0.94</td><td>0.41</td><td>0.43</td><td>0.52</td></tr><tr><td>Survival Instinct</td><td>0.28</td><td>0.35</td><td>0.63</td><td>0.29</td><td>0.52</td><td>0.78</td><td>0.28</td><td>0.26</td><td>0.54</td></tr><tr><td>Sycophancy</td><td>0.56</td><td>0.63</td><td>0.60</td><td>0.57</td><td>0.67</td><td>0.63</td><td>0.55</td><td>0.60</td><td>0.57</td></tr><tr><td>Refusal</td><td>0.56</td><td>0.78</td><td>0.86</td><td>0.82</td><td>0.95</td><td>0.92</td><td>0.41</td><td>0.74</td><td>0.83</td></tr></table>\n\nthe positive and negative answers to the multiple-choice questions using a supervised prediction objective to maximize the likelihood of the model picking the positive or negative response tokens. The model is finetuned on the same multiple-choice dataset we use for CAA, for one epoch, using SGD and a learning rate of $1 \\times 10^{-4}$ .\n\nSupervised finetuning is effective at reaching high accuracy on the held-out test set of 50 questions used elsewhere to evaluate steering effect - full accuracy results are given in Appendix I Table 13. We also observe a noticeable effect on open-ended generation, showing that finetuning on multiple-choice question datasets with A/B answers can generalize to the free text generation setting.\n\nAs shown in Table 4, for 3 out of 7 tested behaviors, CAA can additionally steer the behavior beyond the effects of finetuning alone, both in the positive and negative directions. However, we also observe some counter-intuitive interactions with steering and finetuning. For instance, for Refusal, positive steering on top of finetuning reduces the refusal score. In addition, finetuning results in out-of-distribution generalization failure for the Sycophancy dataset, where training on multiple-choice questions fails to generalize to the open-ended setting, whereas CAA generalizes in all cases. Finetuning Llama 2 7B Chat on 1000 examples requires 10 minutes on 2 NVIDIA L40 GPUs<sup>4</sup>, which is significantly more computational resources than CAA, as generating steering vectors requires only forward and no backward passes, reducing both the memory and time requirements. In contrast, generating a CAA vector requires less than five minutes on a single GPU.\n\nWe also note that the effect of layering CAA on\n\ntop of finetuning improves open-ended generation more significantly than it improves performance on multiple-choice questions (full results for CAA and finetuning in the multiple-choice test regime can be found in appendix F). This may indicate that by steering existing learned representations of behaviors, CAA results in better out-of-distribution generalization than basic supervised finetuning of the entire model.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2024.acl-long.828::sections::9",
+      "paper_id": "2024.acl-long.828",
+      "section_number": "9",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "Our results suggest that CAA is broadly applicability as a method for steering the behavior of LLMs trained with RLHF, The generalization of steering vectors derived from multiple-choice contexts to open-ended generation tasks highlights the technique's versatility and the potential for practical application in real-world scenarios. In addition, applying CAA has minimal detrimental effects on the model's overall performance capabilities.\n\n![](images/0df5e89e3c9f4dd2e5f56fe6dc958c49eec16e5eda6c7fe3247e2bfb92c34407.jpg)  \nFigure 10: Effect of transferring steering vector from Llama 2 7B base model to chat model. Lines correspond to different behaviors.\n\nAnother compelling aspect of CAA is its compatibility with standard alignment techniques such as system-prompting and finetuning. The additive nature of CAA's steering capabilities allows for a layered approach to model steering, where CAA can refine and adjust model outputs further, even after applying other alignment methods.\n\nThe ability of CAA to control latent variables within the model's internal state opens up new avenues for inference-time control. It has high sample efficiency and strong generalization, and is particularly advantageous in scenarios requiring the precise modulation of model behavior or the elicitation of internal states that are difficult to trigger with prompting alone.\n\nMoreover, the insights gained from applying CAA extend beyond immediate practical benefits, offering a deeper understanding of models' internal representation and processing of high-level concepts and shedding light on the emergence of linear representations.\n\nIn conclusion, by enabling precise, efficient, and effective control over model behavior, CAA contributes to the broader goal of creating AI systems that are controllable and aligned with human values and provides additional insights into emergent linear representations of abstract concepts in LLMs.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.828::appendix::J",
+      "paper_id": "2024.acl-long.828",
+      "section_number": "J",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources",
+      "window_text": "For inference and generating steering vectors, we use 1 NVIDIA L40 GPU, with each behavior's steering vector generation process taking approximately 5 minutes. For finetuning, we employ 2 NVIDIA L40 GPUs and use data parallelism alongside the ZeRO optimizer for memory use optimization (Rajbhandari et al., 2019). Finetuning on examples for a single behavior takes around 10 minutes. GPUs are rented via vast.ai<sup>7</sup>, a platform providing on-demand cloud GPU rental services.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.828::sections::6",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA L40",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "To understand how CAA compares to supervised finetuning, we finetune Llama 2 7B Chat on both\n\nTable 3: Effect of CAA in Llama 2 13B Chat on multiple-choice behavioral evaluation when combined with system prompts designed to elicit the behavior or its opposite. Steering is performed at layer 13. Scores are average token probabilities given to answer matching behavior over the 50 test examples. Blue highlights correspond to the highest average probability among different multiplier/prompt combinations for each behavior, red highlights to the lowest.   \n\n<table><tr><td rowspan=\"2\">System prompt Steering multiplier</td><td colspan=\"3\">None</td><td colspan=\"3\">Positive</td><td colspan=\"3\">Negative</td></tr><tr><td>-1</td><td>0</td><td>+1</td><td>-1</td><td>0</td><td>+1</td><td>-1</td><td>0</td><td>+1</td></tr><tr><td>AI Coordination</td><td>0.20</td><td>0.22</td><td>0.39</td><td>0.28</td><td>0.34</td><td>0.54</td><td>0.21</td><td>0.22</td><td>0.43</td></tr><tr><td>Corrigibility</td><td>0.45</td><td>0.57</td><td>0.83</td><td>0.54</td><td>0.79</td><td>0.93</td><td>0.32</td><td>0.53</td><td>0.59</td></tr><tr><td>Hallucination</td><td>0.42</td><td>0.54</td><td>0.78</td><td>0.47</td><td>0.52</td><td>0.87</td><td>0.42</td><td>0.47</td><td>0.68</td></tr><tr><td>Myopic Reward</td><td>0.44</td><td>0.49</td><td>0.66</td><td>0.48</td><td>0.81</td><td>0.94</td><td>0.41</td><td>0.43</td><td>0.52</td></tr><tr><td>Survival Instinct</td><td>0.28</td><td>0.35</td><td>0.63</td><td>0.29</td><td>0.52</td><td>0.78</td><td>0.28</td><td>0.26</td><td>0.54</td></tr><tr><td>Sycophancy</td><td>0.56</td><td>0.63</td><td>0.60</td><td>0.57</td><td>0.67</td><td>0.63</td><td>0.55</td><td>0.60</td><td>0.57</td></tr><tr><td>Refusal</td><td>0.56</td><td>0.78</td><td>0.86</td><td>0.82</td><td>0.95</td><td>0.92</td><td>0.41</td><td>0.74</td><td>0.83</td></tr></table>\n\nthe positive and negative answers to the multiple-choice questions using a supervised prediction objective to maximize the likelihood of the model picking the positive or negative response tokens. The model is finetuned on the same multiple-choice dataset we use for CAA, for one epoch, using SGD and a learning rate of $1 \\times 10^{-4}$ .\n\nSupervised finetuning is effective at reaching high accuracy on the held-out test set of 50 questions used elsewhere to evaluate steering effect - full accuracy results are given in Appendix I Table 13. We also observe a noticeable effect on open-ended generation, showing that finetuning on multiple-choice question datasets with A/B answers can generalize to the free text generation setting.\n\nAs shown in Table 4, for 3 out of 7 tested behaviors, CAA can additionally steer the behavior beyond the effects of finetuning alone, both in the positive and negative directions. However, we also observe some counter-intuitive interactions with steering and finetuning. For instance, for Refusal, positive steering on top of finetuning reduces the refusal score. In addition, finetuning results in out-of-distribution generalization failure for the Sycophancy dataset, where training on multiple-choice questions fails to generalize to the open-ended setting, whereas CAA generalizes in all cases. Finetuning Llama 2 7B Chat on 1000 examples requires 10 minutes on 2 NVIDIA L40 GPUs<sup>4</sup>, which is significantly more computational resources than CAA, as generating steering vectors requires only forward and no backward passes, reducing both the memory and time requirements. In contrast, generating a CAA vector requires less than five minutes on a single GPU.\n\nWe also note that the effect of layering CAA on\n\ntop of finetuning improves open-ended generation more significantly than it improves performance on multiple-choice questions (full results for CAA and finetuning in the multiple-choice test regime can be found in appendix F). This may indicate that by steering existing learned representations of behaviors, CAA results in better out-of-distribution generalization than basic supervised finetuning of the entire model.",
+      "section_number": "6",
+      "section_title": "comparison to finetuning",
+      "normalized_section_title": "comparison to finetuning"
+    },
+    {
+      "window_id": "2024.acl-long.828::appendix::J",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA L40",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "For inference and generating steering vectors, we use 1 NVIDIA L40 GPU, with each behavior's steering vector generation process taking approximately 5 minutes. For finetuning, we employ 2 NVIDIA L40 GPUs and use data parallelism alongside the ZeRO optimizer for memory use optimization (Rajbhandari et al., 2019). Finetuning on examples for a single behavior takes around 10 minutes. GPUs are rented via vast.ai<sup>7</sup>, a platform providing on-demand cloud GPU rental services.",
+      "section_number": "J",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources"
+    },
+    {
+      "window_id": "2024.acl-long.828::appendix::J",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA L40",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "For inference and generating steering vectors, we use 1 NVIDIA L40 GPU, with each behavior's steering vector generation process taking approximately 5 minutes. For finetuning, we employ 2 NVIDIA L40 GPUs and use data parallelism alongside the ZeRO optimizer for memory use optimization (Rajbhandari et al., 2019). Finetuning on examples for a single behavior takes around 10 minutes. GPUs are rented via vast.ai<sup>7</sup>, a platform providing on-demand cloud GPU rental services.",
+      "section_number": "J",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.828::sections::6",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA L40",
+      "cleaned_hardware_name": "nvidia l40",
+      "normalized_hardware_name": "NVIDIA L40",
+      "benchmark_hardware_name": "NVIDIA L40",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "6",
+      "section_title": "comparison to finetuning",
+      "normalized_section_title": "comparison to finetuning",
+      "evidence": "To understand how CAA compares to supervised finetuning, we finetune Llama 2 7B Chat on both\n\nTable 3: Effect of CAA in Llama 2 13B Chat on multiple-choice behavioral evaluation when combined with system prompts designed to elicit the behavior or its opposite. Steering is performed at layer 13. Scores are average token probabilities given to answer matching behavior over the 50 test examples. Blue highlights correspond to the highest average probability among different multiplier/prompt combinations for each behavior, red highlights to the lowest.   \n\n<table><tr><td rowspan=\"2\">System prompt Steering multiplier</td><td colspan=\"3\">None</td><td colspan=\"3\">Positive</td><td colspan=\"3\">Negative</td></tr><tr><td>-1</td><td>0</td><td>+1</td><td>-1</td><td>0</td><td>+1</td><td>-1</td><td>0</td><td>+1</td></tr><tr><td>AI Coordination</td><td>0.20</td><td>0.22</td><td>0.39</td><td>0.28</td><td>0.34</td><td>0.54</td><td>0.21</td><td>0.22</td><td>0.43</td></tr><tr><td>Corrigibility</td><td>0.45</td><td>0.57</td><td>0.83</td><td>0.54</td><td>0.79</td><td>0.93</td><td>0.32</td><td>0.53</td><td>0.59</td></tr><tr><td>Hallucination</td><td>0.42</td><td>0.54</td><td>0.78</td><td>0.47</td><td>0.52</td><td>0.87</td><td>0.42</td><td>0.47</td><td>0.68</td></tr><tr><td>Myopic Reward</td><td>0.44</td><td>0.49</td><td>0.66</td><td>0.48</td><td>0.81</td><td>0.94</td><td>0.41</td><td>0.43</td><td>0.52</td></tr><tr><td>Survival Instinct</td><td>0.28</td><td>0.35</td><td>0.63</td><td>0.29</td><td>0.52</td><td>0.78</td><td>0.28</td><td>0.26</td><td>0.54</td></tr><tr><td>Sycophancy</td><td>0.56</td><td>0.63</td><td>0.60</td><td>0.57</td><td>0.67</td><td>0.63</td><td>0.55</td><td>0.60</td><td>0.57</td></tr><tr><td>Refusal</td><td>0.56</td><td>0.78</td><td>0.86</td><td>0.82</td><td>0.95</td><td>0.92</td><td>0.41</td><td>0.74</td><td>0.83</td></tr></table>\n\nthe positive and negative answers to the multiple-choice questions using a supervised prediction objective to maximize the likelihood of the model picking the positive or negative response tokens. The model is finetuned on the same multiple-choice dataset we use for CAA, for one epoch, using SGD and a learning rate of $1 \\times 10^{-4}$ .\n\nSupervised finetuning is effective at reaching high accuracy on the held-out test set of 50 questions used elsewhere to evaluate steering effect - full accuracy results are given in Appendix I Table 13. We also observe a noticeable effect on open-ended generation, showing that finetuning on multiple-choice question datasets with A/B answers can generalize to the free text generation setting.\n\nAs shown in Table 4, for 3 out of 7 tested behaviors, CAA can additionally steer the behavior beyond the effects of finetuning alone, both in the positive and negative directions. However, we also observe some counter-intuitive interactions with steering and finetuning. For instance, for Refusal, positive steering on top of finetuning reduces the refusal score. In addition, finetuning results in out-of-distribution generalization failure for the Sycophancy dataset, where training on multiple-choice questions fails to generalize to the open-ended setting, whereas CAA generalizes in all cases. Finetuning Llama 2 7B Chat on 1000 examples requires 10 minutes on 2 NVIDIA L40 GPUs<sup>4</sup>, which is significantly more computational resources than CAA, as generating steering vectors requires only forward and no backward passes, reducing both the memory and time requirements. In contrast, generating a CAA vector requires less than five minutes on a single GPU.\n\nWe also note that the effect of layering CAA on\n\ntop of finetuning improves open-ended generation more significantly than it improves performance on multiple-choice questions (full results for CAA and finetuning in the multiple-choice test regime can be found in appendix F). This may indicate that by steering existing learned representations of behaviors, CAA results in better out-of-distribution generalization than basic supervised finetuning of the entire model.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.acl-long.828::appendix::J",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA L40",
+      "cleaned_hardware_name": "nvidia l40",
+      "normalized_hardware_name": "NVIDIA L40",
+      "benchmark_hardware_name": "NVIDIA L40",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "J",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources",
+      "evidence": "For inference and generating steering vectors, we use 1 NVIDIA L40 GPU, with each behavior's steering vector generation process taking approximately 5 minutes. For finetuning, we employ 2 NVIDIA L40 GPUs and use data parallelism alongside the ZeRO optimizer for memory use optimization (Rajbhandari et al., 2019). Finetuning on examples for a single behavior takes around 10 minutes. GPUs are rented via vast.ai<sup>7</sup>, a platform providing on-demand cloud GPU rental services.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.acl-long.828::appendix::J",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA L40",
+      "cleaned_hardware_name": "nvidia l40",
+      "normalized_hardware_name": "NVIDIA L40",
+      "benchmark_hardware_name": "NVIDIA L40",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "J",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources",
+      "evidence": "For inference and generating steering vectors, we use 1 NVIDIA L40 GPU, with each behavior's steering vector generation process taking approximately 5 minutes. For finetuning, we employ 2 NVIDIA L40 GPUs and use data parallelism alongside the ZeRO optimizer for memory use optimization (Rajbhandari et al., 2019). Finetuning on examples for a single behavior takes around 10 minutes. GPUs are rented via vast.ai<sup>7</sup>, a platform providing on-demand cloud GPU rental services.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "6",
+      "J"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA L40",
+        "num": 2
+      },
+      {
+        "name": "NVIDIA L40",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA L40",
+        "num": 2
+      }
+    ]
+  }
+}

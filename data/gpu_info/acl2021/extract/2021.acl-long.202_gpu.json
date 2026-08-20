@@ -1,0 +1,133 @@
+{
+  "paper_id": "2021.acl-long.202",
+  "candidate_windows": [
+    {
+      "window_id": "2021.acl-long.202::sections::3",
+      "paper_id": "2021.acl-long.202",
+      "section_number": "3",
+      "section_title": "experimental settings",
+      "normalized_section_title": "experimental settings",
+      "window_text": "In this section, we introduce the pre-training and finetuning experimental settings.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.202::sections::3.2",
+      "paper_id": "2021.acl-long.202",
+      "section_number": "3.2",
+      "section_title": "implementation detail",
+      "normalized_section_title": "implementation detail",
+      "window_text": "We evaluate UNIMO on two model sizes: UNIMOBase with 12 layers of Transformer block and UNIMO-large with 24 layers of Transformer block. The maximum sequence length of text tokens and image-region features are set as 512 and 100, respectively. We pre-train UNIMO-base by initializing from RoBERTa-base, and UNIMO-large by initializing from RoBERTa-large. Both UNIMOBase and UNIMO-large are trained for at least 500K steps. An Adam optimizer with initial learning rate\n\n5e-5 and a learning rate linear decay schedule is utilized. By virtue of float16 mixed precision training, it takes almost 7 days for training UNIMO-base with 32 Nvidia Telsa V100 32GB GPU and 10 days for UNIMO-large with 64 Nvidia Telsa V100 32GB GPU.\n\nFor visual learning, we adopt Faster R-CNN (Ren et al., 2016) pre-trained on the Visual-Genome dataset to select salient image regions and extract region features from images. The regions with class detection probability exceeds a confidence threshold of 0.2 are selected and 100 boxes are kept. For CMCL, we utilize back-translation to create 3 positive samples and apply rewriting to obtain 100 hard negative samples for each image-text pair. The most similar of 100 images and 100 sentences are retrieved from the single-modal image collections and text corpus for each image-text pair, respectively. More details are described in Appendix A.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.202::appendix::A",
+      "paper_id": "2021.acl-long.202",
+      "section_number": "A",
+      "section_title": "pre-training settings",
+      "normalized_section_title": "pre-training settings",
+      "window_text": "Data Processing The pre-training datasets consist of text corpus, image collections and image-text pairs. The detail statistics of them are shown in Table 5. For unified-modal learning, all data (including images, texts and image-text pairs) are represented in the same format with both visual and textual input as “[IMG] [box1] ... [box100] [CLS] [tok1] ... [tokN] [SEP]”, which “[box)” and “[tok)” denote an image region and subword token, respectively. For single-modal images, a pseudo token sequence “[CLS] [PAD] ... [SEP]” is treated as the textual input during pre-training. During visual learning on images, the pseudo token sequence will be masked out by special self-attention masks to eliminate its effect to the visual learning process. The language learning process will not be applied on the pseudo token sequence. So the single-modal images are equivalent to be encoded individually rather than in pair. Similarly, for single-modal texts, a pseudo image-region sequence “[IMG] [0] ... [0)” will be utilized as the visual input, where “[0]” denotes a zero-value feature embedding. During language learning, the pseudo image-region sequence will be masked out. Based on the above techniques, both images and texts are represented in the same format as image-text pairs. For image-text pairs, both the visual learning and language learning are applied on the images and captions simultaneously to learn cross-modal representations.\n\nTraining Details During pre-training, the samples of image collections, text corpus and imagetext pairs are randomly mixed together with ratio 1:1:5. The objectives of language learning, visual learning and cross-modal contrastive learning (CMCL) are trained jointly. The hyper-parameters for both UNIMO-Base and UNIMO-Large are shown in Table 6. For CMCL, each positive imagetext pair is appended with several hard negative samples by text rewriting, as well as several positive images and texts by image/text retrieval. All samples for other image-text pairs in the training batch are also treated as the negative samples (including negative images and negative texts), which are more than 6K for UNIMO-base and 3K for UNIMO-Large. For an image-text pair $(V,W)$ , the detail formula of the CMCL loss $\\mathcal{L}_{\\mathrm{CMCL}}(V,W)$ is as follows:\n\n$$\n- \\log \\frac {\\operatorname {p o s} _ {P} + \\operatorname {p o s} _ {I} + \\operatorname {p o s} _ {T}}{\\left(\\operatorname {n e g} _ {P} + \\operatorname {n e g} _ {I} + \\operatorname {n e g} _ {T}\\right) + \\left(\\operatorname {p o s} _ {P} + \\operatorname {p o s} _ {I} + \\operatorname {p o s} _ {T}\\right)} \\tag {6}\n$$\n\n$$\n\\left\\{ \\begin{array}{l} p o s _ {P} = \\sum_ {(V ^ {+}, W ^ {+}) \\in \\mathcal {X} ^ {+}} e x p (d \\left(V ^ {+}, W ^ {+}\\right) / \\tau) \\\\ p o s _ {I} = \\sum_ {V ^ {r} \\in \\mathcal {X} ^ {I}} e x p (d \\left(V ^ {r}, W\\right) / \\tau) \\\\ p o s _ {T} = \\sum_ {W ^ {r} \\in \\mathcal {X} ^ {T}} e x p (d \\left(V, W ^ {r}\\right) / \\tau) \\\\ n e g _ {P} = \\sum_ {\\left(V ^ {-}, W ^ {-}\\right) \\in \\mathcal {X} ^ {-}} e x p (d \\left(V ^ {-}, W ^ {-}\\right) / \\tau) \\\\ n e g _ {I} = \\sum_ {V ^ {\\prime} \\in \\mathcal {Y} ^ {I}} e x p (d \\left(V ^ {\\prime}, W\\right) / \\tau) \\\\ n e g _ {T} = \\sum_ {W ^ {\\prime} \\in \\mathcal {Y} ^ {T}} e x p (d (V, W ^ {\\prime}) / \\tau) \\end{array} \\right. \\tag {7}\n$$\n\nwhere $pos_P, pos_I$ and $pos_T$ denote the scores of positive image-text pairs $\\mathcal{X}^+$ , related images $\\mathcal{X}^I$ and related texts $\\mathcal{X}^T$ , respectively. Also, $neg_P, neg_I$ and $neg_T$ denote the scores of negative image-text pairs $\\mathcal{X}^-$ , negative images $\\mathcal{Y}^I$ and negative texts $\\mathcal{Y}^T$ , respectively. The objective is to maximize the positive score $pos_P + pos_I + pos_T$ while minimizing the negative score $neg_P + neg_I + neg_T$ , while help aligns and unifies the visual and textual representation spaces. The pre-training process of UNIMO is described in Algorithm 1 in pseudocode style.\n\nData Augmentations We apply two types of data augmentation techniques in the CMCL: text rewriting and image/text retrieval. The text rewriting techniques are utilized to create positive and negative examples for CMCL. To create more positive image-text pairs, we apply back-translation to all captions in the image-text pairs. Each caption is translated into 3 kinds of languages, including Chinese, French and Spanish, by our translation tool in house, and then translated back to English. For the phrase-level and word-level rewriting, each caption in the image-text pairs is firstly parsed into a scene graph by the Stanford Scene Graph Parser<sup>1</sup>. All objects, attributes and relations are extracted to build an object vocabulary, an attribute vocabulary and a relation vocabulary. For each caption, the objects, attributes or relations are randomly replaced with other similar objects, attributes or relations in the corresponding vocabularies, respectively. The rewritten captions are ranked based on their linguistic fluency, and the top 100 captions are selected to create hard negative image-text pairs by composing with the original image. Furthermore, the image and text retrieval techniques are utilized to\n\nTable 5: Statistics of the image-text pairs, image collections and text corpus for pre-training.   \n\n<table><tr><td>Type</td><td colspan=\"4\">Image-Text Pairs</td><td rowspan=\"2\">Images</td><td colspan=\"2\">Text Corpus</td></tr><tr><td>Dataset</td><td>COCO</td><td>VG</td><td>CC</td><td>SBU</td><td>BookWiki</td><td>OpenWebText</td></tr><tr><td>Train</td><td>533K</td><td>5.06M</td><td>3.0M</td><td>990K</td><td>1.7M</td><td>16G</td><td>38G</td></tr><tr><td>Val</td><td>25K</td><td>106K</td><td>14K</td><td>10K</td><td></td><td></td><td></td></tr></table>\n\nTable 6: Hyper-parameters for UNIMO pre-training.   \n\n<table><tr><td>Hyper-parameters</td><td>UNIMO-Base</td><td>UNIMO-Large</td></tr><tr><td>Num of Layers</td><td>12</td><td>24</td></tr><tr><td>Hidden Size</td><td>768</td><td>1024</td></tr><tr><td>FFN Hidden Size</td><td>3072</td><td>4096</td></tr><tr><td>Attention Heads</td><td>12</td><td>16</td></tr><tr><td>Head Size</td><td>64</td><td>64</td></tr><tr><td>Dropout</td><td>0.1</td><td>0.1</td></tr><tr><td>Attention Dropout</td><td>0.1</td><td>0.1</td></tr><tr><td>Warmup Steps</td><td>24K</td><td>30K</td></tr><tr><td>Peak Learning Rate</td><td>5e-5</td><td>5e-5</td></tr><tr><td>Batch Size</td><td>6K</td><td>3K</td></tr><tr><td>Weight Decay</td><td>0.01</td><td>0.01</td></tr><tr><td>Max Training Steps</td><td>1M</td><td>1M</td></tr><tr><td>Learning Rate Decay</td><td>Linear</td><td>Linear</td></tr><tr><td>Adam ε</td><td>1e-6</td><td>1e-6</td></tr><tr><td>Adam β1</td><td>0.9</td><td>0.9</td></tr><tr><td>Adam β2</td><td>0.999</td><td>0.999</td></tr><tr><td>Gradient Clipping</td><td>1.0</td><td>1.0</td></tr></table>\n\naugment each image-text pair with various related images and texts from the single-modal image collections and text corpus. For image-retrieval, each image is transformed into 100 image regions and the object labels are detected for all regions by Faster R-CNN. The object labels are utilized to create a TF-IDF feature vector for each image, and the cosine similarity between images are computed. For each image in the image-text pairs, 100 of the most similar images are retrieved from the image collections, which are treated as positive images in the CMCL. For text retrieval, we firstly build an inverted index for all image captions and sentences in the text corpus, then filter non-relevant sentences from the text corpus based on the inverted index. For each caption in the image-text pairs, the TF-IDF similarities between the caption and the relevant sentences retrieved by the inverted index are calculated, and the top-1000 sentences are extracted. Further, BERT-based embedding similarities are computed between the caption and the 1000 sentences to rank them, and the top-100 sentences are extracted as the positive texts for the CMCL.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2021.acl-long.202::sections::3.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia Tesla V100 32GB",
+      "count": 32,
+      "count_text": "32",
+      "evidence": "We evaluate UNIMO on two model sizes: UNIMOBase with 12 layers of Transformer block and UNIMO-large with 24 layers of Transformer block. The maximum sequence length of text tokens and image-region features are set as 512 and 100, respectively. We pre-train UNIMO-base by initializing from RoBERTa-base, and UNIMO-large by initializing from RoBERTa-large. Both UNIMOBase and UNIMO-large are trained for at least 500K steps. An Adam optimizer with initial learning rate\n\n5e-5 and a learning rate linear decay schedule is utilized. By virtue of float16 mixed precision training, it takes almost 7 days for training UNIMO-base with 32 Nvidia Telsa V100 32GB GPU and 10 days for UNIMO-large with 64 Nvidia Telsa V100 32GB GPU.\n\nFor visual learning, we adopt Faster R-CNN (Ren et al., 2016) pre-trained on the Visual-Genome dataset to select salient image regions and extract region features from images. The regions with class detection probability exceeds a confidence threshold of 0.2 are selected and 100 boxes are kept. For CMCL, we utilize back-translation to create 3 positive samples and apply rewriting to obtain 100 hard negative samples for each image-text pair. The most similar of 100 images and 100 sentences are retrieved from the single-modal image collections and text corpus for each image-text pair, respectively. More details are described in Appendix A.",
+      "section_number": "3.2",
+      "section_title": "implementation detail",
+      "normalized_section_title": "implementation detail"
+    },
+    {
+      "window_id": "2021.acl-long.202::sections::3.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia Tesla V100 32GB",
+      "count": 64,
+      "count_text": "64",
+      "evidence": "We evaluate UNIMO on two model sizes: UNIMOBase with 12 layers of Transformer block and UNIMO-large with 24 layers of Transformer block. The maximum sequence length of text tokens and image-region features are set as 512 and 100, respectively. We pre-train UNIMO-base by initializing from RoBERTa-base, and UNIMO-large by initializing from RoBERTa-large. Both UNIMOBase and UNIMO-large are trained for at least 500K steps. An Adam optimizer with initial learning rate\n\n5e-5 and a learning rate linear decay schedule is utilized. By virtue of float16 mixed precision training, it takes almost 7 days for training UNIMO-base with 32 Nvidia Telsa V100 32GB GPU and 10 days for UNIMO-large with 64 Nvidia Telsa V100 32GB GPU.\n\nFor visual learning, we adopt Faster R-CNN (Ren et al., 2016) pre-trained on the Visual-Genome dataset to select salient image regions and extract region features from images. The regions with class detection probability exceeds a confidence threshold of 0.2 are selected and 100 boxes are kept. For CMCL, we utilize back-translation to create 3 positive samples and apply rewriting to obtain 100 hard negative samples for each image-text pair. The most similar of 100 images and 100 sentences are retrieved from the single-modal image collections and text corpus for each image-text pair, respectively. More details are described in Appendix A.",
+      "section_number": "3.2",
+      "section_title": "implementation detail",
+      "normalized_section_title": "implementation detail"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2021.acl-long.202::sections::3.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia Tesla V100 32GB",
+      "cleaned_hardware_name": "nvidia tesla v100 32gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "count": 32,
+      "count_text": "32",
+      "section_number": "3.2",
+      "section_title": "implementation detail",
+      "normalized_section_title": "implementation detail",
+      "evidence": "We evaluate UNIMO on two model sizes: UNIMOBase with 12 layers of Transformer block and UNIMO-large with 24 layers of Transformer block. The maximum sequence length of text tokens and image-region features are set as 512 and 100, respectively. We pre-train UNIMO-base by initializing from RoBERTa-base, and UNIMO-large by initializing from RoBERTa-large. Both UNIMOBase and UNIMO-large are trained for at least 500K steps. An Adam optimizer with initial learning rate\n\n5e-5 and a learning rate linear decay schedule is utilized. By virtue of float16 mixed precision training, it takes almost 7 days for training UNIMO-base with 32 Nvidia Telsa V100 32GB GPU and 10 days for UNIMO-large with 64 Nvidia Telsa V100 32GB GPU.\n\nFor visual learning, we adopt Faster R-CNN (Ren et al., 2016) pre-trained on the Visual-Genome dataset to select salient image regions and extract region features from images. The regions with class detection probability exceeds a confidence threshold of 0.2 are selected and 100 boxes are kept. For CMCL, we utilize back-translation to create 3 positive samples and apply rewriting to obtain 100 hard negative samples for each image-text pair. The most similar of 100 images and 100 sentences are retrieved from the single-modal image collections and text corpus for each image-text pair, respectively. More details are described in Appendix A.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2021.acl-long.202::sections::3.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia Tesla V100 32GB",
+      "cleaned_hardware_name": "nvidia tesla v100 32gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "count": 64,
+      "count_text": "64",
+      "section_number": "3.2",
+      "section_title": "implementation detail",
+      "normalized_section_title": "implementation detail",
+      "evidence": "We evaluate UNIMO on two model sizes: UNIMOBase with 12 layers of Transformer block and UNIMO-large with 24 layers of Transformer block. The maximum sequence length of text tokens and image-region features are set as 512 and 100, respectively. We pre-train UNIMO-base by initializing from RoBERTa-base, and UNIMO-large by initializing from RoBERTa-large. Both UNIMOBase and UNIMO-large are trained for at least 500K steps. An Adam optimizer with initial learning rate\n\n5e-5 and a learning rate linear decay schedule is utilized. By virtue of float16 mixed precision training, it takes almost 7 days for training UNIMO-base with 32 Nvidia Telsa V100 32GB GPU and 10 days for UNIMO-large with 64 Nvidia Telsa V100 32GB GPU.\n\nFor visual learning, we adopt Faster R-CNN (Ren et al., 2016) pre-trained on the Visual-Genome dataset to select salient image regions and extract region features from images. The regions with class detection probability exceeds a confidence threshold of 0.2 are selected and 100 boxes are kept. For CMCL, we utilize back-translation to create 3 positive samples and apply rewriting to obtain 100 hard negative samples for each image-text pair. The most similar of 100 images and 100 sentences are retrieved from the single-modal image collections and text corpus for each image-text pair, respectively. More details are described in Appendix A.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "3.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 32 GB",
+        "num": 32
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 32 GB",
+        "num": 64
+      }
+    ]
+  }
+}

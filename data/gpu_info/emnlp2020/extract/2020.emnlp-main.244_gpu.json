@@ -1,0 +1,162 @@
+{
+  "paper_id": "2020.emnlp-main.244",
+  "candidate_windows": [
+    {
+      "window_id": "2020.emnlp-main.244::sections::5",
+      "paper_id": "2020.emnlp-main.244",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "Dataset SQuAD-Open (Chen et al., 2017) is a popular open-domain question answering dataset based on SQuAD. We partition the dataset into four subsets: training set, two development sets\n\nTable 1: Dataset sizes and retriever performances.   \n\n<table><tr><td>SQuAD-Open</td><td>train</td><td>dev0</td><td>dev1</td><td>test</td></tr><tr><td>Size</td><td>78,839</td><td>4,379</td><td>4,379</td><td>10,570</td></tr><tr><td>Hits@30</td><td>71.2%</td><td>72.7%</td><td>72.1%</td><td>77.9%</td></tr></table>\n\n/dev0 and dev1), and test set, and their details are summarised in Table 1.\n\nExperimental Setup We follow the preprocessing approached proposed by Wang et al. (2019) and split passages into 100-word long chunks with 50-word long strides. We use a BM25 retriever to retrieve the top $n$ passages for each question as inputs to the reader and the Wikipedia dump provided by Chen et al. (2017) as source corpus. Following Wang et al. (2019), we set $n = 5$ for training and $n = 30$ for test evaluations. Table 1 shows the Hits@30 results of our BM25 retriever on the dataset and they are comparable with previous works (Yang et al., 2019; Wang et al., 2019).\n\nReader Model For all our experiments, we fine-tune a pre-trained ALBERT model (Lan et al., 2020), consisting of 24 transformer layers and cross-layer parameter sharing. We do not use global normalisation (Clark and Gardner, 2018) in our implementation, but our full system (without adaptive computation) achieves an EM score of 52.6 and is comparable to Multi-passage BERT (Wang et al., 2019) which uses global normalisation.\n\nTraining Pipeline The anytime reader models are first trained on training set and validated on $\\mathrm{dev}_0$ . Then we conduct temperature calibration on $\\mathrm{dev}_0$ . For SKYLINEBUILDER, the scheduler model is trained on $\\mathrm{dev}_0$ with the calibrated anytime model, and validated with $\\mathrm{dev}_1$ .\n\nBaselines Following Schwartz et al. (2020), we use three types of baselines: 1) the standard baseline that reads all passages and outputs predictions at the final layer, 2) the efficient baseline that always exits at a given intermediate layer for all passages, and is optimised to do so, 3) the top- $k$ baseline that only reads the $k$ top ranked passages and predicts the answer at their final layers.\n\nEvaluation protocol Our goal is to assess the computational efficiency of a given method in terms of accuracy vs. computational budget used. We follow Fan et al. (2020) and consider the computation of one layer as a unit of computational\n\n![](images/34aa107be1dc0ede83e17a9e5b8158e003e7a29d7336b682fdf27ba1064527e8.jpg)  \n(a) SKYLINEBUILDER vs. baselines\n\n![](images/fa48f507b891e2383a5b381d4901990d511a5daca790107ddedbf1b6d7a49f7f.jpg)  \n(b) Local vs. Global Models\n\n![](images/80e12f4d82e4f6a0836dd309779d7a0ad626edde9c36602e1b2a2d99d8b6f1fa.jpg)  \n(c) AnyLayer vs. LastLayer\n\n![](images/65b3624b01c56ea3aa44d0f17e7b251e0913c37dc4082fa6693eaca4c181d5dd.jpg)  \n(d) Learnt vs. Fixed Initial Priorities   \nFigure 2: Evaluation results on the SQuAD-Open test set with 30 passages.\n\ncost. In particular, we will assess how many layers, on average, each method builds up for each passage. Similarly to Schwartz et al. (2020), we show the accuracy-efficiency trade-off for different strategies by showing the computation cost on the $x$ -axis, and the Exact Match (EM) $^2$ score on the $y$ -axis.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.emnlp-main.244::sections::5.3",
+      "paper_id": "2020.emnlp-main.244",
+      "section_number": "5.3",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "window_text": "Any Layer vs. Last Layer Model For comparing the LastLayer and the AnyLayer strategies introduced in Section 3.1, we show the behaviour of these methods for the SKYLINEBUILDER scheduling algorithm in Fig. 2c. Using an anytime answer extraction model has a negative effect on accuracy. We see this clearly at 24 layers where AnyLayer lags substantially behind the standard baseline while LastLayer almost reaches it. We see this gap across the whole budget spectrum, leading to less accurate results except for very small budgets.\n\nLearning Initial Priorities SKYLINEBUILDER uses a learnt initial priority for each tower. This not only enables it learn which towers to process first at the beginning, but also how long to wait until other towers are visited. Fig. 2d shows the benefit gained from adopting this strategy: without training the initialisation priorities, SKYLINEBUILDER spend more computation on passages that are likely not needed. Once an average of 4 layers have been added, the benefit disappears as SKYLINEBUILDER with learnt initial priorities will try to visit more candidates itself.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.emnlp-main.244::sections::6",
+      "paper_id": "2020.emnlp-main.244",
+      "section_number": "6",
+      "section_title": "discussions and future works",
+      "normalized_section_title": "discussions and future works",
+      "window_text": "In this paper, we focus on reducing the number of layers and operations of ODQA models, but the actual latency improvement also depends on the hardware specifications. On GPUs we cannot expect a reduction in the number of operations to translate 1:1 to lower execution times, since they are highly optimised for parallelism. We leave the parallelism enhancements of SKYLINEBUILDER for future work.\n\nWe also notice that the distillation technique is complementary to the adaptive computation methods. It will be interesting to integrate these two approaches to achieve further computation reduction for ODQA models.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.emnlp-main.244::appendix::A",
+      "paper_id": "2020.emnlp-main.244",
+      "section_number": "A",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.emnlp-main.244::appendix::A.1",
+      "paper_id": "2020.emnlp-main.244",
+      "section_number": "A.1",
+      "section_title": "hyper-parameters",
+      "normalized_section_title": "hyper-parameters",
+      "window_text": "Table 5: Hyper-parameters for reader model training.   \n\n<table><tr><td>Hyper-parameter</td><td>Value</td></tr><tr><td>learning rate</td><td>3e-5</td></tr><tr><td>weight decay</td><td>0.01</td></tr><tr><td>batch size</td><td>48</td></tr><tr><td>epoch</td><td>2</td></tr><tr><td>optimiser</td><td>Adam</td></tr><tr><td>Adam ε</td><td>1e-6</td></tr><tr><td>Adam (β1, β2)</td><td>(0.9, 0.999)</td></tr><tr><td>warmup ratio</td><td>10%</td></tr><tr><td>max sequence length</td><td>200</td></tr><tr><td>max question length</td><td>100</td></tr><tr><td>max answer length</td><td>30</td></tr><tr><td>number of passages</td><td>5</td></tr><tr><td>dropout</td><td>0.0</td></tr><tr><td>pretrained model</td><td>albert-large-v2</td></tr><tr><td>number of parameters</td><td>18M</td></tr><tr><td>device</td><td>Nvidia Titan X</td></tr></table>\n\nTable 6: Hyper-parameters for scheduler model RL training.   \n\n<table><tr><td>Hyper-parameter</td><td>Value</td></tr><tr><td>learning rate</td><td>1e-3</td></tr><tr><td>batch size</td><td>32</td></tr><tr><td>epoch</td><td>16</td></tr><tr><td>optimiser</td><td>SGD</td></tr><tr><td>max number of steps</td><td>240</td></tr><tr><td>step cost c</td><td>0.1</td></tr><tr><td>discount factor γ</td><td>0.9</td></tr><tr><td>number of passages</td><td>30</td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2020.emnlp-main.244::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia Titan X",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Table 5: Hyper-parameters for reader model training.   \n\n<table><tr><td>Hyper-parameter</td><td>Value</td></tr><tr><td>learning rate</td><td>3e-5</td></tr><tr><td>weight decay</td><td>0.01</td></tr><tr><td>batch size</td><td>48</td></tr><tr><td>epoch</td><td>2</td></tr><tr><td>optimiser</td><td>Adam</td></tr><tr><td>Adam ε</td><td>1e-6</td></tr><tr><td>Adam (β1, β2)</td><td>(0.9, 0.999)</td></tr><tr><td>warmup ratio</td><td>10%</td></tr><tr><td>max sequence length</td><td>200</td></tr><tr><td>max question length</td><td>100</td></tr><tr><td>max answer length</td><td>30</td></tr><tr><td>number of passages</td><td>5</td></tr><tr><td>dropout</td><td>0.0</td></tr><tr><td>pretrained model</td><td>albert-large-v2</td></tr><tr><td>number of parameters</td><td>18M</td></tr><tr><td>device</td><td>Nvidia Titan X</td></tr></table>\n\nTable 6: Hyper-parameters for scheduler model RL training.   \n\n<table><tr><td>Hyper-parameter</td><td>Value</td></tr><tr><td>learning rate</td><td>1e-3</td></tr><tr><td>batch size</td><td>32</td></tr><tr><td>epoch</td><td>16</td></tr><tr><td>optimiser</td><td>SGD</td></tr><tr><td>max number of steps</td><td>240</td></tr><tr><td>step cost c</td><td>0.1</td></tr><tr><td>discount factor γ</td><td>0.9</td></tr><tr><td>number of passages</td><td>30</td></tr></table>",
+      "section_number": "A.1",
+      "section_title": "hyper-parameters",
+      "normalized_section_title": "hyper-parameters"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2020.emnlp-main.244::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia Titan X",
+      "cleaned_hardware_name": "nvidia titan x",
+      "normalized_hardware_name": "NVIDIA GeForce GTX TITAN X",
+      "benchmark_hardware_name": "NVIDIA GeForce GTX TITAN X",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.1",
+      "section_title": "hyper-parameters",
+      "normalized_section_title": "hyper-parameters",
+      "evidence": "Table 5: Hyper-parameters for reader model training.   \n\n<table><tr><td>Hyper-parameter</td><td>Value</td></tr><tr><td>learning rate</td><td>3e-5</td></tr><tr><td>weight decay</td><td>0.01</td></tr><tr><td>batch size</td><td>48</td></tr><tr><td>epoch</td><td>2</td></tr><tr><td>optimiser</td><td>Adam</td></tr><tr><td>Adam ε</td><td>1e-6</td></tr><tr><td>Adam (β1, β2)</td><td>(0.9, 0.999)</td></tr><tr><td>warmup ratio</td><td>10%</td></tr><tr><td>max sequence length</td><td>200</td></tr><tr><td>max question length</td><td>100</td></tr><tr><td>max answer length</td><td>30</td></tr><tr><td>number of passages</td><td>5</td></tr><tr><td>dropout</td><td>0.0</td></tr><tr><td>pretrained model</td><td>albert-large-v2</td></tr><tr><td>number of parameters</td><td>18M</td></tr><tr><td>device</td><td>Nvidia Titan X</td></tr></table>\n\nTable 6: Hyper-parameters for scheduler model RL training.   \n\n<table><tr><td>Hyper-parameter</td><td>Value</td></tr><tr><td>learning rate</td><td>1e-3</td></tr><tr><td>batch size</td><td>32</td></tr><tr><td>epoch</td><td>16</td></tr><tr><td>optimiser</td><td>SGD</td></tr><tr><td>max number of steps</td><td>240</td></tr><tr><td>step cost c</td><td>0.1</td></tr><tr><td>discount factor γ</td><td>0.9</td></tr><tr><td>number of passages</td><td>30</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2020.emnlp-main.244::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiments",
+      "evidence": "Dataset SQuAD-Open (Chen et al., 2017) is a popular open-domain question answering dataset based on SQuAD. We partition the dataset into four subsets: training set, two development sets\n\nTable 1: Dataset sizes and retriever performances.   \n\n<table><tr><td>SQuAD-Open</td><td>train</td><td>dev0</td><td>dev1</td><td>test</td></tr><tr><td>Size</td><td>78,839</td><td>4,379</td><td>4,379</td><td>10,570</td></tr><tr><td>Hits@30</td><td>71.2%</td><td>72.7%</td><td>72.1%</td><td>77.9%</td></tr></table>\n\n/dev0 and dev1), and test set, and their details are summarised in Table 1.\n\nExperimental Setup We follow the preprocessing approached proposed by Wang et al. (2019) and split passages into 100-word long chunks with 50-word long strides. We use a BM25 retriever to retrieve the top $n$ passages for each question as inputs to the reader and the Wikipedia dump provided by Chen et al. (2017) as source corpus. Following Wang et al. (2019), we set $n = 5$ for training and $n = 30$ for test evaluations. Table 1 shows the Hits@30 results of our BM25 retriever on the dataset and they are comparable with previous works (Yang et al., 2019; Wang et al., 2019).\n\nReader Model For all our experiments, we fine-tune a pre-trained ALBERT model (Lan et al., 2020), consisting of 24 transformer layers and cross-layer parameter sharing. We do not use global normalisation (Clark and Gardner, 2018) in our implementation, but our full system (without adaptive computation) achieves an EM score of 52.6 and is comparable to Multi-passage BERT (Wang et al., 2019) which uses global normalisation.\n\nTraining Pipeline The anytime reader models are first trained on training set and validated on $\\mathrm{dev}_0$ . Then we conduct temperature calibration on $\\mathrm{dev}_0$ . For SKYLINEBUILDER, the scheduler model is trained on $\\mathrm{dev}_0$ with the calibrated anytime model, and validated with $\\mathrm{dev}_1$ .\n\nBaselines Following Schwartz et al. (2020), we use three types of baselines: 1) the standard baseline that reads all passages and outputs predictions at the final layer, 2) the efficient baseline that always exits at a given intermediate layer for all passages, and is optimised to do so, 3) the top- $k$ baseline that only reads the $k$ top ranked passages and predicts the answer at their final layers.\n\nEvaluation protocol Our goal is to assess the computational efficiency of a given method in terms of accuracy vs. computational budget used. We follow Fan et al. (2020) and consider the computation of one layer as a unit of computational\n\n![](images/34aa107be1dc0ede83e17a9e5b8158e003e7a29d7336b682fdf27ba1064527e8.jpg)  \n(a) SKYLINEBUILDER vs. baselines\n\n![](images/fa48f507b891e2383a5b381d4901990d511a5daca790107ddedbf1b6d7a49f7f.jpg)  \n(b) Local vs. Global Models\n\n![](images/80e12f4d82e4f6a0836dd309779d7a0ad626edde9c36602e1b2a2d99d8b6f1fa.jpg)  \n(c) AnyLayer vs. LastLayer\n\n![](images/65b3624b01c56ea3aa44d0f17e7b251e0913c37dc4082fa6693eaca4c181d5dd.jpg)  \n(d) Learnt vs. Fixed Initial Priorities   \nFigure 2: Evaluation results on the SQuAD-Open test set with 30 passages.\n\ncost. In particular, we will assess how many layers, on average, each method builds up for each passage. Similarly to Schwartz et al. (2020), we show the accuracy-efficiency trade-off for different strategies by showing the computation cost on the $x$ -axis, and the Exact Match (EM) $^2$ score on the $y$ -axis."
+    },
+    {
+      "source_window_id": "2020.emnlp-main.244::sections::5.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.3",
+      "section_title": "ablation studies",
+      "evidence": "Any Layer vs. Last Layer Model For comparing the LastLayer and the AnyLayer strategies introduced in Section 3.1, we show the behaviour of these methods for the SKYLINEBUILDER scheduling algorithm in Fig. 2c. Using an anytime answer extraction model has a negative effect on accuracy. We see this clearly at 24 layers where AnyLayer lags substantially behind the standard baseline while LastLayer almost reaches it. We see this gap across the whole budget spectrum, leading to less accurate results except for very small budgets.\n\nLearning Initial Priorities SKYLINEBUILDER uses a learnt initial priority for each tower. This not only enables it learn which towers to process first at the beginning, but also how long to wait until other towers are visited. Fig. 2d shows the benefit gained from adopting this strategy: without training the initialisation priorities, SKYLINEBUILDER spend more computation on passages that are likely not needed. Once an average of 4 layers have been added, the benefit disappears as SKYLINEBUILDER with learnt initial priorities will try to visit more candidates itself."
+    },
+    {
+      "source_window_id": "2020.emnlp-main.244::sections::6",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6",
+      "section_title": "discussions and future works",
+      "evidence": "In this paper, we focus on reducing the number of layers and operations of ODQA models, but the actual latency improvement also depends on the hardware specifications. On GPUs we cannot expect a reduction in the number of operations to translate 1:1 to lower execution times, since they are highly optimised for parallelism. We leave the parallelism enhancements of SKYLINEBUILDER for future work.\n\nWe also notice that the distillation technique is complementary to the adaptive computation methods. It will be interesting to integrate these two approaches to achieve further computation reduction for ODQA models."
+    },
+    {
+      "source_window_id": "2020.emnlp-main.244::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "experimental details",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce GTX TITAN X",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2020\\2020.emnlp-main.244\\auto\\full.md",
+    "source_md_sha256": "a44e7c949cb3f857726d2b1d2637065f71aaa54fa6d7a199d302e0f484a8914d",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "eea9740fb55f6bcfee0ac43ef150f8c7282577b729733d31ca0788dd36b4abba"
+  }
+}

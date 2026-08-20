@@ -1,0 +1,199 @@
+{
+  "paper_id": "2021.acl-long.416",
+  "candidate_windows": [
+    {
+      "window_id": "2021.acl-long.416::sections::5",
+      "paper_id": "2021.acl-long.416",
+      "section_number": "5",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "In this section, we describe the data splits, evaluation metrics and the baselines.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.416::sections::5.3",
+      "paper_id": "2021.acl-long.416",
+      "section_number": "5.3",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "IDEALLM We define this hypothetical model as the one that always picks correct associations for a given target term context. It also picks equal number of stereotypical and anti-stereotypical associations over all the target terms. So the resulting $lms$ and $ss$ scores are 100 and 50 respectively.\n\nSTEREOTYPEDLM We define this hypothetical model as the one that always picks a stereotypical association over an anti-stereotypical association. So its $ss$ is 100 irrespective of its $lms$ .\n\nRANDOMLM We define this model as the one that picks associations randomly, and therefore its $lms$ and $ss$ scores are both 50.\n\nSENTIMENTLM In Section 4.4, we saw that stereotypical instantiations are more frequently associated with negative sentiment than anti-stereotypes. In this baseline, we assess if sentiment can be used to detect a stereotypical association. For a given a pair of context associations, the model always picks the association with the most negative sentiment.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.416::appendix::A",
+      "paper_id": "2021.acl-long.416",
+      "section_number": "A",
+      "section_title": "appendix",
+      "normalized_section_title": "appendix",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.416::appendix::A.3",
+      "paper_id": "2021.acl-long.416",
+      "section_number": "A.3",
+      "section_title": "reproducibility checklist",
+      "normalized_section_title": "reproducibility checklist",
+      "window_text": "We used 2 RTX 2080 Ti to fine-tune all of the models for the next sentence prediction task, although this could have been done with one GPU as well. The only exception to this is GPT2-large, which required 2 Tesla V100s (with 32GB of RAM) to fine-tune. We will release all pretrained models to encourage reproducibility, and each model's biases is able to be evaluated within 5 minutes.\n\nSince we are using standardized models, the sizes of every single model is available online. For convenience, we report it here:\n\n1. BERT-base: 110M parameters   \n2. BERT-large: 340M parameters   \n3. GPT2-small: 117M parameters   \n4. GPT2-medium: 345M parameters   \n5. GPT2-large: 774M parameters   \n6. ROBERTA-base: 125M parameters   \n7. ROBERTA-large: 355M parameters   \n8. XLNET-base: 110M parameters   \n9. XLNET-large: 340M parameters\n\nTable 9: A collection of neutral associations from crowdworkers.   \n\n<table><tr><td>Target</td><td>Neutral Sentence</td></tr><tr><td>Ethiopia</td><td>The Ethiopian woman had never been so angry.</td></tr><tr><td>Chess player</td><td>The chess player was bearded.</td></tr><tr><td>Schoolgirl</td><td>Schoolgirls are so cute in every movie I watch.</td></tr><tr><td>Afghanistan</td><td>People from Afghanistan are curious.</td></tr><tr><td>Tailor</td><td>A tailor is relaxed when talking to me.</td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.416::appendix::A.5",
+      "paper_id": "2021.acl-long.416",
+      "section_number": "A.5",
+      "section_title": "general methods for training a next sentence prediction head",
+      "normalized_section_title": "general methods for training a next sentence prediction head",
+      "window_text": "Given some context $c$ , and some sentence $s$ , our intersentence task requires calculating the likelihood $p(s|c)$ , for some sentence $s$ and context sentence $c$ .\n\nWhile BERT has been trained with a Next Sentence Prediction classification head to provide $p(s|c)$ , the other models have not. In this section, we detail our creation of a Next Sentence Prediction classification head as a downstream task.\n\nFor some sentences $A$ and $B$ , our task is simply determining if Sentence $A$ follows Sentence $B$ , or if Sentence $B$ follows Sentence $A$ . We trivially generate this corpus from Wikipedia by sampling some $i^{th}$ sentence, $i + 1^{th}$ sentence, and a randomly chosen negative sentence from any other\n\narticle. We maintain a maximum sequence length of 256 tokens, and our training set consists of 9.5 million examples.\n\nWe train with a batch size of 80 sequences until convergence (80 sequences / batch * 256 tokens / sequence = 20,480 tokens/batch) for 10 epochs over the corpus. For BERT, We use BertAdam as the optimizer, with a learning rate of 1e-5, a linear warmup schedule from 50 steps to 500 steps, and minimize cross entropy for our loss function. Our results are comparable to Devlin et al. (2019), with each model obtaining $93 - 98\\%$ accuracy against the test set of 3.5 million examples.\n\nAdditional models maintain the same experimental details. Our NSP classifier achieves an $94.6\\%$ accuracy with ROBERTA-base, a $97.1\\%$ accuracy with ROBERTA-large, a $93.4\\%$ accuracy with XLNET-base and $94.1\\%$ accuracy with XLNET-large.\n\nIn order to evaluate GPT-2 on intersentence tasks, we feed the mean-pooled representations across the entire sequence length into the classification head. Our NSP classifier obtains a $92.5\\%$ accuracy on GPT2-small, $94.2\\%$ on GPT2-medium, and $96.1\\%$ on GPT2-large. In order to fine-tune GPT2-large on our machines, we utilized gradient accumulation with a step size of 10, and mixed precision training from Apex.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2021.acl-long.416::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 2080 Ti",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "We used 2 RTX 2080 Ti to fine-tune all of the models for the next sentence prediction task, although this could have been done with one GPU as well. The only exception to this is GPT2-large, which required 2 Tesla V100s (with 32GB of RAM) to fine-tune. We will release all pretrained models to encourage reproducibility, and each model's biases is able to be evaluated within 5 minutes.\n\nSince we are using standardized models, the sizes of every single model is available online. For convenience, we report it here:\n\n1. BERT-base: 110M parameters   \n2. BERT-large: 340M parameters   \n3. GPT2-small: 117M parameters   \n4. GPT2-medium: 345M parameters   \n5. GPT2-large: 774M parameters   \n6. ROBERTA-base: 125M parameters   \n7. ROBERTA-large: 355M parameters   \n8. XLNET-base: 110M parameters   \n9. XLNET-large: 340M parameters\n\nTable 9: A collection of neutral associations from crowdworkers.   \n\n<table><tr><td>Target</td><td>Neutral Sentence</td></tr><tr><td>Ethiopia</td><td>The Ethiopian woman had never been so angry.</td></tr><tr><td>Chess player</td><td>The chess player was bearded.</td></tr><tr><td>Schoolgirl</td><td>Schoolgirls are so cute in every movie I watch.</td></tr><tr><td>Afghanistan</td><td>People from Afghanistan are curious.</td></tr><tr><td>Tailor</td><td>A tailor is relaxed when talking to me.</td></tr></table>",
+      "section_number": "A.3",
+      "section_title": "reproducibility checklist",
+      "normalized_section_title": "reproducibility checklist"
+    },
+    {
+      "window_id": "2021.acl-long.416::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100 32GB",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "We used 2 RTX 2080 Ti to fine-tune all of the models for the next sentence prediction task, although this could have been done with one GPU as well. The only exception to this is GPT2-large, which required 2 Tesla V100s (with 32GB of RAM) to fine-tune. We will release all pretrained models to encourage reproducibility, and each model's biases is able to be evaluated within 5 minutes.\n\nSince we are using standardized models, the sizes of every single model is available online. For convenience, we report it here:\n\n1. BERT-base: 110M parameters   \n2. BERT-large: 340M parameters   \n3. GPT2-small: 117M parameters   \n4. GPT2-medium: 345M parameters   \n5. GPT2-large: 774M parameters   \n6. ROBERTA-base: 125M parameters   \n7. ROBERTA-large: 355M parameters   \n8. XLNET-base: 110M parameters   \n9. XLNET-large: 340M parameters\n\nTable 9: A collection of neutral associations from crowdworkers.   \n\n<table><tr><td>Target</td><td>Neutral Sentence</td></tr><tr><td>Ethiopia</td><td>The Ethiopian woman had never been so angry.</td></tr><tr><td>Chess player</td><td>The chess player was bearded.</td></tr><tr><td>Schoolgirl</td><td>Schoolgirls are so cute in every movie I watch.</td></tr><tr><td>Afghanistan</td><td>People from Afghanistan are curious.</td></tr><tr><td>Tailor</td><td>A tailor is relaxed when talking to me.</td></tr></table>",
+      "section_number": "A.3",
+      "section_title": "reproducibility checklist",
+      "normalized_section_title": "reproducibility checklist"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2021.acl-long.416::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 2080 Ti",
+      "cleaned_hardware_name": "rtx 2080 ti",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "A.3",
+      "section_title": "reproducibility checklist",
+      "normalized_section_title": "reproducibility checklist",
+      "evidence": "We used 2 RTX 2080 Ti to fine-tune all of the models for the next sentence prediction task, although this could have been done with one GPU as well. The only exception to this is GPT2-large, which required 2 Tesla V100s (with 32GB of RAM) to fine-tune. We will release all pretrained models to encourage reproducibility, and each model's biases is able to be evaluated within 5 minutes.\n\nSince we are using standardized models, the sizes of every single model is available online. For convenience, we report it here:\n\n1. BERT-base: 110M parameters   \n2. BERT-large: 340M parameters   \n3. GPT2-small: 117M parameters   \n4. GPT2-medium: 345M parameters   \n5. GPT2-large: 774M parameters   \n6. ROBERTA-base: 125M parameters   \n7. ROBERTA-large: 355M parameters   \n8. XLNET-base: 110M parameters   \n9. XLNET-large: 340M parameters\n\nTable 9: A collection of neutral associations from crowdworkers.   \n\n<table><tr><td>Target</td><td>Neutral Sentence</td></tr><tr><td>Ethiopia</td><td>The Ethiopian woman had never been so angry.</td></tr><tr><td>Chess player</td><td>The chess player was bearded.</td></tr><tr><td>Schoolgirl</td><td>Schoolgirls are so cute in every movie I watch.</td></tr><tr><td>Afghanistan</td><td>People from Afghanistan are curious.</td></tr><tr><td>Tailor</td><td>A tailor is relaxed when talking to me.</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized GeForce RTX shorthand rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2021.acl-long.416::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100 32GB",
+      "cleaned_hardware_name": "tesla v100 32gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "A.3",
+      "section_title": "reproducibility checklist",
+      "normalized_section_title": "reproducibility checklist",
+      "evidence": "We used 2 RTX 2080 Ti to fine-tune all of the models for the next sentence prediction task, although this could have been done with one GPU as well. The only exception to this is GPT2-large, which required 2 Tesla V100s (with 32GB of RAM) to fine-tune. We will release all pretrained models to encourage reproducibility, and each model's biases is able to be evaluated within 5 minutes.\n\nSince we are using standardized models, the sizes of every single model is available online. For convenience, we report it here:\n\n1. BERT-base: 110M parameters   \n2. BERT-large: 340M parameters   \n3. GPT2-small: 117M parameters   \n4. GPT2-medium: 345M parameters   \n5. GPT2-large: 774M parameters   \n6. ROBERTA-base: 125M parameters   \n7. ROBERTA-large: 355M parameters   \n8. XLNET-base: 110M parameters   \n9. XLNET-large: 340M parameters\n\nTable 9: A collection of neutral associations from crowdworkers.   \n\n<table><tr><td>Target</td><td>Neutral Sentence</td></tr><tr><td>Ethiopia</td><td>The Ethiopian woman had never been so angry.</td></tr><tr><td>Chess player</td><td>The chess player was bearded.</td></tr><tr><td>Schoolgirl</td><td>Schoolgirls are so cute in every movie I watch.</td></tr><tr><td>Afghanistan</td><td>People from Afghanistan are curious.</td></tr><tr><td>Tailor</td><td>A tailor is relaxed when talking to me.</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2021.acl-long.416::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experimental setup",
+      "evidence": "In this section, we describe the data splits, evaluation metrics and the baselines."
+    },
+    {
+      "source_window_id": "2021.acl-long.416::sections::5.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.3",
+      "section_title": "baselines",
+      "evidence": "IDEALLM We define this hypothetical model as the one that always picks correct associations for a given target term context. It also picks equal number of stereotypical and anti-stereotypical associations over all the target terms. So the resulting $lms$ and $ss$ scores are 100 and 50 respectively.\n\nSTEREOTYPEDLM We define this hypothetical model as the one that always picks a stereotypical association over an anti-stereotypical association. So its $ss$ is 100 irrespective of its $lms$ .\n\nRANDOMLM We define this model as the one that picks associations randomly, and therefore its $lms$ and $ss$ scores are both 50.\n\nSENTIMENTLM In Section 4.4, we saw that stereotypical instantiations are more frequently associated with negative sentiment than anti-stereotypes. In this baseline, we assess if sentiment can be used to detect a stereotypical association. For a given a pair of context associations, the model always picks the association with the most negative sentiment."
+    },
+    {
+      "source_window_id": "2021.acl-long.416::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "appendix",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2021.acl-long.416::appendix::A.5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.5",
+      "section_title": "general methods for training a next sentence prediction head",
+      "evidence": "Given some context $c$ , and some sentence $s$ , our intersentence task requires calculating the likelihood $p(s|c)$ , for some sentence $s$ and context sentence $c$ .\n\nWhile BERT has been trained with a Next Sentence Prediction classification head to provide $p(s|c)$ , the other models have not. In this section, we detail our creation of a Next Sentence Prediction classification head as a downstream task.\n\nFor some sentences $A$ and $B$ , our task is simply determining if Sentence $A$ follows Sentence $B$ , or if Sentence $B$ follows Sentence $A$ . We trivially generate this corpus from Wikipedia by sampling some $i^{th}$ sentence, $i + 1^{th}$ sentence, and a randomly chosen negative sentence from any other\n\narticle. We maintain a maximum sequence length of 256 tokens, and our training set consists of 9.5 million examples.\n\nWe train with a batch size of 80 sequences until convergence (80 sequences / batch * 256 tokens / sequence = 20,480 tokens/batch) for 10 epochs over the corpus. For BERT, We use BertAdam as the optimizer, with a learning rate of 1e-5, a linear warmup schedule from 50 steps to 500 steps, and minimize cross entropy for our loss function. Our results are comparable to Devlin et al. (2019), with each model obtaining $93 - 98\\%$ accuracy against the test set of 3.5 million examples.\n\nAdditional models maintain the same experimental details. Our NSP classifier achieves an $94.6\\%$ accuracy with ROBERTA-base, a $97.1\\%$ accuracy with ROBERTA-large, a $93.4\\%$ accuracy with XLNET-base and $94.1\\%$ accuracy with XLNET-large.\n\nIn order to evaluate GPT-2 on intersentence tasks, we feed the mean-pooled representations across the entire sequence length into the classification head. Our NSP classifier obtains a $92.5\\%$ accuracy on GPT2-small, $94.2\\%$ on GPT2-medium, and $96.1\\%$ on GPT2-large. In order to fine-tune GPT2-large on our machines, we utilized gradient accumulation with a step size of 10, and mixed precision training from Apex."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.3"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce RTX 2080 Ti",
+        "num": 2
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 32 GB",
+        "num": 2
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2021\\2021.acl-long.416\\auto\\full.md",
+    "source_md_sha256": "b411fc2a4ac9ab245e6873314a28825d72d586523006ce815854370490d0e560",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "a2f4e0f2222ac944a84b28fba08cc5ab0184a6c6ccb3a5a4deb8a7eefc1e4438"
+  }
+}

@@ -1,0 +1,210 @@
+{
+  "paper_id": "2022.acl-long.105",
+  "candidate_windows": [
+    {
+      "window_id": "2022.acl-long.105::sections::4",
+      "paper_id": "2022.acl-long.105",
+      "section_number": "4",
+      "section_title": "experimental setting",
+      "normalized_section_title": "experimental setting",
+      "window_text": "In the pre-training, we first train modules with the T2T subtask until they are converged. It helps to stabilize the training and achieve a better result. Then the entire model is jointly optimized with all subtasks mentioned in section 3. Finally, the pre-trained model is fine-tuned on the downstream tasks. In the fine-tuning stage, we keep optimizing the model with the T2T and S2T subtasks. Two encoder-only subtasks (SSL and S2P) are dropped, since the model has learnt good speech representation from the unlabeled speech data in pre-training.\n\nTwo downstream tasks, ASR and ST, are examined. The ASR system is evaluated on four LIBRISPEECH (Panayotov et al., 2015) evaluation sets: dev-clean, dev-other, test-clean and test-other. WER is reported in the experiments. ST models are evaluated on two translation directions: English-Spanish (EN-ES) and English-French (EN-FR). Case-sensitive detokenized SACREBLEU (Post, 2018) is reported on the tst-COMMON testset from MUST-C (Gangi et al., 2019).\n\nFor both ASR and ST pre-training, 60k hours of unlabelled English speech data from Libri-light (Kahn et al., 2020) is used to build the self-supervised speech task if not specifically mentioned. We employ the same labelled data for the supervised learning in pre-training and fine-tuning, i.e., LIBRISPEECH training data for ASR and MUST-C for ST. For ASR pre-training, the LIBRISPEECH language model (LM) training dataset is used to build the monolingual BART model. For ST pre-training, we take the parallel training corpus from WMT. More details about the training data could be found in Appendix A.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.105::sections::5.1",
+      "paper_id": "2022.acl-long.105",
+      "section_number": "5.1",
+      "section_title": "main results",
+      "normalized_section_title": "main results",
+      "window_text": "We present the LIBRISPEECH recognition results in Table 1. Recognition results without/with an decoding LM are reported. The WERs obtained with LM are displayed within “()”. The second column shows the dataset used as unlabeled data in pre-training. “LS-960” stands for LIBRISPEECH training dataset and “LV-60k” is the 60,000 hours Librilight dataset. The decoding LM is built with the LIBRISPEECH text training corpus, which is the text corpus used by the T2T subtask in the ASR pre-training and fine-tuning.\n\nThe first part of the table shows results from the wav2vec 2.0 base model, which is a CTC based ASR system. Second part of the table presents results from two AED based ASR systems, and we mainly compare the proposed method with those two AED systems. LAS is a LSTM based system trained with the LIBRISPEECH data only. Transformer (Tang et al., 2021b) is based on multi-task learning and jointly trained with a text task.\n\nThe results from STPT models are presented in the third part of the table. The fourth row shows results from a model that uses 960 hours LIBRISPEECH training data as the unlabelled pretraining data while the model in the fifth row is pretrained with the 60k hours Librilight data. STPT outperforms all previous reported AED-based systems. On average, there is a 1.2 absolute WER reduction obtained compared to the jointly trained transformer model (Tang et al., 2021b). STPT also reduces 2.2 WER compared with the CTC based wav2vec model if no external LM is applied and achieves comparable WERs when it is decoded with a LM. One interesting observation is the decoding LM is not very helpful for the STPT model,\n\nTable 1: WER results on Librispeech. “()” indicates the WER is measured with an external LM.   \n\n<table><tr><td rowspan=\"2\">Data set</td><td rowspan=\"2\">Unlabeled data</td><td colspan=\"2\">Dev</td><td colspan=\"2\">Test</td><td rowspan=\"2\">ave.</td></tr><tr><td>clean</td><td>other</td><td>clean</td><td>other</td></tr><tr><td>wav2vec 2.0 (Baevski et al., 2020b)</td><td>LS-960</td><td>3.2 (1.8)</td><td>8.9 (4.7)</td><td>3.4 (2.1)</td><td>8.5 (4.8)</td><td>6.0 (3.4)</td></tr><tr><td>LAS (Park et al., 2019)</td><td>-</td><td>-</td><td>-</td><td>2.8 (2.5)</td><td>6.8 (5.8)</td><td>-</td></tr><tr><td>Transformer (Tang et al., 2021b)</td><td>-</td><td>2.8</td><td>7.0</td><td>3.1</td><td>7.2</td><td>5.0</td></tr><tr><td>STPT</td><td>LS-960</td><td>2.1 (1.9)</td><td>5.4 (5.2)</td><td>2.3 (2.2)</td><td>5.6 (5.3)</td><td>3.8 (3.6)</td></tr><tr><td>STPT</td><td>LV-60k</td><td>2.0 (2.1)</td><td>4.4 (4.2)</td><td>2.1 (2.1)</td><td>4.6 (4.5)</td><td>3.3 (3.2)</td></tr></table>\n\nTable 2: BLEU results of two language pairs on the MuST-C tst-COMMON.   \n\n<table><tr><td>Data corpus</td><td>EN-ES</td><td>EN-FR</td></tr><tr><td>Inaguma et al. (2020)</td><td>28.0</td><td>32.7</td></tr><tr><td>Tang et al. (2021a)</td><td>31.0</td><td>37.4</td></tr><tr><td>Zheng et al. (2021)</td><td>30.8</td><td>-</td></tr><tr><td>Ye et al. (2021)</td><td>30.8</td><td>38.0</td></tr><tr><td>STPT</td><td>33.1</td><td>39.7</td></tr></table>\n\nthat only 0.2 WER reduction is observed when a decoding LM is applied. Other systems, on the other hand, show a considerable WER reduction when the LM is applied during decoding. It indicates that our multi-task learning in the pre-training and fine-tuning stages can effectively fuse linguistic information in the text data corpus into the ASR model. LM might not be required if it is trained on the same text corpus. We also report results from model pre-trained with 60k hours Librilight data at the fifth row. Compared with the LS-960 STPT model, Librilight data helps to reduce the WER in two difficult \"other\" datasets. In the following experiments, we will use Librilight as unlabelled data in pre-training.\n\nIn Table 2, we present the speech translation results on the MuST-C datasets. Row one to four are the latest results from literature. Row one shows the results by training a speech to text translation task alone. Row two and three present results from two multi-task systems with speech and text jointly trained together. Row four is the best system reported, which is initialized with the pretrained wav2vec 2.0 and machine translation model, then fine-tuned with the joint speech and text training. Our method achieves 2.3 and 1.7 more BLEU scores for EN-ES and EN-FR translation directions compared with the best system (Ye et al., 2021).",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.105::sections::5.3",
+      "paper_id": "2022.acl-long.105",
+      "section_number": "5.3",
+      "section_title": "impact of training data",
+      "normalized_section_title": "impact of training data",
+      "window_text": "The supervised speech data connects the text and speech modeling and unifies the representation from different modalities. An interesting question we want to investigate is how much supervised data is enough to learn a good cross modality representation. In this experiment, we choose different amounts of labelled data for ASR pre-training and fine-tuning, varied from 960 hours (the full dataset), 100 hours (train-clean-100) and 10 hours as (Kahn et al., 2020), to answer this question.\n\nIn Table 4, the first column shows the amounts of supervised speech data available during the pretraining and the second column presents the amount of labelled data used in the fine-tuning stage. In pre-training, the same supervised speech data is used in the S2P and S2T subtasks.\n\nThe first observation is that more supervised speech data in the pre-training stage is always helpful to get smaller WER. For example, if the models are fine-tuned with the full LIBRISPEECH training dataset, the average WER are 3.3 (row one), 3.6 (row two) and 4.0 (row four) for experiments with 960, 100 and 10 hours labelled data in the pre-training stage. The second observation is that\n\nTable 4: Impact of the amounts of supervised data. \"PT\" and \"FT\" stand for pre-training and fine-tuning respectively.   \n\n<table><tr><td rowspan=\"2\">PT (h)</td><td rowspan=\"2\">FT (h)</td><td colspan=\"2\">Dev</td><td colspan=\"2\">Test</td></tr><tr><td>clean</td><td>other</td><td>clean</td><td>other</td></tr><tr><td>960</td><td>960</td><td>2.0</td><td>4.4</td><td>2.1</td><td>4.6</td></tr><tr><td rowspan=\"2\">100</td><td>960</td><td>2.3</td><td>4.9</td><td>2.2</td><td>5.1</td></tr><tr><td>100</td><td>3.2</td><td>6.8</td><td>3.5</td><td>7.2</td></tr><tr><td rowspan=\"3\">10</td><td>960</td><td>2.7</td><td>5.3</td><td>2.8</td><td>5.3</td></tr><tr><td>100</td><td>3.8</td><td>7.8</td><td>4.0</td><td>7.7</td></tr><tr><td>10</td><td>19.9</td><td>27.5</td><td>22.0</td><td>28.8</td></tr></table>\n\nwe are still able to obtain good speech representations even with small amounts of labelled data. In row four, the model is pre-trained with 10 hours labelled data, then fine-tuned with 960 hours supervised speech data. It can achieve an average 4.0 WER, which is better than the results of the AED systems in Table 1. However, we also notice the performance degrades quickly if only small amounts of labelled speech data are available. The average WER is increased to 24.6 (row six) when only 10 hours of supervised speech data is employed in both pre-training and fine-tuning.\n\nAnother question we are interested is the generalizability of the pre-trained model. There are two data partitions in LIBRISPEECH: \"clean\" and \"other\". The \"clean\" partition is supposed to be \"higher recording quality and with accents closer to US English\" while the \"other\" partition is difficult speakers with high WER (Panayotov et al., 2015). We create four data partitions for pre-training and fine-tuning to simulate the mismatched training conditions. \"train-clean-100\" is used as the pretraining \"clean\" data set (\"PT C\") and the first 30,000 utterance from \"train-clean-360\" as the fine-tuning \"clean\" dataset (\"FT C\"). The first 30,000 ut\n\nTable 5: WER comparison under mismatched pretraining and fine-tuning conditions. \"C\" and \"O\" represent the \"clean\" and \"other\" labelled data; \"PT\" and \"FT\" stand for pre-training and fine-tuning. WERs obtained under mismatched conditions are shown as italic.   \n\n<table><tr><td rowspan=\"2\"></td><td colspan=\"2\">FT C</td><td colspan=\"2\">FT O</td></tr><tr><td>clean</td><td>other</td><td>clean</td><td>other</td></tr><tr><td>PT C</td><td>3.0</td><td>6.7</td><td>3.2</td><td>5.9</td></tr><tr><td>PT O</td><td>3.0</td><td>5.9</td><td>3.2</td><td>5.8</td></tr></table>\n\nterances and the following 30,000 utterances from \"train-other\" are used as the pre-training (\"PT O\") and fine-tuning \"other\" (\"FT O\") datasets. Each dataset includes approximately 100 hours speech data. In Table 5, models are trained under 4 different combinations with different supervised pretraining and fine-tuning data sets. We report average WER on the \"dev-clean\" and \"test-clean\" test sets as \"clean\", and average WER on the \"dev-other\" and \"test-other\" as \"other\" to reduce the result variation. From Table 5, we have following observations. 1) a model achieves the best results on the matched condition. The model \"PT C + FT C\" achieves the lowest WER on the \"clean\" set while \"PT O + FT O\" achieves the best results on the \"other\" set. 2) training and test on totally different conditions could increase WER significantly. The model \"PT C + FT C\" increases 0.9 WER on the \"other\" set compared with the \"PT O + FT O\" model. 3) mismatched pre-training and fine-tuning might slightly increase the WER, 0.1 to 0.2 in this experiment.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.105::appendix::A",
+      "paper_id": "2022.acl-long.105",
+      "section_number": "A",
+      "section_title": "pre-training data setting",
+      "normalized_section_title": "pre-training data setting",
+      "window_text": "T2T: For ASR pre-training, the language model (LM) training dataset $^{2}$ for LIBRISPEECH (Panayotov et al., 2015) is used to build the monolingual BART model. It has about 800 million words. For ST pre-training, we take the parallel training corpus from WMT. We examine our methods on two translation directions in MUST-C: English-Spanish (EN-ES), which uses WMT13 training corpus, and English-French (EN-FR), which takes the WMT14 training data. There are 370 million and 1 billion English words in the EN-ES and EN-FR parallel training datasets respectively.   \nWe use \"g2p_en\" Python package (Lee and Kim, 2018) to convert the training text into the corresponding phoneme representation, which is based on the CMU English dictionary. We further extend the phoneme set by distinguishing the first phoneme in the word with an additional \"_\" mark appended, which is similar to the notation in the SentencePiece process. The input phoneme vocabulary size is 134.   \nSSL: For both ASR and ST pre-training, 60k hours of unlabelled English speech data from Libri-light (Kahn et al., 2020) is used to build the self-supervised speech task if not specifically mentioned. We set the maximum utterance duration to 37.5 seconds and minimum duration to 4 seconds. We randomly sample audio segments with maximum duration if utterances are longer than the maximum duration. No voice activity detection is applied.   \nS2P: We use the transcribed LIBRISPEECH dataset for ASR pre-training. In ST pre-training, the MUST-C training dataset is used, where the corresponding English transcription is used as the training target labels after it is converted into phoneme representation. The phoneme level segmentation is obtained via force-alignment, which is conducted using HMM/GMM trained from the same speech data with the Kaldi toolkit (Povey et al., 2011).   \nS2T: We use the same labelled data in the S2P subtask for the S2T subtask, i.e., LIBRISPEECH training data for the ASR pre-training and MUST-C data for the ST pre-training. Instead of using phoneme representation, the target labels are encoded with SentencePiece (Kudo and Richardson, 2018). For both ASR and ST tasks, the vocabulary is an Unigram model with size $10k$ and full\n\n![](images/41dfd1a89dabd6e86360e20772a6c3f993148f462847aa9c66dc7c582e33696f.jpg)  \n(a) Gradient similarity for the ASR pre-training.\n\n![](images/87aa42390c965e81abcde5ce403e69c640504c3be474209996bb8408efbb35e5.jpg)  \n(b) Gradient similarity for the ST pre-training.   \nFigure 3: Gradient similarity for different subtasks on the speech encoder.\n\ncharacter coverage on the training text data.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.105::appendix::B",
+      "paper_id": "2022.acl-long.105",
+      "section_number": "B",
+      "section_title": "optimization setting",
+      "normalized_section_title": "optimization setting",
+      "window_text": "The models are optimized with Adam (Kingma and Ba, 2014) for both pre-training and fine-tuning. The final results are evaluated using an averaged model from checkpoints of the last 10 epochs. T2T subtask pre-training The T2T model is pretrained with learning rate 0.01 using Adam optimization. The maximum tokens per mini-batch is 2048 with 8 V100 GPU cards. The model is updated 400,000 until fully converged.\n\nPre-training with all subtasks The model then keeps optimizing with all four subtasks: T2T, SSL, S2P and S2T, with learning rate 0.001. The model is trained using 16 A100 GPU cards with update frequency 12. The maximum token number per batch for the T2T subtask is 2048 while the maximum sample number is 750,000 (46s) for the speech input in three speech subtasks. The maximum update number is 800,000 and 200,000 for the ASR pretraining and the ST pre-training respectively.\n\nFine-tuning The model is fine-tuned on the downstream task with learning rate 0.0003 and 8 V100 GPU cards. The update frequency set to 3. The maximum update numbers are dependent on the amounts of supervised speech data available. We choose 100,000 for the ASR task with 960 hours training data and 20,000 for 100 or 10 hours training data. For the ST task, the maximum update number is set to 50,000.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.acl-long.105::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "The models are optimized with Adam (Kingma and Ba, 2014) for both pre-training and fine-tuning. The final results are evaluated using an averaged model from checkpoints of the last 10 epochs. T2T subtask pre-training The T2T model is pretrained with learning rate 0.01 using Adam optimization. The maximum tokens per mini-batch is 2048 with 8 V100 GPU cards. The model is updated 400,000 until fully converged.\n\nPre-training with all subtasks The model then keeps optimizing with all four subtasks: T2T, SSL, S2P and S2T, with learning rate 0.001. The model is trained using 16 A100 GPU cards with update frequency 12. The maximum token number per batch for the T2T subtask is 2048 while the maximum sample number is 750,000 (46s) for the speech input in three speech subtasks. The maximum update number is 800,000 and 200,000 for the ASR pretraining and the ST pre-training respectively.\n\nFine-tuning The model is fine-tuned on the downstream task with learning rate 0.0003 and 8 V100 GPU cards. The update frequency set to 3. The maximum update numbers are dependent on the amounts of supervised speech data available. We choose 100,000 for the ASR task with 960 hours training data and 20,000 for 100 or 10 hours training data. For the ST task, the maximum update number is set to 50,000.",
+      "section_number": "B",
+      "section_title": "optimization setting",
+      "normalized_section_title": "optimization setting"
+    },
+    {
+      "window_id": "2022.acl-long.105::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "count": 16,
+      "count_text": "16",
+      "evidence": "The models are optimized with Adam (Kingma and Ba, 2014) for both pre-training and fine-tuning. The final results are evaluated using an averaged model from checkpoints of the last 10 epochs. T2T subtask pre-training The T2T model is pretrained with learning rate 0.01 using Adam optimization. The maximum tokens per mini-batch is 2048 with 8 V100 GPU cards. The model is updated 400,000 until fully converged.\n\nPre-training with all subtasks The model then keeps optimizing with all four subtasks: T2T, SSL, S2P and S2T, with learning rate 0.001. The model is trained using 16 A100 GPU cards with update frequency 12. The maximum token number per batch for the T2T subtask is 2048 while the maximum sample number is 750,000 (46s) for the speech input in three speech subtasks. The maximum update number is 800,000 and 200,000 for the ASR pretraining and the ST pre-training respectively.\n\nFine-tuning The model is fine-tuned on the downstream task with learning rate 0.0003 and 8 V100 GPU cards. The update frequency set to 3. The maximum update numbers are dependent on the amounts of supervised speech data available. We choose 100,000 for the ASR task with 960 hours training data and 20,000 for 100 or 10 hours training data. For the ST task, the maximum update number is set to 50,000.",
+      "section_number": "B",
+      "section_title": "optimization setting",
+      "normalized_section_title": "optimization setting"
+    },
+    {
+      "window_id": "2022.acl-long.105::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "The models are optimized with Adam (Kingma and Ba, 2014) for both pre-training and fine-tuning. The final results are evaluated using an averaged model from checkpoints of the last 10 epochs. T2T subtask pre-training The T2T model is pretrained with learning rate 0.01 using Adam optimization. The maximum tokens per mini-batch is 2048 with 8 V100 GPU cards. The model is updated 400,000 until fully converged.\n\nPre-training with all subtasks The model then keeps optimizing with all four subtasks: T2T, SSL, S2P and S2T, with learning rate 0.001. The model is trained using 16 A100 GPU cards with update frequency 12. The maximum token number per batch for the T2T subtask is 2048 while the maximum sample number is 750,000 (46s) for the speech input in three speech subtasks. The maximum update number is 800,000 and 200,000 for the ASR pretraining and the ST pre-training respectively.\n\nFine-tuning The model is fine-tuned on the downstream task with learning rate 0.0003 and 8 V100 GPU cards. The update frequency set to 3. The maximum update numbers are dependent on the amounts of supervised speech data available. We choose 100,000 for the ASR task with 960 hours training data and 20,000 for 100 or 10 hours training data. For the ST task, the maximum update number is set to 50,000.",
+      "section_number": "B",
+      "section_title": "optimization setting",
+      "normalized_section_title": "optimization setting"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.acl-long.105::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "V100",
+      "cleaned_hardware_name": "v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "B",
+      "section_title": "optimization setting",
+      "normalized_section_title": "optimization setting",
+      "evidence": "The models are optimized with Adam (Kingma and Ba, 2014) for both pre-training and fine-tuning. The final results are evaluated using an averaged model from checkpoints of the last 10 epochs. T2T subtask pre-training The T2T model is pretrained with learning rate 0.01 using Adam optimization. The maximum tokens per mini-batch is 2048 with 8 V100 GPU cards. The model is updated 400,000 until fully converged.\n\nPre-training with all subtasks The model then keeps optimizing with all four subtasks: T2T, SSL, S2P and S2T, with learning rate 0.001. The model is trained using 16 A100 GPU cards with update frequency 12. The maximum token number per batch for the T2T subtask is 2048 while the maximum sample number is 750,000 (46s) for the speech input in three speech subtasks. The maximum update number is 800,000 and 200,000 for the ASR pretraining and the ST pre-training respectively.\n\nFine-tuning The model is fine-tuned on the downstream task with learning rate 0.0003 and 8 V100 GPU cards. The update frequency set to 3. The maximum update numbers are dependent on the amounts of supervised speech data available. We choose 100,000 for the ASR task with 960 hours training data and 20,000 for 100 or 10 hours training data. For the ST task, the maximum update number is set to 50,000.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2022.acl-long.105::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "cleaned_hardware_name": "a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 16,
+      "count_text": "16",
+      "section_number": "B",
+      "section_title": "optimization setting",
+      "normalized_section_title": "optimization setting",
+      "evidence": "The models are optimized with Adam (Kingma and Ba, 2014) for both pre-training and fine-tuning. The final results are evaluated using an averaged model from checkpoints of the last 10 epochs. T2T subtask pre-training The T2T model is pretrained with learning rate 0.01 using Adam optimization. The maximum tokens per mini-batch is 2048 with 8 V100 GPU cards. The model is updated 400,000 until fully converged.\n\nPre-training with all subtasks The model then keeps optimizing with all four subtasks: T2T, SSL, S2P and S2T, with learning rate 0.001. The model is trained using 16 A100 GPU cards with update frequency 12. The maximum token number per batch for the T2T subtask is 2048 while the maximum sample number is 750,000 (46s) for the speech input in three speech subtasks. The maximum update number is 800,000 and 200,000 for the ASR pretraining and the ST pre-training respectively.\n\nFine-tuning The model is fine-tuned on the downstream task with learning rate 0.0003 and 8 V100 GPU cards. The update frequency set to 3. The maximum update numbers are dependent on the amounts of supervised speech data available. We choose 100,000 for the ASR task with 960 hours training data and 20,000 for 100 or 10 hours training data. For the ST task, the maximum update number is set to 50,000.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2022.acl-long.105::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experimental setting",
+      "evidence": "In the pre-training, we first train modules with the T2T subtask until they are converged. It helps to stabilize the training and achieve a better result. Then the entire model is jointly optimized with all subtasks mentioned in section 3. Finally, the pre-trained model is fine-tuned on the downstream tasks. In the fine-tuning stage, we keep optimizing the model with the T2T and S2T subtasks. Two encoder-only subtasks (SSL and S2P) are dropped, since the model has learnt good speech representation from the unlabeled speech data in pre-training.\n\nTwo downstream tasks, ASR and ST, are examined. The ASR system is evaluated on four LIBRISPEECH (Panayotov et al., 2015) evaluation sets: dev-clean, dev-other, test-clean and test-other. WER is reported in the experiments. ST models are evaluated on two translation directions: English-Spanish (EN-ES) and English-French (EN-FR). Case-sensitive detokenized SACREBLEU (Post, 2018) is reported on the tst-COMMON testset from MUST-C (Gangi et al., 2019).\n\nFor both ASR and ST pre-training, 60k hours of unlabelled English speech data from Libri-light (Kahn et al., 2020) is used to build the self-supervised speech task if not specifically mentioned. We employ the same labelled data for the supervised learning in pre-training and fine-tuning, i.e., LIBRISPEECH training data for ASR and MUST-C for ST. For ASR pre-training, the LIBRISPEECH language model (LM) training dataset is used to build the monolingual BART model. For ST pre-training, we take the parallel training corpus from WMT. More details about the training data could be found in Appendix A."
+    },
+    {
+      "source_window_id": "2022.acl-long.105::sections::5.1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.1",
+      "section_title": "main results",
+      "evidence": "We present the LIBRISPEECH recognition results in Table 1. Recognition results without/with an decoding LM are reported. The WERs obtained with LM are displayed within “()”. The second column shows the dataset used as unlabeled data in pre-training. “LS-960” stands for LIBRISPEECH training dataset and “LV-60k” is the 60,000 hours Librilight dataset. The decoding LM is built with the LIBRISPEECH text training corpus, which is the text corpus used by the T2T subtask in the ASR pre-training and fine-tuning.\n\nThe first part of the table shows results from the wav2vec 2.0 base model, which is a CTC based ASR system. Second part of the table presents results from two AED based ASR systems, and we mainly compare the proposed method with those two AED systems. LAS is a LSTM based system trained with the LIBRISPEECH data only. Transformer (Tang et al., 2021b) is based on multi-task learning and jointly trained with a text task.\n\nThe results from STPT models are presented in the third part of the table. The fourth row shows results from a model that uses 960 hours LIBRISPEECH training data as the unlabelled pretraining data while the model in the fifth row is pretrained with the 60k hours Librilight data. STPT outperforms all previous reported AED-based systems. On average, there is a 1.2 absolute WER reduction obtained compared to the jointly trained transformer model (Tang et al., 2021b). STPT also reduces 2.2 WER compared with the CTC based wav2vec model if no external LM is applied and achieves comparable WERs when it is decoded with a LM. One interesting observation is the decoding LM is not very helpful for the STPT model,\n\nTable 1: WER results on Librispeech. “()” indicates the WER is measured with an external LM.   \n\n<table><tr><td rowspan=\"2\">Data set</td><td rowspan=\"2\">Unlabeled data</td><td colspan=\"2\">Dev</td><td colspan=\"2\">Test</td><td rowspan=\"2\">ave.</td></tr><tr><td>clean</td><td>other</td><td>clean</td><td>other</td></tr><tr><td>wav2vec 2.0 (Baevski et al., 2020b)</td><td>LS-960</td><td>3.2 (1.8)</td><td>8.9 (4.7)</td><td>3.4 (2.1)</td><td>8.5 (4.8)</td><td>6.0 (3.4)</td></tr><tr><td>LAS (Park et al., 2019)</td><td>-</td><td>-</td><td>-</td><td>2.8 (2.5)</td><td>6.8 (5.8)</td><td>-</td></tr><tr><td>Transformer (Tang et al., 2021b)</td><td>-</td><td>2.8</td><td>7.0</td><td>3.1</td><td>7.2</td><td>5.0</td></tr><tr><td>STPT</td><td>LS-960</td><td>2.1 (1.9)</td><td>5.4 (5.2)</td><td>2.3 (2.2)</td><td>5.6 (5.3)</td><td>3.8 (3.6)</td></tr><tr><td>STPT</td><td>LV-60k</td><td>2.0 (2.1)</td><td>4.4 (4.2)</td><td>2.1 (2.1)</td><td>4.6 (4.5)</td><td>3.3 (3.2)</td></tr></table>\n\nTable 2: BLEU results of two language pairs on the MuST-C tst-COMMON.   \n\n<table><tr><td>Data corpus</td><td>EN-ES</td><td>EN-FR</td></tr><tr><td>Inaguma et al. (2020)</td><td>28.0</td><td>32.7</td></tr><tr><td>Tang et al. (2021a)</td><td>31.0</td><td>37.4</td></tr><tr><td>Zheng et al. (2021)</td><td>30.8</td><td>-</td></tr><tr><td>Ye et al. (2021)</td><td>30.8</td><td>38.0</td></tr><tr><td>STPT</td><td>33.1</td><td>39.7</td></tr></table>\n\nthat only 0.2 WER reduction is observed when a decoding LM is applied. Other systems, on the other hand, show a considerable WER reduction when the LM is applied during decoding. It indicates that our multi-task learning in the pre-training and fine-tuning stages can effectively fuse linguistic information in the text data corpus into the ASR model. LM might not be required if it is trained on the same text corpus. We also report results from model pre-trained with 60k hours Librilight data at the fifth row. Compared with the LS-960 STPT model, Librilight data helps to reduce the WER in two difficult \"other\" datasets. In the following experiments, we will use Librilight as unlabelled data in pre-training.\n\nIn Table 2, we present the speech translation results on the MuST-C datasets. Row one to four are the latest results from literature. Row one shows the results by training a speech to text translation task alone. Row two and three present results from two multi-task systems with speech and text jointly trained together. Row four is the best system reported, which is initialized with the pretrained wav2vec 2.0 and machine translation model, then fine-tuned with the joint speech and text training. Our method achieves 2.3 and 1.7 more BLEU scores for EN-ES and EN-FR translation directions compared with the best system (Ye et al., 2021)."
+    },
+    {
+      "source_window_id": "2022.acl-long.105::sections::5.3",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.3",
+      "section_title": "impact of training data",
+      "evidence": "The supervised speech data connects the text and speech modeling and unifies the representation from different modalities. An interesting question we want to investigate is how much supervised data is enough to learn a good cross modality representation. In this experiment, we choose different amounts of labelled data for ASR pre-training and fine-tuning, varied from 960 hours (the full dataset), 100 hours (train-clean-100) and 10 hours as (Kahn et al., 2020), to answer this question.\n\nIn Table 4, the first column shows the amounts of supervised speech data available during the pretraining and the second column presents the amount of labelled data used in the fine-tuning stage. In pre-training, the same supervised speech data is used in the S2P and S2T subtasks.\n\nThe first observation is that more supervised speech data in the pre-training stage is always helpful to get smaller WER. For example, if the models are fine-tuned with the full LIBRISPEECH training dataset, the average WER are 3.3 (row one), 3.6 (row two) and 4.0 (row four) for experiments with 960, 100 and 10 hours labelled data in the pre-training stage. The second observation is that\n\nTable 4: Impact of the amounts of supervised data. \"PT\" and \"FT\" stand for pre-training and fine-tuning respectively.   \n\n<table><tr><td rowspan=\"2\">PT (h)</td><td rowspan=\"2\">FT (h)</td><td colspan=\"2\">Dev</td><td colspan=\"2\">Test</td></tr><tr><td>clean</td><td>other</td><td>clean</td><td>other</td></tr><tr><td>960</td><td>960</td><td>2.0</td><td>4.4</td><td>2.1</td><td>4.6</td></tr><tr><td rowspan=\"2\">100</td><td>960</td><td>2.3</td><td>4.9</td><td>2.2</td><td>5.1</td></tr><tr><td>100</td><td>3.2</td><td>6.8</td><td>3.5</td><td>7.2</td></tr><tr><td rowspan=\"3\">10</td><td>960</td><td>2.7</td><td>5.3</td><td>2.8</td><td>5.3</td></tr><tr><td>100</td><td>3.8</td><td>7.8</td><td>4.0</td><td>7.7</td></tr><tr><td>10</td><td>19.9</td><td>27.5</td><td>22.0</td><td>28.8</td></tr></table>\n\nwe are still able to obtain good speech representations even with small amounts of labelled data. In row four, the model is pre-trained with 10 hours labelled data, then fine-tuned with 960 hours supervised speech data. It can achieve an average 4.0 WER, which is better than the results of the AED systems in Table 1. However, we also notice the performance degrades quickly if only small amounts of labelled speech data are available. The average WER is increased to 24.6 (row six) when only 10 hours of supervised speech data is employed in both pre-training and fine-tuning.\n\nAnother question we are interested is the generalizability of the pre-trained model. There are two data partitions in LIBRISPEECH: \"clean\" and \"other\". The \"clean\" partition is supposed to be \"higher recording quality and with accents closer to US English\" while the \"other\" partition is difficult speakers with high WER (Panayotov et al., 2015). We create four data partitions for pre-training and fine-tuning to simulate the mismatched training conditions. \"train-clean-100\" is used as the pretraining \"clean\" data set (\"PT C\") and the first 30,000 utterance from \"train-clean-360\" as the fine-tuning \"clean\" dataset (\"FT C\"). The first 30,000 ut\n\nTable 5: WER comparison under mismatched pretraining and fine-tuning conditions. \"C\" and \"O\" represent the \"clean\" and \"other\" labelled data; \"PT\" and \"FT\" stand for pre-training and fine-tuning. WERs obtained under mismatched conditions are shown as italic.   \n\n<table><tr><td rowspan=\"2\"></td><td colspan=\"2\">FT C</td><td colspan=\"2\">FT O</td></tr><tr><td>clean</td><td>other</td><td>clean</td><td>other</td></tr><tr><td>PT C</td><td>3.0</td><td>6.7</td><td>3.2</td><td>5.9</td></tr><tr><td>PT O</td><td>3.0</td><td>5.9</td><td>3.2</td><td>5.8</td></tr></table>\n\nterances and the following 30,000 utterances from \"train-other\" are used as the pre-training (\"PT O\") and fine-tuning \"other\" (\"FT O\") datasets. Each dataset includes approximately 100 hours speech data. In Table 5, models are trained under 4 different combinations with different supervised pretraining and fine-tuning data sets. We report average WER on the \"dev-clean\" and \"test-clean\" test sets as \"clean\", and average WER on the \"dev-other\" and \"test-other\" as \"other\" to reduce the result variation. From Table 5, we have following observations. 1) a model achieves the best results on the matched condition. The model \"PT C + FT C\" achieves the lowest WER on the \"clean\" set while \"PT O + FT O\" achieves the best results on the \"other\" set. 2) training and test on totally different conditions could increase WER significantly. The model \"PT C + FT C\" increases 0.9 WER on the \"other\" set compared with the \"PT O + FT O\" model. 3) mismatched pre-training and fine-tuning might slightly increase the WER, 0.1 to 0.2 in this experiment."
+    },
+    {
+      "source_window_id": "2022.acl-long.105::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "pre-training data setting",
+      "evidence": "T2T: For ASR pre-training, the language model (LM) training dataset $^{2}$ for LIBRISPEECH (Panayotov et al., 2015) is used to build the monolingual BART model. It has about 800 million words. For ST pre-training, we take the parallel training corpus from WMT. We examine our methods on two translation directions in MUST-C: English-Spanish (EN-ES), which uses WMT13 training corpus, and English-French (EN-FR), which takes the WMT14 training data. There are 370 million and 1 billion English words in the EN-ES and EN-FR parallel training datasets respectively.   \nWe use \"g2p_en\" Python package (Lee and Kim, 2018) to convert the training text into the corresponding phoneme representation, which is based on the CMU English dictionary. We further extend the phoneme set by distinguishing the first phoneme in the word with an additional \"_\" mark appended, which is similar to the notation in the SentencePiece process. The input phoneme vocabulary size is 134.   \nSSL: For both ASR and ST pre-training, 60k hours of unlabelled English speech data from Libri-light (Kahn et al., 2020) is used to build the self-supervised speech task if not specifically mentioned. We set the maximum utterance duration to 37.5 seconds and minimum duration to 4 seconds. We randomly sample audio segments with maximum duration if utterances are longer than the maximum duration. No voice activity detection is applied.   \nS2P: We use the transcribed LIBRISPEECH dataset for ASR pre-training. In ST pre-training, the MUST-C training dataset is used, where the corresponding English transcription is used as the training target labels after it is converted into phoneme representation. The phoneme level segmentation is obtained via force-alignment, which is conducted using HMM/GMM trained from the same speech data with the Kaldi toolkit (Povey et al., 2011).   \nS2T: We use the same labelled data in the S2P subtask for the S2T subtask, i.e., LIBRISPEECH training data for the ASR pre-training and MUST-C data for the ST pre-training. Instead of using phoneme representation, the target labels are encoded with SentencePiece (Kudo and Richardson, 2018). For both ASR and ST tasks, the vocabulary is an Unigram model with size $10k$ and full\n\n![](images/41dfd1a89dabd6e86360e20772a6c3f993148f462847aa9c66dc7c582e33696f.jpg)  \n(a) Gradient similarity for the ASR pre-training.\n\n![](images/87aa42390c965e81abcde5ce403e69c640504c3be474209996bb8408efbb35e5.jpg)  \n(b) Gradient similarity for the ST pre-training.   \nFigure 3: Gradient similarity for different subtasks on the speech encoder.\n\ncharacter coverage on the training text data."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 8
+      },
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 16
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2022\\2022.acl-long.105\\auto\\full.md",
+    "source_md_sha256": "67cbb9b9de8a947bb304478c74a7be29074f84c7ec9223c0c2e064ab72a8b448",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

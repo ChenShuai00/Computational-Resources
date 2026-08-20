@@ -1,0 +1,162 @@
+{
+  "paper_id": "2025.acl-long.1399",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.1399::sections::3",
+      "paper_id": "2025.acl-long.1399",
+      "section_number": "3",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "This section presents a brief background of LLM-based generative DST, followed by our proposed accountability model and its application in correcting predicted dialogue states.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1399::sections::4",
+      "paper_id": "2025.acl-long.1399",
+      "section_number": "4",
+      "section_title": "experiment setup",
+      "normalized_section_title": "experiment setup",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1399::sections::4.4",
+      "paper_id": "2025.acl-long.1399",
+      "section_number": "4.4",
+      "section_title": "training details",
+      "normalized_section_title": "training details",
+      "window_text": "All the models are implemented using the PyTorch and Huggingface libraries in Python 3.12. We used LoRA (Hu et al., 2021) finetuning with rank $(r)$ $8,\\alpha = 32$ ,and dropout 0.1.We used AdamW optimizer with learning rate 5e-5 to fine-tune both $\\mathcal{M}_{\\mathrm{SFT}}$ and $\\mathcal{M}_{\\mathrm{AMD}}$ .We trained all the models for 4 epochs and chose the final model with the minimum validation loss. The prompts used for model finetuning are provided in Appendix A.2. In Eqn. 4, the optimal $\\lambda$ is selected based on the JGA score of the validation set. The best $\\lambda$ was found to be 0.25 except for Mistral-Snips and Gemma-Snips, where $\\lambda = 0.1$ resulted in the best validation performance. For $\\mathcal{M}_{\\mathrm{AMD + SC}}$ ,the false positive $(\\tau_{\\mathrm{fp}})$ and the false negative $(\\tau_{\\mathrm{fn}})$ threshold is selected similarly based on the validation performance. We observed that (0.1, 0.5) and (0.05, 0.9) are the best $(\\tau_{\\mathrm{fp}},\\tau_{\\mathrm{fn}})$ for MultiWOZ and Snips, respectively. These optimal values of $\\lambda$ $\\tau_{\\mathrm{fp}}$ ,and $\\tau_{\\mathrm{fn}}$ are used to show the test performance in the rest of the article.\n\nFurther details on prompts, training, and inference are provided in Section A.2.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1399::appendix::A",
+      "paper_id": "2025.acl-long.1399",
+      "section_number": "A",
+      "section_title": "appendix",
+      "normalized_section_title": "appendix",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1399::appendix::A.2",
+      "paper_id": "2025.acl-long.1399",
+      "section_number": "A.2",
+      "section_title": "additional details",
+      "normalized_section_title": "additional details",
+      "window_text": "This section provides additional details related to model training, inference, and prompts. The experiments are performed on Nvidia A100 machines. The hidden size of Llama and Mistral is 4096 and\n\nTable 8: Impact of varying $\\lambda$ in ${\\mathcal{M}}_{\\text{account }}$ with Llama backbone on validation data.   \n\n<table><tr><td rowspan=\"2\">λ</td><td colspan=\"2\">JGA</td></tr><tr><td>MultiWOZ</td><td>Snips</td></tr><tr><td>0</td><td>64.24</td><td>91.14</td></tr><tr><td>0.1</td><td>66.13</td><td>92.00</td></tr><tr><td>0.25</td><td>66.57</td><td>92.86</td></tr><tr><td>0.5</td><td>66.25</td><td>92.43</td></tr><tr><td>0.75</td><td>65.34</td><td>92.04</td></tr><tr><td>1.0</td><td>65.15</td><td>91.76</td></tr></table>\n\n3072 for Gemma. The number of trainable parameters in our LoRA fine-tuned models is 3.6M for Llama and Mistral. On the other hand, the trainable parameters of the Gemma model is 3.4M. We found that 8B models provided an optimal balance for training on our GPU servers. Smaller models resulted in lower performance, while larger models posed computational challenges due to resource constraints. This is why we conducted our experiments using LLaMA 3.1 (8B), Mistral (7B), and Gemma (7B). It also helped to balance between performance and computational efficiency, making our approach both scalable and practical for real-world applications. Due to memory limitations in GPU, we use a batch size of 1. We increase the effective batch size to 8 by using gradient accumulation. The training time for MultiWOZ and Snips is approximately 20 and 6 GPU hours, respectively.\n\nDuring inference, the model takes only the dialogue context as input and generates the corresponding dialogue state, without relying on any oracle belief state. We do not apply any additional post-processing to enforce JSON formatting. In our experiments, all outputs adhered to the expected JSON format, and no formatting issues were observed. However, in the event of a failure, the output will default to an empty dictionary (i.e., {}. All the belief states are generated using a single run.\n\nTable 9 shows the prompt format used to formulate the dialogue context $(C_t)$ to generate the belief states. It contains the task information, slot descriptions, dialogue history, and output format. Note that Table 9 shows the prompt specific to Llama. The prompt remains exactly the same for Mistral and Gemma, except for the special tokens. For the Snips dataset, we use the same template with the Snips-specific slot description.\n\nIn Section 6, we used two kinds of prompts to confirm the predicted errors from the user-simulator. The prompt for confirming false positives is shown in Table 10, while the prompt for confirming false negatives is shown in Table 11.\n\nYou are a helpful assistant who can perform dialogue-state tracking. The user interacts with the system to book entities from multiple domains (hotel, restaurant, attraction, taxi, and train) in Cambridge. Your goal is to find all the intents shown by the user in the conversation.\n\nThe user can ask for a hotel by slots - hotel-name, hotel-type, hotel-parking, hotel-area, hotel-bookday, hotel-bookstay, hotel-internet, hotel-bookpeople, hotel-stars, hotel-pricerange. The user can ask for an attraction by slots - attractionname, attraction-type, attraction-area. The user can ask for a restaurant by slots - restaurant-name, restaurant-food, restaurant-area, restaurant-bookday, restaurant-booktime, restaurant-bookpeople, restaurant-pricerange. The user can ask for a taxi by slots - taxi-arriveby, taxi-departure, taxi-leaveat, taxi-destination. The user can ask for a train by slots - train-arriveby, train-day, train-leaveat, train-destination, train-departure, train-bookpeople. Do not capture any other slots!Task You will be provided with a chronological dialogue history between the system and the user. You must find all the user intents and output them in JSON format.Sample Output {\"restaurant-name\": \"abc\", \"restaurant-food\": \"xyz\"}\n\nConversation History\n\n<start_header_idl>system</end_header_idl>\n\n$S_0 <   \\mathrm{let\\_id}>$\n\n<start_header_idl>user<end_header_idl>\n\n$U_{0}< \\text{leot\\_idl}>$\n\n```c\n...\n<start_header_idl>assistant</lend_header_idl>\n\nTable 9: Prompt template for Llama model. $S_0$ and $U_0$ denote the system and user utterance for the Turn 0.Dialogue history: {Current Dialogue History}\n\nIt seems that some information might have been incorrectly predicted. Based on the current user utterance, please help us clarify the following:\n\n1. If the slot name is correct but the value is wrong, you can provide the correct value.   \n2. If the slot name should not appear at all, let us know to delete it.\n\nStatement: Slot was mentioned in the dialogue history and the value is Value.\n\n- Please respond with one of the following options:   \n- \"Agree\" (if both the slot name and value are correct)   \n- \"Not Agree: Update to [new value]\" (if the slot name is correct but the value is wrong)   \n- \"Not Agree: Delete\" (if the slot name should not appear in the belief state)\n\nTable 10: Prompt template for clarifying false positive with user simulator.Dialogue history: Current Dialogue History\n\nIt seems that some important information might be missing.\n\nBased on the latest user utterance, could you please confirm the following:\n\nShould the Slot be \"Value\"?\n\n- Please respond with \"Agree\" if this information is correct.   \n- Respond with \"Not Agree\" if this information is incorrect.\n\nYour confirmation will help us improve the accuracy of the prediction.\n\nTable 11: Prompt template for clarifying false negative with user simulator.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.1399::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A100",
+      "count": null,
+      "count_text": "",
+      "evidence": "This section provides additional details related to model training, inference, and prompts. The experiments are performed on Nvidia A100 machines. The hidden size of Llama and Mistral is 4096 and\n\nTable 8: Impact of varying $\\lambda$ in ${\\mathcal{M}}_{\\text{account }}$ with Llama backbone on validation data.   \n\n<table><tr><td rowspan=\"2\">λ</td><td colspan=\"2\">JGA</td></tr><tr><td>MultiWOZ</td><td>Snips</td></tr><tr><td>0</td><td>64.24</td><td>91.14</td></tr><tr><td>0.1</td><td>66.13</td><td>92.00</td></tr><tr><td>0.25</td><td>66.57</td><td>92.86</td></tr><tr><td>0.5</td><td>66.25</td><td>92.43</td></tr><tr><td>0.75</td><td>65.34</td><td>92.04</td></tr><tr><td>1.0</td><td>65.15</td><td>91.76</td></tr></table>\n\n3072 for Gemma. The number of trainable parameters in our LoRA fine-tuned models is 3.6M for Llama and Mistral. On the other hand, the trainable parameters of the Gemma model is 3.4M. We found that 8B models provided an optimal balance for training on our GPU servers. Smaller models resulted in lower performance, while larger models posed computational challenges due to resource constraints. This is why we conducted our experiments using LLaMA 3.1 (8B), Mistral (7B), and Gemma (7B). It also helped to balance between performance and computational efficiency, making our approach both scalable and practical for real-world applications. Due to memory limitations in GPU, we use a batch size of 1. We increase the effective batch size to 8 by using gradient accumulation. The training time for MultiWOZ and Snips is approximately 20 and 6 GPU hours, respectively.\n\nDuring inference, the model takes only the dialogue context as input and generates the corresponding dialogue state, without relying on any oracle belief state. We do not apply any additional post-processing to enforce JSON formatting. In our experiments, all outputs adhered to the expected JSON format, and no formatting issues were observed. However, in the event of a failure, the output will default to an empty dictionary (i.e., {}. All the belief states are generated using a single run.\n\nTable 9 shows the prompt format used to formulate the dialogue context $(C_t)$ to generate the belief states. It contains the task information, slot descriptions, dialogue history, and output format. Note that Table 9 shows the prompt specific to Llama. The prompt remains exactly the same for Mistral and Gemma, except for the special tokens. For the Snips dataset, we use the same template with the Snips-specific slot description.\n\nIn Section 6, we used two kinds of prompts to confirm the predicted errors from the user-simulator. The prompt for confirming false positives is shown in Table 10, while the prompt for confirming false negatives is shown in Table 11.\n\nYou are a helpful assistant who can perform dialogue-state tracking. The user interacts with the system to book entities from multiple domains (hotel, restaurant, attraction, taxi, and train) in Cambridge. Your goal is to find all the intents shown by the user in the conversation.\n\nThe user can ask for a hotel by slots - hotel-name, hotel-type, hotel-parking, hotel-area, hotel-bookday, hotel-bookstay, hotel-internet, hotel-bookpeople, hotel-stars, hotel-pricerange. The user can ask for an attraction by slots - attractionname, attraction-type, attraction-area. The user can ask for a restaurant by slots - restaurant-name, restaurant-food, restaurant-area, restaurant-bookday, restaurant-booktime, restaurant-bookpeople, restaurant-pricerange. The user can ask for a taxi by slots - taxi-arriveby, taxi-departure, taxi-leaveat, taxi-destination. The user can ask for a train by slots - train-arriveby, train-day, train-leaveat, train-destination, train-departure, train-bookpeople. Do not capture any other slots!Task You will be provided with a chronological dialogue history between the system and the user. You must find all the user intents and output them in JSON format.Sample Output {\"restaurant-name\": \"abc\", \"restaurant-food\": \"xyz\"}\n\nConversation History\n\n<start_header_idl>system</end_header_idl>\n\n$S_0 <   \\mathrm{let\\_id}>$\n\n<start_header_idl>user<end_header_idl>\n\n$U_{0}< \\text{leot\\_idl}>$\n\n```c\n...\n<start_header_idl>assistant</lend_header_idl>\n\nTable 9: Prompt template for Llama model. $S_0$ and $U_0$ denote the system and user utterance for the Turn 0.Dialogue history: {Current Dialogue History}\n\nIt seems that some information might have been incorrectly predicted. Based on the current user utterance, please help us clarify the following:\n\n1. If the slot name is correct but the value is wrong, you can provide the correct value.   \n2. If the slot name should not appear at all, let us know to delete it.\n\nStatement: Slot was mentioned in the dialogue history and the value is Value.\n\n- Please respond with one of the following options:   \n- \"Agree\" (if both the slot name and value are correct)   \n- \"Not Agree: Update to [new value]\" (if the slot name is correct but the value is wrong)   \n- \"Not Agree: Delete\" (if the slot name should not appear in the belief state)\n\nTable 10: Prompt template for clarifying false positive with user simulator.Dialogue history: Current Dialogue History\n\nIt seems that some important information might be missing.\n\nBased on the latest user utterance, could you please confirm the following:\n\nShould the Slot be \"Value\"?\n\n- Please respond with \"Agree\" if this information is correct.   \n- Respond with \"Not Agree\" if this information is incorrect.\n\nYour confirmation will help us improve the accuracy of the prediction.\n\nTable 11: Prompt template for clarifying false negative with user simulator.",
+      "section_number": "A.2",
+      "section_title": "additional details",
+      "normalized_section_title": "additional details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.1399::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A100",
+      "cleaned_hardware_name": "nvidia a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": null,
+      "count_text": "",
+      "section_number": "A.2",
+      "section_title": "additional details",
+      "normalized_section_title": "additional details",
+      "evidence": "This section provides additional details related to model training, inference, and prompts. The experiments are performed on Nvidia A100 machines. The hidden size of Llama and Mistral is 4096 and\n\nTable 8: Impact of varying $\\lambda$ in ${\\mathcal{M}}_{\\text{account }}$ with Llama backbone on validation data.   \n\n<table><tr><td rowspan=\"2\">λ</td><td colspan=\"2\">JGA</td></tr><tr><td>MultiWOZ</td><td>Snips</td></tr><tr><td>0</td><td>64.24</td><td>91.14</td></tr><tr><td>0.1</td><td>66.13</td><td>92.00</td></tr><tr><td>0.25</td><td>66.57</td><td>92.86</td></tr><tr><td>0.5</td><td>66.25</td><td>92.43</td></tr><tr><td>0.75</td><td>65.34</td><td>92.04</td></tr><tr><td>1.0</td><td>65.15</td><td>91.76</td></tr></table>\n\n3072 for Gemma. The number of trainable parameters in our LoRA fine-tuned models is 3.6M for Llama and Mistral. On the other hand, the trainable parameters of the Gemma model is 3.4M. We found that 8B models provided an optimal balance for training on our GPU servers. Smaller models resulted in lower performance, while larger models posed computational challenges due to resource constraints. This is why we conducted our experiments using LLaMA 3.1 (8B), Mistral (7B), and Gemma (7B). It also helped to balance between performance and computational efficiency, making our approach both scalable and practical for real-world applications. Due to memory limitations in GPU, we use a batch size of 1. We increase the effective batch size to 8 by using gradient accumulation. The training time for MultiWOZ and Snips is approximately 20 and 6 GPU hours, respectively.\n\nDuring inference, the model takes only the dialogue context as input and generates the corresponding dialogue state, without relying on any oracle belief state. We do not apply any additional post-processing to enforce JSON formatting. In our experiments, all outputs adhered to the expected JSON format, and no formatting issues were observed. However, in the event of a failure, the output will default to an empty dictionary (i.e., {}. All the belief states are generated using a single run.\n\nTable 9 shows the prompt format used to formulate the dialogue context $(C_t)$ to generate the belief states. It contains the task information, slot descriptions, dialogue history, and output format. Note that Table 9 shows the prompt specific to Llama. The prompt remains exactly the same for Mistral and Gemma, except for the special tokens. For the Snips dataset, we use the same template with the Snips-specific slot description.\n\nIn Section 6, we used two kinds of prompts to confirm the predicted errors from the user-simulator. The prompt for confirming false positives is shown in Table 10, while the prompt for confirming false negatives is shown in Table 11.\n\nYou are a helpful assistant who can perform dialogue-state tracking. The user interacts with the system to book entities from multiple domains (hotel, restaurant, attraction, taxi, and train) in Cambridge. Your goal is to find all the intents shown by the user in the conversation.\n\nThe user can ask for a hotel by slots - hotel-name, hotel-type, hotel-parking, hotel-area, hotel-bookday, hotel-bookstay, hotel-internet, hotel-bookpeople, hotel-stars, hotel-pricerange. The user can ask for an attraction by slots - attractionname, attraction-type, attraction-area. The user can ask for a restaurant by slots - restaurant-name, restaurant-food, restaurant-area, restaurant-bookday, restaurant-booktime, restaurant-bookpeople, restaurant-pricerange. The user can ask for a taxi by slots - taxi-arriveby, taxi-departure, taxi-leaveat, taxi-destination. The user can ask for a train by slots - train-arriveby, train-day, train-leaveat, train-destination, train-departure, train-bookpeople. Do not capture any other slots!Task You will be provided with a chronological dialogue history between the system and the user. You must find all the user intents and output them in JSON format.Sample Output {\"restaurant-name\": \"abc\", \"restaurant-food\": \"xyz\"}\n\nConversation History\n\n<start_header_idl>system</end_header_idl>\n\n$S_0 <   \\mathrm{let\\_id}>$\n\n<start_header_idl>user<end_header_idl>\n\n$U_{0}< \\text{leot\\_idl}>$\n\n```c\n...\n<start_header_idl>assistant</lend_header_idl>\n\nTable 9: Prompt template for Llama model. $S_0$ and $U_0$ denote the system and user utterance for the Turn 0.Dialogue history: {Current Dialogue History}\n\nIt seems that some information might have been incorrectly predicted. Based on the current user utterance, please help us clarify the following:\n\n1. If the slot name is correct but the value is wrong, you can provide the correct value.   \n2. If the slot name should not appear at all, let us know to delete it.\n\nStatement: Slot was mentioned in the dialogue history and the value is Value.\n\n- Please respond with one of the following options:   \n- \"Agree\" (if both the slot name and value are correct)   \n- \"Not Agree: Update to [new value]\" (if the slot name is correct but the value is wrong)   \n- \"Not Agree: Delete\" (if the slot name should not appear in the belief state)\n\nTable 10: Prompt template for clarifying false positive with user simulator.Dialogue history: Current Dialogue History\n\nIt seems that some important information might be missing.\n\nBased on the latest user utterance, could you please confirm the following:\n\nShould the Slot be \"Value\"?\n\n- Please respond with \"Agree\" if this information is correct.   \n- Respond with \"Not Agree\" if this information is incorrect.\n\nYour confirmation will help us improve the accuracy of the prediction.\n\nTable 11: Prompt template for clarifying false negative with user simulator.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.1399::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methodology",
+      "evidence": "This section presents a brief background of LLM-based generative DST, followed by our proposed accountability model and its application in correcting predicted dialogue states."
+    },
+    {
+      "source_window_id": "2025.acl-long.1399::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiment setup",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.1399::sections::4.4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.4",
+      "section_title": "training details",
+      "evidence": "All the models are implemented using the PyTorch and Huggingface libraries in Python 3.12. We used LoRA (Hu et al., 2021) finetuning with rank $(r)$ $8,\\alpha = 32$ ,and dropout 0.1.We used AdamW optimizer with learning rate 5e-5 to fine-tune both $\\mathcal{M}_{\\mathrm{SFT}}$ and $\\mathcal{M}_{\\mathrm{AMD}}$ .We trained all the models for 4 epochs and chose the final model with the minimum validation loss. The prompts used for model finetuning are provided in Appendix A.2. In Eqn. 4, the optimal $\\lambda$ is selected based on the JGA score of the validation set. The best $\\lambda$ was found to be 0.25 except for Mistral-Snips and Gemma-Snips, where $\\lambda = 0.1$ resulted in the best validation performance. For $\\mathcal{M}_{\\mathrm{AMD + SC}}$ ,the false positive $(\\tau_{\\mathrm{fp}})$ and the false negative $(\\tau_{\\mathrm{fn}})$ threshold is selected similarly based on the validation performance. We observed that (0.1, 0.5) and (0.05, 0.9) are the best $(\\tau_{\\mathrm{fp}},\\tau_{\\mathrm{fn}})$ for MultiWOZ and Snips, respectively. These optimal values of $\\lambda$ $\\tau_{\\mathrm{fp}}$ ,and $\\tau_{\\mathrm{fn}}$ are used to show the test performance in the rest of the article.\n\nFurther details on prompts, training, and inference are provided in Section A.2."
+    },
+    {
+      "source_window_id": "2025.acl-long.1399::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "appendix",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": null
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.1399\\auto\\full.md",
+    "source_md_sha256": "482c13e9ff61e85b4307837d96abaf607214c0b090c4f829674b95fbb8825585",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

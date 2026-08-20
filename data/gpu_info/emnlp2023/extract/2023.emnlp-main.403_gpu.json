@@ -1,0 +1,136 @@
+{
+  "paper_id": "2023.emnlp-main.403",
+  "candidate_windows": [
+    {
+      "window_id": "2023.emnlp-main.403::appendix::C",
+      "paper_id": "2023.emnlp-main.403",
+      "section_number": "C",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.403::appendix::C.1",
+      "paper_id": "2023.emnlp-main.403",
+      "section_number": "C.1",
+      "section_title": "solu/gelu and pythia models",
+      "normalized_section_title": "solu/gelu and pythia models",
+      "window_text": "For the SoLU-GeLU and Pythia experiments we use the TransformerLens library (Nanda, 2022), whose developers pre-trained the SoLU/GeLU models on the Pile (Gao et al., 2020) (architecture details can be found here and some training details are available here). We use a heavily adapted version of the tuned-lens library to performing stitching (Belrose et al., 2023). In particular, for stitching we learn an affine transformation (along with an additional LayerNorm) $\\varphi$ with the PILE validation set. Figure 6 plots learning curves for GeLU-SoLU stitching layer optimization. We borrow many of the Tuned Lens hyperparameters, and train for 2000 steps (200 warm-up steps) with SGD with Nesterov momentum with a learning rate of 1.0 and cross-entropy loss.\n\nWhen computing CKA, we extract features after each transformer block (after addition with the residual, technically the hook_resid_post hook point of TransformerLens). Letting $f$ and $g$ be the two models under consideration and letting $X$ be an input batch of token sequences, this yields feature tensors say\n\n$$\nH _ {i} = f _ {\\leq i} (X) \\text {a n d} H _ {j} ^ {\\prime} = g _ {\\leq j} (X)\n$$\n\nfor $i = 1, \\dots, L$ and $j = 1, \\dots, L'$ where $L, L'$ are the respective depths of $f$ and $g$ . In our experiments we use batches consisting of 1 (!) sequence of 1024 tokens (the default context length for the Pythia models); these sequences are constructed by \"packing\" datapoints from the Pile. When one or more of $f, g$ is large (e.g. has more than 1 billion parameters), we run the necessary forward passes of $f$ and $g$ on separate GPUs — we used a mix of NVIDIA A100 GPUs with either 40 or 80 GB of RAM.\n\nWe then flatten the tensors of shape (batch, sequence, feature) (in our experiments (1, 1024, hidden_dim)) to a matrix of features with shape (batch * sequence, feature) (so in our experiments (1024, hidden_dim)), and then compute CKA values in batches using an implementation of the unbiased estimator described in (Nguyen et al., 2021). Explicitly, if $H_{i}$ and $H_{j}^{\\prime}$ are (already flattened) hidden feature matrices of shape (batch * sequence, feature) (with possibly distinct feature dimensions), we first mean center both matrices $(H_{i} \\gets H_{i} - \\mathbf{11}^{T}H_{i},$ similarly for $H_{j}^{\\prime}$ ) and compute the kernels\n\n$$\nK _ {i} = H _ {i} H _ {i} ^ {T} \\mathrm {a n d} L _ {j} = H _ {j} ^ {\\prime} H _ {j} ^ {\\prime T}\n$$\n\nNext, we make use of the unbiased Hilbert-Schmidt independence criterion $\\mathrm{HSIC}_1(A,B)$ , defined for symmetric matrices $A$ and $B$ of equal shape $(n,n)$ as follows: first, let $\\tilde{A}$ and $\\tilde{B}$ be obtained by replacing the diagonals of $A$ and $B$ respectively with 0s. Then,\n\n$$\n\\mathrm {H S I C} _ {1} (A, B) := \\frac {1}{n (n - 3)} \\big (\\mathrm {t r} (\\tilde {A} \\tilde {B} ^ {T}) + \\frac {1}{(n - 1) (n - 2)} \\mathrm {t r} (\\tilde {A} \\mathbf {1} \\mathbf {1} ^ {T}) \\mathrm {t r} (\\tilde {B} \\mathbf {1} \\mathbf {1} ^ {T}) - \\frac {2}{n - 2} \\tilde {A} \\mathbf {1} \\mathbf {1} ^ {T} \\tilde {B} \\big).\n$$\n\nThis unweildy-looking expression can be computed efficiently by noting for example that $\\mathrm{tr}(\\tilde{A}\\tilde{B}^T)$ is simply the dot-product of the vectorizations of $\\tilde{A}$ and $\\tilde{B}$ , $\\mathrm{tr}(\\tilde{A}\\mathbf{1}\\mathbf{1}^T)$ is just the sum of all entries of $\\tilde{A}$ , and $\\tilde{A}\\mathbf{1}\\mathbf{1}^T\\tilde{B}$ is just the dot product of the vectors obtained by summing columns of $\\tilde{A}$ and $\\tilde{B}$ .\n\nFinally, we compute a matrix $S$ of shape $(L, L')$ with entries\n\n$$\nS _ {i j} = \\frac {\\mathrm {H S I C} _ {1} (K _ {i} , L _ {j})}{\\mathrm {H S I C} _ {1} (K _ {i} , K _ {i}) \\cdot \\mathrm {H S I C} _ {1} (L _ {j} , L _ {j})},\n$$\n\nand average these batch-estimated matrices $S$ over many randomly sampled batches, in our experiments 1000.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.emnlp-main.403::appendix::C.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 40GB",
+      "count": null,
+      "count_text": "",
+      "evidence": "For the SoLU-GeLU and Pythia experiments we use the TransformerLens library (Nanda, 2022), whose developers pre-trained the SoLU/GeLU models on the Pile (Gao et al., 2020) (architecture details can be found here and some training details are available here). We use a heavily adapted version of the tuned-lens library to performing stitching (Belrose et al., 2023). In particular, for stitching we learn an affine transformation (along with an additional LayerNorm) $\\varphi$ with the PILE validation set. Figure 6 plots learning curves for GeLU-SoLU stitching layer optimization. We borrow many of the Tuned Lens hyperparameters, and train for 2000 steps (200 warm-up steps) with SGD with Nesterov momentum with a learning rate of 1.0 and cross-entropy loss.\n\nWhen computing CKA, we extract features after each transformer block (after addition with the residual, technically the hook_resid_post hook point of TransformerLens). Letting $f$ and $g$ be the two models under consideration and letting $X$ be an input batch of token sequences, this yields feature tensors say\n\n$$\nH _ {i} = f _ {\\leq i} (X) \\text {a n d} H _ {j} ^ {\\prime} = g _ {\\leq j} (X)\n$$\n\nfor $i = 1, \\dots, L$ and $j = 1, \\dots, L'$ where $L, L'$ are the respective depths of $f$ and $g$ . In our experiments we use batches consisting of 1 (!) sequence of 1024 tokens (the default context length for the Pythia models); these sequences are constructed by \"packing\" datapoints from the Pile. When one or more of $f, g$ is large (e.g. has more than 1 billion parameters), we run the necessary forward passes of $f$ and $g$ on separate GPUs — we used a mix of NVIDIA A100 GPUs with either 40 or 80 GB of RAM.\n\nWe then flatten the tensors of shape (batch, sequence, feature) (in our experiments (1, 1024, hidden_dim)) to a matrix of features with shape (batch * sequence, feature) (so in our experiments (1024, hidden_dim)), and then compute CKA values in batches using an implementation of the unbiased estimator described in (Nguyen et al., 2021). Explicitly, if $H_{i}$ and $H_{j}^{\\prime}$ are (already flattened) hidden feature matrices of shape (batch * sequence, feature) (with possibly distinct feature dimensions), we first mean center both matrices $(H_{i} \\gets H_{i} - \\mathbf{11}^{T}H_{i},$ similarly for $H_{j}^{\\prime}$ ) and compute the kernels\n\n$$\nK _ {i} = H _ {i} H _ {i} ^ {T} \\mathrm {a n d} L _ {j} = H _ {j} ^ {\\prime} H _ {j} ^ {\\prime T}\n$$\n\nNext, we make use of the unbiased Hilbert-Schmidt independence criterion $\\mathrm{HSIC}_1(A,B)$ , defined for symmetric matrices $A$ and $B$ of equal shape $(n,n)$ as follows: first, let $\\tilde{A}$ and $\\tilde{B}$ be obtained by replacing the diagonals of $A$ and $B$ respectively with 0s. Then,\n\n$$\n\\mathrm {H S I C} _ {1} (A, B) := \\frac {1}{n (n - 3)} \\big (\\mathrm {t r} (\\tilde {A} \\tilde {B} ^ {T}) + \\frac {1}{(n - 1) (n - 2)} \\mathrm {t r} (\\tilde {A} \\mathbf {1} \\mathbf {1} ^ {T}) \\mathrm {t r} (\\tilde {B} \\mathbf {1} \\mathbf {1} ^ {T}) - \\frac {2}{n - 2} \\tilde {A} \\mathbf {1} \\mathbf {1} ^ {T} \\tilde {B} \\big).\n$$\n\nThis unweildy-looking expression can be computed efficiently by noting for example that $\\mathrm{tr}(\\tilde{A}\\tilde{B}^T)$ is simply the dot-product of the vectorizations of $\\tilde{A}$ and $\\tilde{B}$ , $\\mathrm{tr}(\\tilde{A}\\mathbf{1}\\mathbf{1}^T)$ is just the sum of all entries of $\\tilde{A}$ , and $\\tilde{A}\\mathbf{1}\\mathbf{1}^T\\tilde{B}$ is just the dot product of the vectors obtained by summing columns of $\\tilde{A}$ and $\\tilde{B}$ .\n\nFinally, we compute a matrix $S$ of shape $(L, L')$ with entries\n\n$$\nS _ {i j} = \\frac {\\mathrm {H S I C} _ {1} (K _ {i} , L _ {j})}{\\mathrm {H S I C} _ {1} (K _ {i} , K _ {i}) \\cdot \\mathrm {H S I C} _ {1} (L _ {j} , L _ {j})},\n$$\n\nand average these batch-estimated matrices $S$ over many randomly sampled batches, in our experiments 1000.",
+      "section_number": "C.1",
+      "section_title": "solu/gelu and pythia models",
+      "normalized_section_title": "solu/gelu and pythia models"
+    },
+    {
+      "window_id": "2023.emnlp-main.403::appendix::C.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "count": null,
+      "count_text": "",
+      "evidence": "For the SoLU-GeLU and Pythia experiments we use the TransformerLens library (Nanda, 2022), whose developers pre-trained the SoLU/GeLU models on the Pile (Gao et al., 2020) (architecture details can be found here and some training details are available here). We use a heavily adapted version of the tuned-lens library to performing stitching (Belrose et al., 2023). In particular, for stitching we learn an affine transformation (along with an additional LayerNorm) $\\varphi$ with the PILE validation set. Figure 6 plots learning curves for GeLU-SoLU stitching layer optimization. We borrow many of the Tuned Lens hyperparameters, and train for 2000 steps (200 warm-up steps) with SGD with Nesterov momentum with a learning rate of 1.0 and cross-entropy loss.\n\nWhen computing CKA, we extract features after each transformer block (after addition with the residual, technically the hook_resid_post hook point of TransformerLens). Letting $f$ and $g$ be the two models under consideration and letting $X$ be an input batch of token sequences, this yields feature tensors say\n\n$$\nH _ {i} = f _ {\\leq i} (X) \\text {a n d} H _ {j} ^ {\\prime} = g _ {\\leq j} (X)\n$$\n\nfor $i = 1, \\dots, L$ and $j = 1, \\dots, L'$ where $L, L'$ are the respective depths of $f$ and $g$ . In our experiments we use batches consisting of 1 (!) sequence of 1024 tokens (the default context length for the Pythia models); these sequences are constructed by \"packing\" datapoints from the Pile. When one or more of $f, g$ is large (e.g. has more than 1 billion parameters), we run the necessary forward passes of $f$ and $g$ on separate GPUs — we used a mix of NVIDIA A100 GPUs with either 40 or 80 GB of RAM.\n\nWe then flatten the tensors of shape (batch, sequence, feature) (in our experiments (1, 1024, hidden_dim)) to a matrix of features with shape (batch * sequence, feature) (so in our experiments (1024, hidden_dim)), and then compute CKA values in batches using an implementation of the unbiased estimator described in (Nguyen et al., 2021). Explicitly, if $H_{i}$ and $H_{j}^{\\prime}$ are (already flattened) hidden feature matrices of shape (batch * sequence, feature) (with possibly distinct feature dimensions), we first mean center both matrices $(H_{i} \\gets H_{i} - \\mathbf{11}^{T}H_{i},$ similarly for $H_{j}^{\\prime}$ ) and compute the kernels\n\n$$\nK _ {i} = H _ {i} H _ {i} ^ {T} \\mathrm {a n d} L _ {j} = H _ {j} ^ {\\prime} H _ {j} ^ {\\prime T}\n$$\n\nNext, we make use of the unbiased Hilbert-Schmidt independence criterion $\\mathrm{HSIC}_1(A,B)$ , defined for symmetric matrices $A$ and $B$ of equal shape $(n,n)$ as follows: first, let $\\tilde{A}$ and $\\tilde{B}$ be obtained by replacing the diagonals of $A$ and $B$ respectively with 0s. Then,\n\n$$\n\\mathrm {H S I C} _ {1} (A, B) := \\frac {1}{n (n - 3)} \\big (\\mathrm {t r} (\\tilde {A} \\tilde {B} ^ {T}) + \\frac {1}{(n - 1) (n - 2)} \\mathrm {t r} (\\tilde {A} \\mathbf {1} \\mathbf {1} ^ {T}) \\mathrm {t r} (\\tilde {B} \\mathbf {1} \\mathbf {1} ^ {T}) - \\frac {2}{n - 2} \\tilde {A} \\mathbf {1} \\mathbf {1} ^ {T} \\tilde {B} \\big).\n$$\n\nThis unweildy-looking expression can be computed efficiently by noting for example that $\\mathrm{tr}(\\tilde{A}\\tilde{B}^T)$ is simply the dot-product of the vectorizations of $\\tilde{A}$ and $\\tilde{B}$ , $\\mathrm{tr}(\\tilde{A}\\mathbf{1}\\mathbf{1}^T)$ is just the sum of all entries of $\\tilde{A}$ , and $\\tilde{A}\\mathbf{1}\\mathbf{1}^T\\tilde{B}$ is just the dot product of the vectors obtained by summing columns of $\\tilde{A}$ and $\\tilde{B}$ .\n\nFinally, we compute a matrix $S$ of shape $(L, L')$ with entries\n\n$$\nS _ {i j} = \\frac {\\mathrm {H S I C} _ {1} (K _ {i} , L _ {j})}{\\mathrm {H S I C} _ {1} (K _ {i} , K _ {i}) \\cdot \\mathrm {H S I C} _ {1} (L _ {j} , L _ {j})},\n$$\n\nand average these batch-estimated matrices $S$ over many randomly sampled batches, in our experiments 1000.",
+      "section_number": "C.1",
+      "section_title": "solu/gelu and pythia models",
+      "normalized_section_title": "solu/gelu and pythia models"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.emnlp-main.403::appendix::C.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 40GB",
+      "cleaned_hardware_name": "nvidia a100 40gb",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": null,
+      "count": null,
+      "count_text": "",
+      "section_number": "C.1",
+      "section_title": "solu/gelu and pythia models",
+      "normalized_section_title": "solu/gelu and pythia models",
+      "evidence": "For the SoLU-GeLU and Pythia experiments we use the TransformerLens library (Nanda, 2022), whose developers pre-trained the SoLU/GeLU models on the Pile (Gao et al., 2020) (architecture details can be found here and some training details are available here). We use a heavily adapted version of the tuned-lens library to performing stitching (Belrose et al., 2023). In particular, for stitching we learn an affine transformation (along with an additional LayerNorm) $\\varphi$ with the PILE validation set. Figure 6 plots learning curves for GeLU-SoLU stitching layer optimization. We borrow many of the Tuned Lens hyperparameters, and train for 2000 steps (200 warm-up steps) with SGD with Nesterov momentum with a learning rate of 1.0 and cross-entropy loss.\n\nWhen computing CKA, we extract features after each transformer block (after addition with the residual, technically the hook_resid_post hook point of TransformerLens). Letting $f$ and $g$ be the two models under consideration and letting $X$ be an input batch of token sequences, this yields feature tensors say\n\n$$\nH _ {i} = f _ {\\leq i} (X) \\text {a n d} H _ {j} ^ {\\prime} = g _ {\\leq j} (X)\n$$\n\nfor $i = 1, \\dots, L$ and $j = 1, \\dots, L'$ where $L, L'$ are the respective depths of $f$ and $g$ . In our experiments we use batches consisting of 1 (!) sequence of 1024 tokens (the default context length for the Pythia models); these sequences are constructed by \"packing\" datapoints from the Pile. When one or more of $f, g$ is large (e.g. has more than 1 billion parameters), we run the necessary forward passes of $f$ and $g$ on separate GPUs — we used a mix of NVIDIA A100 GPUs with either 40 or 80 GB of RAM.\n\nWe then flatten the tensors of shape (batch, sequence, feature) (in our experiments (1, 1024, hidden_dim)) to a matrix of features with shape (batch * sequence, feature) (so in our experiments (1024, hidden_dim)), and then compute CKA values in batches using an implementation of the unbiased estimator described in (Nguyen et al., 2021). Explicitly, if $H_{i}$ and $H_{j}^{\\prime}$ are (already flattened) hidden feature matrices of shape (batch * sequence, feature) (with possibly distinct feature dimensions), we first mean center both matrices $(H_{i} \\gets H_{i} - \\mathbf{11}^{T}H_{i},$ similarly for $H_{j}^{\\prime}$ ) and compute the kernels\n\n$$\nK _ {i} = H _ {i} H _ {i} ^ {T} \\mathrm {a n d} L _ {j} = H _ {j} ^ {\\prime} H _ {j} ^ {\\prime T}\n$$\n\nNext, we make use of the unbiased Hilbert-Schmidt independence criterion $\\mathrm{HSIC}_1(A,B)$ , defined for symmetric matrices $A$ and $B$ of equal shape $(n,n)$ as follows: first, let $\\tilde{A}$ and $\\tilde{B}$ be obtained by replacing the diagonals of $A$ and $B$ respectively with 0s. Then,\n\n$$\n\\mathrm {H S I C} _ {1} (A, B) := \\frac {1}{n (n - 3)} \\big (\\mathrm {t r} (\\tilde {A} \\tilde {B} ^ {T}) + \\frac {1}{(n - 1) (n - 2)} \\mathrm {t r} (\\tilde {A} \\mathbf {1} \\mathbf {1} ^ {T}) \\mathrm {t r} (\\tilde {B} \\mathbf {1} \\mathbf {1} ^ {T}) - \\frac {2}{n - 2} \\tilde {A} \\mathbf {1} \\mathbf {1} ^ {T} \\tilde {B} \\big).\n$$\n\nThis unweildy-looking expression can be computed efficiently by noting for example that $\\mathrm{tr}(\\tilde{A}\\tilde{B}^T)$ is simply the dot-product of the vectorizations of $\\tilde{A}$ and $\\tilde{B}$ , $\\mathrm{tr}(\\tilde{A}\\mathbf{1}\\mathbf{1}^T)$ is just the sum of all entries of $\\tilde{A}$ , and $\\tilde{A}\\mathbf{1}\\mathbf{1}^T\\tilde{B}$ is just the dot product of the vectors obtained by summing columns of $\\tilde{A}$ and $\\tilde{B}$ .\n\nFinally, we compute a matrix $S$ of shape $(L, L')$ with entries\n\n$$\nS _ {i j} = \\frac {\\mathrm {H S I C} _ {1} (K _ {i} , L _ {j})}{\\mathrm {H S I C} _ {1} (K _ {i} , K _ {i}) \\cdot \\mathrm {H S I C} _ {1} (L _ {j} , L _ {j})},\n$$\n\nand average these batch-estimated matrices $S$ over many randomly sampled batches, in our experiments 1000.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.emnlp-main.403::appendix::C.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": null,
+      "count": null,
+      "count_text": "",
+      "section_number": "C.1",
+      "section_title": "solu/gelu and pythia models",
+      "normalized_section_title": "solu/gelu and pythia models",
+      "evidence": "For the SoLU-GeLU and Pythia experiments we use the TransformerLens library (Nanda, 2022), whose developers pre-trained the SoLU/GeLU models on the Pile (Gao et al., 2020) (architecture details can be found here and some training details are available here). We use a heavily adapted version of the tuned-lens library to performing stitching (Belrose et al., 2023). In particular, for stitching we learn an affine transformation (along with an additional LayerNorm) $\\varphi$ with the PILE validation set. Figure 6 plots learning curves for GeLU-SoLU stitching layer optimization. We borrow many of the Tuned Lens hyperparameters, and train for 2000 steps (200 warm-up steps) with SGD with Nesterov momentum with a learning rate of 1.0 and cross-entropy loss.\n\nWhen computing CKA, we extract features after each transformer block (after addition with the residual, technically the hook_resid_post hook point of TransformerLens). Letting $f$ and $g$ be the two models under consideration and letting $X$ be an input batch of token sequences, this yields feature tensors say\n\n$$\nH _ {i} = f _ {\\leq i} (X) \\text {a n d} H _ {j} ^ {\\prime} = g _ {\\leq j} (X)\n$$\n\nfor $i = 1, \\dots, L$ and $j = 1, \\dots, L'$ where $L, L'$ are the respective depths of $f$ and $g$ . In our experiments we use batches consisting of 1 (!) sequence of 1024 tokens (the default context length for the Pythia models); these sequences are constructed by \"packing\" datapoints from the Pile. When one or more of $f, g$ is large (e.g. has more than 1 billion parameters), we run the necessary forward passes of $f$ and $g$ on separate GPUs — we used a mix of NVIDIA A100 GPUs with either 40 or 80 GB of RAM.\n\nWe then flatten the tensors of shape (batch, sequence, feature) (in our experiments (1, 1024, hidden_dim)) to a matrix of features with shape (batch * sequence, feature) (so in our experiments (1024, hidden_dim)), and then compute CKA values in batches using an implementation of the unbiased estimator described in (Nguyen et al., 2021). Explicitly, if $H_{i}$ and $H_{j}^{\\prime}$ are (already flattened) hidden feature matrices of shape (batch * sequence, feature) (with possibly distinct feature dimensions), we first mean center both matrices $(H_{i} \\gets H_{i} - \\mathbf{11}^{T}H_{i},$ similarly for $H_{j}^{\\prime}$ ) and compute the kernels\n\n$$\nK _ {i} = H _ {i} H _ {i} ^ {T} \\mathrm {a n d} L _ {j} = H _ {j} ^ {\\prime} H _ {j} ^ {\\prime T}\n$$\n\nNext, we make use of the unbiased Hilbert-Schmidt independence criterion $\\mathrm{HSIC}_1(A,B)$ , defined for symmetric matrices $A$ and $B$ of equal shape $(n,n)$ as follows: first, let $\\tilde{A}$ and $\\tilde{B}$ be obtained by replacing the diagonals of $A$ and $B$ respectively with 0s. Then,\n\n$$\n\\mathrm {H S I C} _ {1} (A, B) := \\frac {1}{n (n - 3)} \\big (\\mathrm {t r} (\\tilde {A} \\tilde {B} ^ {T}) + \\frac {1}{(n - 1) (n - 2)} \\mathrm {t r} (\\tilde {A} \\mathbf {1} \\mathbf {1} ^ {T}) \\mathrm {t r} (\\tilde {B} \\mathbf {1} \\mathbf {1} ^ {T}) - \\frac {2}{n - 2} \\tilde {A} \\mathbf {1} \\mathbf {1} ^ {T} \\tilde {B} \\big).\n$$\n\nThis unweildy-looking expression can be computed efficiently by noting for example that $\\mathrm{tr}(\\tilde{A}\\tilde{B}^T)$ is simply the dot-product of the vectorizations of $\\tilde{A}$ and $\\tilde{B}$ , $\\mathrm{tr}(\\tilde{A}\\mathbf{1}\\mathbf{1}^T)$ is just the sum of all entries of $\\tilde{A}$ , and $\\tilde{A}\\mathbf{1}\\mathbf{1}^T\\tilde{B}$ is just the dot product of the vectors obtained by summing columns of $\\tilde{A}$ and $\\tilde{B}$ .\n\nFinally, we compute a matrix $S$ of shape $(L, L')$ with entries\n\n$$\nS _ {i j} = \\frac {\\mathrm {H S I C} _ {1} (K _ {i} , L _ {j})}{\\mathrm {H S I C} _ {1} (K _ {i} , K _ {i}) \\cdot \\mathrm {H S I C} _ {1} (L _ {j} , L _ {j})},\n$$\n\nand average these batch-estimated matrices $S$ over many randomly sampled batches, in our experiments 1000.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.emnlp-main.403::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "experimental details",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "C.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": null
+      },
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": null
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2023\\2023.emnlp-main.403\\auto\\full.md",
+    "source_md_sha256": "0ac6ae83c003396abbed6ef7752cc83d731493df7d654a9c565169e45c036099",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "44ecc0af216a9e5fe6ff4e8a000ce2b17b722bcc41b386c829c53021783d2d05"
+  }
+}

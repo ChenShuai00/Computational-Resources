@@ -1,0 +1,162 @@
+{
+  "paper_id": "2025.acl-long.1420",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.1420::sections::4",
+      "paper_id": "2025.acl-long.1420",
+      "section_number": "4",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "Drawing inspiration from recent advances in complex reasoning methods (Xiang et al., 2025; Hao et al., 2024), we propose a deep-thinking evaluation framework that decomposes the review process into three key steps in Figure 1: (1) novelty verification $z_{1}$ : assessing research originality through literature review; (2) multi-dimension evaluation $z_{2}$ : synthesizing insights from multiple expert perspectives; and (3) reliability verification $z_{3}$ : examining internal consistency and logical coherence.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1420::sections::4.3",
+      "paper_id": "2025.acl-long.1420",
+      "section_number": "4.3",
+      "section_title": "model training",
+      "normalized_section_title": "model training",
+      "window_text": "We train our model based on Phi-4 14B (Abdin et al., 2024) using the DeepReview-13K dataset. The training process was conducted on 8x H100 80G GPUs with DeepSpeed + ZeRO3 (Rajbhandari et al., 2020; Rasley et al., 2020) for optimization. Notably, we extended the context window to 256K using LongRoPE (Ding et al., 2024), with a 40K context window during training for full-parameter fine-tuning. Given memory constraints, samples exceeding the preset context length are randomly truncated. The model is trained for 23,500 steps with a batch size of 16 and a learning rate of 5e-6.\n\nInference Strategy. We divided each sample in the DeepReview-13K data into three modes using reasoning path cropping, as shown in Figure 1(c), which allows for efficiency adjustments at test time based on varying requirements. The Fast mode directly generates final evaluation results and comprehensive analysis reports (s, a), minimizing computational cost by bypassing intermediate reasoning steps. The Standard mode executes core evaluation steps including $z_{2}$ and $z_{3}$ , maintaining high efficiency while ensuring evaluation quality,\n\nmaking it appropriate for routine research assessment. The Best mode implements the complete reasoning chain $(z_{1},z_{2},z_{3})$ , encompassing novelty verification, multi-dimension assessment, reliability verification, and comprehensive analysis generation. For novelty verification during inference, as in Stage 1 (Section 4.2), we employ Semantic Scholar API and OpenScholar to ensure accurate assessment of research novelty and citation correctness through comprehensive literature review and analysis. All three modes share the same model architecture, differing only in their executed evaluation steps. This allows the trained DeepReview-14B model to execute different reasoning paths at inference time, controlled by input instructions.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1420::sections::5",
+      "paper_id": "2025.acl-long.1420",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1420::sections::5.1",
+      "paper_id": "2025.acl-long.1420",
+      "section_number": "5.1",
+      "section_title": "experimental setting",
+      "normalized_section_title": "experimental setting",
+      "window_text": "Baselines. We consider two types of baselines: (1) Prompt-based baselines including AI Scientist (Chris et al., 2024) and AgentReview (Jin et al., 2024a) implemented with various backbone models (GPT-o1-2024-12-17, Claude-3.5-sonnet-20241022, Gemini-2.0-Flash-Thinking-01-21, DeepSeek-V3, and DeepSeek-R1); (2) Finetuned baselines including CycleReviewer-8B and CycleReviewer-70B, both trained on ICLR 2024 review data. For inference, we use a temperature of 0.4 with maximum input and output lengths set to 100K and 16,384 tokens respectively to ensure complete text processing.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1420::appendix::E",
+      "paper_id": "2025.acl-long.1420",
+      "section_number": "E",
+      "section_title": "fairness of comparison with controlled training data",
+      "normalized_section_title": "fairness of comparison with controlled training data",
+      "window_text": "Ensuring a fair and direct comparison with existing state-of-the-art models is paramount for validating novel contributions. A key concern in evaluating LLM-based review systems is the potential influence of differing training datasets on observed performance. To address this directly and provide a rigorously controlled comparison, we conducted an additional set of experiments focusing on the CycleReviewer-70B model.\n\nSpecifically, we trained a variant of our model, denoted DeepReviewer-14B-2024, using only the identical ICLR 2024 dataset that was utilized for training the CycleReviewer-70B model. This approach ensures that both models were exposed to the exact same source material, eliminating training data disparity as a confounding variable. All other aspects of the DeepReviewer training methodology, including the multi-stage reasoning framework, remained consistent. The performance of DeepReviewer-14B-2024 was then evaluated against CycleReviewer-70B on the ICLR 2024 test set across a comprehensive suite of metrics.\n\nThe results of this direct comparison, presented in Table 7, unequivocally demonstrate the advantages of our DeepReview framework. Despite having significantly fewer parameters (14B vs. 70B), DeepReviewer-14B-2024 consistently outperformed CycleReviewer-70B across the vast majority of evaluation metrics. For instance, in Rating MSE, DeepReviewer-14B-2024 achieved 1.4404 compared to CycleReviewer-70B's 2.4870, a substantial improvement. Similar significant gains were observed in Rating MAE (0.9472 vs. 1.2514), and across all fine-grained MSE and MAE metrics for Soundness, Presentation, and Contribution. Furthermore, DeepReviewer-14B-2024 also showed superior performance in Spearman correlation coefficients for overall rating, soundness, and contribution, as well as in Decision Accuracy, Decision F1, and pairwise accuracy tasks. These consistent and significant improvements under strictly matched training conditions reinforce the inherent effectiveness of our structured, deep-thinking approach to automated paper review and validate the fairness of our primary claims regarding DeepReviewer's capabilities.\n\nTable 5: Generalization performance of DeepReviewer-14B vs. Baselines on unseen conference data, judged by Gemini-2.0-Flash-Thinking. Win(%) indicates DeepReviewer-14B was superior; Lose(%) indicates the baseline was superior. Cells with the dominant percentage in a Win/Lose pair are highlighted.   \n\n<table><tr><td rowspan=\"2\">DeepReviewer 14B vs.</td><td colspan=\"2\">Constructive Value</td><td colspan=\"2\">Analytical Depth</td><td colspan=\"2\">Communication Clarity</td><td colspan=\"2\">Technical Accuracy</td><td colspan=\"2\">Overall Judgment</td></tr><tr><td>Win(%)↑</td><td>Lose(%)</td><td>Win(%)↑</td><td>Lose(%)</td><td>Win(%)↑</td><td>Lose(%)</td><td>Win(%)↑</td><td>Lose(%)</td><td>Win(%)↑</td><td>Lose(%)</td></tr><tr><td colspan=\"11\">ICML 2024</td></tr><tr><td>Claude-3.7-Sonnet</td><td>81</td><td>8</td><td>69</td><td>11</td><td>53</td><td>8</td><td>12</td><td>11</td><td>80</td><td>11</td></tr><tr><td>Gemini-2.0-Flash-Thinking</td><td>56</td><td>12</td><td>50</td><td>25</td><td>42</td><td>9</td><td>15</td><td>23</td><td>64</td><td>25</td></tr><tr><td>DeepSeek-R1</td><td>95</td><td>2</td><td>79</td><td>7</td><td>62</td><td>4</td><td>25</td><td>14</td><td>89</td><td>7</td></tr><tr><td>DeepSeek-V3</td><td>97</td><td>3</td><td>100</td><td>0</td><td>82</td><td>1</td><td>48</td><td>6</td><td>99</td><td>1</td></tr><tr><td colspan=\"11\">CVPR 2024</td></tr><tr><td>Claude-3.7-Sonnet</td><td>86</td><td>5</td><td>73</td><td>12</td><td>46</td><td>5</td><td>18</td><td>8</td><td>81</td><td>10</td></tr><tr><td>Gemini-2.0-Flash-Thinking</td><td>60</td><td>11</td><td>62</td><td>13</td><td>33</td><td>4</td><td>24</td><td>11</td><td>67</td><td>16</td></tr><tr><td>DeepSeek-R1</td><td>94</td><td>3</td><td>88</td><td>5</td><td>59</td><td>4</td><td>35</td><td>11</td><td>95</td><td>5</td></tr><tr><td>DeepSeek-V3</td><td>99</td><td>1</td><td>98</td><td>2</td><td>81</td><td>2</td><td>61</td><td>2</td><td>98</td><td>2</td></tr><tr><td colspan=\"11\">ACL 2024</td></tr><tr><td>Claude-3.7-Sonnet</td><td>72</td><td>11</td><td>67</td><td>11</td><td>22</td><td>6</td><td>11</td><td>6</td><td>72</td><td>11</td></tr><tr><td>Gemini-2.0-Flash-Thinking</td><td>69</td><td>7</td><td>63</td><td>14</td><td>43</td><td>1</td><td>22</td><td>15</td><td>76</td><td>15</td></tr><tr><td>DeepSeek-R1</td><td>89</td><td>7</td><td>83</td><td>10</td><td>59</td><td>7</td><td>34</td><td>13</td><td>89</td><td>7</td></tr><tr><td>DeepSeek-V3</td><td>99</td><td>1</td><td>99</td><td>1</td><td>77</td><td>1</td><td>60</td><td>3</td><td>99</td><td>1</td></tr></table>\n\nTable 6: Generalization performance of DeepReviewer-14B vs. Baselines on unseen conference data, judged by Gemini-2.5-Pro. Win(%) indicates DeepReviewer-14B was superior; Lose(%) indicates the baseline was superior. Cells with the dominant percentage in a Win/Lose pair are highlighted.   \n\n<table><tr><td rowspan=\"2\">DeepReviewer 14B vs.</td><td colspan=\"2\">Constructive Value</td><td colspan=\"2\">Analytical Depth</td><td colspan=\"2\">Communication Clarity</td><td colspan=\"2\">Technical Accuracy</td><td colspan=\"2\">Overall Judgment</td></tr><tr><td>Win(%)↑</td><td>Lose(%)</td><td>Win(%)↑</td><td>Lose(%)</td><td>Win(%)↑</td><td>Lose(%)</td><td>Win(%)↑</td><td>Lose(%)</td><td>Win(%)↑</td><td>Lose(%)</td></tr><tr><td colspan=\"11\">ICML 2024</td></tr><tr><td>claude-3-7-sonnet</td><td>83</td><td>14</td><td>76</td><td>22</td><td>53</td><td>33</td><td>37</td><td>32</td><td>72</td><td>28</td></tr><tr><td>Gemini2flash_thinking</td><td>82</td><td>11</td><td>64</td><td>27</td><td>67</td><td>16</td><td>33</td><td>22</td><td>78</td><td>20</td></tr><tr><td>DeepSeek-R1</td><td>96</td><td>4</td><td>87</td><td>9</td><td>62</td><td>21</td><td>45</td><td>21</td><td>83</td><td>14</td></tr><tr><td>DeepSeek-V3</td><td>98</td><td>2</td><td>98</td><td>2</td><td>91</td><td>0</td><td>86</td><td>7</td><td>98</td><td>3</td></tr><tr><td colspan=\"11\">CVPR 2024</td></tr><tr><td>claude-3-7-sonnet</td><td>93</td><td>5</td><td>90</td><td>8</td><td>62</td><td>15</td><td>41</td><td>23</td><td>90</td><td>7</td></tr><tr><td>Gemini2flash_thinking</td><td>67</td><td>4</td><td>74</td><td>18</td><td>67</td><td>12</td><td>41</td><td>18</td><td>77</td><td>17</td></tr><tr><td>DeepSeek-R1</td><td>94</td><td>6</td><td>88</td><td>10</td><td>76</td><td>18</td><td>48</td><td>22</td><td>88</td><td>12</td></tr><tr><td>DeepSeek-V3</td><td>100</td><td>0</td><td>98</td><td>0</td><td>94</td><td>4</td><td>80</td><td>14</td><td>98</td><td>2</td></tr><tr><td colspan=\"11\">ACL 2024</td></tr><tr><td>claude-3-7-sonnet</td><td>85</td><td>15</td><td>77</td><td>23</td><td>69</td><td>23</td><td>39</td><td>31</td><td>69</td><td>31</td></tr><tr><td>Gemini2flash_thinking</td><td>92</td><td>8</td><td>73</td><td>12</td><td>77</td><td>15</td><td>42</td><td>15</td><td>87</td><td>13</td></tr><tr><td>DeepSeek-R1</td><td>92</td><td>6</td><td>90</td><td>10</td><td>71</td><td>16</td><td>41</td><td>22</td><td>88</td><td>12</td></tr><tr><td>DeepSeek-V3</td><td>98</td><td>2</td><td>100</td><td>0</td><td>87</td><td>7</td><td>83</td><td>4</td><td>100</td><td>0</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.1420::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "H100 80G",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "We train our model based on Phi-4 14B (Abdin et al., 2024) using the DeepReview-13K dataset. The training process was conducted on 8x H100 80G GPUs with DeepSpeed + ZeRO3 (Rajbhandari et al., 2020; Rasley et al., 2020) for optimization. Notably, we extended the context window to 256K using LongRoPE (Ding et al., 2024), with a 40K context window during training for full-parameter fine-tuning. Given memory constraints, samples exceeding the preset context length are randomly truncated. The model is trained for 23,500 steps with a batch size of 16 and a learning rate of 5e-6.\n\nInference Strategy. We divided each sample in the DeepReview-13K data into three modes using reasoning path cropping, as shown in Figure 1(c), which allows for efficiency adjustments at test time based on varying requirements. The Fast mode directly generates final evaluation results and comprehensive analysis reports (s, a), minimizing computational cost by bypassing intermediate reasoning steps. The Standard mode executes core evaluation steps including $z_{2}$ and $z_{3}$ , maintaining high efficiency while ensuring evaluation quality,\n\nmaking it appropriate for routine research assessment. The Best mode implements the complete reasoning chain $(z_{1},z_{2},z_{3})$ , encompassing novelty verification, multi-dimension assessment, reliability verification, and comprehensive analysis generation. For novelty verification during inference, as in Stage 1 (Section 4.2), we employ Semantic Scholar API and OpenScholar to ensure accurate assessment of research novelty and citation correctness through comprehensive literature review and analysis. All three modes share the same model architecture, differing only in their executed evaluation steps. This allows the trained DeepReview-14B model to execute different reasoning paths at inference time, controlled by input instructions.",
+      "section_number": "4.3",
+      "section_title": "model training",
+      "normalized_section_title": "model training"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.1420::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "H100 80G",
+      "cleaned_hardware_name": "h100 80gb",
+      "normalized_hardware_name": "NVIDIA H100 PCIe",
+      "benchmark_hardware_name": "NVIDIA H100 PCIe",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "4.3",
+      "section_title": "model training",
+      "normalized_section_title": "model training",
+      "evidence": "We train our model based on Phi-4 14B (Abdin et al., 2024) using the DeepReview-13K dataset. The training process was conducted on 8x H100 80G GPUs with DeepSpeed + ZeRO3 (Rajbhandari et al., 2020; Rasley et al., 2020) for optimization. Notably, we extended the context window to 256K using LongRoPE (Ding et al., 2024), with a 40K context window during training for full-parameter fine-tuning. Given memory constraints, samples exceeding the preset context length are randomly truncated. The model is trained for 23,500 steps with a batch size of 16 and a learning rate of 5e-6.\n\nInference Strategy. We divided each sample in the DeepReview-13K data into three modes using reasoning path cropping, as shown in Figure 1(c), which allows for efficiency adjustments at test time based on varying requirements. The Fast mode directly generates final evaluation results and comprehensive analysis reports (s, a), minimizing computational cost by bypassing intermediate reasoning steps. The Standard mode executes core evaluation steps including $z_{2}$ and $z_{3}$ , maintaining high efficiency while ensuring evaluation quality,\n\nmaking it appropriate for routine research assessment. The Best mode implements the complete reasoning chain $(z_{1},z_{2},z_{3})$ , encompassing novelty verification, multi-dimension assessment, reliability verification, and comprehensive analysis generation. For novelty verification during inference, as in Stage 1 (Section 4.2), we employ Semantic Scholar API and OpenScholar to ensure accurate assessment of research novelty and citation correctness through comprehensive literature review and analysis. All three modes share the same model architecture, differing only in their executed evaluation steps. This allows the trained DeepReview-14B model to execute different reasoning paths at inference time, controlled by input instructions.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.1420::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "methodology",
+      "evidence": "Drawing inspiration from recent advances in complex reasoning methods (Xiang et al., 2025; Hao et al., 2024), we propose a deep-thinking evaluation framework that decomposes the review process into three key steps in Figure 1: (1) novelty verification $z_{1}$ : assessing research originality through literature review; (2) multi-dimension evaluation $z_{2}$ : synthesizing insights from multiple expert perspectives; and (3) reliability verification $z_{3}$ : examining internal consistency and logical coherence."
+    },
+    {
+      "source_window_id": "2025.acl-long.1420::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.1420::sections::5.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.1",
+      "section_title": "experimental setting",
+      "evidence": "Baselines. We consider two types of baselines: (1) Prompt-based baselines including AI Scientist (Chris et al., 2024) and AgentReview (Jin et al., 2024a) implemented with various backbone models (GPT-o1-2024-12-17, Claude-3.5-sonnet-20241022, Gemini-2.0-Flash-Thinking-01-21, DeepSeek-V3, and DeepSeek-R1); (2) Finetuned baselines including CycleReviewer-8B and CycleReviewer-70B, both trained on ICLR 2024 review data. For inference, we use a temperature of 0.4 with maximum input and output lengths set to 100K and 16,384 tokens respectively to ensure complete text processing."
+    },
+    {
+      "source_window_id": "2025.acl-long.1420::appendix::E",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "E",
+      "section_title": "fairness of comparison with controlled training data",
+      "evidence": "Ensuring a fair and direct comparison with existing state-of-the-art models is paramount for validating novel contributions. A key concern in evaluating LLM-based review systems is the potential influence of differing training datasets on observed performance. To address this directly and provide a rigorously controlled comparison, we conducted an additional set of experiments focusing on the CycleReviewer-70B model.\n\nSpecifically, we trained a variant of our model, denoted DeepReviewer-14B-2024, using only the identical ICLR 2024 dataset that was utilized for training the CycleReviewer-70B model. This approach ensures that both models were exposed to the exact same source material, eliminating training data disparity as a confounding variable. All other aspects of the DeepReviewer training methodology, including the multi-stage reasoning framework, remained consistent. The performance of DeepReviewer-14B-2024 was then evaluated against CycleReviewer-70B on the ICLR 2024 test set across a comprehensive suite of metrics.\n\nThe results of this direct comparison, presented in Table 7, unequivocally demonstrate the advantages of our DeepReview framework. Despite having significantly fewer parameters (14B vs. 70B), DeepReviewer-14B-2024 consistently outperformed CycleReviewer-70B across the vast majority of evaluation metrics. For instance, in Rating MSE, DeepReviewer-14B-2024 achieved 1.4404 compared to CycleReviewer-70B's 2.4870, a substantial improvement. Similar significant gains were observed in Rating MAE (0.9472 vs. 1.2514), and across all fine-grained MSE and MAE metrics for Soundness, Presentation, and Contribution. Furthermore, DeepReviewer-14B-2024 also showed superior performance in Spearman correlation coefficients for overall rating, soundness, and contribution, as well as in Decision Accuracy, Decision F1, and pairwise accuracy tasks. These consistent and significant improvements under strictly matched training conditions reinforce the inherent effectiveness of our structured, deep-thinking approach to automated paper review and validate the fairness of our primary claims regarding DeepReviewer's capabilities.\n\nTable 5: Generalization performance of DeepReviewer-14B vs. Baselines on unseen conference data, judged by Gemini-2.0-Flash-Thinking. Win(%) indicates DeepReviewer-14B was superior; Lose(%) indicates the baseline was superior. Cells with the dominant percentage in a Win/Lose pair are highlighted.   \n\n<table><tr><td rowspan=\"2\">DeepReviewer 14B vs.</td><td colspan=\"2\">Constructive Value</td><td colspan=\"2\">Analytical Depth</td><td colspan=\"2\">Communication Clarity</td><td colspan=\"2\">Technical Accuracy</td><td colspan=\"2\">Overall Judgment</td></tr><tr><td>Win(%)↑</td><td>Lose(%)</td><td>Win(%)↑</td><td>Lose(%)</td><td>Win(%)↑</td><td>Lose(%)</td><td>Win(%)↑</td><td>Lose(%)</td><td>Win(%)↑</td><td>Lose(%)</td></tr><tr><td colspan=\"11\">ICML 2024</td></tr><tr><td>Claude-3.7-Sonnet</td><td>81</td><td>8</td><td>69</td><td>11</td><td>53</td><td>8</td><td>12</td><td>11</td><td>80</td><td>11</td></tr><tr><td>Gemini-2.0-Flash-Thinking</td><td>56</td><td>12</td><td>50</td><td>25</td><td>42</td><td>9</td><td>15</td><td>23</td><td>64</td><td>25</td></tr><tr><td>DeepSeek-R1</td><td>95</td><td>2</td><td>79</td><td>7</td><td>62</td><td>4</td><td>25</td><td>14</td><td>89</td><td>7</td></tr><tr><td>DeepSeek-V3</td><td>97</td><td>3</td><td>100</td><td>0</td><td>82</td><td>1</td><td>48</td><td>6</td><td>99</td><td>1</td></tr><tr><td colspan=\"11\">CVPR 2024</td></tr><tr><td>Claude-3.7-Sonnet</td><td>86</td><td>5</td><td>73</td><td>12</td><td>46</td><td>5</td><td>18</td><td>8</td><td>81</td><td>10</td></tr><tr><td>Gemini-2.0-Flash-Thinking</td><td>60</td><td>11</td><td>62</td><td>13</td><td>33</td><td>4</td><td>24</td><td>11</td><td>67</td><td>16</td></tr><tr><td>DeepSeek-R1</td><td>94</td><td>3</td><td>88</td><td>5</td><td>59</td><td>4</td><td>35</td><td>11</td><td>95</td><td>5</td></tr><tr><td>DeepSeek-V3</td><td>99</td><td>1</td><td>98</td><td>2</td><td>81</td><td>2</td><td>61</td><td>2</td><td>98</td><td>2</td></tr><tr><td colspan=\"11\">ACL 2024</td></tr><tr><td>Claude-3.7-Sonnet</td><td>72</td><td>11</td><td>67</td><td>11</td><td>22</td><td>6</td><td>11</td><td>6</td><td>72</td><td>11</td></tr><tr><td>Gemini-2.0-Flash-Thinking</td><td>69</td><td>7</td><td>63</td><td>14</td><td>43</td><td>1</td><td>22</td><td>15</td><td>76</td><td>15</td></tr><tr><td>DeepSeek-R1</td><td>89</td><td>7</td><td>83</td><td>10</td><td>59</td><td>7</td><td>34</td><td>13</td><td>89</td><td>7</td></tr><tr><td>DeepSeek-V3</td><td>99</td><td>1</td><td>99</td><td>1</td><td>77</td><td>1</td><td>60</td><td>3</td><td>99</td><td>1</td></tr></table>\n\nTable 6: Generalization performance of DeepReviewer-14B vs. Baselines on unseen conference data, judged by Gemini-2.5-Pro. Win(%) indicates DeepReviewer-14B was superior; Lose(%) indicates the baseline was superior. Cells with the dominant percentage in a Win/Lose pair are highlighted.   \n\n<table><tr><td rowspan=\"2\">DeepReviewer 14B vs.</td><td colspan=\"2\">Constructive Value</td><td colspan=\"2\">Analytical Depth</td><td colspan=\"2\">Communication Clarity</td><td colspan=\"2\">Technical Accuracy</td><td colspan=\"2\">Overall Judgment</td></tr><tr><td>Win(%)↑</td><td>Lose(%)</td><td>Win(%)↑</td><td>Lose(%)</td><td>Win(%)↑</td><td>Lose(%)</td><td>Win(%)↑</td><td>Lose(%)</td><td>Win(%)↑</td><td>Lose(%)</td></tr><tr><td colspan=\"11\">ICML 2024</td></tr><tr><td>claude-3-7-sonnet</td><td>83</td><td>14</td><td>76</td><td>22</td><td>53</td><td>33</td><td>37</td><td>32</td><td>72</td><td>28</td></tr><tr><td>Gemini2flash_thinking</td><td>82</td><td>11</td><td>64</td><td>27</td><td>67</td><td>16</td><td>33</td><td>22</td><td>78</td><td>20</td></tr><tr><td>DeepSeek-R1</td><td>96</td><td>4</td><td>87</td><td>9</td><td>62</td><td>21</td><td>45</td><td>21</td><td>83</td><td>14</td></tr><tr><td>DeepSeek-V3</td><td>98</td><td>2</td><td>98</td><td>2</td><td>91</td><td>0</td><td>86</td><td>7</td><td>98</td><td>3</td></tr><tr><td colspan=\"11\">CVPR 2024</td></tr><tr><td>claude-3-7-sonnet</td><td>93</td><td>5</td><td>90</td><td>8</td><td>62</td><td>15</td><td>41</td><td>23</td><td>90</td><td>7</td></tr><tr><td>Gemini2flash_thinking</td><td>67</td><td>4</td><td>74</td><td>18</td><td>67</td><td>12</td><td>41</td><td>18</td><td>77</td><td>17</td></tr><tr><td>DeepSeek-R1</td><td>94</td><td>6</td><td>88</td><td>10</td><td>76</td><td>18</td><td>48</td><td>22</td><td>88</td><td>12</td></tr><tr><td>DeepSeek-V3</td><td>100</td><td>0</td><td>98</td><td>0</td><td>94</td><td>4</td><td>80</td><td>14</td><td>98</td><td>2</td></tr><tr><td colspan=\"11\">ACL 2024</td></tr><tr><td>claude-3-7-sonnet</td><td>85</td><td>15</td><td>77</td><td>23</td><td>69</td><td>23</td><td>39</td><td>31</td><td>69</td><td>31</td></tr><tr><td>Gemini2flash_thinking</td><td>92</td><td>8</td><td>73</td><td>12</td><td>77</td><td>15</td><td>42</td><td>15</td><td>87</td><td>13</td></tr><tr><td>DeepSeek-R1</td><td>92</td><td>6</td><td>90</td><td>10</td><td>71</td><td>16</td><td>41</td><td>22</td><td>88</td><td>12</td></tr><tr><td>DeepSeek-V3</td><td>98</td><td>2</td><td>100</td><td>0</td><td>87</td><td>7</td><td>83</td><td>4</td><td>100</td><td>0</td></tr></table>"
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.3"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA H100 PCIe",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.1420\\auto\\full.md",
+    "source_md_sha256": "1ebad34aa9bca947600b8fbf28f5c3ae35a067cd9bd91c21e8136e60edcf76dd",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

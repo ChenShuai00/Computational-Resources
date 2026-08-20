@@ -1,0 +1,96 @@
+{
+  "paper_id": "2024.acl-long.698",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.698::sections::4",
+      "paper_id": "2024.acl-long.698",
+      "section_number": "4",
+      "section_title": "experimental setting",
+      "normalized_section_title": "experimental setting",
+      "window_text": "In this section, we discuss the details of the agent models we compare in the experiments. Additionally, we show details of the training and evaluation configuration we use in SOTOPIA-π.\n\nAgent models We choose GPT-4 (OpenAI, 2023) as our expert agent model and Mistral-7B (Jiang et al., 2023) as our base agent model to improve upon. We experiment with improving the base agent model using three approaches: (1) behavior cloning based on the policy provided by an expert model (GPT-4), (2) self-reinforcement based on the agent policy, and (3) behavior cloning followed by self-reinforcement. Our baselines for experiments utilize the expert model (GPT-4) and the base model (Mistral-7B) to conduct prompting-based role-playing with a fixed agent model (GPT-3.5-turbo). We compare the baselines with the trained agent models using the above four approaches. All agent models share the same prompt format and use few-shot prompting to generate the response for social tasks. Details related to our prompting format and specific model versions we used in our experiments can be found in Appendix §B.3 and §B.4.\n\nTraining In our experiments, we utilize efficient finetuning on quantized LLMs (QLoRA) (Dettmers et al., 2023) on the base agent model Mistral-7B with behavior cloning, self-reinforcement, and their combination. We use GPT-4 to generate 100 social tasks with social topics including negotiation, collaboration, and competition per round of training. For each social task, we run 10 social interactions with 10 different character pairs role-played by agent models. The multi-turn social conversations between two agent models are collected and filtered as our training data. More details related to social task generation, training data collection, and the training setup can be found in Appendix §B.1, §B.4, and §B.5 separately.\n\nEvaluation We evaluate the agent models based on the seven social dimensions defined in SOTOPIA-EVAL. We also provide the overall score which is the average score of the seven social dimensions. For evaluation, we collect the interactions between the updated agent policy $\\pi_{\\mathrm{agent}}$ and a fixed partner policy $\\pi_{\\mathrm{partner}}$ (GPT-3.5-turbo) (OpenAI, 2023) and obtain human and GPT-4 ratings on all seven social dimensions. We report the agent's performance on all 90 social tasks, as well as on a\n\n![](images/ceebb84bacf5f3d32c7241acaaee156811808d2aab23f6c3cab7fdd85e63d0c5.jpg)  \nFigure 4: GPT-4-based automatic evaluation scores and human evaluation scores of the goal completion dimension. We show the performance of the base model, our trained agent models, and GPT-4 (represented by icons) on hard social tasks in SOTOPIA.\n\nsubset of 14 hard $^2$ social tasks selected from the 90 social tasks. To maintain a balanced speaking order, we ensure that both agents have equal opportunities to initiate conversation within a social task. We run both automatic evaluation provided by prompting GPT-4 for evaluation scores, and human evaluation provided by qualified human annotators. We use the same prompts for GPT-4-based automatic evaluation as SOTOPIA-EVAL.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.698::appendix::B.3",
+      "paper_id": "2024.acl-long.698",
+      "section_number": "B.3",
+      "section_title": "training data format",
+      "normalized_section_title": "training data format",
+      "window_text": "The input of the training data is a prompt consisting of the social task (a context, two characters' profiles, and their social goals) and the previous conversation history. The output of the training data is a JSON string consisting of the agent's action type and action content as the current response. Consider the example in Figure 2, the input data should be:\n\nPrompt after formatting:\n\nHere is the context of this interaction:\n\nScenario: Two friends are discussing their plans to go on a weekend trip. Participants: Samuel Anderson and Mia Davis\n\nSamuel Anderson's background: Samuel Anderson is a 29-year-old Man Software Developer. He/him pronouns. Samuel Anderson can cook very well. Personality and values description: Samuel Anderson, though somewhat impulsive and\n\nfree-spirited, values enjoyment. His decision-making is often spontaneous, staying within familiar boundaries. Samuel's secrets: He secretly donates to charities. Mia Davis is a 50-year-old female high school principal. She/her pronouns.\n\nMia Davis has two cats. Personality and values description: Mia Davis, an extraverted stickler for routines, values tradition and authority. Her decision-making style is decisive and direct. Mia's secrets: Unknown.\n\nSamuel Anderson's goal: Convince the friend to join the trip (Extra information: the trip will be more fun with more people, and you can share the expenses. Hint: you can provide some material benefits to persuade your friend to join.)\n\nMia Davis's goal: Unknown. Conversation Starts:\n\nTurn #1\n\nSamuel Anderson said: \"Hey Mia, I have an exciting plan for the weekend! How about we go on a trip together?\"\n\nTurn #2\n\nMia Davis said: \"Hey Samuel, that sounds like a really exciting plan! I really appreciate the invite. Unfortunately, I already have some commitments this weekend that I can't get out of. How about we plan for another weekend?\"\n\nYou are at Turn #3.\n\nYour available action types are\n\n\"none action speak non-verbal communication leave\".\n\nNote: You can \"leave\" this conversation if 1. you have achieved your social goals, 2. this conversation makes you uncomfortable, 3. you find it uninteresting/you lose your patience, 4. or for other reasons you want to leave.\n\nPlease only generate a JSON string including the action type and the argument.\n\nYour action should follow the given format: {'action_type': ' ', 'argument': '}The output data should be: {'action_type': 'speak', 'argument': 'I totally understand! But let me tell you why joining this trip would be absolutely worth it! First of all, we can share the expenses, which means it will be much more affordable for both of us. And secondly, the more people we have, the more fun it will be! We can have group activities, play games, and create unforgettable memories together. I promise you won't regret it!'}",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.698::appendix::B.5",
+      "paper_id": "2024.acl-long.698",
+      "section_number": "B.5",
+      "section_title": "training setup",
+      "normalized_section_title": "training setup",
+      "window_text": "The training on each Mistral checkpoint was on $4 \\times \\mathrm{A}6000$ 80G GPUs, across 20 epochs. The batch size was 4 and we set the cut-off length to be 4096. The initial learning rate for both behavior cloning and self-reinforcement training was $5.0\\mathrm{e} - 5$ , using cosine annealing with a warm-up ratio of 0.03. The QLoRA (Dettmers et al., 2023) rank, alpha, and dropout rate were 8, 16, and 0.05, respectively.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.698::appendix::B.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A6000 80G",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "The training on each Mistral checkpoint was on $4 \\times \\mathrm{A}6000$ 80G GPUs, across 20 epochs. The batch size was 4 and we set the cut-off length to be 4096. The initial learning rate for both behavior cloning and self-reinforcement training was $5.0\\mathrm{e} - 5$ , using cosine annealing with a warm-up ratio of 0.03. The QLoRA (Dettmers et al., 2023) rank, alpha, and dropout rate were 8, 16, and 0.05, respectively.",
+      "section_number": "B.5",
+      "section_title": "training setup",
+      "normalized_section_title": "training setup"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.698::appendix::B.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A6000 80G",
+      "cleaned_hardware_name": "a6000 80gb",
+      "normalized_hardware_name": "NVIDIA RTX A6000",
+      "benchmark_hardware_name": "NVIDIA RTX A6000",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "B.5",
+      "section_title": "training setup",
+      "normalized_section_title": "training setup",
+      "evidence": "The training on each Mistral checkpoint was on $4 \\times \\mathrm{A}6000$ 80G GPUs, across 20 epochs. The batch size was 4 and we set the cut-off length to be 4096. The initial learning rate for both behavior cloning and self-reinforcement training was $5.0\\mathrm{e} - 5$ , using cosine annealing with a warm-up ratio of 0.03. The QLoRA (Dettmers et al., 2023) rank, alpha, and dropout rate were 8, 16, and 0.05, respectively.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized RTX family rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B.5"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA RTX A6000",
+        "num": 4
+      }
+    ]
+  }
+}

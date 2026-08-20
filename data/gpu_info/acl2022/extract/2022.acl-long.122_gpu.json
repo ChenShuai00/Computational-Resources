@@ -1,0 +1,199 @@
+{
+  "paper_id": "2022.acl-long.122",
+  "candidate_windows": [
+    {
+      "window_id": "2022.acl-long.122::sections::4",
+      "paper_id": "2022.acl-long.122",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "Our method for constructing personalized LMs consists of a similarity metric and a method for leveraging similar user data to train a personalized LM. The similarity metric measures which anchor users are most similar to a new user. That is, given a set of users (anchors), a new user $(n)$ , and a similarity function (sim), we compute $z = \\text{sim}(n, \\text{anchors})$ ; $z \\subset$ anchors to get a set of similar users $z$ . We explore three similarity metrics and two methods of applying them to the construction of personalized models. Figure 1 shows how user data is used for each step.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.122::sections::6.2",
+      "paper_id": "2022.acl-long.122",
+      "section_number": "6.2",
+      "section_title": "large anchor set",
+      "normalized_section_title": "large anchor set",
+      "window_text": "In a set of only one hundred anchor users, it may be the case that existing users are not similar enough to the new user to benefit from our approach. To test this idea we ran experiments using the larger set of 10k anchor users and 100 new users.\n\nTaking our most promising user embedding similarity metric from the weighted sample fine-tuning, we tested this method's performance varying the number of similar users. Our results in Table 3 show a reduction in perplexity of 0.94 at 100 similar users and over one point at 200 users. There is a logarithmic improvement with the number of similar users considered, as we would expect more dissimilar users to be less informative. The results in this table suggest that the anchor set must be diverse enough to contain similar users to new users, in order to benefit from this method.\n\nWe also try the interpolation model with a larger set of anchor users. Our base model is trained on 10k anchor users and 2k tokens from each anchor. Note that we are controlling for the total points from anchor users, using 100 times fewer points per user and 100 times more users. Scaling up these experiments to more points and users is computationally expensive but may be worth exploring in future work. We fine-tune this model to each similar anchor user for weighting predictions. On a held-out set we tune $\\eta$ and find that in this setting performance starts to drop after around 10 similar users. It is computationally expensive to run each of the 10k models on each new user. The perplexity similarity metric requires that all of these are run in order to determine similarity and thus is not scalable to the large anchor user setting. The user embedding metric scales better because similarity can be determined by tuning an existing LM on\n\nTable 4: Comparison of our interpolated user embedding similarity model on the large anchor set to a standard fine-tuned Merity et al. (2018a) baseline measured in perplexity and accuracy @N. We show results for 2k and 6k tokens per anchor user, showing improved performance when more data per anchor is available. Bold indicates best performance.   \n\n<table><tr><td rowspan=\"2\">#Sim. Users</td><td colspan=\"5\">2k per Anchor Δ</td><td colspan=\"5\">6k per Anchor Δ</td></tr><tr><td>PPL</td><td>Acc @1</td><td>Acc @3</td><td>Acc @5</td><td>Acc @10</td><td>PPL</td><td>Acc @1</td><td>Acc @3</td><td>Acc @5</td><td>Acc @10</td></tr><tr><td>10</td><td>-0.692</td><td>0.097</td><td>0.111</td><td>0.100</td><td>0.058</td><td>-11.726</td><td>0.497</td><td>0.697</td><td>0.723</td><td>0.718</td></tr><tr><td>5</td><td>-0.615</td><td>0.091</td><td>0.103</td><td>0.090</td><td>0.049</td><td>-11.463</td><td>0.491</td><td>0.656</td><td>0.694</td><td>0.705</td></tr><tr><td>4</td><td>-0.590</td><td>0.088</td><td>0.091</td><td>0.079</td><td>0.045</td><td>-11.287</td><td>0.486</td><td>0.650</td><td>0.677</td><td>0.684</td></tr><tr><td>3</td><td>-0.553</td><td>0.084</td><td>0.087</td><td>0.072</td><td>0.039</td><td>-11.001</td><td>0.457</td><td>0.622</td><td>0.657</td><td>0.654</td></tr><tr><td>2</td><td>-0.415</td><td>0.084</td><td>0.060</td><td>0.052</td><td>0.033</td><td>-10.604</td><td>0.439</td><td>0.588</td><td>0.602</td><td>0.617</td></tr><tr><td>1</td><td>-0.006</td><td>0.047</td><td>0.016</td><td>0.002</td><td>-0.002</td><td>-8.866</td><td>0.282</td><td>0.423</td><td>0.485</td><td>0.516</td></tr></table>\n\n![](images/998c3631fc63185cb3f7b5cfc9ca64a7cf7b595eca19da98b9886895e69929fc.jpg)\n\n![](images/37b2ccb0e0999206936d8f4f2f187f5bde7b022e406eb9ddcd96a43c7488c2d9.jpg)\n\n![](images/5a8ff50b9d69426bf6e8baab57d4f9e3cc07c2345332bc322025481aa40c0324.jpg)  \nFigure 3: Heat maps showing normalized similarity for each metric on our 100 author anchor set.\n\nTable 5: Spearman and Pearson correlation coefficients for each pair of similarity metrics (User Embeddings (UE), Authorship Attribution (AA), and Perplexity (PPL)) computed for each of our 100 anchor users similarity to each new user.   \n\n<table><tr><td>Metric 1</td><td>Metric 2</td><td>Pearson&#x27;s r</td><td>Spearman&#x27;s ρ</td></tr><tr><td>UE</td><td>AA</td><td>0.360</td><td>0.362</td></tr><tr><td>UE</td><td>PPL</td><td>0.280</td><td>0.316</td></tr><tr><td>PPL</td><td>AA</td><td>0.073</td><td>0.025</td></tr></table>\n\nnew user data. For ten similar users we require 1,000 times fewer computations than we would to weight all 10k users. We found that authorship attribution performed much worse in this setting, as the confusion matrix becomes very sparse.\n\nThe results for our best similarity metric, user embeddings, are shown in Table 4. On the left we see performance for our model on the larger set containing 2k tokens per anchor user. For this analysis of our best, scalable model, we include accuracy @N, a metric denoting the percentage of times the correct word was in the top-N most probable choices. This is comparable to Table 3, where we used the same amount of data for the weighted sample fine-tuning approach. On the right we see performance when the amount of data per anchor user is tripled. The baseline and fine-tuned models all benefit from this additional data, however we find that the difference in perplexity is much larger, as having additional data will allow the models to\n\nlearn more accurate similarity metrics. We also find that when tuning $\\eta$ it tends toward 0.6 when there are 2k tokens per anchor user but 0.3 when there are 6k. As the amount of data from the anchor users increases, the optimal interpolation weights shift to weight the anchor user models more heavily than the model fine-tuned on the new user. How the tuning of $\\eta$ could be done on a per-user basis, rather than globally, is an interesting open question.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.122::appendix::A",
+      "paper_id": "2022.acl-long.122",
+      "section_number": "A",
+      "section_title": "hyperparameters for authorship attribution model",
+      "normalized_section_title": "hyperparameters for authorship attribution model",
+      "window_text": "- Bidirectional LSTM layers=3   \nLSTM hidden dim=400\n\noutput dropout=0.5   \n- fully-connected layer $\\dim = 800 \\times K$   \n- Adam optimizer   \ncross-entropy loss   \nlearning rate $= 1\\mathrm{e} - 3$   \n- batch size=64   \n- early stopping if no improvement over 10 epochs",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.122::appendix::B",
+      "paper_id": "2022.acl-long.122",
+      "section_number": "B",
+      "section_title": "hyperparameters for user embedding model",
+      "normalized_section_title": "hyperparameters for user embedding model",
+      "window_text": "- scalar dropout=0.1   \n- embedding dropout=0.2   \nLSTM layers=3   \nLSTM hidden dim=1,150   \n- recurrent dropout=0.2   \n- user embedding dim=50 (tried 20,50,100 but 50 worked best)   \ncross-entropy loss   \n- early stopping if no improvement over 20 epochs   \n- sequence length=70   \n- batch size=20   \nlearning rate=3   \nparameter clipping=0.25",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.122::appendix::C",
+      "paper_id": "2022.acl-long.122",
+      "section_number": "C",
+      "section_title": "running times",
+      "normalized_section_title": "running times",
+      "window_text": "Authorship attribution models are trained on an NVIDIA GeForce RTX-2080Ti GPU and take 2.5 hours for $K = 100$ anchors and 4 hours for $K = 10,000$ anchors.\n\nTraining a new language model for weighted fine-tuning as described in Section 6.1 takes about 2.5 hours to train a model on a dataset on an NVIDIA Tesla V100 GPU. Fine-tuning the trained models on the training data of the new user takes about one minute on average.\n\nThe user embedding models are trained on an NVIDIA GeForce RTX-2080Ti GPU. For $K = 100$ anchors, it took 132 hours. When training with $K = 10,000$ , we reduced the hidden LSTM size to 500, which reduced training time to 112 hours.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.acl-long.122::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA GeForce RTX-2080Ti",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Authorship attribution models are trained on an NVIDIA GeForce RTX-2080Ti GPU and take 2.5 hours for $K = 100$ anchors and 4 hours for $K = 10,000$ anchors.\n\nTraining a new language model for weighted fine-tuning as described in Section 6.1 takes about 2.5 hours to train a model on a dataset on an NVIDIA Tesla V100 GPU. Fine-tuning the trained models on the training data of the new user takes about one minute on average.\n\nThe user embedding models are trained on an NVIDIA GeForce RTX-2080Ti GPU. For $K = 100$ anchors, it took 132 hours. When training with $K = 10,000$ , we reduced the hidden LSTM size to 500, which reduced training time to 112 hours.",
+      "section_number": "C",
+      "section_title": "running times",
+      "normalized_section_title": "running times"
+    },
+    {
+      "window_id": "2022.acl-long.122::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Authorship attribution models are trained on an NVIDIA GeForce RTX-2080Ti GPU and take 2.5 hours for $K = 100$ anchors and 4 hours for $K = 10,000$ anchors.\n\nTraining a new language model for weighted fine-tuning as described in Section 6.1 takes about 2.5 hours to train a model on a dataset on an NVIDIA Tesla V100 GPU. Fine-tuning the trained models on the training data of the new user takes about one minute on average.\n\nThe user embedding models are trained on an NVIDIA GeForce RTX-2080Ti GPU. For $K = 100$ anchors, it took 132 hours. When training with $K = 10,000$ , we reduced the hidden LSTM size to 500, which reduced training time to 112 hours.",
+      "section_number": "C",
+      "section_title": "running times",
+      "normalized_section_title": "running times"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.acl-long.122::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA GeForce RTX-2080Ti",
+      "cleaned_hardware_name": "nvidia geforce rtx 2080 ti",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "C",
+      "section_title": "running times",
+      "normalized_section_title": "running times",
+      "evidence": "Authorship attribution models are trained on an NVIDIA GeForce RTX-2080Ti GPU and take 2.5 hours for $K = 100$ anchors and 4 hours for $K = 10,000$ anchors.\n\nTraining a new language model for weighted fine-tuning as described in Section 6.1 takes about 2.5 hours to train a model on a dataset on an NVIDIA Tesla V100 GPU. Fine-tuning the trained models on the training data of the new user takes about one minute on average.\n\nThe user embedding models are trained on an NVIDIA GeForce RTX-2080Ti GPU. For $K = 100$ anchors, it took 132 hours. When training with $K = 10,000$ , we reduced the hidden LSTM size to 500, which reduced training time to 112 hours.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2022.acl-long.122::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100",
+      "cleaned_hardware_name": "nvidia tesla v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "C",
+      "section_title": "running times",
+      "normalized_section_title": "running times",
+      "evidence": "Authorship attribution models are trained on an NVIDIA GeForce RTX-2080Ti GPU and take 2.5 hours for $K = 100$ anchors and 4 hours for $K = 10,000$ anchors.\n\nTraining a new language model for weighted fine-tuning as described in Section 6.1 takes about 2.5 hours to train a model on a dataset on an NVIDIA Tesla V100 GPU. Fine-tuning the trained models on the training data of the new user takes about one minute on average.\n\nThe user embedding models are trained on an NVIDIA GeForce RTX-2080Ti GPU. For $K = 100$ anchors, it took 132 hours. When training with $K = 10,000$ , we reduced the hidden LSTM size to 500, which reduced training time to 112 hours.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2022.acl-long.122::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": "Our method for constructing personalized LMs consists of a similarity metric and a method for leveraging similar user data to train a personalized LM. The similarity metric measures which anchor users are most similar to a new user. That is, given a set of users (anchors), a new user $(n)$ , and a similarity function (sim), we compute $z = \\text{sim}(n, \\text{anchors})$ ; $z \\subset$ anchors to get a set of similar users $z$ . We explore three similarity metrics and two methods of applying them to the construction of personalized models. Figure 1 shows how user data is used for each step."
+    },
+    {
+      "source_window_id": "2022.acl-long.122::sections::6.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6.2",
+      "section_title": "large anchor set",
+      "evidence": "In a set of only one hundred anchor users, it may be the case that existing users are not similar enough to the new user to benefit from our approach. To test this idea we ran experiments using the larger set of 10k anchor users and 100 new users.\n\nTaking our most promising user embedding similarity metric from the weighted sample fine-tuning, we tested this method's performance varying the number of similar users. Our results in Table 3 show a reduction in perplexity of 0.94 at 100 similar users and over one point at 200 users. There is a logarithmic improvement with the number of similar users considered, as we would expect more dissimilar users to be less informative. The results in this table suggest that the anchor set must be diverse enough to contain similar users to new users, in order to benefit from this method.\n\nWe also try the interpolation model with a larger set of anchor users. Our base model is trained on 10k anchor users and 2k tokens from each anchor. Note that we are controlling for the total points from anchor users, using 100 times fewer points per user and 100 times more users. Scaling up these experiments to more points and users is computationally expensive but may be worth exploring in future work. We fine-tune this model to each similar anchor user for weighting predictions. On a held-out set we tune $\\eta$ and find that in this setting performance starts to drop after around 10 similar users. It is computationally expensive to run each of the 10k models on each new user. The perplexity similarity metric requires that all of these are run in order to determine similarity and thus is not scalable to the large anchor user setting. The user embedding metric scales better because similarity can be determined by tuning an existing LM on\n\nTable 4: Comparison of our interpolated user embedding similarity model on the large anchor set to a standard fine-tuned Merity et al. (2018a) baseline measured in perplexity and accuracy @N. We show results for 2k and 6k tokens per anchor user, showing improved performance when more data per anchor is available. Bold indicates best performance.   \n\n<table><tr><td rowspan=\"2\">#Sim. Users</td><td colspan=\"5\">2k per Anchor Δ</td><td colspan=\"5\">6k per Anchor Δ</td></tr><tr><td>PPL</td><td>Acc @1</td><td>Acc @3</td><td>Acc @5</td><td>Acc @10</td><td>PPL</td><td>Acc @1</td><td>Acc @3</td><td>Acc @5</td><td>Acc @10</td></tr><tr><td>10</td><td>-0.692</td><td>0.097</td><td>0.111</td><td>0.100</td><td>0.058</td><td>-11.726</td><td>0.497</td><td>0.697</td><td>0.723</td><td>0.718</td></tr><tr><td>5</td><td>-0.615</td><td>0.091</td><td>0.103</td><td>0.090</td><td>0.049</td><td>-11.463</td><td>0.491</td><td>0.656</td><td>0.694</td><td>0.705</td></tr><tr><td>4</td><td>-0.590</td><td>0.088</td><td>0.091</td><td>0.079</td><td>0.045</td><td>-11.287</td><td>0.486</td><td>0.650</td><td>0.677</td><td>0.684</td></tr><tr><td>3</td><td>-0.553</td><td>0.084</td><td>0.087</td><td>0.072</td><td>0.039</td><td>-11.001</td><td>0.457</td><td>0.622</td><td>0.657</td><td>0.654</td></tr><tr><td>2</td><td>-0.415</td><td>0.084</td><td>0.060</td><td>0.052</td><td>0.033</td><td>-10.604</td><td>0.439</td><td>0.588</td><td>0.602</td><td>0.617</td></tr><tr><td>1</td><td>-0.006</td><td>0.047</td><td>0.016</td><td>0.002</td><td>-0.002</td><td>-8.866</td><td>0.282</td><td>0.423</td><td>0.485</td><td>0.516</td></tr></table>\n\n![](images/998c3631fc63185cb3f7b5cfc9ca64a7cf7b595eca19da98b9886895e69929fc.jpg)\n\n![](images/37b2ccb0e0999206936d8f4f2f187f5bde7b022e406eb9ddcd96a43c7488c2d9.jpg)\n\n![](images/5a8ff50b9d69426bf6e8baab57d4f9e3cc07c2345332bc322025481aa40c0324.jpg)  \nFigure 3: Heat maps showing normalized similarity for each metric on our 100 author anchor set.\n\nTable 5: Spearman and Pearson correlation coefficients for each pair of similarity metrics (User Embeddings (UE), Authorship Attribution (AA), and Perplexity (PPL)) computed for each of our 100 anchor users similarity to each new user.   \n\n<table><tr><td>Metric 1</td><td>Metric 2</td><td>Pearson&#x27;s r</td><td>Spearman&#x27;s ρ</td></tr><tr><td>UE</td><td>AA</td><td>0.360</td><td>0.362</td></tr><tr><td>UE</td><td>PPL</td><td>0.280</td><td>0.316</td></tr><tr><td>PPL</td><td>AA</td><td>0.073</td><td>0.025</td></tr></table>\n\nnew user data. For ten similar users we require 1,000 times fewer computations than we would to weight all 10k users. We found that authorship attribution performed much worse in this setting, as the confusion matrix becomes very sparse.\n\nThe results for our best similarity metric, user embeddings, are shown in Table 4. On the left we see performance for our model on the larger set containing 2k tokens per anchor user. For this analysis of our best, scalable model, we include accuracy @N, a metric denoting the percentage of times the correct word was in the top-N most probable choices. This is comparable to Table 3, where we used the same amount of data for the weighted sample fine-tuning approach. On the right we see performance when the amount of data per anchor user is tripled. The baseline and fine-tuned models all benefit from this additional data, however we find that the difference in perplexity is much larger, as having additional data will allow the models to\n\nlearn more accurate similarity metrics. We also find that when tuning $\\eta$ it tends toward 0.6 when there are 2k tokens per anchor user but 0.3 when there are 6k. As the amount of data from the anchor users increases, the optimal interpolation weights shift to weight the anchor user models more heavily than the model fine-tuned on the new user. How the tuning of $\\eta$ could be done on a per-user basis, rather than globally, is an interesting open question."
+    },
+    {
+      "source_window_id": "2022.acl-long.122::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "hyperparameters for authorship attribution model",
+      "evidence": "- Bidirectional LSTM layers=3   \nLSTM hidden dim=400\n\noutput dropout=0.5   \n- fully-connected layer $\\dim = 800 \\times K$   \n- Adam optimizer   \ncross-entropy loss   \nlearning rate $= 1\\mathrm{e} - 3$   \n- batch size=64   \n- early stopping if no improvement over 10 epochs"
+    },
+    {
+      "source_window_id": "2022.acl-long.122::appendix::B",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B",
+      "section_title": "hyperparameters for user embedding model",
+      "evidence": "- scalar dropout=0.1   \n- embedding dropout=0.2   \nLSTM layers=3   \nLSTM hidden dim=1,150   \n- recurrent dropout=0.2   \n- user embedding dim=50 (tried 20,50,100 but 50 worked best)   \ncross-entropy loss   \n- early stopping if no improvement over 20 epochs   \n- sequence length=70   \n- batch size=20   \nlearning rate=3   \nparameter clipping=0.25"
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "C"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce RTX 2080 Ti",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2022\\2022.acl-long.122\\auto\\full.md",
+    "source_md_sha256": "c0231c3a960b5553ea8a28a361c8672e642dfa7ffa4496a3e42d72512f6364b8",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

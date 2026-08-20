@@ -1,0 +1,96 @@
+{
+  "paper_id": "2024.acl-long.767",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.767::sections::4",
+      "paper_id": "2024.acl-long.767",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "We conduct a controlled generation evaluation using the Amazon Customer Reviews dataset<sup>1</sup>. The dataset includes multiple attributes related to the review style, the categories corresponding to the type of reviewed product, and the sentiments aligned with the product rating. Consequently, this dataset is well-suited for the creation of diverse corpora that contain specific attributes. We classify the dataset corpus based on category and sentiment. For categories, we construct four distinct corpora: Camera, Videogame, Grocery, and Music. In terms of sentiment, samples rated with 5 stars are compiled into a positive corpus, while those rated with 1 star formed a negative corpus. Details on the dataset statistics are discussed in Appendix B.\n\nUsing these corpora, we evaluate controlled generation tasks for both category and sentiment attributes. In each task, we test the controllability and fluency of generated continuations when fixing one target attribute among the attributes relevant to the task, starting from an input text with arbitrary attributes. Experimental details for our experiments are mentioned in Appendix C.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.767::appendix::A",
+      "paper_id": "2024.acl-long.767",
+      "section_number": "A",
+      "section_title": "training algorithms for scope",
+      "normalized_section_title": "training algorithms for scope",
+      "window_text": "Algorithm 2 MLM Fine-Tuning 1: Input: pre-trained MLM $\\psi$ , fine-tuned MLM $\\phi$ , target corpus $\\mathcal{X}$ , MLM loss function $\\mathcal{L}_{\\mathrm{MLM}}$   \n2: Initialize $\\phi$ with $\\psi$   \n3: for x in $\\mathcal{X}$ do   \n4: Update $\\phi$ by $\\nabla_{\\phi}\\mathcal{L}_{\\mathrm{MLM}}(\\mathbf{x})$   \n5: return $\\phi$Algorithm 3 Training ScoPE 1: Input: training set $\\mathcal{T}$ , fine-tuned MLM $\\phi$ , ScoPE $\\theta$ , clip scale $c$   \n2: Initialize $\\theta$ with $\\phi$   \n3: for $(\\mathbf{x}^{(i)},\\tilde{\\mathbf{y}}^{(i)})$ in $T$ do   \n4: Sample $\\hat{\\mathbf{y}}^{(i)}\\sim p_{\\theta}(\\cdot |\\mathbf{x}^{(i)},\\tilde{\\mathbf{y}}^{(i)})$   \n5: Compute $d(\\mathbf{x},\\tilde{\\mathbf{y}},\\hat{\\mathbf{y}})_t$ for $0\\leq t < |\\tilde{\\mathbf{y}}^{(i)}|$   \n6: Clip $d(\\mathbf{x},\\tilde{\\mathbf{y}},\\hat{\\mathbf{y}})_t$ within the range $(-c,c)$   \n7: Compute $\\mathcal{L}_{\\mathrm{ScoPE}}$   \n8: Update $\\theta$ by $\\nabla_{\\theta}\\mathcal{L}_{\\mathrm{ScoPE}}$   \n9: return $\\theta$",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.767::appendix::C",
+      "paper_id": "2024.acl-long.767",
+      "section_number": "C",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "window_text": "The test set created for evaluation consists of input texts of 32 tokens and generated continuation texts of 128 tokens. During test set creation, the block size b for editing was fixed at 16. For MAUVE evaluation, we compute the performance of MAUVE using five seeds for k-means clustering and evaluate it as the average. A reference set for MAUVE evaluation is constructed from the target corpus.\n\nTable 14 presents the hyperparameters for fine-tuning the pre-trained MLM. Table 15 presents the hyperparameters for training ScoPE. All training and fine-tunings are conducted with four GPU on our machine (GPU: NVIDIA V100). Irrespective of the domain, during the first stage of ScoPE training, the additional fine-tuning of the pre-trained MLM has been observed to transpire at a rate of approximately 1.8 updates per second. The subsequent\n\nTable 6: Data statistics for each domain data corpus.   \n\n<table><tr><td>Domains</td><td># Tokens</td><td># Samples</td></tr><tr><td>Camera</td><td>178M</td><td>1.80M</td></tr><tr><td>Videogame</td><td>222M</td><td>1.79M</td></tr><tr><td>Grocery</td><td>141M</td><td>2.40M</td></tr><tr><td>Music</td><td>165M</td><td>1.80M</td></tr><tr><td>Positive</td><td>64.4M</td><td>647K</td></tr><tr><td>Negative</td><td>60.9M</td><td>613K</td></tr></table>\n\nTable 7: Mauve of categorical domains. \"Source\" refers to the source domain, and \"Reference\" refers to the reference domain.   \n\n<table><tr><td rowspan=\"2\">Source</td><td colspan=\"4\">Reference</td></tr><tr><td>Camera</td><td>Videogame</td><td>Grocery</td><td>Music</td></tr><tr><td>Camera</td><td>0.9441</td><td>0.1912</td><td>0.0653</td><td>0.0322</td></tr><tr><td>Videogame</td><td>0.2582</td><td>0.9056</td><td>0.0725</td><td>0.0931</td></tr><tr><td>Grocery</td><td>0.0549</td><td>0.0524</td><td>0.9542</td><td>0.0322</td></tr><tr><td>Music</td><td>0.0327</td><td>0.1008</td><td>0.0378</td><td>0.9563</td></tr></table>\n\nstage, involving ScoPE loss training, proceeds at an approximate rate of 0.45 updates per second. Given that the camera domain, characterized by the largest target dataset size, requires the most extensive training, the complete training process for this domain takes approximately $29\\mathrm{h}52\\mathrm{m}$ time. Our code is based on FairSeq (Ott et al., 2019). The pre-trained MLM used for acquiring the base models and score models of ScoPE in all tasks is RoBERTa-base (Liu et al., 2019). We fix the output text decoding strategy of the ScoPE editor to ancestral sampling in all evaluations.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.767::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA V100",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "The test set created for evaluation consists of input texts of 32 tokens and generated continuation texts of 128 tokens. During test set creation, the block size b for editing was fixed at 16. For MAUVE evaluation, we compute the performance of MAUVE using five seeds for k-means clustering and evaluate it as the average. A reference set for MAUVE evaluation is constructed from the target corpus.\n\nTable 14 presents the hyperparameters for fine-tuning the pre-trained MLM. Table 15 presents the hyperparameters for training ScoPE. All training and fine-tunings are conducted with four GPU on our machine (GPU: NVIDIA V100). Irrespective of the domain, during the first stage of ScoPE training, the additional fine-tuning of the pre-trained MLM has been observed to transpire at a rate of approximately 1.8 updates per second. The subsequent\n\nTable 6: Data statistics for each domain data corpus.   \n\n<table><tr><td>Domains</td><td># Tokens</td><td># Samples</td></tr><tr><td>Camera</td><td>178M</td><td>1.80M</td></tr><tr><td>Videogame</td><td>222M</td><td>1.79M</td></tr><tr><td>Grocery</td><td>141M</td><td>2.40M</td></tr><tr><td>Music</td><td>165M</td><td>1.80M</td></tr><tr><td>Positive</td><td>64.4M</td><td>647K</td></tr><tr><td>Negative</td><td>60.9M</td><td>613K</td></tr></table>\n\nTable 7: Mauve of categorical domains. \"Source\" refers to the source domain, and \"Reference\" refers to the reference domain.   \n\n<table><tr><td rowspan=\"2\">Source</td><td colspan=\"4\">Reference</td></tr><tr><td>Camera</td><td>Videogame</td><td>Grocery</td><td>Music</td></tr><tr><td>Camera</td><td>0.9441</td><td>0.1912</td><td>0.0653</td><td>0.0322</td></tr><tr><td>Videogame</td><td>0.2582</td><td>0.9056</td><td>0.0725</td><td>0.0931</td></tr><tr><td>Grocery</td><td>0.0549</td><td>0.0524</td><td>0.9542</td><td>0.0322</td></tr><tr><td>Music</td><td>0.0327</td><td>0.1008</td><td>0.0378</td><td>0.9563</td></tr></table>\n\nstage, involving ScoPE loss training, proceeds at an approximate rate of 0.45 updates per second. Given that the camera domain, characterized by the largest target dataset size, requires the most extensive training, the complete training process for this domain takes approximately $29\\mathrm{h}52\\mathrm{m}$ time. Our code is based on FairSeq (Ott et al., 2019). The pre-trained MLM used for acquiring the base models and score models of ScoPE in all tasks is RoBERTa-base (Liu et al., 2019). We fix the output text decoding strategy of the ScoPE editor to ancestral sampling in all evaluations.",
+      "section_number": "C",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.767::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA V100",
+      "cleaned_hardware_name": "nvidia v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "C",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "evidence": "The test set created for evaluation consists of input texts of 32 tokens and generated continuation texts of 128 tokens. During test set creation, the block size b for editing was fixed at 16. For MAUVE evaluation, we compute the performance of MAUVE using five seeds for k-means clustering and evaluate it as the average. A reference set for MAUVE evaluation is constructed from the target corpus.\n\nTable 14 presents the hyperparameters for fine-tuning the pre-trained MLM. Table 15 presents the hyperparameters for training ScoPE. All training and fine-tunings are conducted with four GPU on our machine (GPU: NVIDIA V100). Irrespective of the domain, during the first stage of ScoPE training, the additional fine-tuning of the pre-trained MLM has been observed to transpire at a rate of approximately 1.8 updates per second. The subsequent\n\nTable 6: Data statistics for each domain data corpus.   \n\n<table><tr><td>Domains</td><td># Tokens</td><td># Samples</td></tr><tr><td>Camera</td><td>178M</td><td>1.80M</td></tr><tr><td>Videogame</td><td>222M</td><td>1.79M</td></tr><tr><td>Grocery</td><td>141M</td><td>2.40M</td></tr><tr><td>Music</td><td>165M</td><td>1.80M</td></tr><tr><td>Positive</td><td>64.4M</td><td>647K</td></tr><tr><td>Negative</td><td>60.9M</td><td>613K</td></tr></table>\n\nTable 7: Mauve of categorical domains. \"Source\" refers to the source domain, and \"Reference\" refers to the reference domain.   \n\n<table><tr><td rowspan=\"2\">Source</td><td colspan=\"4\">Reference</td></tr><tr><td>Camera</td><td>Videogame</td><td>Grocery</td><td>Music</td></tr><tr><td>Camera</td><td>0.9441</td><td>0.1912</td><td>0.0653</td><td>0.0322</td></tr><tr><td>Videogame</td><td>0.2582</td><td>0.9056</td><td>0.0725</td><td>0.0931</td></tr><tr><td>Grocery</td><td>0.0549</td><td>0.0524</td><td>0.9542</td><td>0.0322</td></tr><tr><td>Music</td><td>0.0327</td><td>0.1008</td><td>0.0378</td><td>0.9563</td></tr></table>\n\nstage, involving ScoPE loss training, proceeds at an approximate rate of 0.45 updates per second. Given that the camera domain, characterized by the largest target dataset size, requires the most extensive training, the complete training process for this domain takes approximately $29\\mathrm{h}52\\mathrm{m}$ time. Our code is based on FairSeq (Ott et al., 2019). The pre-trained MLM used for acquiring the base models and score models of ScoPE in all tasks is RoBERTa-base (Liu et al., 2019). We fix the output text decoding strategy of the ScoPE editor to ancestral sampling in all evaluations.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "C"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 4
+      }
+    ]
+  }
+}

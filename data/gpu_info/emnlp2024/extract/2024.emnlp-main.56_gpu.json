@@ -1,0 +1,309 @@
+{
+  "paper_id": "2024.emnlp-main.56",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.56::sections::1",
+      "paper_id": "2024.emnlp-main.56",
+      "section_number": "1",
+      "section_title": "introduction",
+      "normalized_section_title": "introduction",
+      "window_text": "Fine-tuning large language models (LLMs) has demonstrated outstanding performance in addressing numerous natural language processing applications, such as natural language understanding (Kenton and Toutanova, 2019), question-answering (Xu et al.; Cheng et al., 2023), and summarization (Zhang et al., 2024). However, as the size of LLMs increases, the\n\ntraining process consumes progressively more GPU memory. In recent years, approaches such as quantization (Tian et al., 2023; Dettmers et al., 2024) and parameter-efficient fine-tuning (PEFT) (Hu et al., 2021) have been proposed to reduce memory costs during training by storing data with lower bit-depth or updating only a portion of the parameters. Despite these strategies effectively reducing memory costs, overall memory usage remains high due to the continuous reliance on a backpropagation graph.\n\nTo further reduce the memory overhead, (Malladi et al., 2023) proposed the Memory-efficient Zeroth-order (MeZO) method for LLM fine-tuning, which shows over $8 \\times$ memory reduction compared with the first-order (FO) fine-tuning methods like SGD (Amari, 1993) and AdamW (Loshchilov and Hutter, 2018). Unlike FO methods, which calculate gradients via backpropagation, the MeZO method estimates gradients based on the difference between loss values obtained from two forward passes, thereby eliminating the need for a backpropagation graph. However, two main challenges persist in the zeroth-order (ZO) fine-tuning of LLMs: 1) a significant performance gap between FO and ZO approaches, and 2) increased risk of divergence, particularly in the ZO fine-tuning of large-scale LLMs, as observed in recent studies (Gautam et al., 2024).\n\nTo improve the performance, various FO optimization techniques have been adapted for ZO fine-tuning scenarios, like the ZO-AdaMU method (Jiang et al., 2024). However, these approaches fail to accommodate the specific needs of ZO methods, and add significant memory overhead from the optimizer state. Given the dimensionality-related\n\n![](images/d2eb3f6525ca46a88de2d7d399cd7e34ec9b347262c624fed06e24f3ef66db3c.jpg)\n\n![](images/7821f91a910c3ded69740b7f3d9b7e3d04cd8a49de3b6f30561c77c36aacf8f4.jpg)\n\n![](images/203a4abffca6166ebb051fbb2b3c46a95b92cfdb1a40eddacf094057a23b87b0.jpg)  \nFigure 1: The evaluation loss curves for the SST-2, WiC, and CB tasks using the Llama-2-7B model. The proposed AdaZeta method converges faster and effectively addresses the divergence problem using a much smaller batch size (BS). Both MeZO-LoRA and AdaZeta use a learning rate of 1e-4, while Sparse-MeZO utilizes a 1e-6 learning rate.\n\nnature of ZO convergence rates, (Liu et al., 2024) propose the Sparse-MeZO method that generates pruning masks based on the value of the weight elements. Nevertheless, the Sparse-MeZO method yields inconsistent performance across various tasks and hyperparameter configurations. In contrast to this approach, we consider using the PEFT method to reduce the number of trainable parameters. Although the ZO PEFT method like MeZO-LoRA has been considered in (Malladi et al., 2023), the improvements are limited as the LoRA adapter fails to offer high representational ability with an ultra-low rank. To solve this problem, we involve tensorized adapters, which offer high performance with even lower trainable parameters than LoRA adapters.\n\nTo address the variance-related divergence issue in large-scale ZO fine-tuning, previous studies (Malladi et al., 2023; Jiang et al., 2024) have primarily focused on adjusting the batch size, as increasing the batch size can reduce the noise in ZO gradient estimation. However, these approaches introduce significant runtime overhead and fail to improve performance significantly. To further reduce variance, (Gautam et al., 2024) introduced the MeZO-SVRG method, adapting the first-order SVRG technique to the ZO context. Despite its success, MeZO-SVRG suffers from a slow and memory-inefficient fine-tuning process due to the additional parameter copies and computation process that even doubles the memory cost of the MeZO methods. In contrast to these works, we consider reducing the ZO gradient variance\n\nwith a sublinearly increasing query $^2$ schedule that achieves not only better accuracy but also faster convergence in terms of both steps and time.\n\nThis paper explores task-specific PEFT training for ZO fine-tuning scenarios. We introduce the Adaptive Zeroth-order Tensor-Train Adaption (AdaZeta) framework, which incorporates fast-forward tensorized adapters and an adaptive query schedule. This combination can significantly enhance the accuracy and convergence of ZO fine-tuning, as demonstrated in Fig. 1. Our contributions are summarized as follows:\n\n- We introduce the AdaZeta framework, outperforming other ZO fine-tuning methods like MeZO, MeZO-LoRA, and Sparse-MeZO across different tasks with faster convergence.   \n- We develop an adaptive query number schedule that sub-linearly increases the number of queries to address the persistent divergence issue in ZO fine-tuning.   \n- We provide both theoretical and experimental results to demonstrate the training efficiency and performance of our method.",
+      "rule_tier": "soft_skip",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.56::sections::3",
+      "paper_id": "2024.emnlp-main.56",
+      "section_number": "3",
+      "section_title": "methods",
+      "normalized_section_title": "methods",
+      "window_text": "In this section, we first introduce some basic knowledge of the ZO gradient estimator. Then, we present our AdaZeta method, a powerful framework designed to improve the performance of ZO LLM fine-tuning with two main components: 1) the fast-forward tensorized adapters, and 2) an adaptive query number schedule. Finally, we provide a theoretical analysis of the convergence rate of the AdaZeta method, demonstrating the improved convergence rate theoretically.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.56::sections::4",
+      "paper_id": "2024.emnlp-main.56",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "In this section, we conduct comprehensive experiments to evaluate the performance of our proposed AdaZeta framework across several LLMs with different scales on a variety of natural language understanding and generation tasks (Socher et al., 2013; Williams et al., 2017; Rajpurkar et al., 2016). We demonstrate that our methods surpass a comprehensive array of memory-efficient baselines, including inference-only methods such\n\nas Zero-shot (Brown et al., 2020), In-Context Learning (ICL), and Linear Probing (LP) (Kumar et al., 2021), as well as ZO fine-tuning methods like MeZO, MeZO-LoRA (Malladi et al., 2023), and Sparse-MeZO (Liu et al., 2024). Also, the first-order fine-tuning (FT) baseline is also provided as a reference.\n\nInitially, we present experimental evidence using Roberta-Large models (Liu et al., 2019), illustrating that the integration of tensorized adapters can significantly enhance the efficiency of ZO fine-tuning by reducing the number of trainable parameters. Subsequently, we enabled our proposed adaptive query schedule method to show the effectiveness of the AdaZeta framework on large-scale Llama-2-7B models (Touvron et al., 2023), which not only enhances performance but also ensures robust convergence. All experiments are conducted on NVIDIA Tesla A100-40GB GPUs, with further details about the experimental setup available in Appendix A.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.56::sections::4.2",
+      "paper_id": "2024.emnlp-main.56",
+      "section_number": "4.2",
+      "section_title": "large-scale llama-2 models",
+      "normalized_section_title": "large-scale llama-2 models",
+      "window_text": "In the previous section, we demonstrated how utilizing the tensorized adapter method enhances ZO fine-tuning performance by reducing gradient noise through a decrease in trainable parameters. In this section, we assess the effectiveness of the AdaZeta framework with the large-scale Llama-2-7B model. Differing from the experiments on the Roberta-Large models, we enabled the adaptive query schedule method proposed in our AdaZeta framework to mitigate the commonly observed divergence issues in large-scale ZO fine-tuning.\n\nTo highlight the challenge of our experiments, we adopt a low-data resource approach using datasets from SuperGLUE (Wang et al., 2019) and generative tasks such as SQuAD (Rajpurkar et al., 2016) and DROP (Dua et al., 2019). Our experimental protocol follows the prompted-based fine-tuning strategy outlined in the MeZO paper (Malladi et al., 2023). The quantitative results are summarized in Table 2 and the training curves have been shown in Fig. 1. Note that it is reasonable to observe some large accuracy gap between different methods under different tasks, which has also been observed in previous MeZO and PEFT papers (Malladi et al., 2023; Hu et al., 2023). The following conclusions are drawn:\n\nAdaZeta Method Demonstrates Superior Performance Over Traditional ZO Fine-Tuning. The AdaZeta framework delivers exceptional accuracy results across a variety of tasks, outperforming all ZO baseline methods such as MeZO and MeZO-LoRA in 8 out of 10 tasks. Compared with traditional inference-only methods like ICL and Zero-shot, AdaZeta significantly surpasses them with respect to test accuracy.\n\nTable 3: Required GPU hours (GPU numbers $\\times$ Training hours) to achieve each evaluation loss for different ZO fine-tuning methods on Llama-2-7B model.   \n\n<table><tr><td>Methods</td><td>SST2</td><td>WIC</td><td>CB</td><td>MultiRC</td></tr><tr><td>MeZO-LoRA(BS=64)</td><td>3.0</td><td>4.8</td><td>8,6</td><td>30.0</td></tr><tr><td>MeZO-LoRA(BS=16)</td><td>0.6</td><td>1.1</td><td>3.1</td><td>10.8</td></tr><tr><td>Sparse-MeZO</td><td>4.1</td><td>3.6</td><td>4.3</td><td>6.4</td></tr><tr><td>AdaZeta</td><td>1.1</td><td>1.0</td><td>0.9</td><td>12.1</td></tr></table>\n\nMoreover, the AdaZeta method even outperforms the FO-AdamW methods over several tasks like RTE, CB, and COPA, which require $8 \\times$ more GPU memory.\n\nAdaZeta Method Effectively Addresses Divergence Issues in ZO Fine-Tuning. We can observe from the table that the MeZO and MeZO-LoRA methods achieve unsatisfied results in some tasks like SST2, RTE, and BoolQ compared with our proposed method, which is led by the convergence issue. Also, we have shown that the AdaZeta method achieves lower evaluation loss much faster than the MeZO-LoRA and Sparse-MeZO methods across all tasks in Fig. 1. For example, the MeZO-LoRA method requires nearly 6K steps to achieve a loss of 0.4, whereas the AdaZeta method achieves the same degree of loss minimization in less than 1K steps, which represents a $6 \\times$ speed-up with the same 1e-4 learning rate. Traditional ways to solve such divergence issues through increasing the batch size are hard to follow in the large-scale LLMs fine-tuning tasks. In contrast, the adaptive query schedule in the AdaZeta framework successfully mitigates this issue without increasing the training memory, thereby improving training outcomes. Additionally, we observed that combining LoRA with the adaptive query schedule significantly improves performance in certain tasks. Future work could also explore incorporating the adaptive query schedule into the MeZO-LoRA method to further enhance stability.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.56::sections::4.3",
+      "paper_id": "2024.emnlp-main.56",
+      "section_number": "4.3",
+      "section_title": "memory training time efficiency",
+      "normalized_section_title": "memory training time efficiency",
+      "window_text": "In this section, we evaluate the memory and time efficiency of the AdaZeta method. Specifically, we test the peak memory cost of different fine-tuning methods over the Llama-2-7B model and study the trade-off between memory, accuracy, and training\n\n![](images/2dcf456edb072061355d54605c1e6effa40b0929e0e79cac859b10e71b938dc3.jpg)  \nFigure 3: Trade-off between the accuracy and memory cost for different fine-tuning methods. We can observe that the AdaZeta method achieves the best accuracy among the memory-efficient methods.\n\ntime. The result is summarized in Fig. 3 and further discussion about training memory can be referred to Appendix B.1.\n\nAccording to Fig. 3 (refer to Appendix B.1 for numerical results), the AdaZeta method requires only 14GB of memory to fine-tune the SST2 tasks on the Llama-2-7B model, which achieves over $8 \\times$ Memory Reduction Relative to the FT Method. Also, compared with other ZO fine-tuning methods like MeZO, MeZO-LoRA, and Sparse-MeZO, the AdaZeta method utilizes similar or even less memory to achieve variance reduction. Traditional ways to reduce the ZO gradient estimation noise like increasing the batch size, consume significantly more memory than the AdaZeta method as shown in Fig. 3.\n\nIn Table 3, we measure the total GPU hours required to achieve a certain threshold of training loss across four tasks (SST2, WIC, CB, MultiRC). For the applicability of the experiments, we established an evaluation loss threshold that all methods could achieve. According to the results, it is evident that the AdaZeta method converges on-par or faster than other ZO fine-tuning methods with even better results than the MeZO-LoRA and Sparse-MeZO methods under the large-batch size case. Note that we did not utilize the gradient accumulation technique for the 64 batch size case, which may significantly increase the training time.\n\nTable 4: Compare with first-order LoRA method under low ranks and batch sizes.   \n\n<table><tr><td>Setup</td><td>LoRA/r=1/BS=1</td><td>LoRA/r=1/BS=8</td><td>LoRA/r=8/BS=8</td><td>AdaZeta/r=8/BS=1</td><td>MeZO-LoRA/r=8/BS=16</td><td>AdaZeta/r=8/BS=16</td></tr><tr><td>Memory (GB)</td><td>35.60</td><td>96.65</td><td>96.72</td><td>14.05</td><td>23.02</td><td>23.01</td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.56::sections::5",
+      "paper_id": "2024.emnlp-main.56",
+      "section_number": "5",
+      "section_title": "conclusion",
+      "normalized_section_title": "conclusion",
+      "window_text": "In this paper, we propose an adaptive zeroth-order fine-tuning framework with tensor-train decompo\n\nsition, named AdaZeta. Compared with previous ZO fine-tuning works, the AdaZeta method achieves significantly better fine-tuning results across various tasks and models. Theoretical analysis has confirmed that our proposed methods enjoy better convergence, which is consistent with our experimental results on both Roberta-Large and Llama-2 models across various fine-tuning tasks.\n\nFuture work could explore improving the efficiency of the AdaZeta method by implementing distributed optimization across multiple GPUs for handling multiple queries concurrently at each step. Additionally, applying the adaptive query schedule to other PEFT methods may yield significantly better performance compared to the original MeZO algorithm.",
+      "rule_tier": "soft_skip",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.56::sections::limitations",
+      "paper_id": "2024.emnlp-main.56",
+      "section_number": "",
+      "section_title": "limitations",
+      "normalized_section_title": "limitations",
+      "window_text": "The primary limitation of this work is related to accelerating the proposed method. Currently, multiple queries at each training step are executed sequentially in a for-loop, which restricts further speed enhancements. This process can potentially be optimized by implementing parallel or distributed optimization techniques on GPUs, allowing for the simultaneous execution of multiple queries, as these queries are independent of each\n\nother with different random seeds.",
+      "rule_tier": "hard_skip_override",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.56::sections::potential risks",
+      "paper_id": "2024.emnlp-main.56",
+      "section_number": "",
+      "section_title": "potential risks",
+      "normalized_section_title": "potential risks",
+      "window_text": "This paper provides a cost-effective solution that operates with a minimal memory footprint. Even though we need to fine-tune large-scale models, the proposed method can alleviate the burden on data centers and reduce $CO_2$ emissions. However, we acknowledge that prolonged training times, especially with multiple GPUs, can pose environmental challenges. Consequently, our ongoing research endeavors are focused on developing more efficient training methods and preserving computational power with ecological considerations in mind.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.56::appendix::A",
+      "paper_id": "2024.emnlp-main.56",
+      "section_number": "A",
+      "section_title": "detail of experiment setup",
+      "normalized_section_title": "detail of experiment setup",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.56::appendix::A.2",
+      "paper_id": "2024.emnlp-main.56",
+      "section_number": "A.2",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "In this section, we provide a detailed introduction to the baseline method considered in our experiments, which are listed as follows:\n\nFull-model First-Order Fine-Tuning (FT) is the most widely used method for fine-tuning LLMs. In this process, the model is initialized with pre-trained weights, and all model parameters are updated by the first-order optimizer. In this paper, the AdamW optimizer (Loshchilov and Hutter, 2018) is used to conduct the first-order experiments.\n\nZero-shot/In-context-learning (ICL) is the most widely used method for fine-tuning large language models (LLMs). In this process, the model is initialized with pre-trained weights, and all model parameters are updated by the first-order (FO) optimizer. In this paper, the AdamW optimizer (Loshchilov and Hutter, 2018) is used to conduct the first-order experiments.\n\nLinear-probing (LP) method involves freezing the pretrained weights of the model and adding a final linear classifier layer, implemented using the scipy package. By fine-tuning this layer with the first-order method, we only need to construct a small backpropagation graph. However, this method is not suitable for generative tasks. Therefore, we only apply the LP method in the Roberta-Large experiments.\n\nMemory-Efficient Zeroth-Order (MeZO) was first proposed in (Malladi et al., 2023), which fine-tunes LLMs using only the forward pass. The MeZO method significantly reduces memory costs by eliminating the need for a backpropagation graph and has demonstrated superior performance compared to inference-only methods like Zero-shot, ICT, and LP methods across various downstream tasks.\n\nMemory-Efficient Zeroth-Order with LoRA adapters (MeZO-LoRA) is a derivative method introduced in (Malladi et al., 2023), which freezes the pretrained weights and fine-tunes only the injected LoRA adapters (Hu et al., 2021). The MeZO-LoRA method is the most relevant baseline\n\nin this field compared to our work. However, its performance improvement over the MeZO method is limited, and the mechanisms behind zeroth-order parameter-efficient fine-tuning are not extensively discussed.\n\nSparse Memory-efficient Zeroth-Order (Sparse-McZO) is a recently proposed method aiming to enhance the performance and convergence speed of the MeZO method (Liu et al., 2024). However, as the code and detailed layer-wise hyperparameter setup have not been released, we have reproduced the method using a fixed sparsity ratio for each layer. This ratio is selected based on the best overall outcome as presented in Fig. 6 of their paper.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.56::appendix::A.3",
+      "paper_id": "2024.emnlp-main.56",
+      "section_number": "A.3",
+      "section_title": "hyperparameters",
+      "normalized_section_title": "hyperparameters",
+      "window_text": "In this section, we outline the detailed setup of hyperparameters utilized in our study. The specific choices of hyperparameters, such as learning rate, training steps, and batch size, are summarized in Table 7. In our experiments, we strive to maintain a consistent learning rate across different methods for the same tasks. However, for approaches like full-model fine-tuning, we opt for a lower learning rate to ensure convergence. This principle is also applied in our large-scale experiments on the Llama-2-7B model, details of which are summarized in Table 8.\n\nIn addition to the standard hyperparameter configuration, we also consider the shape of tensor factors in our methods. To represent a layer with input and output dimensions of $o$ and $p$ , respectively, we employ a list of $m$ tensor factors $\\mathcal{G}_i \\in \\mathbb{R}^{r \\times k_ir}$ , where the product $\\Pi k_1 \\cdots k_m = o \\cdot p$ . The specific shapes of $k_i$ corresponding to different values of $o$ and $p$ , given a bottleneck size of 8 or 64 for the tensorized methods, are detailed in Table 9. Note that the optimal factors shape and tensor rank for the tensor-train method can only be determined by the experiments' trail. However, previous work also explores the possibility of utilizing the adaptive rank to improve the performance (Yang et al., 2024b), which may further improve the performance of our AdaZeta method.\n\nTable 7: The hyperparameter grids used for Roberta-Large experiments are detailed as follows. We fine-tune each task for 80K steps, except for the FT method, which is conducted over 20 epochs. We record the best model checkpoint based on the validation loss every 200 training steps.\n\n<table><tr><td>Experiment</td><td>Hyperparameters</td><td>Values</td></tr><tr><td rowspan=\"2\">FT</td><td>Batch size</td><td>{8, 16, 64}</td></tr><tr><td>Learning rate</td><td>{1e-6, 5e-7}</td></tr><tr><td rowspan=\"3\">MeZO</td><td>Batch size</td><td>{16, 64}</td></tr><tr><td>Learning rate</td><td>{1e-6, 5e-7}</td></tr><tr><td>ε</td><td>1e-3</td></tr><tr><td rowspan=\"4\">MeZO-LoRA</td><td>Batch size</td><td>{16, 64}</td></tr><tr><td>Learning rate</td><td>{1e-4, 5e-5}</td></tr><tr><td>LoRA rank</td><td>8</td></tr><tr><td>ε</td><td>1e-3</td></tr><tr><td rowspan=\"4\">Sparse-MeZO</td><td>Batch size</td><td>{16, 64}</td></tr><tr><td>Learning rate</td><td>{1e-5, 1e-6}</td></tr><tr><td>sparse ratio</td><td>0.75</td></tr><tr><td>ε</td><td>1e-3</td></tr><tr><td rowspan=\"5\">AdaZeta</td><td>Batch size</td><td>{16, 64}</td></tr><tr><td>Learning rate</td><td>{1e-4, 5e-5}</td></tr><tr><td>Bottleneck dimension</td><td>64</td></tr><tr><td>Tensor Rank</td><td>5</td></tr><tr><td>ε</td><td>1e-3</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.56::appendix::B",
+      "paper_id": "2024.emnlp-main.56",
+      "section_number": "B",
+      "section_title": "additional experiments",
+      "normalized_section_title": "additional experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.56::sections::4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla A100 40GB",
+      "count": null,
+      "count_text": "",
+      "evidence": "In this section, we conduct comprehensive experiments to evaluate the performance of our proposed AdaZeta framework across several LLMs with different scales on a variety of natural language understanding and generation tasks (Socher et al., 2013; Williams et al., 2017; Rajpurkar et al., 2016). We demonstrate that our methods surpass a comprehensive array of memory-efficient baselines, including inference-only methods such\n\nas Zero-shot (Brown et al., 2020), In-Context Learning (ICL), and Linear Probing (LP) (Kumar et al., 2021), as well as ZO fine-tuning methods like MeZO, MeZO-LoRA (Malladi et al., 2023), and Sparse-MeZO (Liu et al., 2024). Also, the first-order fine-tuning (FT) baseline is also provided as a reference.\n\nInitially, we present experimental evidence using Roberta-Large models (Liu et al., 2019), illustrating that the integration of tensorized adapters can significantly enhance the efficiency of ZO fine-tuning by reducing the number of trainable parameters. Subsequently, we enabled our proposed adaptive query schedule method to show the effectiveness of the AdaZeta framework on large-scale Llama-2-7B models (Touvron et al., 2023), which not only enhances performance but also ensures robust convergence. All experiments are conducted on NVIDIA Tesla A100-40GB GPUs, with further details about the experimental setup available in Appendix A.",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.56::sections::4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla A100 40GB",
+      "cleaned_hardware_name": "nvidia tesla a100 40gb",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": null,
+      "count": null,
+      "count_text": "",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "evidence": "In this section, we conduct comprehensive experiments to evaluate the performance of our proposed AdaZeta framework across several LLMs with different scales on a variety of natural language understanding and generation tasks (Socher et al., 2013; Williams et al., 2017; Rajpurkar et al., 2016). We demonstrate that our methods surpass a comprehensive array of memory-efficient baselines, including inference-only methods such\n\nas Zero-shot (Brown et al., 2020), In-Context Learning (ICL), and Linear Probing (LP) (Kumar et al., 2021), as well as ZO fine-tuning methods like MeZO, MeZO-LoRA (Malladi et al., 2023), and Sparse-MeZO (Liu et al., 2024). Also, the first-order fine-tuning (FT) baseline is also provided as a reference.\n\nInitially, we present experimental evidence using Roberta-Large models (Liu et al., 2019), illustrating that the integration of tensorized adapters can significantly enhance the efficiency of ZO fine-tuning by reducing the number of trainable parameters. Subsequently, we enabled our proposed adaptive query schedule method to show the effectiveness of the AdaZeta framework on large-scale Llama-2-7B models (Touvron et al., 2023), which not only enhances performance but also ensures robust convergence. All experiments are conducted on NVIDIA Tesla A100-40GB GPUs, with further details about the experimental setup available in Appendix A.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.emnlp-main.56::sections::1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "1",
+      "section_title": "introduction",
+      "evidence": "Fine-tuning large language models (LLMs) has demonstrated outstanding performance in addressing numerous natural language processing applications, such as natural language understanding (Kenton and Toutanova, 2019), question-answering (Xu et al.; Cheng et al., 2023), and summarization (Zhang et al., 2024). However, as the size of LLMs increases, the\n\ntraining process consumes progressively more GPU memory. In recent years, approaches such as quantization (Tian et al., 2023; Dettmers et al., 2024) and parameter-efficient fine-tuning (PEFT) (Hu et al., 2021) have been proposed to reduce memory costs during training by storing data with lower bit-depth or updating only a portion of the parameters. Despite these strategies effectively reducing memory costs, overall memory usage remains high due to the continuous reliance on a backpropagation graph.\n\nTo further reduce the memory overhead, (Malladi et al., 2023) proposed the Memory-efficient Zeroth-order (MeZO) method for LLM fine-tuning, which shows over $8 \\times$ memory reduction compared with the first-order (FO) fine-tuning methods like SGD (Amari, 1993) and AdamW (Loshchilov and Hutter, 2018). Unlike FO methods, which calculate gradients via backpropagation, the MeZO method estimates gradients based on the difference between loss values obtained from two forward passes, thereby eliminating the need for a backpropagation graph. However, two main challenges persist in the zeroth-order (ZO) fine-tuning of LLMs: 1) a significant performance gap between FO and ZO approaches, and 2) increased risk of divergence, particularly in the ZO fine-tuning of large-scale LLMs, as observed in recent studies (Gautam et al., 2024).\n\nTo improve the performance, various FO optimization techniques have been adapted for ZO fine-tuning scenarios, like the ZO-AdaMU method (Jiang et al., 2024). However, these approaches fail to accommodate the specific needs of ZO methods, and add significant memory overhead from the optimizer state. Given the dimensionality-related\n\n![](images/d2eb3f6525ca46a88de2d7d399cd7e34ec9b347262c624fed06e24f3ef66db3c.jpg)\n\n![](images/7821f91a910c3ded69740b7f3d9b7e3d04cd8a49de3b6f30561c77c36aacf8f4.jpg)\n\n![](images/203a4abffca6166ebb051fbb2b3c46a95b92cfdb1a40eddacf094057a23b87b0.jpg)  \nFigure 1: The evaluation loss curves for the SST-2, WiC, and CB tasks using the Llama-2-7B model. The proposed AdaZeta method converges faster and effectively addresses the divergence problem using a much smaller batch size (BS). Both MeZO-LoRA and AdaZeta use a learning rate of 1e-4, while Sparse-MeZO utilizes a 1e-6 learning rate.\n\nnature of ZO convergence rates, (Liu et al., 2024) propose the Sparse-MeZO method that generates pruning masks based on the value of the weight elements. Nevertheless, the Sparse-MeZO method yields inconsistent performance across various tasks and hyperparameter configurations. In contrast to this approach, we consider using the PEFT method to reduce the number of trainable parameters. Although the ZO PEFT method like MeZO-LoRA has been considered in (Malladi et al., 2023), the improvements are limited as the LoRA adapter fails to offer high representational ability with an ultra-low rank. To solve this problem, we involve tensorized adapters, which offer high performance with even lower trainable parameters than LoRA adapters.\n\nTo address the variance-related divergence issue in large-scale ZO fine-tuning, previous studies (Malladi et al., 2023; Jiang et al., 2024) have primarily focused on adjusting the batch size, as increasing the batch size can reduce the noise in ZO gradient estimation. However, these approaches introduce significant runtime overhead and fail to improve performance significantly. To further reduce variance, (Gautam et al., 2024) introduced the MeZO-SVRG method, adapting the first-order SVRG technique to the ZO context. Despite its success, MeZO-SVRG suffers from a slow and memory-inefficient fine-tuning process due to the additional parameter copies and computation process that even doubles the memory cost of the MeZO methods. In contrast to these works, we consider reducing the ZO gradient variance\n\nwith a sublinearly increasing query $^2$ schedule that achieves not only better accuracy but also faster convergence in terms of both steps and time.\n\nThis paper explores task-specific PEFT training for ZO fine-tuning scenarios. We introduce the Adaptive Zeroth-order Tensor-Train Adaption (AdaZeta) framework, which incorporates fast-forward tensorized adapters and an adaptive query schedule. This combination can significantly enhance the accuracy and convergence of ZO fine-tuning, as demonstrated in Fig. 1. Our contributions are summarized as follows:\n\n- We introduce the AdaZeta framework, outperforming other ZO fine-tuning methods like MeZO, MeZO-LoRA, and Sparse-MeZO across different tasks with faster convergence.   \n- We develop an adaptive query number schedule that sub-linearly increases the number of queries to address the persistent divergence issue in ZO fine-tuning.   \n- We provide both theoretical and experimental results to demonstrate the training efficiency and performance of our method."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.56::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methods",
+      "evidence": "In this section, we first introduce some basic knowledge of the ZO gradient estimator. Then, we present our AdaZeta method, a powerful framework designed to improve the performance of ZO LLM fine-tuning with two main components: 1) the fast-forward tensorized adapters, and 2) an adaptive query number schedule. Finally, we provide a theoretical analysis of the convergence rate of the AdaZeta method, demonstrating the improved convergence rate theoretically."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.56::sections::4.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2",
+      "section_title": "large-scale llama-2 models",
+      "evidence": "In the previous section, we demonstrated how utilizing the tensorized adapter method enhances ZO fine-tuning performance by reducing gradient noise through a decrease in trainable parameters. In this section, we assess the effectiveness of the AdaZeta framework with the large-scale Llama-2-7B model. Differing from the experiments on the Roberta-Large models, we enabled the adaptive query schedule method proposed in our AdaZeta framework to mitigate the commonly observed divergence issues in large-scale ZO fine-tuning.\n\nTo highlight the challenge of our experiments, we adopt a low-data resource approach using datasets from SuperGLUE (Wang et al., 2019) and generative tasks such as SQuAD (Rajpurkar et al., 2016) and DROP (Dua et al., 2019). Our experimental protocol follows the prompted-based fine-tuning strategy outlined in the MeZO paper (Malladi et al., 2023). The quantitative results are summarized in Table 2 and the training curves have been shown in Fig. 1. Note that it is reasonable to observe some large accuracy gap between different methods under different tasks, which has also been observed in previous MeZO and PEFT papers (Malladi et al., 2023; Hu et al., 2023). The following conclusions are drawn:\n\nAdaZeta Method Demonstrates Superior Performance Over Traditional ZO Fine-Tuning. The AdaZeta framework delivers exceptional accuracy results across a variety of tasks, outperforming all ZO baseline methods such as MeZO and MeZO-LoRA in 8 out of 10 tasks. Compared with traditional inference-only methods like ICL and Zero-shot, AdaZeta significantly surpasses them with respect to test accuracy.\n\nTable 3: Required GPU hours (GPU numbers $\\times$ Training hours) to achieve each evaluation loss for different ZO fine-tuning methods on Llama-2-7B model.   \n\n<table><tr><td>Methods</td><td>SST2</td><td>WIC</td><td>CB</td><td>MultiRC</td></tr><tr><td>MeZO-LoRA(BS=64)</td><td>3.0</td><td>4.8</td><td>8,6</td><td>30.0</td></tr><tr><td>MeZO-LoRA(BS=16)</td><td>0.6</td><td>1.1</td><td>3.1</td><td>10.8</td></tr><tr><td>Sparse-MeZO</td><td>4.1</td><td>3.6</td><td>4.3</td><td>6.4</td></tr><tr><td>AdaZeta</td><td>1.1</td><td>1.0</td><td>0.9</td><td>12.1</td></tr></table>\n\nMoreover, the AdaZeta method even outperforms the FO-AdamW methods over several tasks like RTE, CB, and COPA, which require $8 \\times$ more GPU memory.\n\nAdaZeta Method Effectively Addresses Divergence Issues in ZO Fine-Tuning. We can observe from the table that the MeZO and MeZO-LoRA methods achieve unsatisfied results in some tasks like SST2, RTE, and BoolQ compared with our proposed method, which is led by the convergence issue. Also, we have shown that the AdaZeta method achieves lower evaluation loss much faster than the MeZO-LoRA and Sparse-MeZO methods across all tasks in Fig. 1. For example, the MeZO-LoRA method requires nearly 6K steps to achieve a loss of 0.4, whereas the AdaZeta method achieves the same degree of loss minimization in less than 1K steps, which represents a $6 \\times$ speed-up with the same 1e-4 learning rate. Traditional ways to solve such divergence issues through increasing the batch size are hard to follow in the large-scale LLMs fine-tuning tasks. In contrast, the adaptive query schedule in the AdaZeta framework successfully mitigates this issue without increasing the training memory, thereby improving training outcomes. Additionally, we observed that combining LoRA with the adaptive query schedule significantly improves performance in certain tasks. Future work could also explore incorporating the adaptive query schedule into the MeZO-LoRA method to further enhance stability."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.56::sections::4.3",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.3",
+      "section_title": "memory training time efficiency",
+      "evidence": "In this section, we evaluate the memory and time efficiency of the AdaZeta method. Specifically, we test the peak memory cost of different fine-tuning methods over the Llama-2-7B model and study the trade-off between memory, accuracy, and training\n\n![](images/2dcf456edb072061355d54605c1e6effa40b0929e0e79cac859b10e71b938dc3.jpg)  \nFigure 3: Trade-off between the accuracy and memory cost for different fine-tuning methods. We can observe that the AdaZeta method achieves the best accuracy among the memory-efficient methods.\n\ntime. The result is summarized in Fig. 3 and further discussion about training memory can be referred to Appendix B.1.\n\nAccording to Fig. 3 (refer to Appendix B.1 for numerical results), the AdaZeta method requires only 14GB of memory to fine-tune the SST2 tasks on the Llama-2-7B model, which achieves over $8 \\times$ Memory Reduction Relative to the FT Method. Also, compared with other ZO fine-tuning methods like MeZO, MeZO-LoRA, and Sparse-MeZO, the AdaZeta method utilizes similar or even less memory to achieve variance reduction. Traditional ways to reduce the ZO gradient estimation noise like increasing the batch size, consume significantly more memory than the AdaZeta method as shown in Fig. 3.\n\nIn Table 3, we measure the total GPU hours required to achieve a certain threshold of training loss across four tasks (SST2, WIC, CB, MultiRC). For the applicability of the experiments, we established an evaluation loss threshold that all methods could achieve. According to the results, it is evident that the AdaZeta method converges on-par or faster than other ZO fine-tuning methods with even better results than the MeZO-LoRA and Sparse-MeZO methods under the large-batch size case. Note that we did not utilize the gradient accumulation technique for the 64 batch size case, which may significantly increase the training time.\n\nTable 4: Compare with first-order LoRA method under low ranks and batch sizes.   \n\n<table><tr><td>Setup</td><td>LoRA/r=1/BS=1</td><td>LoRA/r=1/BS=8</td><td>LoRA/r=8/BS=8</td><td>AdaZeta/r=8/BS=1</td><td>MeZO-LoRA/r=8/BS=16</td><td>AdaZeta/r=8/BS=16</td></tr><tr><td>Memory (GB)</td><td>35.60</td><td>96.65</td><td>96.72</td><td>14.05</td><td>23.02</td><td>23.01</td></tr></table>"
+    },
+    {
+      "source_window_id": "2024.emnlp-main.56::sections::5",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "conclusion",
+      "evidence": "In this paper, we propose an adaptive zeroth-order fine-tuning framework with tensor-train decompo\n\nsition, named AdaZeta. Compared with previous ZO fine-tuning works, the AdaZeta method achieves significantly better fine-tuning results across various tasks and models. Theoretical analysis has confirmed that our proposed methods enjoy better convergence, which is consistent with our experimental results on both Roberta-Large and Llama-2 models across various fine-tuning tasks.\n\nFuture work could explore improving the efficiency of the AdaZeta method by implementing distributed optimization across multiple GPUs for handling multiple queries concurrently at each step. Additionally, applying the adaptive query schedule to other PEFT methods may yield significantly better performance compared to the original MeZO algorithm."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.56::sections::limitations",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "",
+      "section_title": "limitations",
+      "evidence": "The primary limitation of this work is related to accelerating the proposed method. Currently, multiple queries at each training step are executed sequentially in a for-loop, which restricts further speed enhancements. This process can potentially be optimized by implementing parallel or distributed optimization techniques on GPUs, allowing for the simultaneous execution of multiple queries, as these queries are independent of each\n\nother with different random seeds."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.56::sections::potential risks",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "",
+      "section_title": "potential risks",
+      "evidence": "This paper provides a cost-effective solution that operates with a minimal memory footprint. Even though we need to fine-tune large-scale models, the proposed method can alleviate the burden on data centers and reduce $CO_2$ emissions. However, we acknowledge that prolonged training times, especially with multiple GPUs, can pose environmental challenges. Consequently, our ongoing research endeavors are focused on developing more efficient training methods and preserving computational power with ecological considerations in mind."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.56::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "detail of experiment setup",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.56::appendix::A.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.2",
+      "section_title": "baselines",
+      "evidence": "In this section, we provide a detailed introduction to the baseline method considered in our experiments, which are listed as follows:\n\nFull-model First-Order Fine-Tuning (FT) is the most widely used method for fine-tuning LLMs. In this process, the model is initialized with pre-trained weights, and all model parameters are updated by the first-order optimizer. In this paper, the AdamW optimizer (Loshchilov and Hutter, 2018) is used to conduct the first-order experiments.\n\nZero-shot/In-context-learning (ICL) is the most widely used method for fine-tuning large language models (LLMs). In this process, the model is initialized with pre-trained weights, and all model parameters are updated by the first-order (FO) optimizer. In this paper, the AdamW optimizer (Loshchilov and Hutter, 2018) is used to conduct the first-order experiments.\n\nLinear-probing (LP) method involves freezing the pretrained weights of the model and adding a final linear classifier layer, implemented using the scipy package. By fine-tuning this layer with the first-order method, we only need to construct a small backpropagation graph. However, this method is not suitable for generative tasks. Therefore, we only apply the LP method in the Roberta-Large experiments.\n\nMemory-Efficient Zeroth-Order (MeZO) was first proposed in (Malladi et al., 2023), which fine-tunes LLMs using only the forward pass. The MeZO method significantly reduces memory costs by eliminating the need for a backpropagation graph and has demonstrated superior performance compared to inference-only methods like Zero-shot, ICT, and LP methods across various downstream tasks.\n\nMemory-Efficient Zeroth-Order with LoRA adapters (MeZO-LoRA) is a derivative method introduced in (Malladi et al., 2023), which freezes the pretrained weights and fine-tunes only the injected LoRA adapters (Hu et al., 2021). The MeZO-LoRA method is the most relevant baseline\n\nin this field compared to our work. However, its performance improvement over the MeZO method is limited, and the mechanisms behind zeroth-order parameter-efficient fine-tuning are not extensively discussed.\n\nSparse Memory-efficient Zeroth-Order (Sparse-McZO) is a recently proposed method aiming to enhance the performance and convergence speed of the MeZO method (Liu et al., 2024). However, as the code and detailed layer-wise hyperparameter setup have not been released, we have reproduced the method using a fixed sparsity ratio for each layer. This ratio is selected based on the best overall outcome as presented in Fig. 6 of their paper."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.56::appendix::A.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.3",
+      "section_title": "hyperparameters",
+      "evidence": "In this section, we outline the detailed setup of hyperparameters utilized in our study. The specific choices of hyperparameters, such as learning rate, training steps, and batch size, are summarized in Table 7. In our experiments, we strive to maintain a consistent learning rate across different methods for the same tasks. However, for approaches like full-model fine-tuning, we opt for a lower learning rate to ensure convergence. This principle is also applied in our large-scale experiments on the Llama-2-7B model, details of which are summarized in Table 8.\n\nIn addition to the standard hyperparameter configuration, we also consider the shape of tensor factors in our methods. To represent a layer with input and output dimensions of $o$ and $p$ , respectively, we employ a list of $m$ tensor factors $\\mathcal{G}_i \\in \\mathbb{R}^{r \\times k_ir}$ , where the product $\\Pi k_1 \\cdots k_m = o \\cdot p$ . The specific shapes of $k_i$ corresponding to different values of $o$ and $p$ , given a bottleneck size of 8 or 64 for the tensorized methods, are detailed in Table 9. Note that the optimal factors shape and tensor rank for the tensor-train method can only be determined by the experiments' trail. However, previous work also explores the possibility of utilizing the adaptive rank to improve the performance (Yang et al., 2024b), which may further improve the performance of our AdaZeta method.\n\nTable 7: The hyperparameter grids used for Roberta-Large experiments are detailed as follows. We fine-tune each task for 80K steps, except for the FT method, which is conducted over 20 epochs. We record the best model checkpoint based on the validation loss every 200 training steps.\n\n<table><tr><td>Experiment</td><td>Hyperparameters</td><td>Values</td></tr><tr><td rowspan=\"2\">FT</td><td>Batch size</td><td>{8, 16, 64}</td></tr><tr><td>Learning rate</td><td>{1e-6, 5e-7}</td></tr><tr><td rowspan=\"3\">MeZO</td><td>Batch size</td><td>{16, 64}</td></tr><tr><td>Learning rate</td><td>{1e-6, 5e-7}</td></tr><tr><td>ε</td><td>1e-3</td></tr><tr><td rowspan=\"4\">MeZO-LoRA</td><td>Batch size</td><td>{16, 64}</td></tr><tr><td>Learning rate</td><td>{1e-4, 5e-5}</td></tr><tr><td>LoRA rank</td><td>8</td></tr><tr><td>ε</td><td>1e-3</td></tr><tr><td rowspan=\"4\">Sparse-MeZO</td><td>Batch size</td><td>{16, 64}</td></tr><tr><td>Learning rate</td><td>{1e-5, 1e-6}</td></tr><tr><td>sparse ratio</td><td>0.75</td></tr><tr><td>ε</td><td>1e-3</td></tr><tr><td rowspan=\"5\">AdaZeta</td><td>Batch size</td><td>{16, 64}</td></tr><tr><td>Learning rate</td><td>{1e-4, 5e-5}</td></tr><tr><td>Bottleneck dimension</td><td>64</td></tr><tr><td>Tensor Rank</td><td>5</td></tr><tr><td>ε</td><td>1e-3</td></tr></table>"
+    },
+    {
+      "source_window_id": "2024.emnlp-main.56::appendix::B",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B",
+      "section_title": "additional experiments",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": null
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2024\\2024.emnlp-main.56\\auto\\full.md",
+    "source_md_sha256": "8f60bccdb44d184f826544ca6ea014a993a5d9b9664e27fbaa44ddd3a05cc39c",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "749fdb433714bfa003499fb1c90f58c9bb6de4daf647bf52f54e32986186b91c"
+  }
+}

@@ -1,0 +1,220 @@
+{
+  "paper_id": "2023.acl-long.682",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.682::sections::3",
+      "paper_id": "2023.acl-long.682",
+      "section_number": "3",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Our experiments center around the ELECTRA model (Clark et al., 2019) and the RoBERTa-base model (Liu et al., 2019). On the broadest set of experiments, for which we can only afford to train one model, we employ ELECTRA because it performs better than RoBERTa given comparable compute budgets (Clark et al., 2019). In particular, we use the small variant of ELECTRA (14 million parameters), which performs similarly to BERTbase on GLUE (difference of $\\approx 2$ points) while training much faster (Clark et al., 2019). However, we replicate many of these results on the larger RoBERTa-base model revealing similar results and thus establishing the generality of our findings.\n\nDuring pretraining, a text sequence is fed into the model with some tokens masked out. While MLM-only models like RoBERTa only have a generator network that predicts the content of the masked tokens, ELECTRA has an additional discriminator module that predicts if those predictions were correct. Both the generator and the discriminator\n\nTable 1: The suite of downstream datasets used in this work along with their training set sizes   \n\n<table><tr><td>Dataset</td><td>Size (MB)</td><td>Classes</td><td>Domain</td><td>Task</td></tr><tr><td>AGNews (Zhang et al., 2015)</td><td>27</td><td>4</td><td>News</td><td>topic classification</td></tr><tr><td>QQP (Wang et al., 2018)</td><td>43</td><td>2</td><td>Online forum questions</td><td>paraphrase detection</td></tr><tr><td>Jigsaw Toxicity (Kaggle.com, 2018)</td><td>59</td><td>6</td><td>Wikipedia comments</td><td>toxicity detection</td></tr><tr><td>MNLI (Williams et al., 2018)</td><td>65</td><td>3</td><td>Diverse</td><td>natural language inference</td></tr><tr><td>Sentiment140 (Go et al., 2009)</td><td>114</td><td>5</td><td>Tweets</td><td>sentiment classification</td></tr><tr><td>PAWS (Zhang et al., 2019)</td><td>139</td><td>2</td><td>Wikipedia</td><td>paraphrase detection</td></tr><tr><td>DBPedia14 (Zhang et al., 2015)</td><td>151</td><td>14</td><td>Wikipedia</td><td>topic classification</td></tr><tr><td>Discovery (Sileo et al., 2019)</td><td>293</td><td>174</td><td>Web crawl</td><td>discourse marker prediction</td></tr><tr><td>Yahoo Answertopics (Zhang et al., 2015)</td><td>461</td><td>10</td><td>Online forum answers</td><td>topic classification</td></tr><tr><td>Amazon Polarity (Zhang et al., 2015)</td><td>1427</td><td>2</td><td>Product reviews</td><td>sentiment classification</td></tr></table>\n\nnetworks' parameters are updated simultaneously during pretraining. After pretraining, the generator is discarded and the discriminator is used as an encoder for finetuning on downstream tasks.\n\nWe experimented with 10 different downstream datasets (Table 1). We chose these datasets in our testbed to span different dataset sizes ranging from 27 megabytes to about 1.4 gigabytes of text in the training split. These datasets are for different tasks such as topic classification, sentiment classification, natural language inference etc., and are created using data sourced from diverse domains. Most of them are multi-class classification tasks except Jigsaw Toxicity which is a multi-label classification task, and Sentiment140 which is modeled as a regression task. For finetuning a pretrained model on any dataset, we passed the input through the model, took the vector representation of the CLS token in the final layer, and passed it through a classification head with one hidden layer to get the output.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.682::appendix::A",
+      "paper_id": "2023.acl-long.682",
+      "section_number": "A",
+      "section_title": "appendix",
+      "normalized_section_title": "appendix",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.682::appendix::A.1",
+      "paper_id": "2023.acl-long.682",
+      "section_number": "A.1",
+      "section_title": "the role of sentence order in pretraining corpora",
+      "normalized_section_title": "the role of sentence order in pretraining corpora",
+      "window_text": "For virtually all pretrained models like BERT, ELECTRA, XLNet, the sentences in the pretraining corpora are ordered as they naturally occur in some document such as Wikipedia article. Devlin et al. (2019) mention in their work: \"It is critical to use a document-level corpus rather than a shuffled sentence-level corpus (... in order to extract long contiguous sequences.\" However, for many of our pretraining corpora made from downstream datasets, the sentence taken in order do not form a coherent document or narrative text. For example, in the MNLI or QQP corpora, neighboring sentences will simply be premise-hypothesis pairs or potential paraphrase candidates.\n\nDespite the sentence order not forming a coherent document, many pretraining corpora achieve high performance boosts on the GLUE language understanding benchmark (Table 7). For example, MNLI achieves around $96\\%$ of the performance boost of the off-the-shelf model (Table 7). Interestingly, shuffling the sentences in these corpora leads to a large drop in performance (Table 7). This suggests that there is some value to keeping the sentence order in a way that puts sentences from the same example in datasets like MNLI and QQP next to each other. A likely explanation of this is in Levine et al. (2021) where authors showed that including similar sentences in the same input sequence when pretraining should lead to improved performance via theoretical analysis and empirical experiments.\n\nWe test if GLUE performance can be improved by artificially re-ordering a set of sentences to promote the occurrence of similar sentences together. We rearrange the sentences in the sentence-shuffled versions of pretraining corpora to encourage content overlap among neighboring sentences, and see if this can recover some of the drops in performance that occurred due to shuffling. Our algorithm creates the corpus by iteratively appending sentences to it, such that at each step the new sentence is the one with maximum TF-IDF similarity with the previous sentence. Such a way of constructing a corpus by similarity based retrieval has been used in past works (Levine et al., 2021; Yao et al., 2022), with the main difference that they retrieved sentences from external corpora similar to the ones present in the downstream dataset, whereas we sim\n\nply use it to reorder sentences already present in the downstream dataset for pretraining. We also make sure that the algorithm does not accidentally recover the original order of sentences (e.g. by matching the premise-hypothesis pairs originally in the MNLI dataset).\n\nWe experiment with 5 different datasets and find that the sentence-reordering scheme improves performance compared to random sentence order for all of them except QQP. For Discovery and DBPedia14 datasets, it scores even higher than our standard sentence ordering scheme which preserves the adjacency and order of sentences within each datapoint. This shows that re-ordering sentences to promote content similarity between neighboring sentences, can potentially improve GLUE score, without introducing any new information or narrative structure.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.682::appendix::A.2",
+      "paper_id": "2023.acl-long.682",
+      "section_number": "A.2",
+      "section_title": "experiments with smaller electra models",
+      "normalized_section_title": "experiments with smaller electra models",
+      "window_text": "In addition to experimenting with a base-sized architecture (110M parameters), we also experiment with architectures which are even smaller than ELECTRA-small. We train ELECTRA models of smaller size by either reducing the number of layers in the generator and discriminator, or reducing the hidden dimension of the discriminator<sup>3</sup>. As the models get smaller, self-pretraining continues to significantly outperform random initialization and often outperforms pretraining on BookWiki corpus (Figure 3). Interestingly, the relative performance of self-pretrained and BookWiki-pretrained models tends to stay the same across model size. For example, for QQP self-pretraining is always best and for MNLI BookWiki-pretraining is always best irrespective of number of layers or hidden size.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.682::appendix::A.3",
+      "paper_id": "2023.acl-long.682",
+      "section_number": "A.3",
+      "section_title": "implementation details for pretraining and finetuning",
+      "normalized_section_title": "implementation details for pretraining and finetuning",
+      "window_text": "Hyperparameters for Pretraining For pretraining ELECTRA-small models, we use the standard hyperparameters (Table 8) as described in Clark et al. (2019). For the Roberta-base models, training with the standard hyperparameters with our computing resources would be prohibitively slow, and so we used hyperparameters from Warstadt et al. (2020) which require lesser time to train (Ta\n\n![](images/f75fa4e28ab9c95d54965027e91e77ee7fd985fbd752e833d798dacc11c5f20d.jpg)\n\n![](images/b70c9f2b5314f9ee9735ac8b3030c4c9430b1b85a5348131ac56a415183675b1.jpg)  \nFigure 3: Variation in performance of ELECTRA models with change in number of layers and hidden size ( randomly initialized, - self-pretrained, - BookWiki-pretrained)\n\nble 8). For task-adaptive pretraining(TAPT), we follow Gururangan et al. (2020) and further pretrain off-the-shelf models for 100 epochs on the downstream task's training set, with the first $6\\%$ of the resulting total updates used for learning rate warmup.\n\nHyperparameters for Finetuning For finetuning the models on the 10 downstream datasets, we use hyperparameters as shown in Table 9. We use the AdamW optimizer (Loshchilov and Hutter, 2018) for finetuning. We use early stopping based on validation set performance. The validation metric used is mean squared error for the sentiment140 dataset (regression), average binary crossentropy for the jigsaw dataset (multi-label classification), and accuracy for all other datasets (multi-class classification). The patience parameter for early stopping is set to 3 epochs. For finetuning ELECTRA-small models on the GLUE datasets, we use the standard learning rate of 1e-4 following Clark et al. (2019).\n\nDetails about Use of Downstream Datasets All downstream datasets used in this paper were\n\nsourced from the Huggingface library<sup>4</sup>. For the Yahoo Answertopics dataset, we use only the text from the answer (not the question) as input to the models (both for pretraining and finetuning). For the PAWS dataset, we use the version called \"Unlabeled $\\mathrm{PAWS}_{\\mathrm{wiki}}$ in Zhang et al. (2019), which is actually not unlabeled but has silver labels. We preferred that version over others because of its larger size. For datasets which had a train and test split but no validation split (e.g. Yahoo Answertopics), we extracted 5000 random datapoints from the train split to make the validation split. If a dataset had a train and validation split but no test split (e.g. Unlabeled $\\mathrm{PAWS}_{\\mathrm{wiki}}$ ), we designated the validation split to be the test split, and created a new validation set by extracting 5000 random datapoints from the train set.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.682::appendix::A.4",
+      "paper_id": "2023.acl-long.682",
+      "section_number": "A.4",
+      "section_title": "hardware and software packages used",
+      "normalized_section_title": "hardware and software packages used",
+      "window_text": "For pretraining ELECTRA models, we used Nvidia's implementation of the ELECTRA codebase $^{5}$ , run using Nvidia's Tensorflow cotainer image 21.07 $^{6}$ . For pretraining Roberta models, we used the official implementation in the Fairseq library $^{7}$ . For finetuning experiments, we used the AllenNLP library for training and evaluation routines, coupled with the Huggingface library for the model architectures.\n\nWe used a collection of Nvidia V100 (32GB) and A6000(48GB) GPUs for our experiments. Pretraining an ELECTRA-small model takes around 1.5 days on 2 GPUs while pretraining a Roberta-base model takes around 1.5 days on 4 GPUs.\n\nTable 7: GLUE scores achieved by different strategies for ordering sentences from the downstream dataset used for pretraining. Random: randomly ordered sentences; Standard: sentences within a datapoint occur contiguously in original order; TF-IDF: sentences reordered using content similarity.   \n\n<table><tr><td>Pretraining Dataset</td><td>Random</td><td>Standard</td><td>TF-IDF(Ours)</td></tr><tr><td>None (RandomInit)</td><td>-</td><td>53.20</td><td>-</td></tr><tr><td>Sentiment140</td><td>-</td><td>72.67</td><td>75.29</td></tr><tr><td>DBpedia14</td><td>72.82</td><td>70.38</td><td>75.44</td></tr><tr><td>Discovery</td><td>71.79</td><td>77.26</td><td>78.94</td></tr><tr><td>MNLI</td><td>62.80</td><td>78.28</td><td>76.33</td></tr><tr><td>QQP</td><td>71.09</td><td>75.43</td><td>69.57</td></tr><tr><td>BookWiki (Off-the-shelf)</td><td>-</td><td>79.43</td><td>-</td></tr></table>\n\nTable 8: Hyperparameters used for pretraining models   \n\n<table><tr><td>Hyperparameter</td><td>ELECTRA</td><td>Roberta</td></tr><tr><td>Size (Parameter count)</td><td>Small (14M)</td><td>Base (110M)</td></tr><tr><td>Training steps</td><td>1M</td><td>100K</td></tr><tr><td>Warmup steps</td><td>10K</td><td>6K</td></tr><tr><td>Batch size</td><td>128</td><td>512</td></tr><tr><td>Peak learning rate</td><td>5e-4</td><td>5e-4</td></tr><tr><td>Sequence length</td><td>128</td><td>512</td></tr></table>\n\nTable 9: Hyperparameters used for finetuning models on 10 downstream tasks   \n\n<table><tr><td>Hyperparameter</td><td>ELECTRA</td><td>Roberta</td></tr><tr><td>Training epochs</td><td>20</td><td>20</td></tr><tr><td>Batch size</td><td>32</td><td>32</td></tr><tr><td>Learning rate</td><td>{1e-4,1e-5}</td><td>2e-5</td></tr><tr><td>Max sequence length</td><td>512</td><td>512</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.682::appendix::A.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia V100 32GB",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "For pretraining ELECTRA models, we used Nvidia's implementation of the ELECTRA codebase $^{5}$ , run using Nvidia's Tensorflow cotainer image 21.07 $^{6}$ . For pretraining Roberta models, we used the official implementation in the Fairseq library $^{7}$ . For finetuning experiments, we used the AllenNLP library for training and evaluation routines, coupled with the Huggingface library for the model architectures.\n\nWe used a collection of Nvidia V100 (32GB) and A6000(48GB) GPUs for our experiments. Pretraining an ELECTRA-small model takes around 1.5 days on 2 GPUs while pretraining a Roberta-base model takes around 1.5 days on 4 GPUs.\n\nTable 7: GLUE scores achieved by different strategies for ordering sentences from the downstream dataset used for pretraining. Random: randomly ordered sentences; Standard: sentences within a datapoint occur contiguously in original order; TF-IDF: sentences reordered using content similarity.   \n\n<table><tr><td>Pretraining Dataset</td><td>Random</td><td>Standard</td><td>TF-IDF(Ours)</td></tr><tr><td>None (RandomInit)</td><td>-</td><td>53.20</td><td>-</td></tr><tr><td>Sentiment140</td><td>-</td><td>72.67</td><td>75.29</td></tr><tr><td>DBpedia14</td><td>72.82</td><td>70.38</td><td>75.44</td></tr><tr><td>Discovery</td><td>71.79</td><td>77.26</td><td>78.94</td></tr><tr><td>MNLI</td><td>62.80</td><td>78.28</td><td>76.33</td></tr><tr><td>QQP</td><td>71.09</td><td>75.43</td><td>69.57</td></tr><tr><td>BookWiki (Off-the-shelf)</td><td>-</td><td>79.43</td><td>-</td></tr></table>\n\nTable 8: Hyperparameters used for pretraining models   \n\n<table><tr><td>Hyperparameter</td><td>ELECTRA</td><td>Roberta</td></tr><tr><td>Size (Parameter count)</td><td>Small (14M)</td><td>Base (110M)</td></tr><tr><td>Training steps</td><td>1M</td><td>100K</td></tr><tr><td>Warmup steps</td><td>10K</td><td>6K</td></tr><tr><td>Batch size</td><td>128</td><td>512</td></tr><tr><td>Peak learning rate</td><td>5e-4</td><td>5e-4</td></tr><tr><td>Sequence length</td><td>128</td><td>512</td></tr></table>\n\nTable 9: Hyperparameters used for finetuning models on 10 downstream tasks   \n\n<table><tr><td>Hyperparameter</td><td>ELECTRA</td><td>Roberta</td></tr><tr><td>Training epochs</td><td>20</td><td>20</td></tr><tr><td>Batch size</td><td>32</td><td>32</td></tr><tr><td>Learning rate</td><td>{1e-4,1e-5}</td><td>2e-5</td></tr><tr><td>Max sequence length</td><td>512</td><td>512</td></tr></table>",
+      "section_number": "A.4",
+      "section_title": "hardware and software packages used",
+      "normalized_section_title": "hardware and software packages used"
+    },
+    {
+      "window_id": "2023.acl-long.682::appendix::A.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A6000 48GB",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "For pretraining ELECTRA models, we used Nvidia's implementation of the ELECTRA codebase $^{5}$ , run using Nvidia's Tensorflow cotainer image 21.07 $^{6}$ . For pretraining Roberta models, we used the official implementation in the Fairseq library $^{7}$ . For finetuning experiments, we used the AllenNLP library for training and evaluation routines, coupled with the Huggingface library for the model architectures.\n\nWe used a collection of Nvidia V100 (32GB) and A6000(48GB) GPUs for our experiments. Pretraining an ELECTRA-small model takes around 1.5 days on 2 GPUs while pretraining a Roberta-base model takes around 1.5 days on 4 GPUs.\n\nTable 7: GLUE scores achieved by different strategies for ordering sentences from the downstream dataset used for pretraining. Random: randomly ordered sentences; Standard: sentences within a datapoint occur contiguously in original order; TF-IDF: sentences reordered using content similarity.   \n\n<table><tr><td>Pretraining Dataset</td><td>Random</td><td>Standard</td><td>TF-IDF(Ours)</td></tr><tr><td>None (RandomInit)</td><td>-</td><td>53.20</td><td>-</td></tr><tr><td>Sentiment140</td><td>-</td><td>72.67</td><td>75.29</td></tr><tr><td>DBpedia14</td><td>72.82</td><td>70.38</td><td>75.44</td></tr><tr><td>Discovery</td><td>71.79</td><td>77.26</td><td>78.94</td></tr><tr><td>MNLI</td><td>62.80</td><td>78.28</td><td>76.33</td></tr><tr><td>QQP</td><td>71.09</td><td>75.43</td><td>69.57</td></tr><tr><td>BookWiki (Off-the-shelf)</td><td>-</td><td>79.43</td><td>-</td></tr></table>\n\nTable 8: Hyperparameters used for pretraining models   \n\n<table><tr><td>Hyperparameter</td><td>ELECTRA</td><td>Roberta</td></tr><tr><td>Size (Parameter count)</td><td>Small (14M)</td><td>Base (110M)</td></tr><tr><td>Training steps</td><td>1M</td><td>100K</td></tr><tr><td>Warmup steps</td><td>10K</td><td>6K</td></tr><tr><td>Batch size</td><td>128</td><td>512</td></tr><tr><td>Peak learning rate</td><td>5e-4</td><td>5e-4</td></tr><tr><td>Sequence length</td><td>128</td><td>512</td></tr></table>\n\nTable 9: Hyperparameters used for finetuning models on 10 downstream tasks   \n\n<table><tr><td>Hyperparameter</td><td>ELECTRA</td><td>Roberta</td></tr><tr><td>Training epochs</td><td>20</td><td>20</td></tr><tr><td>Batch size</td><td>32</td><td>32</td></tr><tr><td>Learning rate</td><td>{1e-4,1e-5}</td><td>2e-5</td></tr><tr><td>Max sequence length</td><td>512</td><td>512</td></tr></table>",
+      "section_number": "A.4",
+      "section_title": "hardware and software packages used",
+      "normalized_section_title": "hardware and software packages used"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.682::appendix::A.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia V100 32GB",
+      "cleaned_hardware_name": "nvidia v100 32gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "A.4",
+      "section_title": "hardware and software packages used",
+      "normalized_section_title": "hardware and software packages used",
+      "evidence": "For pretraining ELECTRA models, we used Nvidia's implementation of the ELECTRA codebase $^{5}$ , run using Nvidia's Tensorflow cotainer image 21.07 $^{6}$ . For pretraining Roberta models, we used the official implementation in the Fairseq library $^{7}$ . For finetuning experiments, we used the AllenNLP library for training and evaluation routines, coupled with the Huggingface library for the model architectures.\n\nWe used a collection of Nvidia V100 (32GB) and A6000(48GB) GPUs for our experiments. Pretraining an ELECTRA-small model takes around 1.5 days on 2 GPUs while pretraining a Roberta-base model takes around 1.5 days on 4 GPUs.\n\nTable 7: GLUE scores achieved by different strategies for ordering sentences from the downstream dataset used for pretraining. Random: randomly ordered sentences; Standard: sentences within a datapoint occur contiguously in original order; TF-IDF: sentences reordered using content similarity.   \n\n<table><tr><td>Pretraining Dataset</td><td>Random</td><td>Standard</td><td>TF-IDF(Ours)</td></tr><tr><td>None (RandomInit)</td><td>-</td><td>53.20</td><td>-</td></tr><tr><td>Sentiment140</td><td>-</td><td>72.67</td><td>75.29</td></tr><tr><td>DBpedia14</td><td>72.82</td><td>70.38</td><td>75.44</td></tr><tr><td>Discovery</td><td>71.79</td><td>77.26</td><td>78.94</td></tr><tr><td>MNLI</td><td>62.80</td><td>78.28</td><td>76.33</td></tr><tr><td>QQP</td><td>71.09</td><td>75.43</td><td>69.57</td></tr><tr><td>BookWiki (Off-the-shelf)</td><td>-</td><td>79.43</td><td>-</td></tr></table>\n\nTable 8: Hyperparameters used for pretraining models   \n\n<table><tr><td>Hyperparameter</td><td>ELECTRA</td><td>Roberta</td></tr><tr><td>Size (Parameter count)</td><td>Small (14M)</td><td>Base (110M)</td></tr><tr><td>Training steps</td><td>1M</td><td>100K</td></tr><tr><td>Warmup steps</td><td>10K</td><td>6K</td></tr><tr><td>Batch size</td><td>128</td><td>512</td></tr><tr><td>Peak learning rate</td><td>5e-4</td><td>5e-4</td></tr><tr><td>Sequence length</td><td>128</td><td>512</td></tr></table>\n\nTable 9: Hyperparameters used for finetuning models on 10 downstream tasks   \n\n<table><tr><td>Hyperparameter</td><td>ELECTRA</td><td>Roberta</td></tr><tr><td>Training epochs</td><td>20</td><td>20</td></tr><tr><td>Batch size</td><td>32</td><td>32</td></tr><tr><td>Learning rate</td><td>{1e-4,1e-5}</td><td>2e-5</td></tr><tr><td>Max sequence length</td><td>512</td><td>512</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.acl-long.682::appendix::A.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A6000 48GB",
+      "cleaned_hardware_name": "nvidia a6000 48gb",
+      "normalized_hardware_name": "NVIDIA RTX A6000",
+      "benchmark_hardware_name": "NVIDIA RTX A6000",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "A.4",
+      "section_title": "hardware and software packages used",
+      "normalized_section_title": "hardware and software packages used",
+      "evidence": "For pretraining ELECTRA models, we used Nvidia's implementation of the ELECTRA codebase $^{5}$ , run using Nvidia's Tensorflow cotainer image 21.07 $^{6}$ . For pretraining Roberta models, we used the official implementation in the Fairseq library $^{7}$ . For finetuning experiments, we used the AllenNLP library for training and evaluation routines, coupled with the Huggingface library for the model architectures.\n\nWe used a collection of Nvidia V100 (32GB) and A6000(48GB) GPUs for our experiments. Pretraining an ELECTRA-small model takes around 1.5 days on 2 GPUs while pretraining a Roberta-base model takes around 1.5 days on 4 GPUs.\n\nTable 7: GLUE scores achieved by different strategies for ordering sentences from the downstream dataset used for pretraining. Random: randomly ordered sentences; Standard: sentences within a datapoint occur contiguously in original order; TF-IDF: sentences reordered using content similarity.   \n\n<table><tr><td>Pretraining Dataset</td><td>Random</td><td>Standard</td><td>TF-IDF(Ours)</td></tr><tr><td>None (RandomInit)</td><td>-</td><td>53.20</td><td>-</td></tr><tr><td>Sentiment140</td><td>-</td><td>72.67</td><td>75.29</td></tr><tr><td>DBpedia14</td><td>72.82</td><td>70.38</td><td>75.44</td></tr><tr><td>Discovery</td><td>71.79</td><td>77.26</td><td>78.94</td></tr><tr><td>MNLI</td><td>62.80</td><td>78.28</td><td>76.33</td></tr><tr><td>QQP</td><td>71.09</td><td>75.43</td><td>69.57</td></tr><tr><td>BookWiki (Off-the-shelf)</td><td>-</td><td>79.43</td><td>-</td></tr></table>\n\nTable 8: Hyperparameters used for pretraining models   \n\n<table><tr><td>Hyperparameter</td><td>ELECTRA</td><td>Roberta</td></tr><tr><td>Size (Parameter count)</td><td>Small (14M)</td><td>Base (110M)</td></tr><tr><td>Training steps</td><td>1M</td><td>100K</td></tr><tr><td>Warmup steps</td><td>10K</td><td>6K</td></tr><tr><td>Batch size</td><td>128</td><td>512</td></tr><tr><td>Peak learning rate</td><td>5e-4</td><td>5e-4</td></tr><tr><td>Sequence length</td><td>128</td><td>512</td></tr></table>\n\nTable 9: Hyperparameters used for finetuning models on 10 downstream tasks   \n\n<table><tr><td>Hyperparameter</td><td>ELECTRA</td><td>Roberta</td></tr><tr><td>Training epochs</td><td>20</td><td>20</td></tr><tr><td>Batch size</td><td>32</td><td>32</td></tr><tr><td>Learning rate</td><td>{1e-4,1e-5}</td><td>2e-5</td></tr><tr><td>Max sequence length</td><td>512</td><td>512</td></tr></table>",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.acl-long.682::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "experimental setup",
+      "evidence": "Our experiments center around the ELECTRA model (Clark et al., 2019) and the RoBERTa-base model (Liu et al., 2019). On the broadest set of experiments, for which we can only afford to train one model, we employ ELECTRA because it performs better than RoBERTa given comparable compute budgets (Clark et al., 2019). In particular, we use the small variant of ELECTRA (14 million parameters), which performs similarly to BERTbase on GLUE (difference of $\\approx 2$ points) while training much faster (Clark et al., 2019). However, we replicate many of these results on the larger RoBERTa-base model revealing similar results and thus establishing the generality of our findings.\n\nDuring pretraining, a text sequence is fed into the model with some tokens masked out. While MLM-only models like RoBERTa only have a generator network that predicts the content of the masked tokens, ELECTRA has an additional discriminator module that predicts if those predictions were correct. Both the generator and the discriminator\n\nTable 1: The suite of downstream datasets used in this work along with their training set sizes   \n\n<table><tr><td>Dataset</td><td>Size (MB)</td><td>Classes</td><td>Domain</td><td>Task</td></tr><tr><td>AGNews (Zhang et al., 2015)</td><td>27</td><td>4</td><td>News</td><td>topic classification</td></tr><tr><td>QQP (Wang et al., 2018)</td><td>43</td><td>2</td><td>Online forum questions</td><td>paraphrase detection</td></tr><tr><td>Jigsaw Toxicity (Kaggle.com, 2018)</td><td>59</td><td>6</td><td>Wikipedia comments</td><td>toxicity detection</td></tr><tr><td>MNLI (Williams et al., 2018)</td><td>65</td><td>3</td><td>Diverse</td><td>natural language inference</td></tr><tr><td>Sentiment140 (Go et al., 2009)</td><td>114</td><td>5</td><td>Tweets</td><td>sentiment classification</td></tr><tr><td>PAWS (Zhang et al., 2019)</td><td>139</td><td>2</td><td>Wikipedia</td><td>paraphrase detection</td></tr><tr><td>DBPedia14 (Zhang et al., 2015)</td><td>151</td><td>14</td><td>Wikipedia</td><td>topic classification</td></tr><tr><td>Discovery (Sileo et al., 2019)</td><td>293</td><td>174</td><td>Web crawl</td><td>discourse marker prediction</td></tr><tr><td>Yahoo Answertopics (Zhang et al., 2015)</td><td>461</td><td>10</td><td>Online forum answers</td><td>topic classification</td></tr><tr><td>Amazon Polarity (Zhang et al., 2015)</td><td>1427</td><td>2</td><td>Product reviews</td><td>sentiment classification</td></tr></table>\n\nnetworks' parameters are updated simultaneously during pretraining. After pretraining, the generator is discarded and the discriminator is used as an encoder for finetuning on downstream tasks.\n\nWe experimented with 10 different downstream datasets (Table 1). We chose these datasets in our testbed to span different dataset sizes ranging from 27 megabytes to about 1.4 gigabytes of text in the training split. These datasets are for different tasks such as topic classification, sentiment classification, natural language inference etc., and are created using data sourced from diverse domains. Most of them are multi-class classification tasks except Jigsaw Toxicity which is a multi-label classification task, and Sentiment140 which is modeled as a regression task. For finetuning a pretrained model on any dataset, we passed the input through the model, took the vector representation of the CLS token in the final layer, and passed it through a classification head with one hidden layer to get the output."
+    },
+    {
+      "source_window_id": "2023.acl-long.682::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "appendix",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.682::appendix::A.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.1",
+      "section_title": "the role of sentence order in pretraining corpora",
+      "evidence": "For virtually all pretrained models like BERT, ELECTRA, XLNet, the sentences in the pretraining corpora are ordered as they naturally occur in some document such as Wikipedia article. Devlin et al. (2019) mention in their work: \"It is critical to use a document-level corpus rather than a shuffled sentence-level corpus (... in order to extract long contiguous sequences.\" However, for many of our pretraining corpora made from downstream datasets, the sentence taken in order do not form a coherent document or narrative text. For example, in the MNLI or QQP corpora, neighboring sentences will simply be premise-hypothesis pairs or potential paraphrase candidates.\n\nDespite the sentence order not forming a coherent document, many pretraining corpora achieve high performance boosts on the GLUE language understanding benchmark (Table 7). For example, MNLI achieves around $96\\%$ of the performance boost of the off-the-shelf model (Table 7). Interestingly, shuffling the sentences in these corpora leads to a large drop in performance (Table 7). This suggests that there is some value to keeping the sentence order in a way that puts sentences from the same example in datasets like MNLI and QQP next to each other. A likely explanation of this is in Levine et al. (2021) where authors showed that including similar sentences in the same input sequence when pretraining should lead to improved performance via theoretical analysis and empirical experiments.\n\nWe test if GLUE performance can be improved by artificially re-ordering a set of sentences to promote the occurrence of similar sentences together. We rearrange the sentences in the sentence-shuffled versions of pretraining corpora to encourage content overlap among neighboring sentences, and see if this can recover some of the drops in performance that occurred due to shuffling. Our algorithm creates the corpus by iteratively appending sentences to it, such that at each step the new sentence is the one with maximum TF-IDF similarity with the previous sentence. Such a way of constructing a corpus by similarity based retrieval has been used in past works (Levine et al., 2021; Yao et al., 2022), with the main difference that they retrieved sentences from external corpora similar to the ones present in the downstream dataset, whereas we sim\n\nply use it to reorder sentences already present in the downstream dataset for pretraining. We also make sure that the algorithm does not accidentally recover the original order of sentences (e.g. by matching the premise-hypothesis pairs originally in the MNLI dataset).\n\nWe experiment with 5 different datasets and find that the sentence-reordering scheme improves performance compared to random sentence order for all of them except QQP. For Discovery and DBPedia14 datasets, it scores even higher than our standard sentence ordering scheme which preserves the adjacency and order of sentences within each datapoint. This shows that re-ordering sentences to promote content similarity between neighboring sentences, can potentially improve GLUE score, without introducing any new information or narrative structure."
+    },
+    {
+      "source_window_id": "2023.acl-long.682::appendix::A.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.2",
+      "section_title": "experiments with smaller electra models",
+      "evidence": "In addition to experimenting with a base-sized architecture (110M parameters), we also experiment with architectures which are even smaller than ELECTRA-small. We train ELECTRA models of smaller size by either reducing the number of layers in the generator and discriminator, or reducing the hidden dimension of the discriminator<sup>3</sup>. As the models get smaller, self-pretraining continues to significantly outperform random initialization and often outperforms pretraining on BookWiki corpus (Figure 3). Interestingly, the relative performance of self-pretrained and BookWiki-pretrained models tends to stay the same across model size. For example, for QQP self-pretraining is always best and for MNLI BookWiki-pretraining is always best irrespective of number of layers or hidden size."
+    },
+    {
+      "source_window_id": "2023.acl-long.682::appendix::A.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.3",
+      "section_title": "implementation details for pretraining and finetuning",
+      "evidence": "Hyperparameters for Pretraining For pretraining ELECTRA-small models, we use the standard hyperparameters (Table 8) as described in Clark et al. (2019). For the Roberta-base models, training with the standard hyperparameters with our computing resources would be prohibitively slow, and so we used hyperparameters from Warstadt et al. (2020) which require lesser time to train (Ta\n\n![](images/f75fa4e28ab9c95d54965027e91e77ee7fd985fbd752e833d798dacc11c5f20d.jpg)\n\n![](images/b70c9f2b5314f9ee9735ac8b3030c4c9430b1b85a5348131ac56a415183675b1.jpg)  \nFigure 3: Variation in performance of ELECTRA models with change in number of layers and hidden size ( randomly initialized, - self-pretrained, - BookWiki-pretrained)\n\nble 8). For task-adaptive pretraining(TAPT), we follow Gururangan et al. (2020) and further pretrain off-the-shelf models for 100 epochs on the downstream task's training set, with the first $6\\%$ of the resulting total updates used for learning rate warmup.\n\nHyperparameters for Finetuning For finetuning the models on the 10 downstream datasets, we use hyperparameters as shown in Table 9. We use the AdamW optimizer (Loshchilov and Hutter, 2018) for finetuning. We use early stopping based on validation set performance. The validation metric used is mean squared error for the sentiment140 dataset (regression), average binary crossentropy for the jigsaw dataset (multi-label classification), and accuracy for all other datasets (multi-class classification). The patience parameter for early stopping is set to 3 epochs. For finetuning ELECTRA-small models on the GLUE datasets, we use the standard learning rate of 1e-4 following Clark et al. (2019).\n\nDetails about Use of Downstream Datasets All downstream datasets used in this paper were\n\nsourced from the Huggingface library<sup>4</sup>. For the Yahoo Answertopics dataset, we use only the text from the answer (not the question) as input to the models (both for pretraining and finetuning). For the PAWS dataset, we use the version called \"Unlabeled $\\mathrm{PAWS}_{\\mathrm{wiki}}$ in Zhang et al. (2019), which is actually not unlabeled but has silver labels. We preferred that version over others because of its larger size. For datasets which had a train and test split but no validation split (e.g. Yahoo Answertopics), we extracted 5000 random datapoints from the train split to make the validation split. If a dataset had a train and validation split but no test split (e.g. Unlabeled $\\mathrm{PAWS}_{\\mathrm{wiki}}$ ), we designated the validation split to be the test split, and created a new validation set by extracting 5000 random datapoints from the train set."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.4"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 32 GB",
+        "num": 2
+      },
+      {
+        "name": "NVIDIA RTX A6000",
+        "num": 4
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2023\\2023.acl-long.682\\auto\\full.md",
+    "source_md_sha256": "be3c2edaabbd25f59aa055fa8b95cda0e6fab5e076d824b70bbe61df049c04e6",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

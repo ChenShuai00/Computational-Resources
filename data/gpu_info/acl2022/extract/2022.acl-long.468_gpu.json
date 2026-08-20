@@ -1,0 +1,183 @@
+{
+  "paper_id": "2022.acl-long.468",
+  "candidate_windows": [
+    {
+      "window_id": "2022.acl-long.468::sections::4",
+      "paper_id": "2022.acl-long.468",
+      "section_number": "4",
+      "section_title": "models",
+      "normalized_section_title": "models",
+      "window_text": "Formally speaking, a statutory article retrieval system $R: (q, \\mathcal{C}) \\to \\mathcal{F}$ is a function that takes as input a question $q$ along with a corpus of law articles $\\mathcal{C}$ , and returns a much smaller filter set $\\mathcal{F} \\subset \\mathcal{C}$ of the supposedly relevant articles, ranked by decreasing order of relevance. For a fixed $k = |\\mathcal{F}| \\ll |\\mathcal{C}|$ , the retriever can be evaluated in isolation with multiple rank-based metrics (see Section 5.1). The following section describes the retrieval models we use as a benchmark for the task.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.468::sections::4.2.2",
+      "paper_id": "2022.acl-long.468",
+      "section_number": "4.2.2",
+      "section_title": "training",
+      "normalized_section_title": "training",
+      "window_text": "Thereafter, we train our own siamese and two-tower RoBERTa-based bi-encoder models on BSARD. Let $\\mathcal{D} = \\{\\langle q_i,a_i^+\\rangle \\}_{i = 1}^N$ be the training data where each of the $N$ instances consists of a query $q_{i}$ associated with a relevant (positive) article $a_{i}^{+}$ . Using in-batch negatives (Chen et al., 2017; Henderson et al., 2017), we can create a training set $\\mathcal{T} = \\{\\langle q_i,a_i^+,A_i^- \\rangle \\}_{i = 1}^N$ where $A_{i}^{-}$ is a set of negative articles for question $q_{i}$ constructed by considering the articles paired with the other questions from the same mini-batch. For each training instance, we contrastively optimize the negative log-likelihood of each positive article against their negative articles, i.e.,\n\n$$\n\\begin{array}{l} L \\left(q _ {i}, a _ {i} ^ {+}, \\mathcal {A} _ {i} ^ {-}\\right) \\\\ = - \\log \\frac {\\exp \\left(s _ {D} \\left(q _ {i} , a _ {i} ^ {+}\\right) / \\tau\\right)}{\\sum_ {a \\in \\mathcal {A} _ {i} ^ {-} \\cup \\{a _ {i} ^ {+} \\}} \\exp \\left(s _ {D} \\left(q _ {i} , a\\right) / \\tau\\right)}, \\tag {6} \\\\ \\end{array}\n$$\n\nwhere $\\tau > 0$ is a temperature parameter to be set. This contrastive loss allows learning embedding functions such that relevant question-article pairs will have a higher score than irrelevant ones.\n\nTo deal with articles longer than 512 tokens, we use the same workaround as in the zero-shot evaluation and split the long sequences into overlapping chunks of 200 tokens with a window size of 20. However, this time, we limit the size of the articles to the first 1,000 words due to limited GPU memory. Although not ideal, doing so remains reasonable given that only $0.6\\%$ of the articles in our corpus have more than 1,000 words, as mentioned in Section 3.2. Each chunk is prefixed by the [CLS] token, and we extract a global representation for the whole article by averaging the output [CLS] token embeddings of the different chunks. Here, we use the dot product to compute similarities as it gives slightly better results than cosine.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.468::sections::5",
+      "paper_id": "2022.acl-long.468",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "We now describe the setup we use for experiments and evaluate the performance of our models.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.468::sections::5.1",
+      "paper_id": "2022.acl-long.468",
+      "section_number": "5.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Metrics. We use three standard information retrieval metrics (Manning et al., 2008) to evaluate performance, namely the (macro-averaged) recall@k $(\\mathbf{R}@\\mathbf{k})$ , mean average precision@k (MAP@k), and mean reciprocal rank@k (MRR@k). Appendix B gives a detailed description of these\n\nmetrics in the context of statutory article retrieval. We deliberately omit to report the precision@k given that questions have a variable number of relevant articles (see Figure 2c), which makes it senseless to report it at a fixed $k$ - questions with $r$ relevant articles will always have $\\mathrm{P} @ k < 1$ if $k > r$ . For the same reason, $k$ should be large enough for the recall@k. Hence, we use $k \\in \\{100, 200, 500\\}$ for our evaluation.\n\nFrench word embedding models. Our focus is on a non-English dataset, so we experiment with French variants of the models mentioned above. Specifically, we use a 500-dimensional skip-gram word2vec model pre-trained on a crawled French corpus (Fauconnier, 2015), a 300-dimensional CBOW fastText model pre-trained on French Web data (Grave et al., 2018), and a French RoBERTa model, namely CamemBERT (Martin et al., 2020), pre-trained on 147GB of French web pages filtered from Common Crawl.<sup>3</sup>\n\nHyper-parameters & schedule. For BM25, we optimize the parameters on BSARD training set and find $k_{1} = 1.0$ and $b = 0.6$ to perform best. Regarding the bi-encoder models, we optimize the contrastive loss using a batch size of 22 questionarticle pairs and a temperature of 0.05 for 100 epochs, which is approximately 20,500 steps. We use AdamW (Loshchilov and Hutter, 2019) with an initial learning rate of 2e-5, $\\beta_{1} = 0.9$ , $\\beta_{2} = 0.999$ , weight decay of 0.01, learning rate warm up over the first 500 steps, and linear decay of the learning rate. Training is performed on a single Tesla V100 GPU with 32 GBs of memory and evaluation on a server with a dual 20 core Intel(R) Xeon(R) E5-2698 v4 CPU @2.20GHz and 512 GBs of RAM.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.468::sections::6",
+      "paper_id": "2022.acl-long.468",
+      "section_number": "6",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "This section discusses the limitations and broader impacts of our dataset.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.acl-long.468::appendix::C.6",
+      "paper_id": "2022.acl-long.468",
+      "section_number": "C.6",
+      "section_title": "reproducibility",
+      "normalized_section_title": "reproducibility",
+      "window_text": "We ensure the reproducibility of the experimental results by releasing our code on Github at https: //github.com/maaastrichtlawtech/bsard.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.acl-long.468::sections::5.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100 32GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Metrics. We use three standard information retrieval metrics (Manning et al., 2008) to evaluate performance, namely the (macro-averaged) recall@k $(\\mathbf{R}@\\mathbf{k})$ , mean average precision@k (MAP@k), and mean reciprocal rank@k (MRR@k). Appendix B gives a detailed description of these\n\nmetrics in the context of statutory article retrieval. We deliberately omit to report the precision@k given that questions have a variable number of relevant articles (see Figure 2c), which makes it senseless to report it at a fixed $k$ - questions with $r$ relevant articles will always have $\\mathrm{P} @ k < 1$ if $k > r$ . For the same reason, $k$ should be large enough for the recall@k. Hence, we use $k \\in \\{100, 200, 500\\}$ for our evaluation.\n\nFrench word embedding models. Our focus is on a non-English dataset, so we experiment with French variants of the models mentioned above. Specifically, we use a 500-dimensional skip-gram word2vec model pre-trained on a crawled French corpus (Fauconnier, 2015), a 300-dimensional CBOW fastText model pre-trained on French Web data (Grave et al., 2018), and a French RoBERTa model, namely CamemBERT (Martin et al., 2020), pre-trained on 147GB of French web pages filtered from Common Crawl.<sup>3</sup>\n\nHyper-parameters & schedule. For BM25, we optimize the parameters on BSARD training set and find $k_{1} = 1.0$ and $b = 0.6$ to perform best. Regarding the bi-encoder models, we optimize the contrastive loss using a batch size of 22 questionarticle pairs and a temperature of 0.05 for 100 epochs, which is approximately 20,500 steps. We use AdamW (Loshchilov and Hutter, 2019) with an initial learning rate of 2e-5, $\\beta_{1} = 0.9$ , $\\beta_{2} = 0.999$ , weight decay of 0.01, learning rate warm up over the first 500 steps, and linear decay of the learning rate. Training is performed on a single Tesla V100 GPU with 32 GBs of memory and evaluation on a server with a dual 20 core Intel(R) Xeon(R) E5-2698 v4 CPU @2.20GHz and 512 GBs of RAM.",
+      "section_number": "5.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.acl-long.468::sections::5.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100 32GB",
+      "cleaned_hardware_name": "tesla v100 32gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "5.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "evidence": "Metrics. We use three standard information retrieval metrics (Manning et al., 2008) to evaluate performance, namely the (macro-averaged) recall@k $(\\mathbf{R}@\\mathbf{k})$ , mean average precision@k (MAP@k), and mean reciprocal rank@k (MRR@k). Appendix B gives a detailed description of these\n\nmetrics in the context of statutory article retrieval. We deliberately omit to report the precision@k given that questions have a variable number of relevant articles (see Figure 2c), which makes it senseless to report it at a fixed $k$ - questions with $r$ relevant articles will always have $\\mathrm{P} @ k < 1$ if $k > r$ . For the same reason, $k$ should be large enough for the recall@k. Hence, we use $k \\in \\{100, 200, 500\\}$ for our evaluation.\n\nFrench word embedding models. Our focus is on a non-English dataset, so we experiment with French variants of the models mentioned above. Specifically, we use a 500-dimensional skip-gram word2vec model pre-trained on a crawled French corpus (Fauconnier, 2015), a 300-dimensional CBOW fastText model pre-trained on French Web data (Grave et al., 2018), and a French RoBERTa model, namely CamemBERT (Martin et al., 2020), pre-trained on 147GB of French web pages filtered from Common Crawl.<sup>3</sup>\n\nHyper-parameters & schedule. For BM25, we optimize the parameters on BSARD training set and find $k_{1} = 1.0$ and $b = 0.6$ to perform best. Regarding the bi-encoder models, we optimize the contrastive loss using a batch size of 22 questionarticle pairs and a temperature of 0.05 for 100 epochs, which is approximately 20,500 steps. We use AdamW (Loshchilov and Hutter, 2019) with an initial learning rate of 2e-5, $\\beta_{1} = 0.9$ , $\\beta_{2} = 0.999$ , weight decay of 0.01, learning rate warm up over the first 500 steps, and linear decay of the learning rate. Training is performed on a single Tesla V100 GPU with 32 GBs of memory and evaluation on a server with a dual 20 core Intel(R) Xeon(R) E5-2698 v4 CPU @2.20GHz and 512 GBs of RAM.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2022.acl-long.468::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "models",
+      "evidence": "Formally speaking, a statutory article retrieval system $R: (q, \\mathcal{C}) \\to \\mathcal{F}$ is a function that takes as input a question $q$ along with a corpus of law articles $\\mathcal{C}$ , and returns a much smaller filter set $\\mathcal{F} \\subset \\mathcal{C}$ of the supposedly relevant articles, ranked by decreasing order of relevance. For a fixed $k = |\\mathcal{F}| \\ll |\\mathcal{C}|$ , the retriever can be evaluated in isolation with multiple rank-based metrics (see Section 5.1). The following section describes the retrieval models we use as a benchmark for the task."
+    },
+    {
+      "source_window_id": "2022.acl-long.468::sections::4.2.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2.2",
+      "section_title": "training",
+      "evidence": "Thereafter, we train our own siamese and two-tower RoBERTa-based bi-encoder models on BSARD. Let $\\mathcal{D} = \\{\\langle q_i,a_i^+\\rangle \\}_{i = 1}^N$ be the training data where each of the $N$ instances consists of a query $q_{i}$ associated with a relevant (positive) article $a_{i}^{+}$ . Using in-batch negatives (Chen et al., 2017; Henderson et al., 2017), we can create a training set $\\mathcal{T} = \\{\\langle q_i,a_i^+,A_i^- \\rangle \\}_{i = 1}^N$ where $A_{i}^{-}$ is a set of negative articles for question $q_{i}$ constructed by considering the articles paired with the other questions from the same mini-batch. For each training instance, we contrastively optimize the negative log-likelihood of each positive article against their negative articles, i.e.,\n\n$$\n\\begin{array}{l} L \\left(q _ {i}, a _ {i} ^ {+}, \\mathcal {A} _ {i} ^ {-}\\right) \\\\ = - \\log \\frac {\\exp \\left(s _ {D} \\left(q _ {i} , a _ {i} ^ {+}\\right) / \\tau\\right)}{\\sum_ {a \\in \\mathcal {A} _ {i} ^ {-} \\cup \\{a _ {i} ^ {+} \\}} \\exp \\left(s _ {D} \\left(q _ {i} , a\\right) / \\tau\\right)}, \\tag {6} \\\\ \\end{array}\n$$\n\nwhere $\\tau > 0$ is a temperature parameter to be set. This contrastive loss allows learning embedding functions such that relevant question-article pairs will have a higher score than irrelevant ones.\n\nTo deal with articles longer than 512 tokens, we use the same workaround as in the zero-shot evaluation and split the long sequences into overlapping chunks of 200 tokens with a window size of 20. However, this time, we limit the size of the articles to the first 1,000 words due to limited GPU memory. Although not ideal, doing so remains reasonable given that only $0.6\\%$ of the articles in our corpus have more than 1,000 words, as mentioned in Section 3.2. Each chunk is prefixed by the [CLS] token, and we extract a global representation for the whole article by averaging the output [CLS] token embeddings of the different chunks. Here, we use the dot product to compute similarities as it gives slightly better results than cosine."
+    },
+    {
+      "source_window_id": "2022.acl-long.468::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiments",
+      "evidence": "We now describe the setup we use for experiments and evaluate the performance of our models."
+    },
+    {
+      "source_window_id": "2022.acl-long.468::sections::6",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6",
+      "section_title": "discussion",
+      "evidence": "This section discusses the limitations and broader impacts of our dataset."
+    },
+    {
+      "source_window_id": "2022.acl-long.468::appendix::C.6",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C.6",
+      "section_title": "reproducibility",
+      "evidence": "We ensure the reproducibility of the experimental results by releasing our code on Github at https: //github.com/maaastrichtlawtech/bsard."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "5.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 32 GB",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2022\\2022.acl-long.468\\auto\\full.md",
+    "source_md_sha256": "c44a76235975213d0951cdb13dd096dce64acae5936823509e712fabca4d7ceb",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

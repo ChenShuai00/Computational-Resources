@@ -1,0 +1,141 @@
+{
+  "paper_id": "2025.acl-long.1434",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.1434::sections::3",
+      "paper_id": "2025.acl-long.1434",
+      "section_number": "3",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "Illustrated in Figure 2, CLAIMSPECT consists of the following steps: (1) aspect-discriminative retrieval, (2) iterative sub-aspect discovery, and (3) classification-based perspective discovery.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1434::sections::3.1",
+      "paper_id": "2025.acl-long.1434",
+      "section_number": "3.1",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1434::sections::4.2",
+      "paper_id": "2025.acl-long.1434",
+      "section_number": "4.2",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "Our primary motivation for CLAIMSPECT is to demonstrate its capabilities of deconstructing a nuanced claim into an aspect hierarchy and identifying corresponding perspectives. However, no existing methods tackle this novel task. Consequently, we choose to implement and compare our method with both RAG-driven and LLM-only approaches, detailed below. We run each baseline using both Llama $(\\infty)$ and GPT-4o-mini ():\n\n1. RAG-Based: Given a claim and definition of an aspect hierarchy, we use the claim as a query to retrieve relevant documents. We then provide the documents in-context when prompt the LLM to generate the aspect hierarchy.   \n2. Iterative RAG-Based: Given the claim, the definition of an aspect hierarchy, and the name/description of the current node $t_i$ , we construct a detailed query to retrieve node-specific\n\nTable 2: Comparison between ClaimSpect and all baselines. Sibling granularity (Sib) is normalized; all others are scaled by 100. Since Iterative Zero-Shot is not grounded with a corpus, there are no associated segments to each node. Thus, we omit its segment relevance scores (Seg). We bold the top score and underline the second-highest.   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"5\">World Relations</td><td colspan=\"5\">Biomedical</td></tr><tr><td>Rel</td><td>Path</td><td>Sib</td><td>Unique</td><td>Seg</td><td>Rel</td><td>Path</td><td>Sib</td><td>Unique</td><td>Seg</td></tr><tr><td>Iterative Zero-Shot∞</td><td>97.85</td><td>41.94</td><td>58.01</td><td>72.96</td><td>—</td><td>98.33</td><td>44.44</td><td>57.04</td><td>77.17</td><td>—</td></tr><tr><td>Iterative RAG∞</td><td>97.18</td><td>45.34</td><td>59.01</td><td>74.25</td><td>42.79</td><td>97.14</td><td>45.93</td><td>59.08</td><td>76.17</td><td>27.11</td></tr><tr><td>Iterative Zero-Shot</td><td>98.60</td><td>42.88</td><td>64.04</td><td>76.01</td><td>—</td><td>97.89</td><td>41.56</td><td>62.09</td><td>77.55</td><td>—</td></tr><tr><td>Iterative RAG</td><td>97.40</td><td>52.30</td><td>66.45</td><td>76.59</td><td>46.93</td><td>94.37</td><td>50.07</td><td>64.21</td><td>77.05</td><td>31.82</td></tr><tr><td>CLAIMSPECT∞</td><td>95.30</td><td>78.24</td><td>85.26</td><td>87.62</td><td>43.23</td><td>97.95</td><td>75.10</td><td>74.80</td><td>86.26</td><td>27.39</td></tr><tr><td>CLAIMSPECT - No Disc∞</td><td>99.00</td><td>79.75</td><td>82.64</td><td>85.43</td><td>49.47</td><td>96.07</td><td>76.26</td><td>74.39</td><td>87.69</td><td>39.03</td></tr></table>\n\nrelevant documents. We then provide these documents in-context to prompt the LLM for generating the children subaspects $t_j^i$ of aspect $t_i$ .\n\nWe also conduct an ablation study, No Discriminative (No Disc), where we remove discriminative ranking and instead replace it with a semantic similarity-based ranking. For this, we compute the semantic similarity between each segment and our $t_i$ -specific query from Section 3.2.1.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1434::appendix::E",
+      "paper_id": "2025.acl-long.1434",
+      "section_number": "E",
+      "section_title": "computational efficiency",
+      "normalized_section_title": "computational efficiency",
+      "window_text": "We specify the components of CLAIMSPECT's framework and their corresponding computational efficiency across the entire pipeline below. We consider the number of nodes within a full aspect hierarchy as $n$ and the total number of segments within the corpus as $S$ . We additionally provide rough time estimates based on an average sample.\n\n- Coarse-Grained Aspect Discovery (Section 3.1.3)\n\n-A single LLM call: $O(1)$\n\n- Aspect-Discriminative Retrieval (Section 3.2)\n\n- Retrieval-Augmented Keyword Enrichment (Section 3.2.1)\n\n* Embedding the segments using the retrieval model takes the most amount of time $(O(S))$ , but this can be computed offline given a knowledge base. Retrieval itself is quite efficient since it is embedding-based, and we use cosine-similarity to determine relevance (an efficient computation, especially in high-dimensional scenarios).\n\n* Enrich each node: $O(N) \\to 10$ seconds per node\n\n-Discriminative Segment Ranking (Section 3.2.2)\n\n* We only compute the ranking on the top-100 segments, so this operation's efficiency is constant: $O(1)$\n\n* The target score and distractor score computation scales according to the number of aspects throughout the tree (since their # of associated keywords is constant): $O(N) \\rightarrow 6$ seconds for each node\n\n- Iterative Subaspect Discovery (Section 3.3)\n\n- A single prompt per aspect node in hierarchy: $O(N)$\n\n- Classification-Based Perspective Discovery (Section 3.4)\n\n- As mentioned in lines 442-446, \"we reframe relevance filtering as a binary search problem\" intentionally to optimize the efficiency of this\n\nmodule. Thus, instead of sequentially determining claim relevancy for each segment, we sort the segments (which have more than 500 characters) and use binary search $(O(\\log S))$ to find the boundary of relevance-irrelevance. This leads to $O(S\\log S)$ efficiency due to the sorting function $\\rightarrow 5$ seconds during runtime, due to Python optimizations.\n\n* Perspective Discovery involves prompting the LLM for each filtered segment's stance: $O(S) \\rightarrow 3$ minutes\n\nWe specifically use vLLM to optimize our LLM batched generation. To construct a claim with 39 nodes and a max depth of 3, it takes approximately 20 minutes to run on two NVIDIA RTX A6000s. We can see that in total, the core framework operations take 13 minutes and 42 seconds, with the remaining time dedicated to embedding computations (which can be done offline).",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.1434::appendix::E",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX A6000",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "We specify the components of CLAIMSPECT's framework and their corresponding computational efficiency across the entire pipeline below. We consider the number of nodes within a full aspect hierarchy as $n$ and the total number of segments within the corpus as $S$ . We additionally provide rough time estimates based on an average sample.\n\n- Coarse-Grained Aspect Discovery (Section 3.1.3)\n\n-A single LLM call: $O(1)$\n\n- Aspect-Discriminative Retrieval (Section 3.2)\n\n- Retrieval-Augmented Keyword Enrichment (Section 3.2.1)\n\n* Embedding the segments using the retrieval model takes the most amount of time $(O(S))$ , but this can be computed offline given a knowledge base. Retrieval itself is quite efficient since it is embedding-based, and we use cosine-similarity to determine relevance (an efficient computation, especially in high-dimensional scenarios).\n\n* Enrich each node: $O(N) \\to 10$ seconds per node\n\n-Discriminative Segment Ranking (Section 3.2.2)\n\n* We only compute the ranking on the top-100 segments, so this operation's efficiency is constant: $O(1)$\n\n* The target score and distractor score computation scales according to the number of aspects throughout the tree (since their # of associated keywords is constant): $O(N) \\rightarrow 6$ seconds for each node\n\n- Iterative Subaspect Discovery (Section 3.3)\n\n- A single prompt per aspect node in hierarchy: $O(N)$\n\n- Classification-Based Perspective Discovery (Section 3.4)\n\n- As mentioned in lines 442-446, \"we reframe relevance filtering as a binary search problem\" intentionally to optimize the efficiency of this\n\nmodule. Thus, instead of sequentially determining claim relevancy for each segment, we sort the segments (which have more than 500 characters) and use binary search $(O(\\log S))$ to find the boundary of relevance-irrelevance. This leads to $O(S\\log S)$ efficiency due to the sorting function $\\rightarrow 5$ seconds during runtime, due to Python optimizations.\n\n* Perspective Discovery involves prompting the LLM for each filtered segment's stance: $O(S) \\rightarrow 3$ minutes\n\nWe specifically use vLLM to optimize our LLM batched generation. To construct a claim with 39 nodes and a max depth of 3, it takes approximately 20 minutes to run on two NVIDIA RTX A6000s. We can see that in total, the core framework operations take 13 minutes and 42 seconds, with the remaining time dedicated to embedding computations (which can be done offline).",
+      "section_number": "E",
+      "section_title": "computational efficiency",
+      "normalized_section_title": "computational efficiency"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.1434::appendix::E",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX A6000",
+      "cleaned_hardware_name": "nvidia rtx a6000",
+      "normalized_hardware_name": "NVIDIA RTX A6000",
+      "benchmark_hardware_name": "NVIDIA RTX A6000",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "E",
+      "section_title": "computational efficiency",
+      "normalized_section_title": "computational efficiency",
+      "evidence": "We specify the components of CLAIMSPECT's framework and their corresponding computational efficiency across the entire pipeline below. We consider the number of nodes within a full aspect hierarchy as $n$ and the total number of segments within the corpus as $S$ . We additionally provide rough time estimates based on an average sample.\n\n- Coarse-Grained Aspect Discovery (Section 3.1.3)\n\n-A single LLM call: $O(1)$\n\n- Aspect-Discriminative Retrieval (Section 3.2)\n\n- Retrieval-Augmented Keyword Enrichment (Section 3.2.1)\n\n* Embedding the segments using the retrieval model takes the most amount of time $(O(S))$ , but this can be computed offline given a knowledge base. Retrieval itself is quite efficient since it is embedding-based, and we use cosine-similarity to determine relevance (an efficient computation, especially in high-dimensional scenarios).\n\n* Enrich each node: $O(N) \\to 10$ seconds per node\n\n-Discriminative Segment Ranking (Section 3.2.2)\n\n* We only compute the ranking on the top-100 segments, so this operation's efficiency is constant: $O(1)$\n\n* The target score and distractor score computation scales according to the number of aspects throughout the tree (since their # of associated keywords is constant): $O(N) \\rightarrow 6$ seconds for each node\n\n- Iterative Subaspect Discovery (Section 3.3)\n\n- A single prompt per aspect node in hierarchy: $O(N)$\n\n- Classification-Based Perspective Discovery (Section 3.4)\n\n- As mentioned in lines 442-446, \"we reframe relevance filtering as a binary search problem\" intentionally to optimize the efficiency of this\n\nmodule. Thus, instead of sequentially determining claim relevancy for each segment, we sort the segments (which have more than 500 characters) and use binary search $(O(\\log S))$ to find the boundary of relevance-irrelevance. This leads to $O(S\\log S)$ efficiency due to the sorting function $\\rightarrow 5$ seconds during runtime, due to Python optimizations.\n\n* Perspective Discovery involves prompting the LLM for each filtered segment's stance: $O(S) \\rightarrow 3$ minutes\n\nWe specifically use vLLM to optimize our LLM batched generation. To construct a claim with 39 nodes and a max depth of 3, it takes approximately 20 minutes to run on two NVIDIA RTX A6000s. We can see that in total, the core framework operations take 13 minutes and 42 seconds, with the remaining time dedicated to embedding computations (which can be done offline).",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.1434::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methodology",
+      "evidence": "Illustrated in Figure 2, CLAIMSPECT consists of the following steps: (1) aspect-discriminative retrieval, (2) iterative sub-aspect discovery, and (3) classification-based perspective discovery."
+    },
+    {
+      "source_window_id": "2025.acl-long.1434::sections::3.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3.1",
+      "section_title": "preliminaries",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.1434::sections::4.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2",
+      "section_title": "baselines",
+      "evidence": "Our primary motivation for CLAIMSPECT is to demonstrate its capabilities of deconstructing a nuanced claim into an aspect hierarchy and identifying corresponding perspectives. However, no existing methods tackle this novel task. Consequently, we choose to implement and compare our method with both RAG-driven and LLM-only approaches, detailed below. We run each baseline using both Llama $(\\infty)$ and GPT-4o-mini ():\n\n1. RAG-Based: Given a claim and definition of an aspect hierarchy, we use the claim as a query to retrieve relevant documents. We then provide the documents in-context when prompt the LLM to generate the aspect hierarchy.   \n2. Iterative RAG-Based: Given the claim, the definition of an aspect hierarchy, and the name/description of the current node $t_i$ , we construct a detailed query to retrieve node-specific\n\nTable 2: Comparison between ClaimSpect and all baselines. Sibling granularity (Sib) is normalized; all others are scaled by 100. Since Iterative Zero-Shot is not grounded with a corpus, there are no associated segments to each node. Thus, we omit its segment relevance scores (Seg). We bold the top score and underline the second-highest.   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"5\">World Relations</td><td colspan=\"5\">Biomedical</td></tr><tr><td>Rel</td><td>Path</td><td>Sib</td><td>Unique</td><td>Seg</td><td>Rel</td><td>Path</td><td>Sib</td><td>Unique</td><td>Seg</td></tr><tr><td>Iterative Zero-Shot∞</td><td>97.85</td><td>41.94</td><td>58.01</td><td>72.96</td><td>—</td><td>98.33</td><td>44.44</td><td>57.04</td><td>77.17</td><td>—</td></tr><tr><td>Iterative RAG∞</td><td>97.18</td><td>45.34</td><td>59.01</td><td>74.25</td><td>42.79</td><td>97.14</td><td>45.93</td><td>59.08</td><td>76.17</td><td>27.11</td></tr><tr><td>Iterative Zero-Shot</td><td>98.60</td><td>42.88</td><td>64.04</td><td>76.01</td><td>—</td><td>97.89</td><td>41.56</td><td>62.09</td><td>77.55</td><td>—</td></tr><tr><td>Iterative RAG</td><td>97.40</td><td>52.30</td><td>66.45</td><td>76.59</td><td>46.93</td><td>94.37</td><td>50.07</td><td>64.21</td><td>77.05</td><td>31.82</td></tr><tr><td>CLAIMSPECT∞</td><td>95.30</td><td>78.24</td><td>85.26</td><td>87.62</td><td>43.23</td><td>97.95</td><td>75.10</td><td>74.80</td><td>86.26</td><td>27.39</td></tr><tr><td>CLAIMSPECT - No Disc∞</td><td>99.00</td><td>79.75</td><td>82.64</td><td>85.43</td><td>49.47</td><td>96.07</td><td>76.26</td><td>74.39</td><td>87.69</td><td>39.03</td></tr></table>\n\nrelevant documents. We then provide these documents in-context to prompt the LLM for generating the children subaspects $t_j^i$ of aspect $t_i$ .\n\nWe also conduct an ablation study, No Discriminative (No Disc), where we remove discriminative ranking and instead replace it with a semantic similarity-based ranking. For this, we compute the semantic similarity between each segment and our $t_i$ -specific query from Section 3.2.1."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "E"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA RTX A6000",
+        "num": 2
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.1434\\auto\\full.md",
+    "source_md_sha256": "cbf56ba1dd9bfc854f8f0a48ada5df5b8fdd06c713abd77d742b0af040fece15",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

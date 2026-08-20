@@ -1,0 +1,146 @@
+{
+  "paper_id": "2022.naacl-main.346",
+  "candidate_windows": [
+    {
+      "window_id": "2022.naacl-main.346::sections::4",
+      "paper_id": "2022.naacl-main.346",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Model & Training For all experiments, we adapt a pre-trained T5-base model (Raffel et al., 2020). We examine two types of training paradigms: fine-tuning and prompt-tuning. During fine-tuning, we update all model parameters on the training set. During prompt-tuning, we follow Lester et al. (2021) and introduce a new set of prompt-tokens $\\{p_1,\\dots ,p_n\\}$ to the vocabulary, which will be prepended to every sample from the task during inference, i.e., each sample input $x$ becomes $p_1p_2\\dots p_n x$ . Let $\\theta$ denote the parameters of the original pretrained LM. During training, the entire model is frozen and only the word embeddings of the new tokens $\\{\\theta_{p_1},\\dots ,\\theta_{p_n}\\} \\subset \\theta$ are updated. We use prompts of length $n = 100$ for all experiments. We also study each paradigm on various quantities of training data, and separately evaluate their memorization and generalization adaptabilities. In particular, for word-level tasks the test-set words are disjoint from the train-set words, so evaluating on the test set will strictly measure generalization capacity. We optimize all models using AdamW. See Appendix B for full hyperparameters.\n\nEvaluation For each task $f$ and model $\\mathcal{M}[\\theta]$ (with parameters $\\theta$ ), we measure the model's average per-token accuracy on both training and test splits of the dataset $\\mathcal{D}(f)$ . As each task defines multiple acceptable outputs for each input, we credit models for producing any acceptable output. Letting $y' = \\mathcal{M}(x)$ , we measure the fraction of positions $i$ at which any valid answer $y_i$ matches the\n\n![](images/38410cd199d00683bee85b7d0411a194cd44f8a06738d2c79959954d0f02cc99.jpg)  \nFigure 2: Left: Overview of the memorization experiment, which evaluates how accurately models adapted via fine-tuning and prompt-tuning can memorize training data. Right: Memorization and generalization curves for fine-tuning and prompt-tuning on 1000 training examples. Memorization curves are shown by solid lines, while generalization curves are dashed. We average over all atomic tasks from each task category: lexical tasks, factual tasks, and random tasks. The shaded region shows the standard error of the mean. Transparent lines are each individual task, colored by task category. In both paradigms, lexical tasks are easiest to memorize, followed by factual tasks, then random tasks. However, prompt-tuning has overall much less memorization capacity than fine-tuning, which can perfectly memorize even completely random relations.\n\npredicted $y_{i}^{\\prime}$ ..\n\n$$\n\\operatorname {a c c} (\\mathcal {M}, \\mathcal {D} (f)) =\n$$\n\n$$\n\\max  _ {y \\in f (x)} \\frac {1}{| \\mathcal {D} |} \\sum_ {(x, y) \\in \\mathcal {D}} \\left(\\frac {1}{n} \\sum_ {i = 1} ^ {n} [   [ y _ {i} = y _ {i} ^ {\\prime} ]   ]\\right) \\tag {1}\n$$\n\nFurther details can be found in Appendix B.\n\nGiven a pretrained model $\\mathcal{M}[\\theta_{\\mathrm{pretrain}}]$ , an adaptation procedure $\\mathcal{T}$ , and a task suite $f$ , let $\\mathcal{M}[\\theta_{\\mathcal{T},\\mathcal{D}(f)}]$ denote the model trained using $\\mathcal{T}$ on training data $\\mathcal{D}(f)$ . We then define the adaptability of a (pretrained model, adaptation paradigm, task suite) as:\n\n$$\n\\begin{array}{l} \\operatorname {a d a p t} \\left(\\mathcal {M} \\left[ \\theta_ {\\text {p r e t r a i n}} \\right], \\mathcal {T}, f\\right) \\\\ = \\operatorname {a c c} \\left(\\mathcal {M} \\left[ \\theta_ {\\mathcal {T}, \\mathcal {D} _ {\\text {t r a i n}} (f)} \\right], \\mathcal {D} _ {\\text {e v a l}} (f)\\right) \\tag {2} \\\\ \\end{array}\n$$\n\nWe denote by $\\text{adapt}_{\\text{mem}}$ the value of this metric over training data $(\\mathcal{D}_{\\text{eval}} = \\mathcal{D}_{\\text{train}})$ , and by $\\text{adapt}_{\\text{gen}}$ the metric over test data $(\\mathcal{D}_{\\text{eval}} = \\mathcal{D}_{\\text{test}})$ .",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.naacl-main.346::appendix::B",
+      "paper_id": "2022.naacl-main.346",
+      "section_number": "B",
+      "section_title": "experimental setup details",
+      "normalized_section_title": "experimental setup details",
+      "window_text": "Hyperparameters We adapt a pre-trained T5-base model (24-layer, 220M parameters) to our\n\nAlgorithm 1: Algorithm for sampling meaningful input sequences for sequential tasks.   \nfunction seqSampler(map-filter $(f_{M},f_{F})$ n,m): seq $i = 1\\dots n$ do word $\\sim$ Unifdomain $(f_M)\\cap \\{x:$ $f_{F}(x) =$ true}）; seq $\\leftarrow$ seq $^+$ word   \nend   \nfor $j = n\\dots m$ do word $\\sim$ Unif( $\\{x:f_F(x) =$ false}）; seq $\\leftarrow$ seq $^+$ word   \nend   \nseq $\\leftarrow$ permute-words(seq)\n\ntasks. We use an AdamW optimizer with a learning rate of 1.0 for all prompt-tuning experiments, and learning rate of 1e-3 for all fine-tuning experiments. We use batch sizes of 64 for word-level tasks, and 32 for sequential tasks. We run all experiments up to 100 epochs, and run 3-4 trials for each few-shot experiment to estimate average performance over possible choices of few-shot training samples. These hyperparameters were chosen by trial and error on top of default configurations.\n\nInfrastructure and Reproducibility For each task, we adapt our model using a single 32GB NVIDIA V100 GPU, or a single 40GB NVIDIA A100 GPU. Training time varies by training dataset size and maximum number of epochs, but on average (using the hyperparameters specified above) is less than a few hours per task. Prompt-tuning is also more efficient than fine-tuning, updating the parameters of only 100 prompt tokens vs. the full 220M parameters in the model.\n\nEvaluation of Sequential Tasks When evaluating accuracies of sequential tasks (Eq. (1)), note that we must align words in the generated sequence $y_{i}^{\\prime}$ with words in the ground-truth sequence $y_{i}$ . However, this can be nontrivial, especially under the setting where word and entity boundaries are\n\n![](images/7fd9170c307a4bf7522eb781fb0a33932ac3589395fb6471b4a74e5b585c4aff.jpg)  \nFigure 5: Compositionality of map function, when token separators are explicitly provided in the input and output. All adaptation paradigms demonstrate compositionality except for full fine-tuning, where there seems to be a large proportion of tasks for which the model can adapt to sequentially but not atomically.\n\nnot explicitly generated by the model. We cannot rely on whitespaces to segment words as a single word can span multiple white-spaces; for example, an entity Will Smith constitutes a single word. Instead, given a ground-truth sequence of $n$ words (note ground-truth segmentations are present in the dataset), we optimize over all possible length- $n$ segmentations of the generated sequence.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.naacl-main.346::appendix::C",
+      "paper_id": "2022.naacl-main.346",
+      "section_number": "C",
+      "section_title": "compositionality experiment: additional results",
+      "normalized_section_title": "compositionality experiment: additional results",
+      "window_text": "Additional results for the compositionality experiment, including all composition functions, and the formula for the best-fit regression line in each case, are reported in Table 3. Furthermore, the map task with explicit segmentation (+separators) is plotted in isolation in Fig. 5.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.naacl-main.346::appendix::D",
+      "paper_id": "2022.naacl-main.346",
+      "section_number": "D",
+      "section_title": "prediction distribution experiment: additional details",
+      "normalized_section_title": "prediction distribution experiment: additional details",
+      "window_text": "We adapt the model to the task $\\cup (f_e, f_h)$ , constructing the training dataset for $\\cup (f_e, f_h)$ to be balanced — such that the model sees an equal number of examples of form $(x, f_e(x))$ as $(x, f_h(x))$ .\n\nLet $\\mathcal{M}_{\\cup (f_e,f_h)}$ denote a model adapted to this task. Note that the domains of either function are not always identical, for example the set of entities in the domain of political-party-of(x) (mostly politicians) is different from the set of entities in the domain of position-played-on-sports-team(x) (mostly\n\nathletes). We create a balanced training set by first taking all items in the intersection of both domains, then sampling an equal number number of items in either domain. Furthermore, to minimize the effect of the order seen during training, we shuffle the entire dataset after creating all example-label pairs.\n\nDuring test-time, we give $\\mathcal{M}_{\\cup (f_e,f_h)}$ a novel input $x^{\\prime}$ and record the average probability mass it assigned to all $y_{e}^{i}\\in f_{e}(x^{\\prime})$ vs. all $y_{h}^{i}\\in f_{h}(x^{\\prime})$ . Note we evaluate only on inputs $x^{\\prime}$ which are in the domain of both $f_{e}$ and $f_{h}$ . Under the rare scenario that a prediction is in both target tasks for a particular word (i.e. $y$ is in both $f_{e}(x^{\\prime})$ and $f_{h}(x^{\\prime}))$ , we count that towards both tasks, and increment the probability mass on both tasks by the probability the model assigned to $y$ .\n\nInstead of averaging across outputs in either set $f_{e}(x^{\\prime}),f_{h}(x^{\\prime})$ , we also looked at the probabilities assigned to highest-scoring predictions from each set. The overall trends were similar: the model tends to assign greater mass to the highest-scoring prediction from the easier task compared to highest-scoring prediction from the harder task.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.naacl-main.346::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA V100 32GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Hyperparameters We adapt a pre-trained T5-base model (24-layer, 220M parameters) to our\n\nAlgorithm 1: Algorithm for sampling meaningful input sequences for sequential tasks.   \nfunction seqSampler(map-filter $(f_{M},f_{F})$ n,m): seq $i = 1\\dots n$ do word $\\sim$ Unifdomain $(f_M)\\cap \\{x:$ $f_{F}(x) =$ true}）; seq $\\leftarrow$ seq $^+$ word   \nend   \nfor $j = n\\dots m$ do word $\\sim$ Unif( $\\{x:f_F(x) =$ false}）; seq $\\leftarrow$ seq $^+$ word   \nend   \nseq $\\leftarrow$ permute-words(seq)\n\ntasks. We use an AdamW optimizer with a learning rate of 1.0 for all prompt-tuning experiments, and learning rate of 1e-3 for all fine-tuning experiments. We use batch sizes of 64 for word-level tasks, and 32 for sequential tasks. We run all experiments up to 100 epochs, and run 3-4 trials for each few-shot experiment to estimate average performance over possible choices of few-shot training samples. These hyperparameters were chosen by trial and error on top of default configurations.\n\nInfrastructure and Reproducibility For each task, we adapt our model using a single 32GB NVIDIA V100 GPU, or a single 40GB NVIDIA A100 GPU. Training time varies by training dataset size and maximum number of epochs, but on average (using the hyperparameters specified above) is less than a few hours per task. Prompt-tuning is also more efficient than fine-tuning, updating the parameters of only 100 prompt tokens vs. the full 220M parameters in the model.\n\nEvaluation of Sequential Tasks When evaluating accuracies of sequential tasks (Eq. (1)), note that we must align words in the generated sequence $y_{i}^{\\prime}$ with words in the ground-truth sequence $y_{i}$ . However, this can be nontrivial, especially under the setting where word and entity boundaries are\n\n![](images/7fd9170c307a4bf7522eb781fb0a33932ac3589395fb6471b4a74e5b585c4aff.jpg)  \nFigure 5: Compositionality of map function, when token separators are explicitly provided in the input and output. All adaptation paradigms demonstrate compositionality except for full fine-tuning, where there seems to be a large proportion of tasks for which the model can adapt to sequentially but not atomically.\n\nnot explicitly generated by the model. We cannot rely on whitespaces to segment words as a single word can span multiple white-spaces; for example, an entity Will Smith constitutes a single word. Instead, given a ground-truth sequence of $n$ words (note ground-truth segmentations are present in the dataset), we optimize over all possible length- $n$ segmentations of the generated sequence.",
+      "section_number": "B",
+      "section_title": "experimental setup details",
+      "normalized_section_title": "experimental setup details"
+    },
+    {
+      "window_id": "2022.naacl-main.346::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 40GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Hyperparameters We adapt a pre-trained T5-base model (24-layer, 220M parameters) to our\n\nAlgorithm 1: Algorithm for sampling meaningful input sequences for sequential tasks.   \nfunction seqSampler(map-filter $(f_{M},f_{F})$ n,m): seq $i = 1\\dots n$ do word $\\sim$ Unifdomain $(f_M)\\cap \\{x:$ $f_{F}(x) =$ true}）; seq $\\leftarrow$ seq $^+$ word   \nend   \nfor $j = n\\dots m$ do word $\\sim$ Unif( $\\{x:f_F(x) =$ false}）; seq $\\leftarrow$ seq $^+$ word   \nend   \nseq $\\leftarrow$ permute-words(seq)\n\ntasks. We use an AdamW optimizer with a learning rate of 1.0 for all prompt-tuning experiments, and learning rate of 1e-3 for all fine-tuning experiments. We use batch sizes of 64 for word-level tasks, and 32 for sequential tasks. We run all experiments up to 100 epochs, and run 3-4 trials for each few-shot experiment to estimate average performance over possible choices of few-shot training samples. These hyperparameters were chosen by trial and error on top of default configurations.\n\nInfrastructure and Reproducibility For each task, we adapt our model using a single 32GB NVIDIA V100 GPU, or a single 40GB NVIDIA A100 GPU. Training time varies by training dataset size and maximum number of epochs, but on average (using the hyperparameters specified above) is less than a few hours per task. Prompt-tuning is also more efficient than fine-tuning, updating the parameters of only 100 prompt tokens vs. the full 220M parameters in the model.\n\nEvaluation of Sequential Tasks When evaluating accuracies of sequential tasks (Eq. (1)), note that we must align words in the generated sequence $y_{i}^{\\prime}$ with words in the ground-truth sequence $y_{i}$ . However, this can be nontrivial, especially under the setting where word and entity boundaries are\n\n![](images/7fd9170c307a4bf7522eb781fb0a33932ac3589395fb6471b4a74e5b585c4aff.jpg)  \nFigure 5: Compositionality of map function, when token separators are explicitly provided in the input and output. All adaptation paradigms demonstrate compositionality except for full fine-tuning, where there seems to be a large proportion of tasks for which the model can adapt to sequentially but not atomically.\n\nnot explicitly generated by the model. We cannot rely on whitespaces to segment words as a single word can span multiple white-spaces; for example, an entity Will Smith constitutes a single word. Instead, given a ground-truth sequence of $n$ words (note ground-truth segmentations are present in the dataset), we optimize over all possible length- $n$ segmentations of the generated sequence.",
+      "section_number": "B",
+      "section_title": "experimental setup details",
+      "normalized_section_title": "experimental setup details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.naacl-main.346::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA V100 32GB",
+      "cleaned_hardware_name": "nvidia v100 32gb",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 32 GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "B",
+      "section_title": "experimental setup details",
+      "normalized_section_title": "experimental setup details",
+      "evidence": "Hyperparameters We adapt a pre-trained T5-base model (24-layer, 220M parameters) to our\n\nAlgorithm 1: Algorithm for sampling meaningful input sequences for sequential tasks.   \nfunction seqSampler(map-filter $(f_{M},f_{F})$ n,m): seq $i = 1\\dots n$ do word $\\sim$ Unifdomain $(f_M)\\cap \\{x:$ $f_{F}(x) =$ true}）; seq $\\leftarrow$ seq $^+$ word   \nend   \nfor $j = n\\dots m$ do word $\\sim$ Unif( $\\{x:f_F(x) =$ false}）; seq $\\leftarrow$ seq $^+$ word   \nend   \nseq $\\leftarrow$ permute-words(seq)\n\ntasks. We use an AdamW optimizer with a learning rate of 1.0 for all prompt-tuning experiments, and learning rate of 1e-3 for all fine-tuning experiments. We use batch sizes of 64 for word-level tasks, and 32 for sequential tasks. We run all experiments up to 100 epochs, and run 3-4 trials for each few-shot experiment to estimate average performance over possible choices of few-shot training samples. These hyperparameters were chosen by trial and error on top of default configurations.\n\nInfrastructure and Reproducibility For each task, we adapt our model using a single 32GB NVIDIA V100 GPU, or a single 40GB NVIDIA A100 GPU. Training time varies by training dataset size and maximum number of epochs, but on average (using the hyperparameters specified above) is less than a few hours per task. Prompt-tuning is also more efficient than fine-tuning, updating the parameters of only 100 prompt tokens vs. the full 220M parameters in the model.\n\nEvaluation of Sequential Tasks When evaluating accuracies of sequential tasks (Eq. (1)), note that we must align words in the generated sequence $y_{i}^{\\prime}$ with words in the ground-truth sequence $y_{i}$ . However, this can be nontrivial, especially under the setting where word and entity boundaries are\n\n![](images/7fd9170c307a4bf7522eb781fb0a33932ac3589395fb6471b4a74e5b585c4aff.jpg)  \nFigure 5: Compositionality of map function, when token separators are explicitly provided in the input and output. All adaptation paradigms demonstrate compositionality except for full fine-tuning, where there seems to be a large proportion of tasks for which the model can adapt to sequentially but not atomically.\n\nnot explicitly generated by the model. We cannot rely on whitespaces to segment words as a single word can span multiple white-spaces; for example, an entity Will Smith constitutes a single word. Instead, given a ground-truth sequence of $n$ words (note ground-truth segmentations are present in the dataset), we optimize over all possible length- $n$ segmentations of the generated sequence.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2022.naacl-main.346::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 40GB",
+      "cleaned_hardware_name": "nvidia a100 40gb",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "B",
+      "section_title": "experimental setup details",
+      "normalized_section_title": "experimental setup details",
+      "evidence": "Hyperparameters We adapt a pre-trained T5-base model (24-layer, 220M parameters) to our\n\nAlgorithm 1: Algorithm for sampling meaningful input sequences for sequential tasks.   \nfunction seqSampler(map-filter $(f_{M},f_{F})$ n,m): seq $i = 1\\dots n$ do word $\\sim$ Unifdomain $(f_M)\\cap \\{x:$ $f_{F}(x) =$ true}）; seq $\\leftarrow$ seq $^+$ word   \nend   \nfor $j = n\\dots m$ do word $\\sim$ Unif( $\\{x:f_F(x) =$ false}）; seq $\\leftarrow$ seq $^+$ word   \nend   \nseq $\\leftarrow$ permute-words(seq)\n\ntasks. We use an AdamW optimizer with a learning rate of 1.0 for all prompt-tuning experiments, and learning rate of 1e-3 for all fine-tuning experiments. We use batch sizes of 64 for word-level tasks, and 32 for sequential tasks. We run all experiments up to 100 epochs, and run 3-4 trials for each few-shot experiment to estimate average performance over possible choices of few-shot training samples. These hyperparameters were chosen by trial and error on top of default configurations.\n\nInfrastructure and Reproducibility For each task, we adapt our model using a single 32GB NVIDIA V100 GPU, or a single 40GB NVIDIA A100 GPU. Training time varies by training dataset size and maximum number of epochs, but on average (using the hyperparameters specified above) is less than a few hours per task. Prompt-tuning is also more efficient than fine-tuning, updating the parameters of only 100 prompt tokens vs. the full 220M parameters in the model.\n\nEvaluation of Sequential Tasks When evaluating accuracies of sequential tasks (Eq. (1)), note that we must align words in the generated sequence $y_{i}^{\\prime}$ with words in the ground-truth sequence $y_{i}$ . However, this can be nontrivial, especially under the setting where word and entity boundaries are\n\n![](images/7fd9170c307a4bf7522eb781fb0a33932ac3589395fb6471b4a74e5b585c4aff.jpg)  \nFigure 5: Compositionality of map function, when token separators are explicitly provided in the input and output. All adaptation paradigms demonstrate compositionality except for full fine-tuning, where there seems to be a large proportion of tasks for which the model can adapt to sequentially but not atomically.\n\nnot explicitly generated by the model. We cannot rely on whitespaces to segment words as a single word can span multiple white-spaces; for example, an entity Will Smith constitutes a single word. Instead, given a ground-truth sequence of $n$ words (note ground-truth segmentations are present in the dataset), we optimize over all possible length- $n$ segmentations of the generated sequence.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 32 GB",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 1
+      }
+    ]
+  }
+}

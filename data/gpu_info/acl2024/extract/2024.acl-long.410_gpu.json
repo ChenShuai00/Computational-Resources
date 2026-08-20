@@ -1,0 +1,120 @@
+{
+  "paper_id": "2024.acl-long.410",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.410::sections::4",
+      "paper_id": "2024.acl-long.410",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.410::sections::4.3",
+      "paper_id": "2024.acl-long.410",
+      "section_number": "4.3",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "We conduct experiments with two foundation models: Galactica-6.7B $^5$ (Taylor et al., 2022) and CodeLLAMA-7B $^{67}$ (Roziere et al., 2023). Both models are reported to have strong performance in math solving and are commonly adopted in recent literature on reasoning tasks (Yue et al., 2023; Luo\n\net al., 2023).\n\nIn addition to the comparison with baselines, we also apply common techniques, majority voting (Wang et al., 2023b) and reward model reranking (Lightman et al., 2023) on GSM8K.\n\nHyper-parameters In all experiments, the training is done with 8 A100-80GB GPUs using DeepSpeed (Rajbhandari et al., 2020; Rasley et al., 2020) Zero stage 2 and HuggingFace Accelerate (Gugger et al., 2022). During the warm-up stage of ReFT, we use AdamW (Loshchilov and Hutter, 2017) optimizer with $10\\%$ warm-up ratio. The batch size is 48 and learning rate is $1e - 5$ . The maximum length is set to 1024. The number of epochs in the warm-up stage is 2 in all settings except on $\\mathrm{MathQA_{MCQ}}$ and $\\mathrm{MathQA_{numeric}}$ where we use up to 5 and 10 respectively. The model is trained for 300 epochs with a learning rate of $3e - 7$ . Following Ziegler et al. (2019), the $\\lambda$ , $\\gamma$ , $\\alpha$ , $\\epsilon$ and $U$ in PPO are set to 1, 0.95, 5, 0.2, and 2, respectively. The KL coefficient $\\beta$ is set to 0.01 for P-CoT and is set to 0.05 for N-CoT experiments. Further hyperparameter settings about ReFT can be found in Appendix B.\n\nFor SFT baseline, we train the model for 40 epochs and choose the checkpoint with best performance. This number of epochs has been chosen to be sufficiently large to ensure SFT converges. For Offline-ST baseline, we sample the CoTs by using the checkpoint from the ReFT warm-up stage. Using the generation temperature of 1.0 and max length of 1024, we sample 100 CoTs for each question and only keep those with a correct answer. Following Singh et al. (2023), we then subsample the CoTs to 10 random unique CoTs per question to balance difficulties of questions. The number of fine-tune epoch is set to 20, which is sufficiently large to ensure the training to converge. As mentioned in §4.2, the Online-ST baseline tries to mimic the same setting as in ReFT. We have the same warm-up process and the hyperparameter setting is roughly the same as ReFT.\n\nReward Model Reranking Following (Cobbe et al., 2021a; Uesato et al., 2022), we train a reward model (RM) to determine the correctness of the CoT. To construct the RM training data, we use the model from the warm-up stage and perform sampling to obtain 100 CoTs for each question in the training set. The CoTs are deduplicated and the binary labels can be obtained by comparing the extracted answer against the ground truth.\n\nAs a common practice, the reward model is a\n\nTable 2: Value accuracy of ReFT and the baselines fine-tuned with two foundation models on all datasets.   \n\n<table><tr><td rowspan=\"2\">Method</td><td rowspan=\"2\">Size</td><td colspan=\"2\">GSM8K</td><td colspan=\"2\">SVAMP</td><td colspan=\"2\">MathQA\\(_{\\text{MCQ}}\\)</td><td colspan=\"2\">Average</td></tr><tr><td>N-CoT</td><td>P-CoT</td><td>N-CoT</td><td>P-CoT</td><td>N-CoT</td><td>P-CoT</td><td>N-CoT</td><td>P-CoT</td></tr><tr><td>Galactica + SFT</td><td>6.7B</td><td>42.68</td><td>58.83</td><td>54.50</td><td>70.09</td><td>58.07</td><td>64.61</td><td>51.75</td><td>64.51</td></tr><tr><td>Galactica + Offline Self-Training</td><td>6.7B</td><td>42.60</td><td>60.72</td><td>57.90</td><td>72.30</td><td>60.75</td><td>67.04</td><td>53.75</td><td>66.69</td></tr><tr><td>Galactica + Online Self-Training</td><td>6.7B</td><td>47.84</td><td>62.93</td><td>59.40</td><td>74.59</td><td>59.38</td><td>61.24</td><td>55.54</td><td>66.25</td></tr><tr><td>Galactica + ReFT</td><td>6.7B</td><td>48.14</td><td>68.91</td><td>61.40</td><td>74.09</td><td>58.13</td><td>70.47</td><td>55.89</td><td>71.16</td></tr><tr><td>CodeLLAMA + SFT</td><td>7B</td><td>43.59</td><td>63.68</td><td>58.09</td><td>75.40</td><td>56.01</td><td>64.79</td><td>52.56</td><td>67.96</td></tr><tr><td>CodeLLAMA + Offline Self-Training</td><td>7B</td><td>45.10</td><td>68.00</td><td>60.20</td><td>77.69</td><td>59.81</td><td>68.53</td><td>55.04</td><td>71.41</td></tr><tr><td>CodeLLAMA + Online Self-Training</td><td>7B</td><td>44.66</td><td>67.85</td><td>58.60</td><td>77.40</td><td>56.95</td><td>68.85</td><td>53.40</td><td>71.37</td></tr><tr><td>CodeLLAMA + ReFT</td><td>7B</td><td>53.30</td><td>75.28</td><td>64.50</td><td>79.19</td><td>60.13</td><td>71.83</td><td>59.31</td><td>75.43</td></tr></table>\n\nlanguage model that is initialized from the best SFT checkpoint (Cobbe et al., 2021a; Ouyang et al., 2022). Similar to the outcome-based reward model (ORM) (Uesato et al., 2022), the reward model is trained to predict a binary label that indicates the \"correct\" or \"incorrect\" solution. Once the input passes through the reward model, classification is conducted with a linear classifier on the hidden state of the last token. Finally, the solution with the highest \"correct\" score among the candidates is selected as the final answer. We train the RM model for 3 epochs using a batch size of 24, the maximum length of 700 and a linear learning rate schedule with $10\\%$ warm-up period and the max learning rate of $1\\mathrm{e} - 6$ .\n\nEvaluation We report value accuracy for both N-CoT and P-CoT on all datasets. For majority voting and reranking (Table 4), we sample 100 CoTs for evaluation. In voting, the valid answer with majority counts is chosen as the final answer for computing accuracy. In reranking, we choose the CoT with the highest score and extract the answer.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2024.acl-long.410::appendix::B",
+      "paper_id": "2024.acl-long.410",
+      "section_number": "B",
+      "section_title": "detailed hyperparameter setting",
+      "normalized_section_title": "detailed hyperparameter setting",
+      "window_text": "Supervised Fine-Tuning We train the model for 40 epochs with the batch size of 48 and the maximum length of 1024.. For small models, we increase the learning rate to $2e - 5$ , and the number of epoch for training $\\mathrm{MathQA_{MCQ}}$ to 100 epochs.\n\nReFT Warm-up We perform warm-up for 2 epochs on GSM8K, SVAMP for both N-CoT and P-CoT. For MathQAMCQ, we perform warm-up for 5 epochs on MathQAMCQ N-CoT and 2 epochs on MathQAMCQ P-CoT. Specifically for MathQAnumeric, we perform warm-up for 10 epochs because this dataset is much harder and the number of reasoning chains is longer than other datasets. For Galactica-125m and Codegen-350M, the warm-up period is 10 epochs for GSM8K and SVAMP and is 40 epochs for MathQAMCQ. For Code-parrot, we increase the warm-up period to 40 epochs on all datasets to obtain reasonable warm-up performance.\n\nReFT RL The maximum length for question is set to 300, and the maximum length during sampling is set to 700. The batch size is 32, which is smaller than SFT due to extra memory consumption of the value model. The number of updates per RL step (i.e., ppo epoch) is set to 2 (Ziegler et al., 2019). We do not employ any weight decay and dropout following Ziegler et al. (2019). For small models, we train for 700 epochs with the learning rate of $3e-6$ , the global batch size of 256 and the $\\alpha$ of 5, 1 and 0.1 for Galactica-125m, Codeparrot-small and Codegen-350M model respectively.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.410::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80GB",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "We conduct experiments with two foundation models: Galactica-6.7B $^5$ (Taylor et al., 2022) and CodeLLAMA-7B $^{67}$ (Roziere et al., 2023). Both models are reported to have strong performance in math solving and are commonly adopted in recent literature on reasoning tasks (Yue et al., 2023; Luo\n\net al., 2023).\n\nIn addition to the comparison with baselines, we also apply common techniques, majority voting (Wang et al., 2023b) and reward model reranking (Lightman et al., 2023) on GSM8K.\n\nHyper-parameters In all experiments, the training is done with 8 A100-80GB GPUs using DeepSpeed (Rajbhandari et al., 2020; Rasley et al., 2020) Zero stage 2 and HuggingFace Accelerate (Gugger et al., 2022). During the warm-up stage of ReFT, we use AdamW (Loshchilov and Hutter, 2017) optimizer with $10\\%$ warm-up ratio. The batch size is 48 and learning rate is $1e - 5$ . The maximum length is set to 1024. The number of epochs in the warm-up stage is 2 in all settings except on $\\mathrm{MathQA_{MCQ}}$ and $\\mathrm{MathQA_{numeric}}$ where we use up to 5 and 10 respectively. The model is trained for 300 epochs with a learning rate of $3e - 7$ . Following Ziegler et al. (2019), the $\\lambda$ , $\\gamma$ , $\\alpha$ , $\\epsilon$ and $U$ in PPO are set to 1, 0.95, 5, 0.2, and 2, respectively. The KL coefficient $\\beta$ is set to 0.01 for P-CoT and is set to 0.05 for N-CoT experiments. Further hyperparameter settings about ReFT can be found in Appendix B.\n\nFor SFT baseline, we train the model for 40 epochs and choose the checkpoint with best performance. This number of epochs has been chosen to be sufficiently large to ensure SFT converges. For Offline-ST baseline, we sample the CoTs by using the checkpoint from the ReFT warm-up stage. Using the generation temperature of 1.0 and max length of 1024, we sample 100 CoTs for each question and only keep those with a correct answer. Following Singh et al. (2023), we then subsample the CoTs to 10 random unique CoTs per question to balance difficulties of questions. The number of fine-tune epoch is set to 20, which is sufficiently large to ensure the training to converge. As mentioned in §4.2, the Online-ST baseline tries to mimic the same setting as in ReFT. We have the same warm-up process and the hyperparameter setting is roughly the same as ReFT.\n\nReward Model Reranking Following (Cobbe et al., 2021a; Uesato et al., 2022), we train a reward model (RM) to determine the correctness of the CoT. To construct the RM training data, we use the model from the warm-up stage and perform sampling to obtain 100 CoTs for each question in the training set. The CoTs are deduplicated and the binary labels can be obtained by comparing the extracted answer against the ground truth.\n\nAs a common practice, the reward model is a\n\nTable 2: Value accuracy of ReFT and the baselines fine-tuned with two foundation models on all datasets.   \n\n<table><tr><td rowspan=\"2\">Method</td><td rowspan=\"2\">Size</td><td colspan=\"2\">GSM8K</td><td colspan=\"2\">SVAMP</td><td colspan=\"2\">MathQA\\(_{\\text{MCQ}}\\)</td><td colspan=\"2\">Average</td></tr><tr><td>N-CoT</td><td>P-CoT</td><td>N-CoT</td><td>P-CoT</td><td>N-CoT</td><td>P-CoT</td><td>N-CoT</td><td>P-CoT</td></tr><tr><td>Galactica + SFT</td><td>6.7B</td><td>42.68</td><td>58.83</td><td>54.50</td><td>70.09</td><td>58.07</td><td>64.61</td><td>51.75</td><td>64.51</td></tr><tr><td>Galactica + Offline Self-Training</td><td>6.7B</td><td>42.60</td><td>60.72</td><td>57.90</td><td>72.30</td><td>60.75</td><td>67.04</td><td>53.75</td><td>66.69</td></tr><tr><td>Galactica + Online Self-Training</td><td>6.7B</td><td>47.84</td><td>62.93</td><td>59.40</td><td>74.59</td><td>59.38</td><td>61.24</td><td>55.54</td><td>66.25</td></tr><tr><td>Galactica + ReFT</td><td>6.7B</td><td>48.14</td><td>68.91</td><td>61.40</td><td>74.09</td><td>58.13</td><td>70.47</td><td>55.89</td><td>71.16</td></tr><tr><td>CodeLLAMA + SFT</td><td>7B</td><td>43.59</td><td>63.68</td><td>58.09</td><td>75.40</td><td>56.01</td><td>64.79</td><td>52.56</td><td>67.96</td></tr><tr><td>CodeLLAMA + Offline Self-Training</td><td>7B</td><td>45.10</td><td>68.00</td><td>60.20</td><td>77.69</td><td>59.81</td><td>68.53</td><td>55.04</td><td>71.41</td></tr><tr><td>CodeLLAMA + Online Self-Training</td><td>7B</td><td>44.66</td><td>67.85</td><td>58.60</td><td>77.40</td><td>56.95</td><td>68.85</td><td>53.40</td><td>71.37</td></tr><tr><td>CodeLLAMA + ReFT</td><td>7B</td><td>53.30</td><td>75.28</td><td>64.50</td><td>79.19</td><td>60.13</td><td>71.83</td><td>59.31</td><td>75.43</td></tr></table>\n\nlanguage model that is initialized from the best SFT checkpoint (Cobbe et al., 2021a; Ouyang et al., 2022). Similar to the outcome-based reward model (ORM) (Uesato et al., 2022), the reward model is trained to predict a binary label that indicates the \"correct\" or \"incorrect\" solution. Once the input passes through the reward model, classification is conducted with a linear classifier on the hidden state of the last token. Finally, the solution with the highest \"correct\" score among the candidates is selected as the final answer. We train the RM model for 3 epochs using a batch size of 24, the maximum length of 700 and a linear learning rate schedule with $10\\%$ warm-up period and the max learning rate of $1\\mathrm{e} - 6$ .\n\nEvaluation We report value accuracy for both N-CoT and P-CoT on all datasets. For majority voting and reranking (Table 4), we sample 100 CoTs for evaluation. In voting, the valid answer with majority counts is chosen as the final answer for computing accuracy. In reranking, we choose the CoT with the highest score and extract the answer.",
+      "section_number": "4.3",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.410::sections::4.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80GB",
+      "cleaned_hardware_name": "a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "4.3",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "evidence": "We conduct experiments with two foundation models: Galactica-6.7B $^5$ (Taylor et al., 2022) and CodeLLAMA-7B $^{67}$ (Roziere et al., 2023). Both models are reported to have strong performance in math solving and are commonly adopted in recent literature on reasoning tasks (Yue et al., 2023; Luo\n\net al., 2023).\n\nIn addition to the comparison with baselines, we also apply common techniques, majority voting (Wang et al., 2023b) and reward model reranking (Lightman et al., 2023) on GSM8K.\n\nHyper-parameters In all experiments, the training is done with 8 A100-80GB GPUs using DeepSpeed (Rajbhandari et al., 2020; Rasley et al., 2020) Zero stage 2 and HuggingFace Accelerate (Gugger et al., 2022). During the warm-up stage of ReFT, we use AdamW (Loshchilov and Hutter, 2017) optimizer with $10\\%$ warm-up ratio. The batch size is 48 and learning rate is $1e - 5$ . The maximum length is set to 1024. The number of epochs in the warm-up stage is 2 in all settings except on $\\mathrm{MathQA_{MCQ}}$ and $\\mathrm{MathQA_{numeric}}$ where we use up to 5 and 10 respectively. The model is trained for 300 epochs with a learning rate of $3e - 7$ . Following Ziegler et al. (2019), the $\\lambda$ , $\\gamma$ , $\\alpha$ , $\\epsilon$ and $U$ in PPO are set to 1, 0.95, 5, 0.2, and 2, respectively. The KL coefficient $\\beta$ is set to 0.01 for P-CoT and is set to 0.05 for N-CoT experiments. Further hyperparameter settings about ReFT can be found in Appendix B.\n\nFor SFT baseline, we train the model for 40 epochs and choose the checkpoint with best performance. This number of epochs has been chosen to be sufficiently large to ensure SFT converges. For Offline-ST baseline, we sample the CoTs by using the checkpoint from the ReFT warm-up stage. Using the generation temperature of 1.0 and max length of 1024, we sample 100 CoTs for each question and only keep those with a correct answer. Following Singh et al. (2023), we then subsample the CoTs to 10 random unique CoTs per question to balance difficulties of questions. The number of fine-tune epoch is set to 20, which is sufficiently large to ensure the training to converge. As mentioned in §4.2, the Online-ST baseline tries to mimic the same setting as in ReFT. We have the same warm-up process and the hyperparameter setting is roughly the same as ReFT.\n\nReward Model Reranking Following (Cobbe et al., 2021a; Uesato et al., 2022), we train a reward model (RM) to determine the correctness of the CoT. To construct the RM training data, we use the model from the warm-up stage and perform sampling to obtain 100 CoTs for each question in the training set. The CoTs are deduplicated and the binary labels can be obtained by comparing the extracted answer against the ground truth.\n\nAs a common practice, the reward model is a\n\nTable 2: Value accuracy of ReFT and the baselines fine-tuned with two foundation models on all datasets.   \n\n<table><tr><td rowspan=\"2\">Method</td><td rowspan=\"2\">Size</td><td colspan=\"2\">GSM8K</td><td colspan=\"2\">SVAMP</td><td colspan=\"2\">MathQA\\(_{\\text{MCQ}}\\)</td><td colspan=\"2\">Average</td></tr><tr><td>N-CoT</td><td>P-CoT</td><td>N-CoT</td><td>P-CoT</td><td>N-CoT</td><td>P-CoT</td><td>N-CoT</td><td>P-CoT</td></tr><tr><td>Galactica + SFT</td><td>6.7B</td><td>42.68</td><td>58.83</td><td>54.50</td><td>70.09</td><td>58.07</td><td>64.61</td><td>51.75</td><td>64.51</td></tr><tr><td>Galactica + Offline Self-Training</td><td>6.7B</td><td>42.60</td><td>60.72</td><td>57.90</td><td>72.30</td><td>60.75</td><td>67.04</td><td>53.75</td><td>66.69</td></tr><tr><td>Galactica + Online Self-Training</td><td>6.7B</td><td>47.84</td><td>62.93</td><td>59.40</td><td>74.59</td><td>59.38</td><td>61.24</td><td>55.54</td><td>66.25</td></tr><tr><td>Galactica + ReFT</td><td>6.7B</td><td>48.14</td><td>68.91</td><td>61.40</td><td>74.09</td><td>58.13</td><td>70.47</td><td>55.89</td><td>71.16</td></tr><tr><td>CodeLLAMA + SFT</td><td>7B</td><td>43.59</td><td>63.68</td><td>58.09</td><td>75.40</td><td>56.01</td><td>64.79</td><td>52.56</td><td>67.96</td></tr><tr><td>CodeLLAMA + Offline Self-Training</td><td>7B</td><td>45.10</td><td>68.00</td><td>60.20</td><td>77.69</td><td>59.81</td><td>68.53</td><td>55.04</td><td>71.41</td></tr><tr><td>CodeLLAMA + Online Self-Training</td><td>7B</td><td>44.66</td><td>67.85</td><td>58.60</td><td>77.40</td><td>56.95</td><td>68.85</td><td>53.40</td><td>71.37</td></tr><tr><td>CodeLLAMA + ReFT</td><td>7B</td><td>53.30</td><td>75.28</td><td>64.50</td><td>79.19</td><td>60.13</td><td>71.83</td><td>59.31</td><td>75.43</td></tr></table>\n\nlanguage model that is initialized from the best SFT checkpoint (Cobbe et al., 2021a; Ouyang et al., 2022). Similar to the outcome-based reward model (ORM) (Uesato et al., 2022), the reward model is trained to predict a binary label that indicates the \"correct\" or \"incorrect\" solution. Once the input passes through the reward model, classification is conducted with a linear classifier on the hidden state of the last token. Finally, the solution with the highest \"correct\" score among the candidates is selected as the final answer. We train the RM model for 3 epochs using a batch size of 24, the maximum length of 700 and a linear learning rate schedule with $10\\%$ warm-up period and the max learning rate of $1\\mathrm{e} - 6$ .\n\nEvaluation We report value accuracy for both N-CoT and P-CoT on all datasets. For majority voting and reranking (Table 4), we sample 100 CoTs for evaluation. In voting, the valid answer with majority counts is chosen as the final answer for computing accuracy. In reranking, we choose the CoT with the highest score and extract the answer.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.acl-long.410::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.acl-long.410::appendix::B",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B",
+      "section_title": "detailed hyperparameter setting",
+      "evidence": "Supervised Fine-Tuning We train the model for 40 epochs with the batch size of 48 and the maximum length of 1024.. For small models, we increase the learning rate to $2e - 5$ , and the number of epoch for training $\\mathrm{MathQA_{MCQ}}$ to 100 epochs.\n\nReFT Warm-up We perform warm-up for 2 epochs on GSM8K, SVAMP for both N-CoT and P-CoT. For MathQAMCQ, we perform warm-up for 5 epochs on MathQAMCQ N-CoT and 2 epochs on MathQAMCQ P-CoT. Specifically for MathQAnumeric, we perform warm-up for 10 epochs because this dataset is much harder and the number of reasoning chains is longer than other datasets. For Galactica-125m and Codegen-350M, the warm-up period is 10 epochs for GSM8K and SVAMP and is 40 epochs for MathQAMCQ. For Code-parrot, we increase the warm-up period to 40 epochs on all datasets to obtain reasonable warm-up performance.\n\nReFT RL The maximum length for question is set to 300, and the maximum length during sampling is set to 700. The batch size is 32, which is smaller than SFT due to extra memory consumption of the value model. The number of updates per RL step (i.e., ppo epoch) is set to 2 (Ziegler et al., 2019). We do not employ any weight decay and dropout following Ziegler et al. (2019). For small models, we train for 700 epochs with the learning rate of $3e-6$ , the global batch size of 256 and the $\\alpha$ of 5, 1 and 0.1 for Galactica-125m, Codeparrot-small and Codegen-350M model respectively."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.3"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2024\\2024.acl-long.410\\auto\\full.md",
+    "source_md_sha256": "d6ef40cef015ad00675f662b9d0b5694c592ff8a95260121de362a796a6f7cb9",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "ad96f3b6ca003898756db958dd17467668c845886fa3f1f835d26a866c8af3f0"
+  }
+}

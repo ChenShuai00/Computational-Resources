@@ -1,0 +1,41 @@
+{
+  "paper_id": "2023.emnlp-main.624",
+  "candidate_windows": [
+    {
+      "window_id": "2023.emnlp-main.624::sections::3.1",
+      "paper_id": "2023.emnlp-main.624",
+      "section_number": "3.1",
+      "section_title": "settings",
+      "normalized_section_title": "settings",
+      "window_text": "Dataset We first collected data for 68 weeks of the J-League, the Japanese professional soccer league, from 2021 and 2022, comprising a total of 612 matches. Of these, we used 83 matches with more than 3200 tweets between one hour before the match and one hour after the match. In total, we collected 8,502 updates and 324,835 tweets. We then created five subsets based on match and performed five-fold cross-validation with training: development: test = 3:1:1. We used the training set to fine-tune the model, the development set to find the best model, and the test set to evaluate the model. We used the Twitter API² to collect tweets. We obtained information on game times and opposing teams from the official J-League website, and we created the query for the API consisting of the game time to be collected, and manually determined hashtags such as #grampus and #fmarinos related to that match. We collected tweets using the queries and pre-processed the tweets to remove URLs and hashtags in the tweets.\n\nWe used the text updates published by the official J-League website<sup>3</sup> as the reference updates. Some updates were related to results up to the previous week or lifetime achievements. Since it is considered to be out of scope to generate such updates from live tweets, we excluded these updates from reference updates using manually created rules.\n\nModels In addition to the proposed models, we built two oracle models. The first model is $\\mathrm{Orcl}_{\\mathrm{extr}}$ , which is an oracle extractive model that measured the similarity between the reference update and all the tweets at the corresponding time and extracted the tweets with the highest percentage of matching words. This method is an oracle version of Dusart et al. (2021)'s method, and we used it to investigate the upper limit of the achievable performance of the extractive approach. The second model is $\\mathrm{Orcl}_{+\\mathrm{clf} + \\mathrm{cxt}}$ , which uses the reference updates as the preceding context in the generation phase. The model is based on $\\mathcal{M}_{+\\mathrm{clf} + \\mathrm{cxt}}$ . It enables us to investigate the oracle performance that the proposed method could achieve. These models only generated updates at times when the reference updates exist to ensure that the numbers of generated updates matched those of reference updates.\n\n$\\mathcal{M}_{+\\mathrm{cxt}}$ and $\\mathcal{M}_{+\\mathrm{clf} + \\mathrm{cxt}}$ , which incorporate preceding updates, used the updates of the last 4 minutes before each time, and all methods used tweets posted up to 3 minutes after each time. All models are based on Japanese pre-trained $\\mathrm{T5^4}$ on Hugging Face Hub. All models were fine-tuned with three different random seeds to build three versions of the models, and their average was used as the evaluation score.\n\nMetrics We evaluated the methods by comparing the generated updates with the reference updates. Because similar events could occur multiple times, an evaluation that assesses word agreement throughout the match could result in an unfairly high score. To address this, we evaluated the similarity of strings after mapping them on the timeline.\n\nROUGE (Lin, 2004) is a commonly used evaluation metric for text generation, and alignment-based ROUGE (Martschat and Markert, 2017) is an extension of ROUGE that was designed for timeline summarization. In this study, although we accounted for time differences for the generated updates, we did not apply weights to the time differences. Our evaluation was based on the number of overlapping n-grams, defined as aligned n-grams, between the reference and generated updates. Specifically, dynamic programming is applied to maximize the aligned n-grams while allowing for a one-minute difference. More details are provided in Appendix A.\n\nTable 1: Experimental results when unigrams are used for evaluation.   \n\n<table><tr><td></td><td># of reference unigrams</td><td># of generated unigrams</td><td># of aligned unigrams</td><td>Precision</td><td>Recall</td><td>F1-score</td></tr><tr><td>Mbase</td><td>164,245</td><td>49,088</td><td>19,585</td><td>0.401</td><td>0.118</td><td>0.182</td></tr><tr><td>M+clf</td><td>164,245</td><td>129,387</td><td>42,199</td><td>0.326</td><td>0.255</td><td>0.286</td></tr><tr><td>M+ctx</td><td>164,245</td><td>107,049</td><td>41,639</td><td>0.389</td><td>0.251</td><td>0.305</td></tr><tr><td>M+clf+ctx</td><td>164,245</td><td>137,072</td><td>43,074</td><td>0.318</td><td>0.260</td><td>0.284</td></tr><tr><td>Orclextr</td><td>164,245</td><td>109,046</td><td>33,159</td><td>0.304</td><td>0.200</td><td>0.241</td></tr><tr><td>Orcl+clf+ctx</td><td>164,245</td><td>134,598</td><td>51,487</td><td>0.382</td><td>0.311</td><td>0.343</td></tr></table>\n\nTable 2: Examples of reference and generated updates.   \n\n<table><tr><td></td><td>Reference updates</td><td>Generated updates (Mbase)</td><td>Generated updates (M+ctx)</td></tr><tr><td>t</td><td>NaN</td><td>1 minute of extra time.</td><td>1 minute of extra time.</td></tr><tr><td>t+1</td><td>1 minute of extra time.</td><td>1 minute of extra time.</td><td>The first half ended with the game tied at 0-0.</td></tr><tr><td>t+2</td><td>The first half ended with the game tied at 0-0.</td><td>The first half ended with the game tied at 0-0.</td><td>Second-harlf kickoff, YokohamaFM ball. No halftime substitutions for either team.</td></tr><tr><td>t+3</td><td>Second-harlf kickoff, YokohamaFM ball. 10 MJunio OUT → 16 Fujita IN. 19 Ogashiwa OUT→23 Koroki IN</td><td>NaN</td><td>NaN</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.624::appendix::B",
+      "paper_id": "2023.emnlp-main.624",
+      "section_number": "B",
+      "section_title": "experimental results with bigrams",
+      "normalized_section_title": "experimental results with bigrams",
+      "window_text": "Table 4 lists the results of an experiment using bigrams. The scores were generally lower when using unigrams, but the overall tendencies were\n\nsimilar. $\\mathcal{M}_{+\\mathrm{cxt}}$ had the highest F1-score among the proposed models, while $\\mathrm{Orcl}_{+\\mathrm{clf} + \\mathrm{cxt}}$ scored the highest among all six models. $\\mathrm{Orcl}_{\\mathrm{extr}}$ had the lowest score, unlike in the case of unigrams. It is considered difficult for extractive methods to generate updates that are very close to the reference updates.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [],
+  "normalized_extractions": [],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [],
+    "pred": []
+  }
+}

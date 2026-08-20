@@ -1,0 +1,183 @@
+{
+  "paper_id": "2023.emnlp-main.296",
+  "candidate_windows": [
+    {
+      "window_id": "2023.emnlp-main.296::sections::5",
+      "paper_id": "2023.emnlp-main.296",
+      "section_number": "5",
+      "section_title": "experiment",
+      "normalized_section_title": "experiment",
+      "window_text": "In this section, we perform experiments to answer the following research question:\n\n- Compared to gradient-based methods, what's the performance of IKE?   \n- How do the demonstration designing strategies influence the performance of IKE?\n\n- How does the scale of LMs affect the performance of IKE, can IKE scale up to large language models with tens or hundreds of billions of parameters?   \n- What are the side effects of knowledge editing and does IKE cause more or fewer side effects than other parameter updating methods?\n\nWe first introduce the experimental settings including the compared baseline methods, evaluation benchmark, and LMs across different scales for knowledge editing (§5.1). We then analyze the main knowledge editing results in §5.2 and the impacting factors of in-context learning knowledge editing (§5.3).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.296::sections::5.1",
+      "paper_id": "2023.emnlp-main.296",
+      "section_number": "5.1",
+      "section_title": "experimental setting",
+      "normalized_section_title": "experimental setting",
+      "window_text": "We aim to evaluate the performance of in-context knowledge editing compared to parameter updating approaches. We also conduct experiments on different sizes of LMs to explore the scaling-up ability of in-context knowledge editing.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.296::sections::5.1.1",
+      "paper_id": "2023.emnlp-main.296",
+      "section_number": "5.1.1",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "Following previous knowledge-editing methods, we also choose GPT-J (6B) as our main evaluation backbone. The compared baselines include:\n\nFT Fine-tuning the base model on text describing the edit fact, without training a new model editor by applying Adam with early stopping.\n\nMEND MEND (Mitchell et al., 2022a) transforms the fine-tuning gradient of an updated fact by decomposing the weight matrix into rank-1 form with the pretrained hyper-network.\n\nROME ROME (Meng et al., 2022a) learns to locate factual retrievals of a specific set of MLP modules and update knowledge by directly writing in new key-value pairs in the MLP module.\n\nPROMPT To explore how in-context demonstrations influence the performance of IKE. We directly use the new fact as context to probe the LMs by $\\mathcal{P}(y|x,f)$ where $f = (x^{*},y^{*})$ .\n\nThe implementation details are in $\\S A$",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.296::sections::5.1.2",
+      "paper_id": "2023.emnlp-main.296",
+      "section_number": "5.1.2",
+      "section_title": "evaluation setup",
+      "normalized_section_title": "evaluation setup",
+      "window_text": "Models To explore how the scale of LMs will influence the effectiveness of in-context knowledge editing, we evaluate in-context knowledge editing\n\non five GPT-like auto-regressive transformer language models whose scales range from 1.5B to 175B parameters:\n\n- GPT-2 XL (1.5B) (Radford et al., 2019), the 1.5 billion parameter version of GPT-2.   \n- GPT-NEO (2.7B) (Gao et al., 2021), the 2.7 billion parameter version of a GPT-2 like causal language model released by EleutherAI. It is trained on the Pile dataset specifically designed for LLM training.   \nGPT-J (6B) (Wang and Komatsuzaki, 2021), an auto-regressive text generation model trained on the Pile with 6 billion parameters.   \n- GPT-NEOX (20B) (Black et al., 2022), a 20 billion parameter auto-regressive language model trained on the Pile.   \n- OPT (175B) (Zhang et al., 2022), open pretrained transformers with 175 billion parameters created by MetaAI.\n\nBenchmark We mainly evaluate baselines on COUNTERFACT (Meng et al., 2022a), a challenging benchmark suitable for GPT-like causal language models with difficult editing targets and hard-to-distinguish editing scopes. It contains 21,919 records of diverse relations and entities. The goal of each record is to change the knowledge triplet $(s^{*},r^{*},o^{c})$ to $(s^{*},r^{*},o^{*})$ where $s^*$ and $r^*$ are described by the target prompt $x^{*}$ . The record also contains paraphrase prompts $P^P$ as in-scope prompts and neighborhood prompts $P^{N}$ , i.e., knowledge triplets $(s',r^*,o^c)$ that share the same object with target triplets as out-of-scope prompts. We follow Meng et al. (2022a) to use first 2000 records as the test set and the remaining records are divided into training set. The details of COUNTERFACT are listed in §B.\n\nMetrics The performance of knowledge editing is measured from three aspects (Efficacy, Generalization, and Specificity).\n\n- Efficacy measures the post-editing accuracy for target prompts by Efficacy Score (ES, $\\mathbb{E}[\\mathbb{I}[\\mathcal{P}(o^{*}) > \\mathcal{P}(o^{c})]]$ ) and Efficacy Magnitude (EM, $\\mathbb{E}[\\mathcal{P}(o^{*}) - \\mathcal{P}(o^{c})]$ ).   \n- Generalization measures post-editing accuracy on paraphrase prompts by Paraphrase\n\nTable 2: Knowledge Editing Performance for GPT-J (6B) and OPT (175B) on COUNTERFACT. Efficacy, Generalization, and Specificity are evaluated based on target, in-scope, and out-of-scope prompts respectively. Details of the Metric can be found in §5.1.2. green means column-wise maxima and red indicates poor generalization or specificity.   \n\n<table><tr><td>Editing Method</td><td>#Edited Params.</td><td>#Extra Params.</td><td>Score S↑</td><td>Efficacy ES↑</td><td>EM↑</td><td>Generalization PS↑</td><td>PM↑</td><td>Specificity NS↑</td><td>NM↑</td></tr><tr><td>GPT-J (6B)</td><td>0</td><td>0</td><td>22.0</td><td>16.2</td><td>-7.4</td><td>15.9</td><td>-7.5</td><td>83.2</td><td>7.4</td></tr><tr><td>FT</td><td>64M</td><td>0</td><td>28.7</td><td>99.9</td><td>98.6</td><td>96.4</td><td>67.0</td><td>11.9</td><td>-48.6</td></tr><tr><td>MEND</td><td>384M</td><td>896M</td><td>63.6</td><td>90.4</td><td>53.9</td><td>53.4</td><td>14.3</td><td>57.6</td><td>-3.3</td></tr><tr><td>ROME</td><td>64M</td><td>256M</td><td>91.5</td><td>100</td><td>99.4</td><td>99.6</td><td>78.0</td><td>78.5</td><td>5.0</td></tr><tr><td>PROMPT</td><td>0</td><td>0</td><td>63.3</td><td>99.7</td><td>80.9</td><td>91.0</td><td>32.9</td><td>37.9</td><td>-2.8</td></tr><tr><td>IKE (32 examples)</td><td>0</td><td>20M</td><td>89.6</td><td>100</td><td>91.7</td><td>95.2</td><td>64.5</td><td>77.0</td><td>35.2</td></tr><tr><td>OPT (175B)</td><td>0</td><td>0</td><td>18.7</td><td>12.6</td><td>-8.4</td><td>14.3</td><td>-8.1</td><td>86.9</td><td>8.4</td></tr><tr><td>PROMPT</td><td>0</td><td>0</td><td>58.1</td><td>99.6</td><td>77.2</td><td>94.1</td><td>37.4</td><td>32.3</td><td>-7.8</td></tr><tr><td>IKE (32 examples)</td><td>0</td><td>20M</td><td>94.1</td><td>100</td><td>92.5</td><td>98.8</td><td>83.6</td><td>85.1</td><td>45.5</td></tr></table>\n\nScore (PS) and Paraphrase Magnitude (PM). The definition of PS and PM is similar to ES and EM.\n\n- Specificity measures the accuracy of neighborhood prompts by Neighborhood Score (NS, $\\mathbb{E}[\\mathbb{I}[\\mathcal{P}(o^c) > \\mathcal{P}(o^*)]]$ ) and Neighborhood Magnitude (NM, $\\mathbb{E}[\\mathcal{P}(o^c) - \\mathcal{P}(o^*)]$ ), as the neighborhood prompts $(s', r^*, o^c)$ share the same original object with the target prompt and these facts are not supposed to be edited.\n\nWe also follow Meng et al. (2022a) to report the harmonic mean of ES, PS, NS as Score (S)",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.296::appendix::A",
+      "paper_id": "2023.emnlp-main.296",
+      "section_number": "A",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.296::appendix::A.1",
+      "paper_id": "2023.emnlp-main.296",
+      "section_number": "A.1",
+      "section_title": "ike",
+      "normalized_section_title": "ike",
+      "window_text": "We implement IKE with PyTorch (Paszke et al., 2017), Huggingface transformers (Wolf et al., 2019), and sentence transformers (Reimers and Gurevych, 2019). Pytorch is licensed under the modified BSD license. Huggingface and Sentence transformers are under Apache License 2.0. IKE with 32 examples are run in a 40 GB NVIDIA A40 GPU for about 3 GPU hours.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.emnlp-main.296::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A40 40GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We implement IKE with PyTorch (Paszke et al., 2017), Huggingface transformers (Wolf et al., 2019), and sentence transformers (Reimers and Gurevych, 2019). Pytorch is licensed under the modified BSD license. Huggingface and Sentence transformers are under Apache License 2.0. IKE with 32 examples are run in a 40 GB NVIDIA A40 GPU for about 3 GPU hours.",
+      "section_number": "A.1",
+      "section_title": "ike",
+      "normalized_section_title": "ike"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.emnlp-main.296::appendix::A.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A40 40GB",
+      "cleaned_hardware_name": "nvidia a40 40gb",
+      "normalized_hardware_name": "NVIDIA A40 PCIe",
+      "benchmark_hardware_name": "NVIDIA A40 PCIe",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.1",
+      "section_title": "ike",
+      "normalized_section_title": "ike",
+      "evidence": "We implement IKE with PyTorch (Paszke et al., 2017), Huggingface transformers (Wolf et al., 2019), and sentence transformers (Reimers and Gurevych, 2019). Pytorch is licensed under the modified BSD license. Huggingface and Sentence transformers are under Apache License 2.0. IKE with 32 examples are run in a 40 GB NVIDIA A40 GPU for about 3 GPU hours.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.emnlp-main.296::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiment",
+      "evidence": "In this section, we perform experiments to answer the following research question:\n\n- Compared to gradient-based methods, what's the performance of IKE?   \n- How do the demonstration designing strategies influence the performance of IKE?\n\n- How does the scale of LMs affect the performance of IKE, can IKE scale up to large language models with tens or hundreds of billions of parameters?   \n- What are the side effects of knowledge editing and does IKE cause more or fewer side effects than other parameter updating methods?\n\nWe first introduce the experimental settings including the compared baseline methods, evaluation benchmark, and LMs across different scales for knowledge editing (§5.1). We then analyze the main knowledge editing results in §5.2 and the impacting factors of in-context learning knowledge editing (§5.3)."
+    },
+    {
+      "source_window_id": "2023.emnlp-main.296::sections::5.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.1",
+      "section_title": "experimental setting",
+      "evidence": "We aim to evaluate the performance of in-context knowledge editing compared to parameter updating approaches. We also conduct experiments on different sizes of LMs to explore the scaling-up ability of in-context knowledge editing."
+    },
+    {
+      "source_window_id": "2023.emnlp-main.296::sections::5.1.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.1.1",
+      "section_title": "baselines",
+      "evidence": "Following previous knowledge-editing methods, we also choose GPT-J (6B) as our main evaluation backbone. The compared baselines include:\n\nFT Fine-tuning the base model on text describing the edit fact, without training a new model editor by applying Adam with early stopping.\n\nMEND MEND (Mitchell et al., 2022a) transforms the fine-tuning gradient of an updated fact by decomposing the weight matrix into rank-1 form with the pretrained hyper-network.\n\nROME ROME (Meng et al., 2022a) learns to locate factual retrievals of a specific set of MLP modules and update knowledge by directly writing in new key-value pairs in the MLP module.\n\nPROMPT To explore how in-context demonstrations influence the performance of IKE. We directly use the new fact as context to probe the LMs by $\\mathcal{P}(y|x,f)$ where $f = (x^{*},y^{*})$ .\n\nThe implementation details are in $\\S A$"
+    },
+    {
+      "source_window_id": "2023.emnlp-main.296::sections::5.1.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.1.2",
+      "section_title": "evaluation setup",
+      "evidence": "Models To explore how the scale of LMs will influence the effectiveness of in-context knowledge editing, we evaluate in-context knowledge editing\n\non five GPT-like auto-regressive transformer language models whose scales range from 1.5B to 175B parameters:\n\n- GPT-2 XL (1.5B) (Radford et al., 2019), the 1.5 billion parameter version of GPT-2.   \n- GPT-NEO (2.7B) (Gao et al., 2021), the 2.7 billion parameter version of a GPT-2 like causal language model released by EleutherAI. It is trained on the Pile dataset specifically designed for LLM training.   \nGPT-J (6B) (Wang and Komatsuzaki, 2021), an auto-regressive text generation model trained on the Pile with 6 billion parameters.   \n- GPT-NEOX (20B) (Black et al., 2022), a 20 billion parameter auto-regressive language model trained on the Pile.   \n- OPT (175B) (Zhang et al., 2022), open pretrained transformers with 175 billion parameters created by MetaAI.\n\nBenchmark We mainly evaluate baselines on COUNTERFACT (Meng et al., 2022a), a challenging benchmark suitable for GPT-like causal language models with difficult editing targets and hard-to-distinguish editing scopes. It contains 21,919 records of diverse relations and entities. The goal of each record is to change the knowledge triplet $(s^{*},r^{*},o^{c})$ to $(s^{*},r^{*},o^{*})$ where $s^*$ and $r^*$ are described by the target prompt $x^{*}$ . The record also contains paraphrase prompts $P^P$ as in-scope prompts and neighborhood prompts $P^{N}$ , i.e., knowledge triplets $(s',r^*,o^c)$ that share the same object with target triplets as out-of-scope prompts. We follow Meng et al. (2022a) to use first 2000 records as the test set and the remaining records are divided into training set. The details of COUNTERFACT are listed in §B.\n\nMetrics The performance of knowledge editing is measured from three aspects (Efficacy, Generalization, and Specificity).\n\n- Efficacy measures the post-editing accuracy for target prompts by Efficacy Score (ES, $\\mathbb{E}[\\mathbb{I}[\\mathcal{P}(o^{*}) > \\mathcal{P}(o^{c})]]$ ) and Efficacy Magnitude (EM, $\\mathbb{E}[\\mathcal{P}(o^{*}) - \\mathcal{P}(o^{c})]$ ).   \n- Generalization measures post-editing accuracy on paraphrase prompts by Paraphrase\n\nTable 2: Knowledge Editing Performance for GPT-J (6B) and OPT (175B) on COUNTERFACT. Efficacy, Generalization, and Specificity are evaluated based on target, in-scope, and out-of-scope prompts respectively. Details of the Metric can be found in §5.1.2. green means column-wise maxima and red indicates poor generalization or specificity.   \n\n<table><tr><td>Editing Method</td><td>#Edited Params.</td><td>#Extra Params.</td><td>Score S↑</td><td>Efficacy ES↑</td><td>EM↑</td><td>Generalization PS↑</td><td>PM↑</td><td>Specificity NS↑</td><td>NM↑</td></tr><tr><td>GPT-J (6B)</td><td>0</td><td>0</td><td>22.0</td><td>16.2</td><td>-7.4</td><td>15.9</td><td>-7.5</td><td>83.2</td><td>7.4</td></tr><tr><td>FT</td><td>64M</td><td>0</td><td>28.7</td><td>99.9</td><td>98.6</td><td>96.4</td><td>67.0</td><td>11.9</td><td>-48.6</td></tr><tr><td>MEND</td><td>384M</td><td>896M</td><td>63.6</td><td>90.4</td><td>53.9</td><td>53.4</td><td>14.3</td><td>57.6</td><td>-3.3</td></tr><tr><td>ROME</td><td>64M</td><td>256M</td><td>91.5</td><td>100</td><td>99.4</td><td>99.6</td><td>78.0</td><td>78.5</td><td>5.0</td></tr><tr><td>PROMPT</td><td>0</td><td>0</td><td>63.3</td><td>99.7</td><td>80.9</td><td>91.0</td><td>32.9</td><td>37.9</td><td>-2.8</td></tr><tr><td>IKE (32 examples)</td><td>0</td><td>20M</td><td>89.6</td><td>100</td><td>91.7</td><td>95.2</td><td>64.5</td><td>77.0</td><td>35.2</td></tr><tr><td>OPT (175B)</td><td>0</td><td>0</td><td>18.7</td><td>12.6</td><td>-8.4</td><td>14.3</td><td>-8.1</td><td>86.9</td><td>8.4</td></tr><tr><td>PROMPT</td><td>0</td><td>0</td><td>58.1</td><td>99.6</td><td>77.2</td><td>94.1</td><td>37.4</td><td>32.3</td><td>-7.8</td></tr><tr><td>IKE (32 examples)</td><td>0</td><td>20M</td><td>94.1</td><td>100</td><td>92.5</td><td>98.8</td><td>83.6</td><td>85.1</td><td>45.5</td></tr></table>\n\nScore (PS) and Paraphrase Magnitude (PM). The definition of PS and PM is similar to ES and EM.\n\n- Specificity measures the accuracy of neighborhood prompts by Neighborhood Score (NS, $\\mathbb{E}[\\mathbb{I}[\\mathcal{P}(o^c) > \\mathcal{P}(o^*)]]$ ) and Neighborhood Magnitude (NM, $\\mathbb{E}[\\mathcal{P}(o^c) - \\mathcal{P}(o^*)]$ ), as the neighborhood prompts $(s', r^*, o^c)$ share the same original object with the target prompt and these facts are not supposed to be edited.\n\nWe also follow Meng et al. (2022a) to report the harmonic mean of ES, PS, NS as Score (S)"
+    },
+    {
+      "source_window_id": "2023.emnlp-main.296::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "implementation details",
+      "evidence": ""
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A40 PCIe",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2023\\2023.emnlp-main.296\\auto\\full.md",
+    "source_md_sha256": "a5f9fd632e9fd8fc7d58f5c5c55dd996a5604cd5c55865d96ac15fa10b1fe7ea",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "44ecc0af216a9e5fe6ff4e8a000ce2b17b722bcc41b386c829c53021783d2d05"
+  }
+}

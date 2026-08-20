@@ -1,0 +1,210 @@
+{
+  "paper_id": "2024.acl-long.785",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.785::sections::3.4",
+      "paper_id": "2024.acl-long.785",
+      "section_number": "3.4",
+      "section_title": "evaluation",
+      "normalized_section_title": "evaluation",
+      "window_text": "An evaluation sample consists of a base input $\\mathbf{b}$ , source input $\\mathbf{s}$ , ground-truth base label $y_{b}$ , and ground-truth source label $y_{s}$ . For example, the components of (6) are\n\n$$\n\\begin{array}{l} (7) \\quad \\underbrace {\\text {T h e a u t h o r n e a r t h e s e n a t o r s}} _ {\\mathrm {b}} \\Rightarrow \\underbrace {\\mathrm {i s}} _ {y _ {b}} \\\\ \\begin{array}{l} \\text {(8)} \\quad \\underbrace {\\text {T h e a u t h o r s n e a r t h e s e n a t o r s}} _ {\\mathrm {s}} \\Rightarrow \\underbrace {\\text {a r e}} _ {y _ {s}} \\end{array} \\\\ \\end{array}\n$$\n\nA successful intervention will take the original LM $p$ running on input $\\mathbf{b}$ and make it predict $y_{s}$ as the next token. We measure the strength of an intervention by its log odds-ratio.\n\nFirst, we select a component $f$ , which can be any part of a neural network that outputs a representation, inside the model $p$ . When the model is run on input $\\mathbf{b}$ , this component produces a representation we denote $f(\\mathbf{b})$ . We perform an intervention which replaces the output of $f$ with an output of $f^*$ as in §2. To produce a representation, $f^*$ may modify the base representation with reference to the source representation, and so its output is $f^*(\\mathbf{b}, \\mathbf{s})$ .\n\nThe intervention results in an intervened language model which we denote informally as $p_{f \\leftarrow f^{*}}$ . In the framework of causal abstraction (Geiger et al., 2021), if this intervention successfully makes the model behave as if its input was s, then the representation at $f$ is causally aligned with the high-level linguistic feature alternating in b and s.\n\nWe now operationalise a measure of causal effect. Taking the original model $p$ , the intervened model $p_{f\\leftarrow f^{*}}$ , and the evaluation sample, we define the log odds-ratio as:\n\n$$\n\\begin{array}{l} \\text {O d d s} \\left(p, p _ {f \\leftarrow f ^ {*}}, \\langle \\mathbf {b}, \\mathbf {s}, y _ {b}, y _ {s} \\rangle\\right) \\\\ = \\log \\left(\\frac {p \\left(y _ {b} \\mid \\mathbf {b}\\right)}{p \\left(y _ {s} \\mid \\mathbf {b}\\right)} \\cdot \\frac {p _ {f \\leftarrow f ^ {*}} \\left(y _ {s} \\mid \\mathbf {b} , \\mathbf {s}\\right)}{p _ {f \\leftarrow f ^ {*}} \\left(y _ {b} \\mid \\mathbf {b} , \\mathbf {s}\\right)}\\right) \\tag {9} \\\\ \\end{array}\n$$\n\nwhere a greater log odds-ratio indicates a larger causal effect at that intervention site, and a log odds-ratio of 0 indicates no causal effect. Given an evaluation set $E$ , the average log odds-ratio is\n\n$$\n\\begin{array}{l} \\operatorname {A v g O d d s} \\left(p, p _ {f \\leftarrow f ^ {*}}, E\\right) = \\\\ \\frac {1}{| E |} \\sum_ {e \\in E} \\operatorname {O d d s} \\left(p, p _ {f \\leftarrow f ^ {*}}, e\\right) \\tag {10} \\\\ \\end{array}\n$$",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.785::sections::4",
+      "paper_id": "2024.acl-long.785",
+      "section_number": "4",
+      "section_title": "methods",
+      "normalized_section_title": "methods",
+      "window_text": "We briefly describe our choice of $f^*$ and the feature-finding methods that we benchmark in this paper.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.785::sections::4.1",
+      "paper_id": "2024.acl-long.785",
+      "section_number": "4.1",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "In this paper, we only benchmark interventions along a single feature direction, i.e. one-dimensional distributed interchange intervention (1D DII; Geiger et al., 2023b). DII is an interchange intervention that operates on a non-basis-aligned subspace of the activation space. Formally,\n\ngiven a feature vector $\\mathbf{a} \\in \\mathbb{R}^n$ and $f$ , 1D DII defines $f^*$ as\n\n$$\nf _ {\\mathbf {a}} ^ {*} (\\mathbf {b}, \\mathbf {s}) = f (\\mathbf {b}) + (f (\\mathbf {s}) \\mathbf {a} ^ {\\top} - f (\\mathbf {b}) \\mathbf {a} ^ {\\top}) \\mathbf {a} \\quad (1 1)\n$$\n\nAs noted above, when our intervention replaces $f$ with $f_{\\mathbf{a}}^{*}$ , we denote the new model as $p_{f\\leftarrow f_{\\mathbf{a}}^{*}}$ .\n\nWe fix $f$ to operate on token-level representations; since $\\mathbf{b}$ and $\\mathbf{s}$ may have different lengths due to tokenisation; we align representations at the last token of each template region.\n\nIn principle, we allow future work to consider other forms of $f^{*}$ , but 1D DII has two useful properties. Given the linear representation hypothesis and that CausalGym exclusively studies binary linguistic features, 1D DII ought to be sufficiently expressive for controlling model behaviour. Furthermore, probes trained on binary classification tasks operate on a one-dimensional subspace of the representation, and thus we can directly use the weight vector of a probe as the parameter $a$ in eq. (11)—Tiggs et al. (2023) used a similar setup to causally evaluate probes.\n\nWe study seven methods, of which four are supervised: distributed alignment search (DAS), linear probing, difference-in-means, and LDA. The other three are unsupervised: PCA, $k$ -means, and (as a baseline) sampling a random vector. All of these methods provide us a feature direction $a$ that we use as a constant in eq. (11). For probing and unsupervised methods, we use implementations from scikit-learn (Pedregosa et al., 2011). To train distributed alignment search and run 1D DII, we use the pyvene library (Wu et al., 2024). Further training details are in appendix B. We formally describe each method below.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.785::sections::5",
+      "paper_id": "2024.acl-long.785",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "We perform all experiments on the pythia model series (Biderman et al., 2023), which includes 10 models ranging from 14 million to 12 billion parameters, all trained on the same data in the same order. This model series allows us to study how feature representations change with scale and training data size in a controlled manner—all models were trained on the same data in the same order, and checkpoints are provided.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.785::appendix::B",
+      "paper_id": "2024.acl-long.785",
+      "section_number": "B",
+      "section_title": "training and evaluation details",
+      "normalized_section_title": "training and evaluation details",
+      "window_text": "We load models using the HuggingFace transformers (Wolf et al., 2020) library. Up to size $410\\mathrm{m}$ we load weights in float32 precision, 1b in bfloat16 precision, and larger models in float16 precision. Our training set starts with 200 examples sampled according to the scheme in §3.2. We then double the size of the set (400) by swapping the base and source inputs/labels and adding these to the training set; including both directions of the intervention makes the comparison fairer between DAS and the other non-paired methods, and also ensures a perfect balance between labels.\n\nThe evaluation set consists of 50 examples sampled the same way (effectively 100), except we resample in case we encounter a sentence already present in the training set. Thus, there is no overlap with the training set. We evaluate all metrics (odds-ratio and probe classification accuracy) on this set.\n\nWe train DAS for one epoch with a batch size of 4, resulting in 100 backpropagation steps. We use the Adam optimiser (Kingma and Ba, 2015) and a linear learning rate schedule, with the first $10\\%$ of training being a warmup from 0 to the learning rate, followed by the learning rate linearly decaying to 0 for the rest of training. The scheduling and optimiser is identical to Wu et al. (2023). We use a learning\n\nrate of $5 \\cdot 10^{-3}$ , which is higher than previous work (usually $10^{-3}$ ) due to the small training set size; see appendix C for hyperparameter tuning experiments which justify this choice.\n\nTo run our experiments, we used a cluster of NVIDIA A100 (40 GB) and NVIDIA RTX 6000 Ada Generation GPUs. The total runtime for the benchmarking experiments in §5 was $\\sim 400$ hours, and for the case studies in §6 it was $\\sim 25$ hours.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.785::appendix::C",
+      "paper_id": "2024.acl-long.785",
+      "section_number": "C",
+      "section_title": "hyperparameter tuning",
+      "normalized_section_title": "hyperparameter tuning",
+      "window_text": "To ensure fair comparison, we tuned hyperparameters for DAS, probes, and PCA on a dev set, sampled the same way as the eval set (non-overlapping with train set) but with a different random seed. We train on all tasks in CausalGym and report the average odds-ratio following the same evaluation setup as in §5.1. We studied only the three smallest models (pythia-14m, 31m, 70m) due to the large number of experiments needed. Specifically, we tune the learning rate for DAS, the type of regularisation and whether or not to include a bias term in the logit for probes, $^{3}$ and averaging of the first $c$ components for PCA. We report the overall log odds-ratio for various hyperparameter settings in Table 2. These experiments were run on a NVIDIA RTX 6000 Ada Generation. The total runtime was $\\sim 25$ hours.\n\nFor probing (Table 2a), we found that including a bias term and using only $L_{2}$ regularisation with the saga solver delivers the best performance. However, the setting of the weight coefficient $\\lambda$ on the regularisation term in the loss depends on the model. The main architectural difference between these three models is the hidden dimension size, so we suspect that the optimal choice for $\\lambda$ depends on that. Roughly extrapolating the observed trend, in our main experiments we check $\\lambda = \\{10^{4}, 10^{5}\\}$ for pythia-160m and 410m, $\\lambda = \\{10^{5}, 10^{6}\\}$ for pythia-1b, 1.4b, and 2.8b, and $\\lambda = \\{10^{6}, 10^{7}\\}$ for pythia-6.9b. As for why $L_{2}$ regularisation increases causal efficacy, we note that Hewitt and Liang (2019) found that it also increases probe selectivity—we leave this as an open question for future work.\n\nFor PCA (Table 2b), we found that averaging the first $c$ components did not improve performance over just using the first component; thus, we used just the first PCA component in our main-text experiments.\n\nFor DAS (Table 2c), we found that using the learning rate suggested by Wu et al. (2023), $10^{-3}$ , understated performance and a higher learning rate did not result in any apparent training instability. However, our experimental setup is quite different (smaller training set, no learned boundary, greater variety of model scales). We did not find any consistent differences or trends with model scale between learning rates of $5 \\cdot 10^{-3}$ and $10^{-2}$ , so we used the former for all experiments.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.785::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 40GB",
+      "count": null,
+      "count_text": "",
+      "evidence": "We load models using the HuggingFace transformers (Wolf et al., 2020) library. Up to size $410\\mathrm{m}$ we load weights in float32 precision, 1b in bfloat16 precision, and larger models in float16 precision. Our training set starts with 200 examples sampled according to the scheme in §3.2. We then double the size of the set (400) by swapping the base and source inputs/labels and adding these to the training set; including both directions of the intervention makes the comparison fairer between DAS and the other non-paired methods, and also ensures a perfect balance between labels.\n\nThe evaluation set consists of 50 examples sampled the same way (effectively 100), except we resample in case we encounter a sentence already present in the training set. Thus, there is no overlap with the training set. We evaluate all metrics (odds-ratio and probe classification accuracy) on this set.\n\nWe train DAS for one epoch with a batch size of 4, resulting in 100 backpropagation steps. We use the Adam optimiser (Kingma and Ba, 2015) and a linear learning rate schedule, with the first $10\\%$ of training being a warmup from 0 to the learning rate, followed by the learning rate linearly decaying to 0 for the rest of training. The scheduling and optimiser is identical to Wu et al. (2023). We use a learning\n\nrate of $5 \\cdot 10^{-3}$ , which is higher than previous work (usually $10^{-3}$ ) due to the small training set size; see appendix C for hyperparameter tuning experiments which justify this choice.\n\nTo run our experiments, we used a cluster of NVIDIA A100 (40 GB) and NVIDIA RTX 6000 Ada Generation GPUs. The total runtime for the benchmarking experiments in §5 was $\\sim 400$ hours, and for the case studies in §6 it was $\\sim 25$ hours.",
+      "section_number": "B",
+      "section_title": "training and evaluation details",
+      "normalized_section_title": "training and evaluation details"
+    },
+    {
+      "window_id": "2024.acl-long.785::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 6000 Ada Generation",
+      "count": null,
+      "count_text": "",
+      "evidence": "We load models using the HuggingFace transformers (Wolf et al., 2020) library. Up to size $410\\mathrm{m}$ we load weights in float32 precision, 1b in bfloat16 precision, and larger models in float16 precision. Our training set starts with 200 examples sampled according to the scheme in §3.2. We then double the size of the set (400) by swapping the base and source inputs/labels and adding these to the training set; including both directions of the intervention makes the comparison fairer between DAS and the other non-paired methods, and also ensures a perfect balance between labels.\n\nThe evaluation set consists of 50 examples sampled the same way (effectively 100), except we resample in case we encounter a sentence already present in the training set. Thus, there is no overlap with the training set. We evaluate all metrics (odds-ratio and probe classification accuracy) on this set.\n\nWe train DAS for one epoch with a batch size of 4, resulting in 100 backpropagation steps. We use the Adam optimiser (Kingma and Ba, 2015) and a linear learning rate schedule, with the first $10\\%$ of training being a warmup from 0 to the learning rate, followed by the learning rate linearly decaying to 0 for the rest of training. The scheduling and optimiser is identical to Wu et al. (2023). We use a learning\n\nrate of $5 \\cdot 10^{-3}$ , which is higher than previous work (usually $10^{-3}$ ) due to the small training set size; see appendix C for hyperparameter tuning experiments which justify this choice.\n\nTo run our experiments, we used a cluster of NVIDIA A100 (40 GB) and NVIDIA RTX 6000 Ada Generation GPUs. The total runtime for the benchmarking experiments in §5 was $\\sim 400$ hours, and for the case studies in §6 it was $\\sim 25$ hours.",
+      "section_number": "B",
+      "section_title": "training and evaluation details",
+      "normalized_section_title": "training and evaluation details"
+    },
+    {
+      "window_id": "2024.acl-long.785::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 6000 Ada Generation",
+      "count": null,
+      "count_text": "",
+      "evidence": "To ensure fair comparison, we tuned hyperparameters for DAS, probes, and PCA on a dev set, sampled the same way as the eval set (non-overlapping with train set) but with a different random seed. We train on all tasks in CausalGym and report the average odds-ratio following the same evaluation setup as in §5.1. We studied only the three smallest models (pythia-14m, 31m, 70m) due to the large number of experiments needed. Specifically, we tune the learning rate for DAS, the type of regularisation and whether or not to include a bias term in the logit for probes, $^{3}$ and averaging of the first $c$ components for PCA. We report the overall log odds-ratio for various hyperparameter settings in Table 2. These experiments were run on a NVIDIA RTX 6000 Ada Generation. The total runtime was $\\sim 25$ hours.\n\nFor probing (Table 2a), we found that including a bias term and using only $L_{2}$ regularisation with the saga solver delivers the best performance. However, the setting of the weight coefficient $\\lambda$ on the regularisation term in the loss depends on the model. The main architectural difference between these three models is the hidden dimension size, so we suspect that the optimal choice for $\\lambda$ depends on that. Roughly extrapolating the observed trend, in our main experiments we check $\\lambda = \\{10^{4}, 10^{5}\\}$ for pythia-160m and 410m, $\\lambda = \\{10^{5}, 10^{6}\\}$ for pythia-1b, 1.4b, and 2.8b, and $\\lambda = \\{10^{6}, 10^{7}\\}$ for pythia-6.9b. As for why $L_{2}$ regularisation increases causal efficacy, we note that Hewitt and Liang (2019) found that it also increases probe selectivity—we leave this as an open question for future work.\n\nFor PCA (Table 2b), we found that averaging the first $c$ components did not improve performance over just using the first component; thus, we used just the first PCA component in our main-text experiments.\n\nFor DAS (Table 2c), we found that using the learning rate suggested by Wu et al. (2023), $10^{-3}$ , understated performance and a higher learning rate did not result in any apparent training instability. However, our experimental setup is quite different (smaller training set, no learned boundary, greater variety of model scales). We did not find any consistent differences or trends with model scale between learning rates of $5 \\cdot 10^{-3}$ and $10^{-2}$ , so we used the former for all experiments.",
+      "section_number": "C",
+      "section_title": "hyperparameter tuning",
+      "normalized_section_title": "hyperparameter tuning"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.785::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 40GB",
+      "cleaned_hardware_name": "nvidia a100 40gb",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": null,
+      "count_text": "",
+      "section_number": "B",
+      "section_title": "training and evaluation details",
+      "normalized_section_title": "training and evaluation details",
+      "evidence": "We load models using the HuggingFace transformers (Wolf et al., 2020) library. Up to size $410\\mathrm{m}$ we load weights in float32 precision, 1b in bfloat16 precision, and larger models in float16 precision. Our training set starts with 200 examples sampled according to the scheme in §3.2. We then double the size of the set (400) by swapping the base and source inputs/labels and adding these to the training set; including both directions of the intervention makes the comparison fairer between DAS and the other non-paired methods, and also ensures a perfect balance between labels.\n\nThe evaluation set consists of 50 examples sampled the same way (effectively 100), except we resample in case we encounter a sentence already present in the training set. Thus, there is no overlap with the training set. We evaluate all metrics (odds-ratio and probe classification accuracy) on this set.\n\nWe train DAS for one epoch with a batch size of 4, resulting in 100 backpropagation steps. We use the Adam optimiser (Kingma and Ba, 2015) and a linear learning rate schedule, with the first $10\\%$ of training being a warmup from 0 to the learning rate, followed by the learning rate linearly decaying to 0 for the rest of training. The scheduling and optimiser is identical to Wu et al. (2023). We use a learning\n\nrate of $5 \\cdot 10^{-3}$ , which is higher than previous work (usually $10^{-3}$ ) due to the small training set size; see appendix C for hyperparameter tuning experiments which justify this choice.\n\nTo run our experiments, we used a cluster of NVIDIA A100 (40 GB) and NVIDIA RTX 6000 Ada Generation GPUs. The total runtime for the benchmarking experiments in §5 was $\\sim 400$ hours, and for the case studies in §6 it was $\\sim 25$ hours.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.acl-long.785::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 6000 Ada Generation",
+      "cleaned_hardware_name": "nvidia rtx 6000 ada generation",
+      "normalized_hardware_name": "NVIDIA RTX 6000 Ada Generation",
+      "benchmark_hardware_name": "NVIDIA RTX 6000 Ada Generation",
+      "count": null,
+      "count_text": "",
+      "section_number": "B",
+      "section_title": "training and evaluation details",
+      "normalized_section_title": "training and evaluation details",
+      "evidence": "We load models using the HuggingFace transformers (Wolf et al., 2020) library. Up to size $410\\mathrm{m}$ we load weights in float32 precision, 1b in bfloat16 precision, and larger models in float16 precision. Our training set starts with 200 examples sampled according to the scheme in §3.2. We then double the size of the set (400) by swapping the base and source inputs/labels and adding these to the training set; including both directions of the intervention makes the comparison fairer between DAS and the other non-paired methods, and also ensures a perfect balance between labels.\n\nThe evaluation set consists of 50 examples sampled the same way (effectively 100), except we resample in case we encounter a sentence already present in the training set. Thus, there is no overlap with the training set. We evaluate all metrics (odds-ratio and probe classification accuracy) on this set.\n\nWe train DAS for one epoch with a batch size of 4, resulting in 100 backpropagation steps. We use the Adam optimiser (Kingma and Ba, 2015) and a linear learning rate schedule, with the first $10\\%$ of training being a warmup from 0 to the learning rate, followed by the learning rate linearly decaying to 0 for the rest of training. The scheduling and optimiser is identical to Wu et al. (2023). We use a learning\n\nrate of $5 \\cdot 10^{-3}$ , which is higher than previous work (usually $10^{-3}$ ) due to the small training set size; see appendix C for hyperparameter tuning experiments which justify this choice.\n\nTo run our experiments, we used a cluster of NVIDIA A100 (40 GB) and NVIDIA RTX 6000 Ada Generation GPUs. The total runtime for the benchmarking experiments in §5 was $\\sim 400$ hours, and for the case studies in §6 it was $\\sim 25$ hours.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.acl-long.785::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 6000 Ada Generation",
+      "cleaned_hardware_name": "nvidia rtx 6000 ada generation",
+      "normalized_hardware_name": "NVIDIA RTX 6000 Ada Generation",
+      "benchmark_hardware_name": "NVIDIA RTX 6000 Ada Generation",
+      "count": null,
+      "count_text": "",
+      "section_number": "C",
+      "section_title": "hyperparameter tuning",
+      "normalized_section_title": "hyperparameter tuning",
+      "evidence": "To ensure fair comparison, we tuned hyperparameters for DAS, probes, and PCA on a dev set, sampled the same way as the eval set (non-overlapping with train set) but with a different random seed. We train on all tasks in CausalGym and report the average odds-ratio following the same evaluation setup as in §5.1. We studied only the three smallest models (pythia-14m, 31m, 70m) due to the large number of experiments needed. Specifically, we tune the learning rate for DAS, the type of regularisation and whether or not to include a bias term in the logit for probes, $^{3}$ and averaging of the first $c$ components for PCA. We report the overall log odds-ratio for various hyperparameter settings in Table 2. These experiments were run on a NVIDIA RTX 6000 Ada Generation. The total runtime was $\\sim 25$ hours.\n\nFor probing (Table 2a), we found that including a bias term and using only $L_{2}$ regularisation with the saga solver delivers the best performance. However, the setting of the weight coefficient $\\lambda$ on the regularisation term in the loss depends on the model. The main architectural difference between these three models is the hidden dimension size, so we suspect that the optimal choice for $\\lambda$ depends on that. Roughly extrapolating the observed trend, in our main experiments we check $\\lambda = \\{10^{4}, 10^{5}\\}$ for pythia-160m and 410m, $\\lambda = \\{10^{5}, 10^{6}\\}$ for pythia-1b, 1.4b, and 2.8b, and $\\lambda = \\{10^{6}, 10^{7}\\}$ for pythia-6.9b. As for why $L_{2}$ regularisation increases causal efficacy, we note that Hewitt and Liang (2019) found that it also increases probe selectivity—we leave this as an open question for future work.\n\nFor PCA (Table 2b), we found that averaging the first $c$ components did not improve performance over just using the first component; thus, we used just the first PCA component in our main-text experiments.\n\nFor DAS (Table 2c), we found that using the learning rate suggested by Wu et al. (2023), $10^{-3}$ , understated performance and a higher learning rate did not result in any apparent training instability. However, our experimental setup is quite different (smaller training set, no learned boundary, greater variety of model scales). We did not find any consistent differences or trends with model scale between learning rates of $5 \\cdot 10^{-3}$ and $10^{-2}$ , so we used the former for all experiments.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B",
+      "C"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": null
+      },
+      {
+        "name": "NVIDIA RTX 6000 Ada Generation",
+        "num": null
+      },
+      {
+        "name": "NVIDIA RTX 6000 Ada Generation",
+        "num": null
+      }
+    ]
+  }
+}

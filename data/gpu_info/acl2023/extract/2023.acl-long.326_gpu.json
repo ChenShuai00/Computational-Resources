@@ -1,0 +1,234 @@
+{
+  "paper_id": "2023.acl-long.326",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.326::sections::3",
+      "paper_id": "2023.acl-long.326",
+      "section_number": "3",
+      "section_title": "evaluation",
+      "normalized_section_title": "evaluation",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.326::sections::4",
+      "paper_id": "2023.acl-long.326",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "We train all our models on the same multilingual Wikipedia dump as MBERT, with the same exponentially weighted language sampling strategy. Our baseline model architecture is BERT-base with 110M parameters; all other models are comparable in size. We train each model using 32 TPUv3 chips for 250k steps with total batch size 3072. Models took between 3 and 4 days to complete training. We found the batch size parameter crucial for final model performance: using a smaller batch size degraded final model performance, while character-level model performance was unstable at a larger batch size. For exact pretraining hyperparameters and downstream task evaluation procedures, please see Appendices A and B. Unless otherwise stated, the hyperparameters are constant across all experiments; each experiment aims to examine the influence of a specific choice of variable. We evaluate model checkpoints on a rolling basis during training on all our evaluation tasks, and select the model checkpoint which performs the best on TyDi-QA.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.326::sections::5",
+      "paper_id": "2023.acl-long.326",
+      "section_number": "5",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.326::appendix::A",
+      "paper_id": "2023.acl-long.326",
+      "section_number": "A",
+      "section_title": "training hyperparameters",
+      "normalized_section_title": "training hyperparameters",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.326::appendix::A.2",
+      "paper_id": "2023.acl-long.326",
+      "section_number": "A.2",
+      "section_title": "model implementation",
+      "normalized_section_title": "model implementation",
+      "window_text": "All models were implemented using JAX (Bradbury et al., 2018) and Haiku (Hennigan et al., 2020). We use a dropout rate of 0.1 after all matrix multiplications in the model. We use the LAMB optimizer (You et al., 2020), with a maximum learning rate of $1.25 \\times 10^{-3}$ . We warm up the learning rate over the first 3125 training steps, and use a cosine decay learning rate scheduler (Loshchilov and Hutter, 2016) with length equal to the number of training steps and a final learning rate of $1.25 \\times 10^{-5}$ . For our BERT baseline, we use a maximum learning rate of $1.8 \\times 10^{-3}$ and a minimum of $1.8 \\times 10^{-5}$ . We clip gradients to a maximum global norm of 10.0. We keep an exponential moving average of model weights during training with EMA\n\nparameter 0.9, updated after every 100 training steps, and evaluate using the average parameters. We found that this stabilised model training for the character-level models, and resulted in better task performance.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.326::appendix::B.1",
+      "paper_id": "2023.acl-long.326",
+      "section_number": "B.1",
+      "section_title": "probing tasks",
+      "normalized_section_title": "probing tasks",
+      "window_text": "We use the presequential codelength probing paradigm of Voita and Titov (2020), but follow a slightly different protocol. We use the training data of the largest UD dataset for each language we consider, and take a sample of 4000 sentences (or use the whole corpus if it is smaller then this), and split this into 10 shards. We then initialise a label prediction head and freeze the base model. We then sequentially evaluate each shard, before adding the shard to the training data for the tagging model. We then train the tagging model on batches of data randomly sampled from all shards that we have previously evaluated, and periodically evaluate on a dev set of data we set aside from the first shard. If the dev set loss stops improving, we then stop training and evaluate on the next shard, continuing in this way until we have evaluated every shard. We then add up the loss for all the evaluated shards and divide by the number of predictions to get the average codelength per tag. We use 2 V100 GPUs for training, and use a total batch size of 32.\n\nOne difficulty with UD tagging tasks is that the tags are defined on syntactic tokens, which may not correspond to the surface form (for example, can't is annotated as two syntactic tokens: can and not), and aligning syntactic tokens with the surface form may not be trivial. Further, tokenisation means that alignments between surface form tokens and the input to the model may also be non-trivial. However, most subword tokenisation schemes treat whitespace specially, and never merge tokens across whitespace. This means we can merge the UD morph and POS annotations for each syntactic token making up a whitespace token (i.e. we merge the POS tags for can and not and tag can't with this composite label), and predict this composite label as an atomic unit, at the cost of expanding the tagset. For all our tagging tasks, we take the first model token (either subword or character) corresponding to a whitespace token as the token representation and predict the tag based on the embedding of this token. Morphological features in UD are annotated as an unordered set\n\nof key-value pairs; we ignore this internal structure and treat each occurring set of tags as an atomic label.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2023.acl-long.326::appendix::B.2",
+      "paper_id": "2023.acl-long.326",
+      "section_number": "B.2",
+      "section_title": "tydi-qa and wikiann",
+      "normalized_section_title": "tydi-qa and wikiann",
+      "window_text": "For these tasks, we finetune the full model. For both tasks, we use a single linear layer to produce the model logits over either BIO tags or start/end span indices. We combine the training data for all languages we consider, and train for 10 epochs for both tasks. We use 4 TPUv3 chips to finetune the model, and use a total batch size of 128. For TyDi-QA, we modify the official run_squad.py script to accept non-WordPiece tokenisers (such as SentencePiece and character tokenisers).",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.326::sections::4",
+      "hardware_type": "TPU",
+      "raw_hardware_name": "TPUv3",
+      "count": 32,
+      "count_text": "32",
+      "evidence": "We train all our models on the same multilingual Wikipedia dump as MBERT, with the same exponentially weighted language sampling strategy. Our baseline model architecture is BERT-base with 110M parameters; all other models are comparable in size. We train each model using 32 TPUv3 chips for 250k steps with total batch size 3072. Models took between 3 and 4 days to complete training. We found the batch size parameter crucial for final model performance: using a smaller batch size degraded final model performance, while character-level model performance was unstable at a larger batch size. For exact pretraining hyperparameters and downstream task evaluation procedures, please see Appendices A and B. Unless otherwise stated, the hyperparameters are constant across all experiments; each experiment aims to examine the influence of a specific choice of variable. We evaluate model checkpoints on a rolling basis during training on all our evaluation tasks, and select the model checkpoint which performs the best on TyDi-QA.",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments"
+    },
+    {
+      "window_id": "2023.acl-long.326::appendix::B.2",
+      "hardware_type": "TPU",
+      "raw_hardware_name": "TPUv3",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "For these tasks, we finetune the full model. For both tasks, we use a single linear layer to produce the model logits over either BIO tags or start/end span indices. We combine the training data for all languages we consider, and train for 10 epochs for both tasks. We use 4 TPUv3 chips to finetune the model, and use a total batch size of 128. For TyDi-QA, we modify the official run_squad.py script to accept non-WordPiece tokenisers (such as SentencePiece and character tokenisers).",
+      "section_number": "B.2",
+      "section_title": "tydi-qa and wikiann",
+      "normalized_section_title": "tydi-qa and wikiann"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.326::sections::4",
+      "hardware_type": "TPU",
+      "raw_hardware_name": "TPUv3",
+      "cleaned_hardware_name": "tpu v3",
+      "normalized_hardware_name": "Google TPU v3",
+      "benchmark_hardware_name": "Google TPU v3",
+      "count": 32,
+      "count_text": "32",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "evidence": "We train all our models on the same multilingual Wikipedia dump as MBERT, with the same exponentially weighted language sampling strategy. Our baseline model architecture is BERT-base with 110M parameters; all other models are comparable in size. We train each model using 32 TPUv3 chips for 250k steps with total batch size 3072. Models took between 3 and 4 days to complete training. We found the batch size parameter crucial for final model performance: using a smaller batch size degraded final model performance, while character-level model performance was unstable at a larger batch size. For exact pretraining hyperparameters and downstream task evaluation procedures, please see Appendices A and B. Unless otherwise stated, the hyperparameters are constant across all experiments; each experiment aims to examine the influence of a specific choice of variable. We evaluate model checkpoints on a rolling basis during training on all our evaluation tasks, and select the model checkpoint which performs the best on TyDi-QA.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.acl-long.326::appendix::B.2",
+      "hardware_type": "TPU",
+      "raw_hardware_name": "TPUv3",
+      "cleaned_hardware_name": "tpu v3",
+      "normalized_hardware_name": "Google TPU v3",
+      "benchmark_hardware_name": "Google TPU v3",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "B.2",
+      "section_title": "tydi-qa and wikiann",
+      "normalized_section_title": "tydi-qa and wikiann",
+      "evidence": "For these tasks, we finetune the full model. For both tasks, we use a single linear layer to produce the model logits over either BIO tags or start/end span indices. We combine the training data for all languages we consider, and train for 10 epochs for both tasks. We use 4 TPUv3 chips to finetune the model, and use a total batch size of 128. For TyDi-QA, we modify the official run_squad.py script to accept non-WordPiece tokenisers (such as SentencePiece and character tokenisers).",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.acl-long.326::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "evaluation",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.326::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "discussion",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.326::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "training hyperparameters",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.326::appendix::A.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.2",
+      "section_title": "model implementation",
+      "evidence": "All models were implemented using JAX (Bradbury et al., 2018) and Haiku (Hennigan et al., 2020). We use a dropout rate of 0.1 after all matrix multiplications in the model. We use the LAMB optimizer (You et al., 2020), with a maximum learning rate of $1.25 \\times 10^{-3}$ . We warm up the learning rate over the first 3125 training steps, and use a cosine decay learning rate scheduler (Loshchilov and Hutter, 2016) with length equal to the number of training steps and a final learning rate of $1.25 \\times 10^{-5}$ . For our BERT baseline, we use a maximum learning rate of $1.8 \\times 10^{-3}$ and a minimum of $1.8 \\times 10^{-5}$ . We clip gradients to a maximum global norm of 10.0. We keep an exponential moving average of model weights during training with EMA\n\nparameter 0.9, updated after every 100 training steps, and evaluate using the average parameters. We found that this stabilised model training for the character-level models, and resulted in better task performance."
+    },
+    {
+      "source_window_id": "2023.acl-long.326::appendix::B.1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B.1",
+      "section_title": "probing tasks",
+      "evidence": "We use the presequential codelength probing paradigm of Voita and Titov (2020), but follow a slightly different protocol. We use the training data of the largest UD dataset for each language we consider, and take a sample of 4000 sentences (or use the whole corpus if it is smaller then this), and split this into 10 shards. We then initialise a label prediction head and freeze the base model. We then sequentially evaluate each shard, before adding the shard to the training data for the tagging model. We then train the tagging model on batches of data randomly sampled from all shards that we have previously evaluated, and periodically evaluate on a dev set of data we set aside from the first shard. If the dev set loss stops improving, we then stop training and evaluate on the next shard, continuing in this way until we have evaluated every shard. We then add up the loss for all the evaluated shards and divide by the number of predictions to get the average codelength per tag. We use 2 V100 GPUs for training, and use a total batch size of 32.\n\nOne difficulty with UD tagging tasks is that the tags are defined on syntactic tokens, which may not correspond to the surface form (for example, can't is annotated as two syntactic tokens: can and not), and aligning syntactic tokens with the surface form may not be trivial. Further, tokenisation means that alignments between surface form tokens and the input to the model may also be non-trivial. However, most subword tokenisation schemes treat whitespace specially, and never merge tokens across whitespace. This means we can merge the UD morph and POS annotations for each syntactic token making up a whitespace token (i.e. we merge the POS tags for can and not and tag can't with this composite label), and predict this composite label as an atomic unit, at the cost of expanding the tagset. For all our tagging tasks, we take the first model token (either subword or character) corresponding to a whitespace token as the token representation and predict the tag based on the embedding of this token. Morphological features in UD are annotated as an unordered set\n\nof key-value pairs; we ignore this internal structure and treat each occurring set of tags as an atomic label."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4",
+      "B.2"
+    ],
+    "pred": [
+      {
+        "name": "Google TPU v3",
+        "num": 32
+      },
+      {
+        "name": "Google TPU v3",
+        "num": 4
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2023\\2023.acl-long.326\\auto\\full.md",
+    "source_md_sha256": "86ca0213e0abadc8df174055a68c424ed84e084723c97c243371218980437d89",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

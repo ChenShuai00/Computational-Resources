@@ -1,0 +1,162 @@
+{
+  "paper_id": "2024.naacl-long.475",
+  "candidate_windows": [
+    {
+      "window_id": "2024.naacl-long.475::sections::3",
+      "paper_id": "2024.naacl-long.475",
+      "section_number": "3",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "Overview We focus on multi-hop question answering tasks. To synthesize the answers to a given multi-hop question, we synergistically integrate an LLM, structured knowledge from an external Knowledge Graph (KG), and unstructured textual knowledge from an external text knowledge base (TKB). Our method unfolds in two steps:\n\n1. We prompt an LLM to parse the input question into a semi-structured reasoning chain with masks as placeholders.   \n2. We procure knowledge from three sources to fill in the masks in the reasoning chain, thereby deriving the final answer. We leverage knowledge from the LLM via few-shot prompting, use entity and relation linking models to ground the reasoning chain to the KG, and employ a dense retriever to fetch relevant documents from the TKB.\n\nNo components of our method require any additional training. A major strength of our method is its simplicity, intuitiveness, and ease of use. We present an overview of our method in Figure 1.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.naacl-long.475::sections::4",
+      "paper_id": "2024.naacl-long.475",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.naacl-long.475::sections::4.2",
+      "paper_id": "2024.naacl-long.475",
+      "section_number": "4.2",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "Base Models In all of our experiments, we use few-shot in-context learning and do not perform any model training. We utilize three different sizes of language models from the LLAMA 2 family\n\n(7b, 13b, and 70b) (Touvron et al., 2023) as our base models because of their strong empirical results and open-source availability. Additionally, we also use the LLAMA-65b model in some of our experiments for a fair comparison with previous methods. We employ these base models to parse semi-structured reasoning chains, convert masked triplets into single-hop questions for answering, and fill in reasoning chains.\n\nPrompts All of our in-context learning exemplars are randomly sampled from the training set of the corresponding dataset, and their semistructured reasoning chains are manually annotated by the authors. Since Bamboogle does not have a training set, we use examples from the MuSiQue training set for this purpose. More details about the prompts can be found in Appendix D.\n\nKnowledge Sources and Usage 2Wiki and MuSiQue were initially created for reading comprehension, with each question accompanied by multiple context paragraphs, including supporting and distracting paragraphs. Following Chen et al. (2023) and Trivedi et al. (2023), we adapt them for an open-domain setting by collecting all context paragraphs from the training, development, and test sets' questions to serve as an unstructured TKB. Bamboogle was originally an open-domain setup. We follow the original setup and use Google Search API $^{2}$ to access the entire web as the unstructured TKB. We host a local Wikidata $^{3}$ (Vrandecic and Krötzsch, 2014) endpoint as our structured knowledge source for all the datasets. We employed the pre-trained Contriever (Contriever-msmarco) (Izacard et al., 2022) for document retrieval, the BLINK model (Wu et al., 2020) for entity linking, and the all-MiniLM-L6-v2 model from SentenceTransformers (Reimers and Gurevych, 2019) for relation linking. See Appendix E for more details.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.naacl-long.475::sections::4.3",
+      "paper_id": "2024.naacl-long.475",
+      "section_number": "4.3",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "On 2Wiki and MuSiQuem datasets, we compare our proposed method with the following state-of-the-art prompting methods: standard few-shot prompting (standard) (Brown et al., 2020a), CoT prompting (Wei et al., 2022), Self-Ask (Press et al., 2023), ITER-RETGEN (Shao et al., 2023), ReAct (Yao et al., 2023b), and DSP (Khattab et al., 2022a). We also contrast our method with Data\n\nSynthesis (Chen et al., 2023), which requires finetuning. Data Synthesis generates millions of synthetic question-answer pairs and fine-tunes the base LLM on the generated data, utilizing a prompting method similar to ReAct. More detailed baseline descriptions are provided in Appendix F.\n\nThe Bamboogle dataset does not provide an official evaluation method, which makes it challenging to directly compare our results with previously reported model performance. Considering the cost of Google Search API call, we replicate the best-performing baselines, Self-Ask (see analysis in Section 4.4), based on the LLAMA2-70b model on Bamboogle for a fair comparison<sup>5</sup>.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.naacl-long.475::appendix::E",
+      "paper_id": "2024.naacl-long.475",
+      "section_number": "E",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "Knowledge Sources and Usage Details The TKB for 2Wiki consists of 398,354 paragraphs, and for MuSiQue, it contains 139,409 paragraphs. For querying unstructured text knowledge sources, we use the pre-trained Contriever (Contriever-msmarco) (Izacard et al., 2022) to retrieve the top 10 most relevant paragraphs for each single-hop question converted from a structured triplet. We employ the off-the-shelf BLINK entity linking model (Wu et al., 2020) to link the head of the structured triplet to Wikipedia, and\n\nuse WikiMapper $^{6}$ to obtain the corresponding Wikidata entry. For relation linking, we use the all-MiniLM-L6-v2 model from Sentence Transformers (Reimers and Gurevych, 2019) to encode the relation string in the structured triplet and all the property labels from Wikidata and calculate the cosine similarity between them to find the most similar Wikidata property. We utilize the results of entity and relation linking to construct simple SPARQL queries and execute them on the Wikidata endpoint to obtain the entities corresponding to the masks.\n\nModel Inference We use the vLLM library v0.1.3 (Kwon et al., 2023) for model inference. All inference is conducted on eight Nvidia A6000 GPUs. The total GPU hours are around 780 hours.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.naacl-long.475::appendix::E",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A6000",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Knowledge Sources and Usage Details The TKB for 2Wiki consists of 398,354 paragraphs, and for MuSiQue, it contains 139,409 paragraphs. For querying unstructured text knowledge sources, we use the pre-trained Contriever (Contriever-msmarco) (Izacard et al., 2022) to retrieve the top 10 most relevant paragraphs for each single-hop question converted from a structured triplet. We employ the off-the-shelf BLINK entity linking model (Wu et al., 2020) to link the head of the structured triplet to Wikipedia, and\n\nuse WikiMapper $^{6}$ to obtain the corresponding Wikidata entry. For relation linking, we use the all-MiniLM-L6-v2 model from Sentence Transformers (Reimers and Gurevych, 2019) to encode the relation string in the structured triplet and all the property labels from Wikidata and calculate the cosine similarity between them to find the most similar Wikidata property. We utilize the results of entity and relation linking to construct simple SPARQL queries and execute them on the Wikidata endpoint to obtain the entities corresponding to the masks.\n\nModel Inference We use the vLLM library v0.1.3 (Kwon et al., 2023) for model inference. All inference is conducted on eight Nvidia A6000 GPUs. The total GPU hours are around 780 hours.",
+      "section_number": "E",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.naacl-long.475::appendix::E",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A6000",
+      "cleaned_hardware_name": "nvidia a6000",
+      "normalized_hardware_name": "NVIDIA RTX A6000",
+      "benchmark_hardware_name": "NVIDIA RTX A6000",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "E",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "Knowledge Sources and Usage Details The TKB for 2Wiki consists of 398,354 paragraphs, and for MuSiQue, it contains 139,409 paragraphs. For querying unstructured text knowledge sources, we use the pre-trained Contriever (Contriever-msmarco) (Izacard et al., 2022) to retrieve the top 10 most relevant paragraphs for each single-hop question converted from a structured triplet. We employ the off-the-shelf BLINK entity linking model (Wu et al., 2020) to link the head of the structured triplet to Wikipedia, and\n\nuse WikiMapper $^{6}$ to obtain the corresponding Wikidata entry. For relation linking, we use the all-MiniLM-L6-v2 model from Sentence Transformers (Reimers and Gurevych, 2019) to encode the relation string in the structured triplet and all the property labels from Wikidata and calculate the cosine similarity between them to find the most similar Wikidata property. We utilize the results of entity and relation linking to construct simple SPARQL queries and execute them on the Wikidata endpoint to obtain the entities corresponding to the masks.\n\nModel Inference We use the vLLM library v0.1.3 (Kwon et al., 2023) for model inference. All inference is conducted on eight Nvidia A6000 GPUs. The total GPU hours are around 780 hours.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.naacl-long.475::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methodology",
+      "evidence": "Overview We focus on multi-hop question answering tasks. To synthesize the answers to a given multi-hop question, we synergistically integrate an LLM, structured knowledge from an external Knowledge Graph (KG), and unstructured textual knowledge from an external text knowledge base (TKB). Our method unfolds in two steps:\n\n1. We prompt an LLM to parse the input question into a semi-structured reasoning chain with masks as placeholders.   \n2. We procure knowledge from three sources to fill in the masks in the reasoning chain, thereby deriving the final answer. We leverage knowledge from the LLM via few-shot prompting, use entity and relation linking models to ground the reasoning chain to the KG, and employ a dense retriever to fetch relevant documents from the TKB.\n\nNo components of our method require any additional training. A major strength of our method is its simplicity, intuitiveness, and ease of use. We present an overview of our method in Figure 1."
+    },
+    {
+      "source_window_id": "2024.naacl-long.475::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.naacl-long.475::sections::4.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2",
+      "section_title": "implementation details",
+      "evidence": "Base Models In all of our experiments, we use few-shot in-context learning and do not perform any model training. We utilize three different sizes of language models from the LLAMA 2 family\n\n(7b, 13b, and 70b) (Touvron et al., 2023) as our base models because of their strong empirical results and open-source availability. Additionally, we also use the LLAMA-65b model in some of our experiments for a fair comparison with previous methods. We employ these base models to parse semi-structured reasoning chains, convert masked triplets into single-hop questions for answering, and fill in reasoning chains.\n\nPrompts All of our in-context learning exemplars are randomly sampled from the training set of the corresponding dataset, and their semistructured reasoning chains are manually annotated by the authors. Since Bamboogle does not have a training set, we use examples from the MuSiQue training set for this purpose. More details about the prompts can be found in Appendix D.\n\nKnowledge Sources and Usage 2Wiki and MuSiQue were initially created for reading comprehension, with each question accompanied by multiple context paragraphs, including supporting and distracting paragraphs. Following Chen et al. (2023) and Trivedi et al. (2023), we adapt them for an open-domain setting by collecting all context paragraphs from the training, development, and test sets' questions to serve as an unstructured TKB. Bamboogle was originally an open-domain setup. We follow the original setup and use Google Search API $^{2}$ to access the entire web as the unstructured TKB. We host a local Wikidata $^{3}$ (Vrandecic and Krötzsch, 2014) endpoint as our structured knowledge source for all the datasets. We employed the pre-trained Contriever (Contriever-msmarco) (Izacard et al., 2022) for document retrieval, the BLINK model (Wu et al., 2020) for entity linking, and the all-MiniLM-L6-v2 model from SentenceTransformers (Reimers and Gurevych, 2019) for relation linking. See Appendix E for more details."
+    },
+    {
+      "source_window_id": "2024.naacl-long.475::sections::4.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.3",
+      "section_title": "baselines",
+      "evidence": "On 2Wiki and MuSiQuem datasets, we compare our proposed method with the following state-of-the-art prompting methods: standard few-shot prompting (standard) (Brown et al., 2020a), CoT prompting (Wei et al., 2022), Self-Ask (Press et al., 2023), ITER-RETGEN (Shao et al., 2023), ReAct (Yao et al., 2023b), and DSP (Khattab et al., 2022a). We also contrast our method with Data\n\nSynthesis (Chen et al., 2023), which requires finetuning. Data Synthesis generates millions of synthetic question-answer pairs and fine-tunes the base LLM on the generated data, utilizing a prompting method similar to ReAct. More detailed baseline descriptions are provided in Appendix F.\n\nThe Bamboogle dataset does not provide an official evaluation method, which makes it challenging to directly compare our results with previously reported model performance. Considering the cost of Google Search API call, we replicate the best-performing baselines, Self-Ask (see analysis in Section 4.4), based on the LLAMA2-70b model on Bamboogle for a fair comparison<sup>5</sup>."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "E"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA RTX A6000",
+        "num": 8
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\naacl2024\\2024.naacl-long.475\\auto\\full.md",
+    "source_md_sha256": "9c58bffffcb742014aaa74875a3acc85d76d609d88fbc538fbb7fb43d80fae8b",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "8a36e506af69db6224806495ee600ecb1cd88261dc8471c84d78ced3642dab27"
+  }
+}

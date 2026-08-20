@@ -1,0 +1,83 @@
+{
+  "paper_id": "2022.emnlp-main.803",
+  "candidate_windows": [
+    {
+      "window_id": "2022.emnlp-main.803::sections::3",
+      "paper_id": "2022.emnlp-main.803",
+      "section_number": "3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "We conduct experiments on the fact retrieval part of LAMA dataset (Petroni et al., 2019), which consists of fact triples with single-token objects from 41 relations in Wikidata (Vrandecic and Krötzsch, 2014). We use the training set extended by Shin et al. (2020). We choose masked language models BERT (Devlin et al., 2019) and RoBERTa (Liu et al., 2019) as PLMs, which are fixed during training to serve as static knowledge bases. For implementation, we use PLMs in Huggingface library of Transformers (Wolf et al., 2020). We follow Liu et al. (2021) for designing templates and the prompt generation component of our model. In particular, we use BiLSTM (Graves et al., 2013) with multilayer perceptron (MLP) for prompt generation\n\nTable 1: SPE outperforms state-of-the-art discrete and continuous prompt approaches on the LAMA dataset.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"3\">BERT-base</td><td colspan=\"3\">BERT-large</td><td colspan=\"3\">RoBERTa-base</td></tr><tr><td>P@1</td><td>P@10</td><td>MRR</td><td>P@1</td><td>P@10</td><td>MRR</td><td>P@1</td><td>P@10</td><td>MRR</td></tr><tr><td>Manual (Petroni et al., 2019)</td><td>31.1</td><td>59.5</td><td>40.3</td><td>28.9</td><td>57.7</td><td>38.7</td><td>22.0</td><td>36.0</td><td>25.0</td></tr><tr><td>LPAQA (Jiang et al., 2020)</td><td>34.1</td><td>62.0</td><td>43.6</td><td>39.4</td><td>67.4</td><td>49.1</td><td>21.7</td><td>36.0</td><td>27.7</td></tr><tr><td>AutoPrompt (Shin et al., 2020)</td><td>43.3</td><td>73.9</td><td>53.9</td><td>41.3</td><td>69.3</td><td>50.6</td><td>40.0</td><td>68.3</td><td>49.9</td></tr><tr><td>OptiPrompt (manual) (Zhong et al., 2021)</td><td>48.6</td><td>79.0</td><td>58.9</td><td>50.6</td><td>79.2</td><td>60.7</td><td>40.3</td><td>65.7</td><td>48.9</td></tr><tr><td>SoftPrompt (mined) (Qin and Eisner, 2021)</td><td>48.8</td><td>79.6</td><td>59.4</td><td>51.0</td><td>81.4</td><td>59.6</td><td>40.6</td><td>75.5</td><td>53.0</td></tr><tr><td>P-tuning (Liu et al., 2021)</td><td>48.2</td><td>78.1</td><td>58.6</td><td>49.9</td><td>80.6</td><td>60.6</td><td>43.5</td><td>73.9</td><td>53.8</td></tr><tr><td>SPE</td><td>50.3</td><td>80.5</td><td>60.9</td><td>53.1</td><td>82.4</td><td>63.4</td><td>47.0</td><td>75.8</td><td>56.2</td></tr></table>\n\nTable 2: Effect of varying size of candidate pool on SPE's performance. SPE outperforms P-tuning even without reranking $(\\mathrm{K} = 1)$ . A larger candidate pool helps the model even further.   \n\n<table><tr><td>Model</td><td>P@1</td><td>P@10</td><td>MRR</td></tr><tr><td>P-tuning</td><td>48.2</td><td>78.1</td><td>58.6</td></tr><tr><td>SPE K=1</td><td>48.7</td><td>79.9</td><td>59.5</td></tr><tr><td>K=5</td><td>49.9</td><td>79.9</td><td>60.5</td></tr><tr><td>K=10</td><td>49.9</td><td>79.9</td><td>60.7</td></tr><tr><td>K=15</td><td>50.3</td><td>80.5</td><td>60.9</td></tr></table>\n\nand use the following generic and relation-agnostic format for template, $\\mathcal{T}\\colon [V]_1[V]_2[V]_3\\ldots [V]_4$ $[V]_5[V]_6\\ldots [V]_7[V]_8[V]_9\\forall [V]_i\\in \\mathbb{R}^d$ . The model and the template are randomly initialized.\n\nFor $\\mathcal{I}$ with multiple tokens, we mask them one token at a time to generate $\\mathcal{P}_{\\mathrm{sym}}$ , and use the average of pseudo likelihoods from all $\\mathcal{P}_{\\mathrm{sym}}$ s to represent $\\log p(v' = \\mathcal{I}|\\mathcal{P}_{\\mathrm{sym}})$ . In practice, we find that masking one token at a time is better than masking the entire phrase at once, and averaging the pseudolikelihood has better performance. The training batch size is 8. We set K to be 15 during inference, and $\\lambda$ to be 0.8 based on our experiments on the development set. The results are evaluated by accuracy at top 1 (P@1) and top 10 (P@10) predictions, and Mean Reciprocal Rank (MRR) as in Qin and Eisner (2021). Appendix A includes more setup details and discussion on choice of $\\lambda$ .",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.803::appendix::A",
+      "paper_id": "2022.emnlp-main.803",
+      "section_number": "A",
+      "section_title": "additional implementation details",
+      "normalized_section_title": "additional implementation details",
+      "window_text": "Prompt Generation Model: The prompt generation model is based on work by Liu et al. (2021). It consists of a two-layer BiLSTM and a two-layer MLP on top of it. The MLP uses ReLU (Glorot et al., 2011) as the activation function. The hidden size of LSTM and dimension of $d$ are 768 for BERT-base-cased and RoBERTa-base, and 1024 for BERT-large-cased. The max training epoch is 100, and training stops when development performance does not increase for 20 epochs. The optimizer is Adam with learning rate being 1e-5. Other setting also follows Liu et al. (2021). The number of parameters is determined by the PLMs: BERT-base-cased (110M), BERT-large-cased (340M) and RoBERTa-base (125M); and the prompt generation model (14M). The experiments require 20 hours to finish on a single Tesla V100 GPU.\n\nAlso, during our experiments, we experiment with having separate prompt generation models for generating $\\mathcal{P}_{orig}$ and $\\mathcal{P}_{sym}$ . However, we find that training one prompt generation model for both $\\mathcal{P}_{orig}$ and $\\mathcal{P}_{sym}$ led to better results.\n\nChoice of $\\lambda$ : In our preliminary experiments on the development set, we find $\\lambda = 0.8$ to be the best choice among $[0,1]$ . However, we observe that the performance is not very sensitive to $\\lambda$ and $\\lambda > 0.4$ generally gives a reasonable performance.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.emnlp-main.803::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Prompt Generation Model: The prompt generation model is based on work by Liu et al. (2021). It consists of a two-layer BiLSTM and a two-layer MLP on top of it. The MLP uses ReLU (Glorot et al., 2011) as the activation function. The hidden size of LSTM and dimension of $d$ are 768 for BERT-base-cased and RoBERTa-base, and 1024 for BERT-large-cased. The max training epoch is 100, and training stops when development performance does not increase for 20 epochs. The optimizer is Adam with learning rate being 1e-5. Other setting also follows Liu et al. (2021). The number of parameters is determined by the PLMs: BERT-base-cased (110M), BERT-large-cased (340M) and RoBERTa-base (125M); and the prompt generation model (14M). The experiments require 20 hours to finish on a single Tesla V100 GPU.\n\nAlso, during our experiments, we experiment with having separate prompt generation models for generating $\\mathcal{P}_{orig}$ and $\\mathcal{P}_{sym}$ . However, we find that training one prompt generation model for both $\\mathcal{P}_{orig}$ and $\\mathcal{P}_{sym}$ led to better results.\n\nChoice of $\\lambda$ : In our preliminary experiments on the development set, we find $\\lambda = 0.8$ to be the best choice among $[0,1]$ . However, we observe that the performance is not very sensitive to $\\lambda$ and $\\lambda > 0.4$ generally gives a reasonable performance.",
+      "section_number": "A",
+      "section_title": "additional implementation details",
+      "normalized_section_title": "additional implementation details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.emnlp-main.803::appendix::A",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100",
+      "cleaned_hardware_name": "tesla v100",
+      "normalized_hardware_name": "Tesla V100",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A",
+      "section_title": "additional implementation details",
+      "normalized_section_title": "additional implementation details",
+      "evidence": "Prompt Generation Model: The prompt generation model is based on work by Liu et al. (2021). It consists of a two-layer BiLSTM and a two-layer MLP on top of it. The MLP uses ReLU (Glorot et al., 2011) as the activation function. The hidden size of LSTM and dimension of $d$ are 768 for BERT-base-cased and RoBERTa-base, and 1024 for BERT-large-cased. The max training epoch is 100, and training stops when development performance does not increase for 20 epochs. The optimizer is Adam with learning rate being 1e-5. Other setting also follows Liu et al. (2021). The number of parameters is determined by the PLMs: BERT-base-cased (110M), BERT-large-cased (340M) and RoBERTa-base (125M); and the prompt generation model (14M). The experiments require 20 hours to finish on a single Tesla V100 GPU.\n\nAlso, during our experiments, we experiment with having separate prompt generation models for generating $\\mathcal{P}_{orig}$ and $\\mathcal{P}_{sym}$ . However, we find that training one prompt generation model for both $\\mathcal{P}_{orig}$ and $\\mathcal{P}_{sym}$ led to better results.\n\nChoice of $\\lambda$ : In our preliminary experiments on the development set, we find $\\lambda = 0.8$ to be the best choice among $[0,1]$ . However, we observe that the performance is not very sensitive to $\\lambda$ and $\\lambda > 0.4$ generally gives a reasonable performance.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A"
+    ],
+    "pred": [
+      {
+        "name": "Tesla V100",
+        "num": 1
+      }
+    ]
+  }
+}

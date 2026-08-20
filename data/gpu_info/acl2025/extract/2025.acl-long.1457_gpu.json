@@ -1,0 +1,204 @@
+{
+  "paper_id": "2025.acl-long.1457",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.1457::sections::3",
+      "paper_id": "2025.acl-long.1457",
+      "section_number": "3",
+      "section_title": "methods",
+      "normalized_section_title": "methods",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1457::sections::4",
+      "paper_id": "2025.acl-long.1457",
+      "section_number": "4",
+      "section_title": "experiment setup",
+      "normalized_section_title": "experiment setup",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1457::sections::4.5",
+      "paper_id": "2025.acl-long.1457",
+      "section_number": "4.5",
+      "section_title": "evaluation",
+      "normalized_section_title": "evaluation",
+      "window_text": "Our main evaluations are conducted on BEIR (Thakur et al., 2021) and MIRACL (Zhang et al., 2023), to assess the generalization of dense retrievers and multilingual retrieval capability. To further analyze the generalization of multilingual retrievers, we also evaluate on retrieval subsets of MTEB-FR (Ciancone et al., 2024), MTEB-ZH (Xiao et al., 2024) and MTEB-DE. To assess the effectiveness of long-context retrieval, which benefits from pruning an LLM, we evaluate on MLDR (Chen et al., 2024), a benchmark for long-context multilingual retrieval across 13 languages. We also include evaluations on synthetic long-context retrieval benchmarks, NeedleRetrieval and PasskeyRetrieval, from the LongEmbed study (Zhu et al., 2024). We use nDCG@10 as the metrics for all evaluations.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1457::sections::4.6",
+      "paper_id": "2025.acl-long.1457",
+      "section_number": "4.6",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "We select representative baselines with similar retrieval task training data settings, as described in Sec. 4.1. The major baselines include Contriever (Izacard et al., 2022), DRAGON (Lin et al., 2023), E5 (Wang et al., 2024a), BGE (Xiao et al., 2024), mE5 (Wang et al., 2024c), BGE-M3 (Chen et al., 2024), mGTE (Zhang et al., 2024), ArcticEmbV2 (Yu et al., 2024), Gecko (Lee et al., 2024), and MistralE5 (Wang et al., 2024b).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1457::sections::6.1",
+      "paper_id": "2025.acl-long.1457",
+      "section_number": "6.1",
+      "section_title": "effectiveness of data augmentation",
+      "normalized_section_title": "effectiveness of data augmentation",
+      "window_text": "Figure 2 illustrates the effectiveness of different data augmentation combinations. We observe that directly fine-tuning the model without data aug-\n\n![](images/028e1c965c248c05198c18261d863fae6190227fc13feb4990edcf0322a7bd88.jpg)  \nFigure 2: Effectiveness of different data augmentation combinations FT: SFT data, Sent: augmentation data based on cropped sentence query, QGen: augmentation data based on LLM generated query, Rerank: augmentation data based on LLM rerank. Triplet: augmentation data based on LLM triplet generation.). The model is trained based on 0.1B backbone, using only the English data augmentation and with 1 hard negative per query.\n\nmentation results in poor generalization performance. Incorporating any form of LLM-based data augmentation significantly improves BEIR performance, with one exception: directly prompting Llama3.3 $_{70}$ B-Instruct to generate synthetic triplets (queries, positive documents, and negative documents) does not yield meaningful improvements. This suggests that training a smaller retriever model benefits more from using real-world documents.\n\nMoreover, combining multiple types of data augmentation further enhances effectiveness beyond using any single augmentation method alone. The highest performance is achieved when all three types of data augmentation are combined. Notably, when all augmentation strategies are applied together, the importance of fine-tuning data is diminishing, showing the effectiveness of our data augmentation approach. The data point noted by [FT, Sent*, QGen*, Rerank] shows the performance of using $\\mathrm{LLM}_{\\mathrm{Ret}}$ without further improvement from LLM listwise rerank augmentation. Its lower effectiveness compared to the final combination underscores that incorporating LLM-based rerank augmentation enhances the performance of $\\mathrm{LLM}_{\\mathrm{Ret}}$ and further improving the effectiveness of the smaller retriever model.\n\nIn practice, the computational cost estimation of creating Sent, QGen and Rerank data augmentation is in the order of 0.1k, 1k and 10k GPU hours respectively, where cost is dominated by the expensive LLM ranking for full data augmentation. On the other hand, we show that having Sent and QGen achieves a reasonable performance compared to using all 3 augmentations (53.1 vs. 54.5 on BEIR as shown in Figure 2). As a result, the computational cost of synthetic data generation can be lowered\n\nTable 4: Effectiveness of using pruned Llama3.2 as smaller retriever backbone compares to pre-LLM-era or recent encoder-only backbone. The models are trained using only the English data augmentation and with 1 hard negative per query.   \n\n<table><tr><td>Backbone</td><td>Param.</td><td>BEIR</td></tr><tr><td>BERT</td><td>0.1B</td><td>53.50</td></tr><tr><td>ModernBERT</td><td>0.1B</td><td>54.22</td></tr><tr><td>Llama3.21B→0.1B</td><td>0.1B</td><td>54.47</td></tr><tr><td>XLM-RoBERTa-Large</td><td>0.3B</td><td>54.74</td></tr><tr><td>Llama3.21B→0.3B</td><td>0.3B</td><td>56.14</td></tr></table>\n\nTable 5: Impact of different attention and pooling mechanisms for the smaller retriever. The model is trained using only the English data augmentation and with 1 hard negative per query.   \n\n<table><tr><td>Model Size</td><td>Attention</td><td>Pooling</td><td>BEIR</td></tr><tr><td rowspan=\"4\">0.1B</td><td>Bi-direction</td><td>Mean</td><td>54.47</td></tr><tr><td>Bi-direction</td><td>EOS</td><td>54.37</td></tr><tr><td>Uni-direction</td><td>Mean</td><td>53.88</td></tr><tr><td>Uni-direction</td><td>EOS</td><td>53.58</td></tr><tr><td rowspan=\"4\">0.3B</td><td>Bi-direction</td><td>Mean</td><td>56.14</td></tr><tr><td>Bi-direction</td><td>EOS</td><td>55.85</td></tr><tr><td>Uni-direction</td><td>Mean</td><td>55.18</td></tr><tr><td>Uni-direction</td><td>EOS</td><td>54.79</td></tr></table>\n\nby an order of magnitude by omitting the LLM Ranking data, at the expense of losing around $2 - 3\\%$ of retrieval effectiveness.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1457::appendix::A",
+      "paper_id": "2025.acl-long.1457",
+      "section_number": "A",
+      "section_title": "appendix",
+      "normalized_section_title": "appendix",
+      "window_text": "![](images/8fdd8539c519b6306b014433fd88ebf6d2adf06930c70c97ec73a6366f8d4e52.jpg)  \nFigure 3: Effectiveness of different mixture ratios of English and multi-lingual data augmentation ratio for the data source of Web, mWeb and mWiki. The model is trained based on 0.1B backbone with 1 hard negative per query.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1457::appendix::A.4",
+      "paper_id": "2025.acl-long.1457",
+      "section_number": "A.4",
+      "section_title": "detailed training setup",
+      "normalized_section_title": "detailed training setup",
+      "window_text": "Model License: Our LLM retriever is trained based on Llama3.1-8B follows Llama 3.1 Community License Agreement. Data augmentation based on Inst-LLM is based on Llama3.3-70B-Instruct follows Llama 3.3 Community License Agreement. Our backbone model is pruned based on Llama3.2-1B, following Llama 3.2 Community License Agreement.\n\nLanguages: For pruning and data augmentation, our web crawl text corpora cover the following 20\n\nlanguages: English, Arabic, Bengali, Spanish, Persian, Finnish, French, Hindi, Indonesian, Japanese, Korean, Russian, Swahili, Telugu, Thai, Chinese, German, Yoruba, Italian, Portuguese.\n\nTraining: The models are trained using the dpr-scale codebase on 32 A100 GPUs over approximately two days. The training configurations for different model sizes are as follows:\n\n$\\mathbf{DRAMA}_{0.1B}$ : Batch size of 2048, with each query paired with seven hard negatives. $\\mathbf{DRAMA}_{0.3B}$ : Batch size of 1024, with each query paired with seven hard negatives. $\\mathbf{DRAMA}_{1B}$ : Batch size of 256, with each query paired with three hard negatives. All three variants are trained for 200,000 steps.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.1457::appendix::A.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "count": 32,
+      "count_text": "32",
+      "evidence": "Model License: Our LLM retriever is trained based on Llama3.1-8B follows Llama 3.1 Community License Agreement. Data augmentation based on Inst-LLM is based on Llama3.3-70B-Instruct follows Llama 3.3 Community License Agreement. Our backbone model is pruned based on Llama3.2-1B, following Llama 3.2 Community License Agreement.\n\nLanguages: For pruning and data augmentation, our web crawl text corpora cover the following 20\n\nlanguages: English, Arabic, Bengali, Spanish, Persian, Finnish, French, Hindi, Indonesian, Japanese, Korean, Russian, Swahili, Telugu, Thai, Chinese, German, Yoruba, Italian, Portuguese.\n\nTraining: The models are trained using the dpr-scale codebase on 32 A100 GPUs over approximately two days. The training configurations for different model sizes are as follows:\n\n$\\mathbf{DRAMA}_{0.1B}$ : Batch size of 2048, with each query paired with seven hard negatives. $\\mathbf{DRAMA}_{0.3B}$ : Batch size of 1024, with each query paired with seven hard negatives. $\\mathbf{DRAMA}_{1B}$ : Batch size of 256, with each query paired with three hard negatives. All three variants are trained for 200,000 steps.",
+      "section_number": "A.4",
+      "section_title": "detailed training setup",
+      "normalized_section_title": "detailed training setup"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.1457::appendix::A.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100",
+      "cleaned_hardware_name": "a100",
+      "normalized_hardware_name": "NVIDIA A100 40GB",
+      "benchmark_hardware_name": "NVIDIA A100 40GB",
+      "count": 32,
+      "count_text": "32",
+      "section_number": "A.4",
+      "section_title": "detailed training setup",
+      "normalized_section_title": "detailed training setup",
+      "evidence": "Model License: Our LLM retriever is trained based on Llama3.1-8B follows Llama 3.1 Community License Agreement. Data augmentation based on Inst-LLM is based on Llama3.3-70B-Instruct follows Llama 3.3 Community License Agreement. Our backbone model is pruned based on Llama3.2-1B, following Llama 3.2 Community License Agreement.\n\nLanguages: For pruning and data augmentation, our web crawl text corpora cover the following 20\n\nlanguages: English, Arabic, Bengali, Spanish, Persian, Finnish, French, Hindi, Indonesian, Japanese, Korean, Russian, Swahili, Telugu, Thai, Chinese, German, Yoruba, Italian, Portuguese.\n\nTraining: The models are trained using the dpr-scale codebase on 32 A100 GPUs over approximately two days. The training configurations for different model sizes are as follows:\n\n$\\mathbf{DRAMA}_{0.1B}$ : Batch size of 2048, with each query paired with seven hard negatives. $\\mathbf{DRAMA}_{0.3B}$ : Batch size of 1024, with each query paired with seven hard negatives. $\\mathbf{DRAMA}_{1B}$ : Batch size of 256, with each query paired with three hard negatives. All three variants are trained for 200,000 steps.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.1457::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methods",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.1457::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiment setup",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.1457::sections::4.5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.5",
+      "section_title": "evaluation",
+      "evidence": "Our main evaluations are conducted on BEIR (Thakur et al., 2021) and MIRACL (Zhang et al., 2023), to assess the generalization of dense retrievers and multilingual retrieval capability. To further analyze the generalization of multilingual retrievers, we also evaluate on retrieval subsets of MTEB-FR (Ciancone et al., 2024), MTEB-ZH (Xiao et al., 2024) and MTEB-DE. To assess the effectiveness of long-context retrieval, which benefits from pruning an LLM, we evaluate on MLDR (Chen et al., 2024), a benchmark for long-context multilingual retrieval across 13 languages. We also include evaluations on synthetic long-context retrieval benchmarks, NeedleRetrieval and PasskeyRetrieval, from the LongEmbed study (Zhu et al., 2024). We use nDCG@10 as the metrics for all evaluations."
+    },
+    {
+      "source_window_id": "2025.acl-long.1457::sections::4.6",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.6",
+      "section_title": "baselines",
+      "evidence": "We select representative baselines with similar retrieval task training data settings, as described in Sec. 4.1. The major baselines include Contriever (Izacard et al., 2022), DRAGON (Lin et al., 2023), E5 (Wang et al., 2024a), BGE (Xiao et al., 2024), mE5 (Wang et al., 2024c), BGE-M3 (Chen et al., 2024), mGTE (Zhang et al., 2024), ArcticEmbV2 (Yu et al., 2024), Gecko (Lee et al., 2024), and MistralE5 (Wang et al., 2024b)."
+    },
+    {
+      "source_window_id": "2025.acl-long.1457::sections::6.1",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6.1",
+      "section_title": "effectiveness of data augmentation",
+      "evidence": "Figure 2 illustrates the effectiveness of different data augmentation combinations. We observe that directly fine-tuning the model without data aug-\n\n![](images/028e1c965c248c05198c18261d863fae6190227fc13feb4990edcf0322a7bd88.jpg)  \nFigure 2: Effectiveness of different data augmentation combinations FT: SFT data, Sent: augmentation data based on cropped sentence query, QGen: augmentation data based on LLM generated query, Rerank: augmentation data based on LLM rerank. Triplet: augmentation data based on LLM triplet generation.). The model is trained based on 0.1B backbone, using only the English data augmentation and with 1 hard negative per query.\n\nmentation results in poor generalization performance. Incorporating any form of LLM-based data augmentation significantly improves BEIR performance, with one exception: directly prompting Llama3.3 $_{70}$ B-Instruct to generate synthetic triplets (queries, positive documents, and negative documents) does not yield meaningful improvements. This suggests that training a smaller retriever model benefits more from using real-world documents.\n\nMoreover, combining multiple types of data augmentation further enhances effectiveness beyond using any single augmentation method alone. The highest performance is achieved when all three types of data augmentation are combined. Notably, when all augmentation strategies are applied together, the importance of fine-tuning data is diminishing, showing the effectiveness of our data augmentation approach. The data point noted by [FT, Sent*, QGen*, Rerank] shows the performance of using $\\mathrm{LLM}_{\\mathrm{Ret}}$ without further improvement from LLM listwise rerank augmentation. Its lower effectiveness compared to the final combination underscores that incorporating LLM-based rerank augmentation enhances the performance of $\\mathrm{LLM}_{\\mathrm{Ret}}$ and further improving the effectiveness of the smaller retriever model.\n\nIn practice, the computational cost estimation of creating Sent, QGen and Rerank data augmentation is in the order of 0.1k, 1k and 10k GPU hours respectively, where cost is dominated by the expensive LLM ranking for full data augmentation. On the other hand, we show that having Sent and QGen achieves a reasonable performance compared to using all 3 augmentations (53.1 vs. 54.5 on BEIR as shown in Figure 2). As a result, the computational cost of synthetic data generation can be lowered\n\nTable 4: Effectiveness of using pruned Llama3.2 as smaller retriever backbone compares to pre-LLM-era or recent encoder-only backbone. The models are trained using only the English data augmentation and with 1 hard negative per query.   \n\n<table><tr><td>Backbone</td><td>Param.</td><td>BEIR</td></tr><tr><td>BERT</td><td>0.1B</td><td>53.50</td></tr><tr><td>ModernBERT</td><td>0.1B</td><td>54.22</td></tr><tr><td>Llama3.21B→0.1B</td><td>0.1B</td><td>54.47</td></tr><tr><td>XLM-RoBERTa-Large</td><td>0.3B</td><td>54.74</td></tr><tr><td>Llama3.21B→0.3B</td><td>0.3B</td><td>56.14</td></tr></table>\n\nTable 5: Impact of different attention and pooling mechanisms for the smaller retriever. The model is trained using only the English data augmentation and with 1 hard negative per query.   \n\n<table><tr><td>Model Size</td><td>Attention</td><td>Pooling</td><td>BEIR</td></tr><tr><td rowspan=\"4\">0.1B</td><td>Bi-direction</td><td>Mean</td><td>54.47</td></tr><tr><td>Bi-direction</td><td>EOS</td><td>54.37</td></tr><tr><td>Uni-direction</td><td>Mean</td><td>53.88</td></tr><tr><td>Uni-direction</td><td>EOS</td><td>53.58</td></tr><tr><td rowspan=\"4\">0.3B</td><td>Bi-direction</td><td>Mean</td><td>56.14</td></tr><tr><td>Bi-direction</td><td>EOS</td><td>55.85</td></tr><tr><td>Uni-direction</td><td>Mean</td><td>55.18</td></tr><tr><td>Uni-direction</td><td>EOS</td><td>54.79</td></tr></table>\n\nby an order of magnitude by omitting the LLM Ranking data, at the expense of losing around $2 - 3\\%$ of retrieval effectiveness."
+    },
+    {
+      "source_window_id": "2025.acl-long.1457::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "appendix",
+      "evidence": "![](images/8fdd8539c519b6306b014433fd88ebf6d2adf06930c70c97ec73a6366f8d4e52.jpg)  \nFigure 3: Effectiveness of different mixture ratios of English and multi-lingual data augmentation ratio for the data source of Web, mWeb and mWiki. The model is trained based on 0.1B backbone with 1 hard negative per query."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.4"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 40GB",
+        "num": 32
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.1457\\auto\\full.md",
+    "source_md_sha256": "88b5b559e57f2ad8253a84585b4f63a0249c8b5a4f2e6044d52504d665455f45",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

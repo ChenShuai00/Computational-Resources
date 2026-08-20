@@ -1,0 +1,357 @@
+{
+  "paper_id": "2020.acl-main.648",
+  "candidate_windows": [
+    {
+      "window_id": "2020.acl-main.648::sections::4.2",
+      "paper_id": "2020.acl-main.648",
+      "section_number": "4.2",
+      "section_title": "performance of various classifiers",
+      "normalized_section_title": "performance of various classifiers",
+      "window_text": "For classification baselines, we use character-based SVM (Support Vector Machines, Joachims (1998)), CNN (Convolutional Nets, Zhang et al. (2015)) and Chinese BERT (Devlin et al., 2019). We also employ a state-of-the-art text classifier, MultiFiT (Eisenschlos et al., 2019), a lightweight RNN-based language model based classifier, which has shown to achieve a performance competitive with BERT (Devlin et al., 2019) and ULMFiT (Howard and Ruder, 2018). The base architecture of MultiFiT is a 4-layer QRNN (Bradbury et al., 2016) with classifier head. We choose rectified Adam (Liu et al., 2019) with Lookahead (Zhang et al., 2019) as the optimizer. We employ the cosine cyclic learning scheduler (Smith, 2015), where the limits of learning rate cycles are found by increasing the learning rate logarithmically and computing the evaluation loss for each learning rate (Smith, 2018). To compute the batch size, we apply gradient noise scale to each batch size candidate and pick the one which gives the highest gradient noise scale (McCandlish et al., 2018). We apply label smoothing (Szegedy et al., 2015) and use mixed precision training on RTX 2080. We implement our experiments using Pytorch (Paszke et al., 2019) and FastAI (Howard and Gugger, 2020).\n\nMultiFiT uses concat pooling after the last layer of QRNN, which means that the last time step is concatenated with an average and maximum\n\n![](images/0609885ce21c65a8be389c0f74e23f1fcf7f9833477794606436b2bf70128ccc.jpg)  \nFigure 3: Proposed architecture for topic classification where we tweak MultiFiT to concatenate concat-pools from all layers. (Alt text: §F.3).\n\nTable 6: Performance of various architectures on topic classification in terms of accuracy. The results are reported as a mean result across 10 different seeds and data splits. **Bold:** best, **underlined:** second best.   \n\n<table><tr><td></td><td>Formal</td><td>Informal</td></tr><tr><td>Char-SVM</td><td>73.2</td><td>63.7</td></tr><tr><td>Char-CNN</td><td>78.5</td><td>64.9</td></tr><tr><td>Chinese BERT (base)</td><td>84.5</td><td>66.3</td></tr><tr><td>MultiFiT with no pooling</td><td>87.5</td><td>68.5</td></tr><tr><td>MultiFiT with concat pooling</td><td>88.6</td><td>69.9</td></tr><tr><td>MultiFiT with layer pooling</td><td>89.0</td><td>70.3</td></tr></table>\n\npooled over previous time steps. Studies show that in LM based classifiers, different layers capture different types of knowledge—the last layer would be domain-specific and initial layers would be more generalized (Yosinski et al., 2014; Peters et al., 2019). We speculate that concat pooling only on the last layer limits the information available to the classifier head and we hypothesise that the classifier would perform better if domain-specific as well as generalized knowledge were available to the head. For this reason, we augment the original MultiFIT architecture with layer pooling, which is concat pooling from all the layers, and pass that to the dense layer in the classifier, as shown in Fig 3.\n\nWe fine-tune the BERT language model and pretrain the MultiFiT language model on Chinese Wikipedia subsets (§4.1.1). All classifiers are then trained on the given training set (character based models) and evaluated on the test set in terms of accuracy as number of items in each class are roughly equal. This experiment (and subsequent experiments in this section) is repeated across ten different seeds (Reimers and Gurevych, 2018) and data splits (Gorman and Bedrick, 2019) and the results are shown in Table 6. Layer pooling shows an absolute improvement of $0.4\\%$ improvement over concat pooling on formal and informal topic clas\n\nTable 7: Ablation test of MultiFiT on different script converters. The results are reported as a mean accuracy result across 10 different seeds and data splits. **Bold:** best, **underlined:** second best.   \n\n<table><tr><td>Pretraining data of MultiFiT</td><td>Formal</td><td>Informal</td></tr><tr><td>No Conversions</td><td>89.0</td><td>70.3</td></tr><tr><td>Including conversions with OpenCC</td><td>91.7</td><td>75.6</td></tr><tr><td>Including conversions with STCP</td><td>92.3</td><td>73.4</td></tr><tr><td>Including conversions with 2kenize</td><td>93.2</td><td>77.9</td></tr></table>\n\nTable 8: Ablation test of MultiFiT on tokenizers. The results are reported as a mean accuracy result across 10 different seeds and data splits. **Bold:** best, **underlined:** second best.   \n\n<table><tr><td>Corpus Tokenization</td><td>Formal</td><td>Informal</td></tr><tr><td>Char</td><td>93.2</td><td>77.9</td></tr><tr><td>Jieba</td><td>92.4</td><td>78.3</td></tr><tr><td>BPE</td><td>92.7</td><td>81.0</td></tr><tr><td>BPE-Drop</td><td>93.7</td><td>82.7</td></tr><tr><td>Unigram</td><td>94.8</td><td>82.2</td></tr><tr><td>1kenize</td><td>94.8</td><td>83.2</td></tr></table>\n\nsification, thus confirming our hypothesis.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.acl-main.648::sections::4.4",
+      "paper_id": "2020.acl-main.648",
+      "section_number": "4.4",
+      "section_title": "effect of tokenization on classification",
+      "normalized_section_title": "effect of tokenization on classification",
+      "window_text": "Studies show that tokenization affects classification accuracy; open-vocabulary methods generally perform best (Eisenschlos et al., 2019; Hiraoka et al., 2019). For this experiment, we perform further ablations on our previous best classifier setup (MultiFiT with layer pooling on 2kenize) to understand the effect of various subword tokenizers. Pretraining generally takes a long time (1-2 GPU days), hence we pretrain the classifier once for each tokenized corpus and do not perform sub\n\n![](images/4af4c79c358b8d78558ac21cd7f8c8485c0fc037380230d9c2941a4f46bc3b5e.jpg)  \nFigure 4: Log-log plots for different tokenizers. This is plotted frequency vs rank for the first 10000 tokens. Negative slopes calculated from least squares are in the legend (lower means less skewed). (Alt text: §F.4).\n\nword sampling for this experiment. For closed vocabulary methods, we use character and word segmentations (here with Jieba). Likewise, for open-vocabulary methods, we employ BPE, BPE-Drop and Unigram subword tokenizers.\n\nSubword tokenizers mostly rely on frequency and do not take likelihood (something similar to $n$ -gram language model) of tokenized sentence into consideration. Hence, we choose LM-based Viterbi segmentation (henceforth referred as lkenize), and here the LM would be the TC LSTM described in §2.2. We report results in Table 8. We find that for formal classification, lkenize and Uni-gram perform best. lkenize outperforms other subword tokenizers for the noisier informal dataset, giving an absolute improvement of $0.5\\%$ over the second best method, which is BPE-Drop.\n\nWe plot a log frequency of tokens vs log order rank, which is shown in Figure 4. This distribution is based on the LIHKG dataset, which is noisier than other domains. We observe that character and word distributions are steeper than language model based subword tokenizers. This indicates that subword tokenizers produce a less skewed token distribution. Subword tokenizers like BPE and Unigram are deterministic and rely on frequency for segmentation. Since Ikenize is contextual, being LM-based, we find that it produces the least skewed distribution (lowest Zipf's law coefficient (Zipf, 1949)), which also reduces variance, a reason why this simple segmentation method outperforms others for informal text classification.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2020.acl-main.648::appendix::D",
+      "paper_id": "2020.acl-main.648",
+      "section_number": "D",
+      "section_title": "description of intrinsic evaluation experiments",
+      "normalized_section_title": "description of intrinsic evaluation experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.acl-main.648::appendix::D.1",
+      "paper_id": "2020.acl-main.648",
+      "section_number": "D.1",
+      "section_title": "heuristic grid search of learning rate and batch size hyperparameters",
+      "normalized_section_title": "heuristic grid search of learning rate and batch size hyperparameters",
+      "window_text": "We employ the cosine cyclic learning scheduler (Smith, 2015), where the limits of learning rate cycles are found by increasing the learning rate logarithmically and computing the evaluation loss for each learning rate (Smith, 2018). To compute the batch size, we apply gradient noise scale to each batch size candidate and pick the one which gives the highest gradient noise scale (McCandlish et al., 2018).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.acl-main.648::appendix::D.2",
+      "paper_id": "2020.acl-main.648",
+      "section_number": "D.2",
+      "section_title": "training of sc and tc language model",
+      "normalized_section_title": "training of sc and tc language model",
+      "window_text": "The datasets are described in §3.2. The model architecture is 2-layer LSTM language model with tied weights. Embedding size is 512 and hidden size is 512. We perform a concat pooling in the last layer where we concatenate the last output of the word, mean pool and max pool of all representations. We adopt comparable subword perplexity as suggested by Cotterell et al. (2018); Mielke et al. (2019); Mielke (2019), where we use a common denominator, referring to the number of segments per word in order to compare. On average, we achieve a perplexity of 168.6 on the Chinese Treebank test set (Nianwen et al., 2016). Also refer to Chinese LM Benchmark: https://chinesenlp.xyz/#/docs/language_modeling. The training took 2 days on RTX 2080 with FP16 training, with a batch size of 256 and number of epochs of 250.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.acl-main.648::appendix::D.3",
+      "paper_id": "2020.acl-main.648",
+      "section_number": "D.3",
+      "section_title": "training of convolutional seq2seq",
+      "normalized_section_title": "training of convolutional seq2seq",
+      "window_text": "Training dataset is a heuristically converted Traditional Chinese Wikipedia with OpenCC. We use 20 layers in encoder and decoder with the embedding size of 512 implemented in Fairseq (Ott et al., 2019). Dropout is 0.1 and we use adaptive softmax to speed up the training. The training took 1 day on RTX 2080 with FP16 training, with a batch size of 128 and number of epochs of 250.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.acl-main.648::appendix::E",
+      "paper_id": "2020.acl-main.648",
+      "section_number": "E",
+      "section_title": "description of extrinsic evaluation experiments",
+      "normalized_section_title": "description of extrinsic evaluation experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.acl-main.648::appendix::E.1",
+      "paper_id": "2020.acl-main.648",
+      "section_number": "E.1",
+      "section_title": "character cnn training",
+      "normalized_section_title": "character cnn training",
+      "window_text": "The datasets are described in $\\S 4.1.2$ . The model architecture is 7-layer CNN with tied weights and residual blocks. Embedding size is 512 and hidden size is 512. We perform a concat pooling in\n\nthe last layer where we concatenate the last output of the word, mean pool and max pool of all representations. The training took 16 hours on RTX 2080 with FP16 training, with a batch size of 256 and number of epochs of 350.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.acl-main.648::appendix::E.2",
+      "paper_id": "2020.acl-main.648",
+      "section_number": "E.2",
+      "section_title": "chinese bert training",
+      "normalized_section_title": "chinese bert training",
+      "window_text": "The datasets are described in §4.1.2. We use Chinese BERT base (12-layer, 768-hidden, 12-heads, 110M parameters) using Transformers library (Wolf et al., 2019). We use sequence length of 384 and batch size of 12. Finetuning language model took 2 hours (learning rate of 3e-5) and finetuning classifier took 1 hour each on both datasets, including grid search on learning rates: 3e-4, 1e-4, 5e-5, 3e-5, where 3e-5 gives the best results (on RTX 2080 with FP16 training).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.acl-main.648::appendix::E.3",
+      "paper_id": "2020.acl-main.648",
+      "section_number": "E.3",
+      "section_title": "multifit training",
+      "normalized_section_title": "multifit training",
+      "window_text": "We found MultiFiT is highly reproducible as compared to other models as it gives the least variance across the seeds and data splits. Hyperparameters are chosen by heuristic grid search on learning rate and batch size. The datasets are described in §4.1.2. Pretraining language model takes 1 GPU day for each experiment of MultiFiT. Finetuning language model takes 3 hours where we used a patience of 2 epochs. Finetuning classifiers takes 3 hours where we used a patience of 2 epochs. All experiments of MultiFiT are implemented using FastAI (Howard and Gugger, 2020).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2020.acl-main.648::sections::4.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 2080",
+      "count": null,
+      "count_text": "",
+      "evidence": "For classification baselines, we use character-based SVM (Support Vector Machines, Joachims (1998)), CNN (Convolutional Nets, Zhang et al. (2015)) and Chinese BERT (Devlin et al., 2019). We also employ a state-of-the-art text classifier, MultiFiT (Eisenschlos et al., 2019), a lightweight RNN-based language model based classifier, which has shown to achieve a performance competitive with BERT (Devlin et al., 2019) and ULMFiT (Howard and Ruder, 2018). The base architecture of MultiFiT is a 4-layer QRNN (Bradbury et al., 2016) with classifier head. We choose rectified Adam (Liu et al., 2019) with Lookahead (Zhang et al., 2019) as the optimizer. We employ the cosine cyclic learning scheduler (Smith, 2015), where the limits of learning rate cycles are found by increasing the learning rate logarithmically and computing the evaluation loss for each learning rate (Smith, 2018). To compute the batch size, we apply gradient noise scale to each batch size candidate and pick the one which gives the highest gradient noise scale (McCandlish et al., 2018). We apply label smoothing (Szegedy et al., 2015) and use mixed precision training on RTX 2080. We implement our experiments using Pytorch (Paszke et al., 2019) and FastAI (Howard and Gugger, 2020).\n\nMultiFiT uses concat pooling after the last layer of QRNN, which means that the last time step is concatenated with an average and maximum\n\n![](images/0609885ce21c65a8be389c0f74e23f1fcf7f9833477794606436b2bf70128ccc.jpg)  \nFigure 3: Proposed architecture for topic classification where we tweak MultiFiT to concatenate concat-pools from all layers. (Alt text: §F.3).\n\nTable 6: Performance of various architectures on topic classification in terms of accuracy. The results are reported as a mean result across 10 different seeds and data splits. **Bold:** best, **underlined:** second best.   \n\n<table><tr><td></td><td>Formal</td><td>Informal</td></tr><tr><td>Char-SVM</td><td>73.2</td><td>63.7</td></tr><tr><td>Char-CNN</td><td>78.5</td><td>64.9</td></tr><tr><td>Chinese BERT (base)</td><td>84.5</td><td>66.3</td></tr><tr><td>MultiFiT with no pooling</td><td>87.5</td><td>68.5</td></tr><tr><td>MultiFiT with concat pooling</td><td>88.6</td><td>69.9</td></tr><tr><td>MultiFiT with layer pooling</td><td>89.0</td><td>70.3</td></tr></table>\n\npooled over previous time steps. Studies show that in LM based classifiers, different layers capture different types of knowledge—the last layer would be domain-specific and initial layers would be more generalized (Yosinski et al., 2014; Peters et al., 2019). We speculate that concat pooling only on the last layer limits the information available to the classifier head and we hypothesise that the classifier would perform better if domain-specific as well as generalized knowledge were available to the head. For this reason, we augment the original MultiFIT architecture with layer pooling, which is concat pooling from all the layers, and pass that to the dense layer in the classifier, as shown in Fig 3.\n\nWe fine-tune the BERT language model and pretrain the MultiFiT language model on Chinese Wikipedia subsets (§4.1.1). All classifiers are then trained on the given training set (character based models) and evaluated on the test set in terms of accuracy as number of items in each class are roughly equal. This experiment (and subsequent experiments in this section) is repeated across ten different seeds (Reimers and Gurevych, 2018) and data splits (Gorman and Bedrick, 2019) and the results are shown in Table 6. Layer pooling shows an absolute improvement of $0.4\\%$ improvement over concat pooling on formal and informal topic clas\n\nTable 7: Ablation test of MultiFiT on different script converters. The results are reported as a mean accuracy result across 10 different seeds and data splits. **Bold:** best, **underlined:** second best.   \n\n<table><tr><td>Pretraining data of MultiFiT</td><td>Formal</td><td>Informal</td></tr><tr><td>No Conversions</td><td>89.0</td><td>70.3</td></tr><tr><td>Including conversions with OpenCC</td><td>91.7</td><td>75.6</td></tr><tr><td>Including conversions with STCP</td><td>92.3</td><td>73.4</td></tr><tr><td>Including conversions with 2kenize</td><td>93.2</td><td>77.9</td></tr></table>\n\nTable 8: Ablation test of MultiFiT on tokenizers. The results are reported as a mean accuracy result across 10 different seeds and data splits. **Bold:** best, **underlined:** second best.   \n\n<table><tr><td>Corpus Tokenization</td><td>Formal</td><td>Informal</td></tr><tr><td>Char</td><td>93.2</td><td>77.9</td></tr><tr><td>Jieba</td><td>92.4</td><td>78.3</td></tr><tr><td>BPE</td><td>92.7</td><td>81.0</td></tr><tr><td>BPE-Drop</td><td>93.7</td><td>82.7</td></tr><tr><td>Unigram</td><td>94.8</td><td>82.2</td></tr><tr><td>1kenize</td><td>94.8</td><td>83.2</td></tr></table>\n\nsification, thus confirming our hypothesis.",
+      "section_number": "4.2",
+      "section_title": "performance of various classifiers",
+      "normalized_section_title": "performance of various classifiers"
+    },
+    {
+      "window_id": "2020.acl-main.648::appendix::D.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 2080",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "The datasets are described in §3.2. The model architecture is 2-layer LSTM language model with tied weights. Embedding size is 512 and hidden size is 512. We perform a concat pooling in the last layer where we concatenate the last output of the word, mean pool and max pool of all representations. We adopt comparable subword perplexity as suggested by Cotterell et al. (2018); Mielke et al. (2019); Mielke (2019), where we use a common denominator, referring to the number of segments per word in order to compare. On average, we achieve a perplexity of 168.6 on the Chinese Treebank test set (Nianwen et al., 2016). Also refer to Chinese LM Benchmark: https://chinesenlp.xyz/#/docs/language_modeling. The training took 2 days on RTX 2080 with FP16 training, with a batch size of 256 and number of epochs of 250.",
+      "section_number": "D.2",
+      "section_title": "training of sc and tc language model",
+      "normalized_section_title": "training of sc and tc language model"
+    },
+    {
+      "window_id": "2020.acl-main.648::appendix::D.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 2080",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Training dataset is a heuristically converted Traditional Chinese Wikipedia with OpenCC. We use 20 layers in encoder and decoder with the embedding size of 512 implemented in Fairseq (Ott et al., 2019). Dropout is 0.1 and we use adaptive softmax to speed up the training. The training took 1 day on RTX 2080 with FP16 training, with a batch size of 128 and number of epochs of 250.",
+      "section_number": "D.3",
+      "section_title": "training of convolutional seq2seq",
+      "normalized_section_title": "training of convolutional seq2seq"
+    },
+    {
+      "window_id": "2020.acl-main.648::appendix::E.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 2080",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "The datasets are described in $\\S 4.1.2$ . The model architecture is 7-layer CNN with tied weights and residual blocks. Embedding size is 512 and hidden size is 512. We perform a concat pooling in\n\nthe last layer where we concatenate the last output of the word, mean pool and max pool of all representations. The training took 16 hours on RTX 2080 with FP16 training, with a batch size of 256 and number of epochs of 350.",
+      "section_number": "E.1",
+      "section_title": "character cnn training",
+      "normalized_section_title": "character cnn training"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2020.acl-main.648::sections::4.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 2080",
+      "cleaned_hardware_name": "rtx 2080",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 2080",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 2080",
+      "count": null,
+      "count_text": "",
+      "section_number": "4.2",
+      "section_title": "performance of various classifiers",
+      "normalized_section_title": "performance of various classifiers",
+      "evidence": "For classification baselines, we use character-based SVM (Support Vector Machines, Joachims (1998)), CNN (Convolutional Nets, Zhang et al. (2015)) and Chinese BERT (Devlin et al., 2019). We also employ a state-of-the-art text classifier, MultiFiT (Eisenschlos et al., 2019), a lightweight RNN-based language model based classifier, which has shown to achieve a performance competitive with BERT (Devlin et al., 2019) and ULMFiT (Howard and Ruder, 2018). The base architecture of MultiFiT is a 4-layer QRNN (Bradbury et al., 2016) with classifier head. We choose rectified Adam (Liu et al., 2019) with Lookahead (Zhang et al., 2019) as the optimizer. We employ the cosine cyclic learning scheduler (Smith, 2015), where the limits of learning rate cycles are found by increasing the learning rate logarithmically and computing the evaluation loss for each learning rate (Smith, 2018). To compute the batch size, we apply gradient noise scale to each batch size candidate and pick the one which gives the highest gradient noise scale (McCandlish et al., 2018). We apply label smoothing (Szegedy et al., 2015) and use mixed precision training on RTX 2080. We implement our experiments using Pytorch (Paszke et al., 2019) and FastAI (Howard and Gugger, 2020).\n\nMultiFiT uses concat pooling after the last layer of QRNN, which means that the last time step is concatenated with an average and maximum\n\n![](images/0609885ce21c65a8be389c0f74e23f1fcf7f9833477794606436b2bf70128ccc.jpg)  \nFigure 3: Proposed architecture for topic classification where we tweak MultiFiT to concatenate concat-pools from all layers. (Alt text: §F.3).\n\nTable 6: Performance of various architectures on topic classification in terms of accuracy. The results are reported as a mean result across 10 different seeds and data splits. **Bold:** best, **underlined:** second best.   \n\n<table><tr><td></td><td>Formal</td><td>Informal</td></tr><tr><td>Char-SVM</td><td>73.2</td><td>63.7</td></tr><tr><td>Char-CNN</td><td>78.5</td><td>64.9</td></tr><tr><td>Chinese BERT (base)</td><td>84.5</td><td>66.3</td></tr><tr><td>MultiFiT with no pooling</td><td>87.5</td><td>68.5</td></tr><tr><td>MultiFiT with concat pooling</td><td>88.6</td><td>69.9</td></tr><tr><td>MultiFiT with layer pooling</td><td>89.0</td><td>70.3</td></tr></table>\n\npooled over previous time steps. Studies show that in LM based classifiers, different layers capture different types of knowledge—the last layer would be domain-specific and initial layers would be more generalized (Yosinski et al., 2014; Peters et al., 2019). We speculate that concat pooling only on the last layer limits the information available to the classifier head and we hypothesise that the classifier would perform better if domain-specific as well as generalized knowledge were available to the head. For this reason, we augment the original MultiFIT architecture with layer pooling, which is concat pooling from all the layers, and pass that to the dense layer in the classifier, as shown in Fig 3.\n\nWe fine-tune the BERT language model and pretrain the MultiFiT language model on Chinese Wikipedia subsets (§4.1.1). All classifiers are then trained on the given training set (character based models) and evaluated on the test set in terms of accuracy as number of items in each class are roughly equal. This experiment (and subsequent experiments in this section) is repeated across ten different seeds (Reimers and Gurevych, 2018) and data splits (Gorman and Bedrick, 2019) and the results are shown in Table 6. Layer pooling shows an absolute improvement of $0.4\\%$ improvement over concat pooling on formal and informal topic clas\n\nTable 7: Ablation test of MultiFiT on different script converters. The results are reported as a mean accuracy result across 10 different seeds and data splits. **Bold:** best, **underlined:** second best.   \n\n<table><tr><td>Pretraining data of MultiFiT</td><td>Formal</td><td>Informal</td></tr><tr><td>No Conversions</td><td>89.0</td><td>70.3</td></tr><tr><td>Including conversions with OpenCC</td><td>91.7</td><td>75.6</td></tr><tr><td>Including conversions with STCP</td><td>92.3</td><td>73.4</td></tr><tr><td>Including conversions with 2kenize</td><td>93.2</td><td>77.9</td></tr></table>\n\nTable 8: Ablation test of MultiFiT on tokenizers. The results are reported as a mean accuracy result across 10 different seeds and data splits. **Bold:** best, **underlined:** second best.   \n\n<table><tr><td>Corpus Tokenization</td><td>Formal</td><td>Informal</td></tr><tr><td>Char</td><td>93.2</td><td>77.9</td></tr><tr><td>Jieba</td><td>92.4</td><td>78.3</td></tr><tr><td>BPE</td><td>92.7</td><td>81.0</td></tr><tr><td>BPE-Drop</td><td>93.7</td><td>82.7</td></tr><tr><td>Unigram</td><td>94.8</td><td>82.2</td></tr><tr><td>1kenize</td><td>94.8</td><td>83.2</td></tr></table>\n\nsification, thus confirming our hypothesis.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized GeForce RTX shorthand rule",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2020.acl-main.648::appendix::D.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 2080",
+      "cleaned_hardware_name": "rtx 2080",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 2080",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 2080",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "D.2",
+      "section_title": "training of sc and tc language model",
+      "normalized_section_title": "training of sc and tc language model",
+      "evidence": "The datasets are described in §3.2. The model architecture is 2-layer LSTM language model with tied weights. Embedding size is 512 and hidden size is 512. We perform a concat pooling in the last layer where we concatenate the last output of the word, mean pool and max pool of all representations. We adopt comparable subword perplexity as suggested by Cotterell et al. (2018); Mielke et al. (2019); Mielke (2019), where we use a common denominator, referring to the number of segments per word in order to compare. On average, we achieve a perplexity of 168.6 on the Chinese Treebank test set (Nianwen et al., 2016). Also refer to Chinese LM Benchmark: https://chinesenlp.xyz/#/docs/language_modeling. The training took 2 days on RTX 2080 with FP16 training, with a batch size of 256 and number of epochs of 250.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized GeForce RTX shorthand rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2020.acl-main.648::appendix::D.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 2080",
+      "cleaned_hardware_name": "rtx 2080",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 2080",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 2080",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "D.3",
+      "section_title": "training of convolutional seq2seq",
+      "normalized_section_title": "training of convolutional seq2seq",
+      "evidence": "Training dataset is a heuristically converted Traditional Chinese Wikipedia with OpenCC. We use 20 layers in encoder and decoder with the embedding size of 512 implemented in Fairseq (Ott et al., 2019). Dropout is 0.1 and we use adaptive softmax to speed up the training. The training took 1 day on RTX 2080 with FP16 training, with a batch size of 128 and number of epochs of 250.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized GeForce RTX shorthand rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2020.acl-main.648::appendix::E.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 2080",
+      "cleaned_hardware_name": "rtx 2080",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 2080",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 2080",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "E.1",
+      "section_title": "character cnn training",
+      "normalized_section_title": "character cnn training",
+      "evidence": "The datasets are described in $\\S 4.1.2$ . The model architecture is 7-layer CNN with tied weights and residual blocks. Embedding size is 512 and hidden size is 512. We perform a concat pooling in\n\nthe last layer where we concatenate the last output of the word, mean pool and max pool of all representations. The training took 16 hours on RTX 2080 with FP16 training, with a batch size of 256 and number of epochs of 350.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized GeForce RTX shorthand rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2020.acl-main.648::sections::4.4",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.4",
+      "section_title": "effect of tokenization on classification",
+      "evidence": "Studies show that tokenization affects classification accuracy; open-vocabulary methods generally perform best (Eisenschlos et al., 2019; Hiraoka et al., 2019). For this experiment, we perform further ablations on our previous best classifier setup (MultiFiT with layer pooling on 2kenize) to understand the effect of various subword tokenizers. Pretraining generally takes a long time (1-2 GPU days), hence we pretrain the classifier once for each tokenized corpus and do not perform sub\n\n![](images/4af4c79c358b8d78558ac21cd7f8c8485c0fc037380230d9c2941a4f46bc3b5e.jpg)  \nFigure 4: Log-log plots for different tokenizers. This is plotted frequency vs rank for the first 10000 tokens. Negative slopes calculated from least squares are in the legend (lower means less skewed). (Alt text: §F.4).\n\nword sampling for this experiment. For closed vocabulary methods, we use character and word segmentations (here with Jieba). Likewise, for open-vocabulary methods, we employ BPE, BPE-Drop and Unigram subword tokenizers.\n\nSubword tokenizers mostly rely on frequency and do not take likelihood (something similar to $n$ -gram language model) of tokenized sentence into consideration. Hence, we choose LM-based Viterbi segmentation (henceforth referred as lkenize), and here the LM would be the TC LSTM described in §2.2. We report results in Table 8. We find that for formal classification, lkenize and Uni-gram perform best. lkenize outperforms other subword tokenizers for the noisier informal dataset, giving an absolute improvement of $0.5\\%$ over the second best method, which is BPE-Drop.\n\nWe plot a log frequency of tokens vs log order rank, which is shown in Figure 4. This distribution is based on the LIHKG dataset, which is noisier than other domains. We observe that character and word distributions are steeper than language model based subword tokenizers. This indicates that subword tokenizers produce a less skewed token distribution. Subword tokenizers like BPE and Unigram are deterministic and rely on frequency for segmentation. Since Ikenize is contextual, being LM-based, we find that it produces the least skewed distribution (lowest Zipf's law coefficient (Zipf, 1949)), which also reduces variance, a reason why this simple segmentation method outperforms others for informal text classification."
+    },
+    {
+      "source_window_id": "2020.acl-main.648::appendix::D",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D",
+      "section_title": "description of intrinsic evaluation experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2020.acl-main.648::appendix::D.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "D.1",
+      "section_title": "heuristic grid search of learning rate and batch size hyperparameters",
+      "evidence": "We employ the cosine cyclic learning scheduler (Smith, 2015), where the limits of learning rate cycles are found by increasing the learning rate logarithmically and computing the evaluation loss for each learning rate (Smith, 2018). To compute the batch size, we apply gradient noise scale to each batch size candidate and pick the one which gives the highest gradient noise scale (McCandlish et al., 2018)."
+    },
+    {
+      "source_window_id": "2020.acl-main.648::appendix::E",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "E",
+      "section_title": "description of extrinsic evaluation experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2020.acl-main.648::appendix::E.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "E.2",
+      "section_title": "chinese bert training",
+      "evidence": "The datasets are described in §4.1.2. We use Chinese BERT base (12-layer, 768-hidden, 12-heads, 110M parameters) using Transformers library (Wolf et al., 2019). We use sequence length of 384 and batch size of 12. Finetuning language model took 2 hours (learning rate of 3e-5) and finetuning classifier took 1 hour each on both datasets, including grid search on learning rates: 3e-4, 1e-4, 5e-5, 3e-5, where 3e-5 gives the best results (on RTX 2080 with FP16 training)."
+    },
+    {
+      "source_window_id": "2020.acl-main.648::appendix::E.3",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "E.3",
+      "section_title": "multifit training",
+      "evidence": "We found MultiFiT is highly reproducible as compared to other models as it gives the least variance across the seeds and data splits. Hyperparameters are chosen by heuristic grid search on learning rate and batch size. The datasets are described in §4.1.2. Pretraining language model takes 1 GPU day for each experiment of MultiFiT. Finetuning language model takes 3 hours where we used a patience of 2 epochs. Finetuning classifiers takes 3 hours where we used a patience of 2 epochs. All experiments of MultiFiT are implemented using FastAI (Howard and Gugger, 2020)."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.2",
+      "D.2",
+      "D.3",
+      "E.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce RTX 2080",
+        "num": null
+      },
+      {
+        "name": "NVIDIA GeForce RTX 2080",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA GeForce RTX 2080",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA GeForce RTX 2080",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2020\\2020.acl-main.648\\auto\\full.md",
+    "source_md_sha256": "6710e37d37e34a8d6de4814ea03749d7b59abdd49bad82c0f5c3908e685baf26",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "a2f4e0f2222ac944a84b28fba08cc5ab0184a6c6ccb3a5a4deb8a7eefc1e4438"
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "paper_id": "2022.emnlp-main.125",
+  "candidate_windows": [
+    {
+      "window_id": "2022.emnlp-main.125::appendix::C",
+      "paper_id": "2022.emnlp-main.125",
+      "section_number": "C",
+      "section_title": "experiment details",
+      "normalized_section_title": "experiment details",
+      "window_text": "Tables 9 lists the settings and parameters for each baseline. The settings used for FinQANet and TAGOP are based on (Chen et al., 2021) and (Zhu et al., 2021), respectively. For all experiments that involved CompAQT, $\\alpha$ and $\\lambda$ were both set to 0.1.\n\nAll experiments were conducted on a machine with 8 NVIDIA T4 GPUs with 16GBs of memory per GPU.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.125::appendix::D",
+      "paper_id": "2022.emnlp-main.125",
+      "section_number": "D",
+      "section_title": "experiments using retrieved facts",
+      "normalized_section_title": "experiments using retrieved facts",
+      "window_text": "Table 10 shows ablation results similar to Table 6 but for retrieved facts (instead of gold facts). Sim\n\n![](images/d7757a65e40cd422afca3c8123550988afd963ac97e61dd83f8acf7207eead20.jpg)  \nFigure 5: The architecture of the Pointer Verbalizer Network. The top half shows the operator predictor and the bottom half shows the operand predictor.\n\nTable 9: Settings used for FinQANet experiments.   \n\n<table><tr><td>Parameter</td><td>FinQANet</td><td>TAGOP</td><td>PVN</td></tr><tr><td>encoder</td><td colspan=\"3\">RoBERTa-large(Liu et al., 2019)</td></tr><tr><td>batch size</td><td>16</td><td>32</td><td>64</td></tr><tr><td>learning rate</td><td>2e-5</td><td>5e-5</td><td>2e-5</td></tr><tr><td>optimizer</td><td colspan=\"3\">Adam (Kingma and Ba, 2015) with β1=0.9 and β2=0.999</td></tr><tr><td>epochs</td><td>100</td><td>50</td><td>50</td></tr></table>\n\nTable 10: Ablation results on the FinQANet model, applied to the FinQA dataset with retrieved facts.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"4\">Program accuracy</td></tr><tr><td>1 step</td><td>2 steps</td><td>3+ steps</td><td>Overall</td></tr><tr><td>FinQANet</td><td>64.13</td><td>57.03</td><td>20.56</td><td>58.30</td></tr><tr><td>+self-attention</td><td>+3.01</td><td>+1.97</td><td>+1.95</td><td>+2.44</td></tr><tr><td>+alignment loss</td><td>+0.01</td><td>+4.66</td><td>+1.83</td><td>+2.00</td></tr><tr><td>+coverage term</td><td>+0.00</td><td>+2.02</td><td>+0.55</td><td>+0.31</td></tr><tr><td>+linear decay</td><td>+0.00</td><td>+0.10</td><td>+.48</td><td>+0.00</td></tr></table>\n\nilar trends hold when using retrieved facts, with CompAQT modifications having a larger impact on multi-step programs.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2022.emnlp-main.125::appendix::E",
+      "paper_id": "2022.emnlp-main.125",
+      "section_number": "E",
+      "section_title": "operation-aware pre-training",
+      "normalized_section_title": "operation-aware pre-training",
+      "window_text": "The FinQANet generator performs better on examples with simpler programs which contain 1 or 2 steps compared complex programs with 3 or more steps. We perform masked language modeling (MLM) finetuning on the FinQANet language encoder over FinQA and TAT-QA data to see how\n\nit can encourage the generator perform better on complicated programs. First, we take the dev sets of FinQA and TAT-QA, and split both dataset 80/20 for training and testing masked token prediction. The resulting train and test set sizes are 1136 and 284, respectively. Second, we finetune Roberta (Liu et al., 2019) using three masking methods.\n\n- op: mask one operator in every program   \n- const: mask one constant/operand in every program   \n- op+const: mask either an operator (50%) or a constant/operand (50%) in every program\n\nFor each example in our new dataset, we encode the natural language question, supporting facts, and program in a sequence. For each experiment, we finetune Roberta until it achieves $70 - 80\\%$ accuracy in guessing the masked tokens. Finally, we train the FinQANet program generator with our finetuned Roberta model. During inference we use the finetuned Roberta encoder in the FinQANet generator.\n\nTable 11 shows the experiment results. The baseline program out-performs most of the finetuned program generators except on the FinQA test set. In all experiments, masking the program operators (e.g., add, subtract, divide) leads to better performance compared to masking program operands or masking both operators and operands. A possible explanation may be that there are only 10 program\n\n<table><tr><td>Finetune</td><td>FQA-Valid</td><td>FQA-Test</td><td>TQA-Valid</td></tr><tr><td>baseline</td><td>62.29</td><td>61.90</td><td>71.32</td></tr><tr><td>op</td><td>61.61</td><td>62.34</td><td>70.35</td></tr><tr><td>const</td><td>60.02</td><td>58.24</td><td>71.32</td></tr><tr><td>op+const</td><td>58.55</td><td>57.9</td><td>68.60</td></tr></table>\n\nTable 11: Program accuracy of FinQANet program generator with baseline and finetuned Roberta encoders on the FinQA dev set. FQA-dev: results on the FinQA dev set at 25 epochs. FQA-test: results on the FinQA test set at 300 epochs. TQA-dev: results on the TAT-QA dev set at 50 epochs.\n\noperators compared to many possible operands. Furthermore, given the small size of our data used for finetuning, masking different types of tokens with a large range of values may confuse the finetuned model, and impair its ability to learn ties between text semantics and the desired output program. This intuition is reflected in figure 6 which shows the loss and accuracy curves of the op, const, and op+const experiments compared to the baseline program generator.\n\nWe conduct further analysis on the generated programs with respect to program complexity to better understand how finetuning the Roberta encoder affects the generated programs. As shown in figure 7, the baseline program generator performs better than most finetuned program generators in program accuracy in 1-step and 2-step programs. However, the finetuned program generators perform better than the baseline program generator in program accuracy on $\\geq 4$ -step programs on both the FinQA dev and test sets. A possible explanation is that while the baseline program generator is competitive in overall program accuracy, it is biased to performing well on shorter programs due to the distribution of program lengths in the FinQA dataset. Thus, finetuning the program generator can help the model generalize better to complex programs at a slight cost in performance on shorter programs (as indicated by performance of $\\geq 4$ -step programs).\n\n![](images/8ffbe7c78ade1f437b7174624eee6ac86568d3f9c4e5949721f9d0c288cd1f97.jpg)\n\n![](images/5a79af719490b267d3f8913f8d6967401e855e5603e6f3b2eba8b791843ff0a5.jpg)\n\n![](images/325dd4d72dfca49d901d57a5ea4cd17731ca331df3a70bf1e6553d7969b009e9.jpg)\n\n![](images/2316d484d784eaf9704682b385b2715aff58f02003f358e1f17a7ce77cdab1b9.jpg)\n\n![](images/d58fe3ed8398a73530341e7e72dcf31eb99530ea279f902e96d3518458925b34.jpg)\n\n![](images/0ea078d48d8f6a83db102a4a32cd531c70de393829e1f7c24f6cfbdb8c64d4ac.jpg)  \nFigure 6: Loss and accuracy curves of finetuned program generators on FinQA on the validation set\n\n![](images/d3be58c13df89edcc92a78c31788758352d33ea56749209a4dad10022ebd6aa3.jpg)\n\n![](images/a85fbb0aed4a413a41c8064d1140d03ed51340f452417fda6c9b3d32feba6e6e.jpg)\n\n![](images/f5ac761ecc4c180c47b8e59c1e252d84c80cd7bc896d5b8310b8cc724c57748b.jpg)\n\n![](images/fb5957accbf08cf415bd35aca32cda389c73b1bd95b10ac6c012992dcf496ccc.jpg)\n\n![](images/c0d2690c5874c2c695922d692d28b803696831d5848816c9981efd632b40c7e4.jpg)\n\n![](images/130aa952bcc45d7f5ab3288a5f104897f280e6d59b5ebd4001d15f463229e121.jpg)  \nFigure 7: Program accuracy, $\\%$ wrong operands, and $\\%$ wrong operations with respect to number of steps of finetuned program generators on the FinQA dev set (right column) and test (left column).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2022.emnlp-main.125::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA T4 16GB",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Tables 9 lists the settings and parameters for each baseline. The settings used for FinQANet and TAGOP are based on (Chen et al., 2021) and (Zhu et al., 2021), respectively. For all experiments that involved CompAQT, $\\alpha$ and $\\lambda$ were both set to 0.1.\n\nAll experiments were conducted on a machine with 8 NVIDIA T4 GPUs with 16GBs of memory per GPU.",
+      "section_number": "C",
+      "section_title": "experiment details",
+      "normalized_section_title": "experiment details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2022.emnlp-main.125::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA T4 16GB",
+      "cleaned_hardware_name": "nvidia t4 16gb",
+      "normalized_hardware_name": "NVIDIA T4 16GB",
+      "benchmark_hardware_name": null,
+      "count": 8,
+      "count_text": "8",
+      "section_number": "C",
+      "section_title": "experiment details",
+      "normalized_section_title": "experiment details",
+      "evidence": "Tables 9 lists the settings and parameters for each baseline. The settings used for FinQANet and TAGOP are based on (Chen et al., 2021) and (Zhu et al., 2021), respectively. For all experiments that involved CompAQT, $\\alpha$ and $\\lambda$ were both set to 0.1.\n\nAll experiments were conducted on a machine with 8 NVIDIA T4 GPUs with 16GBs of memory per GPU.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "C"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA T4 16GB",
+        "num": 8
+      }
+    ]
+  }
+}

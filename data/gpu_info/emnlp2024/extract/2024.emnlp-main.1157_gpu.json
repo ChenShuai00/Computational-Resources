@@ -1,0 +1,311 @@
+{
+  "paper_id": "2024.emnlp-main.1157",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.1157::sections::4",
+      "paper_id": "2024.emnlp-main.1157",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Dataset We represent each attribute's value with one-hot encoding. The number of attributes, $K$ , is set to 4, and the number of values, $|\\mathcal{X}|$ , is set to 10. We set aside $10\\%$ of all attribute-value combinations as test set and use the rest as train set.\n\nSpeaker architecture One-hot encoded object $x$ passes through a linear layer and initializes a single-layer GRU (Cho et al., 2014) of hidden size 500. It recurrently processes the input in total of $T = 5$ time steps. In each time step, the output is fed to a linear layer and then goes through Softmax activation to produce a vocabulary distribution of dimension $|\\mathcal{W}| = 10$ .\n\nListener architecture A listener $\\pi_{\\phi_i}$ is a single-layer GRU of hidden size 500. The listener sequentially processes the speaker's message $m$ , the last output of which is then passed to $K_{i}$ linear layers corresponding to the number of attributes the listener is interested in. They each go through Softmax activation and produce a distribution of size $|\\mathcal{X}|$ corresponding to the number of possible values an attribute can take.\n\nOptimization We maximize each of the listeners' and speaker's expected reward with the REINFORCE algorithm (Williams, 1992). The expected reward for listener $\\pi_{\\phi_i}$ is written as $J_{L_i}(\\phi_i) = \\mathbb{E}_{x\\sim p}\\mathbb{E}_{m\\sim \\pi_\\theta (\\cdot |x)}R_{L_i}(x)$ and that of the speaker is written as $J_{S}(\\theta) = \\mathbb{E}_{x\\sim p}\\mathbb{E}_{m\\sim \\pi_{\\theta}(\\cdot |x)}R_{S}(x)$ , where $p$ denotes the uniform distribution over $\\mathcal{X}^K$ . We also utilize entropy regularization for the speaker to facilitate exploration and cross-entropy loss from listeners for stable training. We apply early stopping if the train set accuracy reaches $99\\%$ . Full description of the setup is in Appendix B.\n\nReporting We report average scores over 10 random seeds unless stated otherwise. Throughout\n\nthe paper, we use error bars to indicate $95\\%$ confidence interval and $\\pm$ to denote standard deviation. Bold and underline indicate the best and second best results.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1157::appendix::B",
+      "paper_id": "2024.emnlp-main.1157",
+      "section_number": "B",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "window_text": "We utilize EGG framework (Kharitonov et al., 2021), which is available under MIT license. Speaker's symbol embedding size is 5 and listeners' symbol embedding size is 30. We use Adam optimizer (Kingma and Ba, 2015) with learning rate of 0.001. The batch size is set to 5120. We utilize REINFORCE with baseline (Sutton et al., 1999) where the baseline function is the average of the past rewards for the corresponding speaker or listener agent. We report compositionality metrics from the full dataset as they exhibit high correlation across splits, except for §6.5, where results on test set are reported as weak correlation is observed. We exclude a few runs that do not reach train accuracy of $99\\%$ in experiments not involving coordination pressure ( $\\S 6.1$ , $\\S 6.2$ , $\\S 7.1$ ). For experiments on coordination pressure with attribute-value datasets, training is performed for 5,000 epochs in $\\S 6.3$ and 30,000 epochs in $\\S 6.5$ . At inference time,\n\nmessages are constructed by selecting the symbol that has been assigned the highest probability by the speaker at each time step. Experiments on raw pixel datasets follow the same setup unless otherwise specified.\n\nCross-entropy loss The training objective contains cross-entropy loss from listener to stabilize training process. The cross-entropy loss for listener $\\pi_{\\phi_i}$ is written as $-\\frac{1}{K_i} \\sum_{k=1}^{K_i} \\log \\pi_{\\phi_i}(x_i^{(k)} \\mid m)$ , where $x_i^{(k)}$ refers to the $k$ -th attribute in the object of interest $x_i$ for the listener. For the speaker, listeners' average cross-entropy loss is added to the reward after taking its negative. For the listeners, each listener's own cross-entropy loss is added to the reward in a similar manner. In addition to that, we directly backpropagate the cross-entropy loss for each listener. Each cross-entropy loss term is multiplied by a scaling hyperparameter $\\lambda$ . This loss is coordination-agnostic in that it is not affected by the group members' success or failure. In experiments that do not involve coordination pressure ( $\\S 6.1$ , $\\S 6.2$ , $\\S 7.1$ ), the value is set to 1.0. For experiments that involve coordination ( $\\S 6.3$ , $\\S 6.5$ , $\\S 7.2$ ), a lower value of 0.01 is utilized to better observe the effects of coordination pressure, except for iterated learning experiments in $\\S 6.4$ , where the value is set to 0.03 to offset the narrow training window induced from the parameter resets.\n\nEntropy regularization We add entropy regularization term in the speaker's symbol distribution to promote exploration. The magnitude of the regularization is controlled by a scaling hyperparameter $\\gamma$ , which is multiplied to the entropy term. $\\gamma$ is set to induce successful language emergence on the train set of each dataset. For the experiments in §6.1, §6.2, the value is set to 0.5. In the experiments with 3dshapes dataset, the value is set to 1.0. In the experiments that involve coordination (§6.3, §6.5, §7.2), the value is set to 0.01. In experiments on iterated learning, the value is set to 0.02.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1157::appendix::C",
+      "paper_id": "2024.emnlp-main.1157",
+      "section_number": "C",
+      "section_title": "experimental details on 3dshapes",
+      "normalized_section_title": "experimental details on 3dshapes",
+      "window_text": "We set the vocabulary size $|\\mathcal{W}|$ to 6 and the length of messages $T$ to 6. The batch size is set to 5,120. We stop training when the train accuracy reaches $99\\%$ . We run each experiment with 20 random seeds and report the average. The dataset is available under Apache-2.0 license.\n\nDataset construction An image is characterized by 6 attributes: object's shape, object's color, ob\n\n![](images/5c0bd73ce3f1bc35743c6104eda1598b38a0c545b20b40b354328a4fe262ee22.jpg)  \nFigure 7: Illustration of listeners of different interests in one-to-many communication game. Each listener is interested in a different set of attributes and its predictions only pertain to the attributes of interest.\n\n![](images/78abccafae9adb8080c456769dcb725336e623170bb8417310233d1c024b3a69.jpg)  \nFigure 8: Illustration of coordination among listeners in one-to-many communication game. Listeners are split into groups and each listener is rewarded if and only if all of the listeners in the same group correctly predict the attributes.\n\n![](images/51bde62f10cdcf2fd8fb01855d9ede4407b0b5111731ec07c7637eb96fcf450a.jpg)  \nFigure 9: A sample of 3dshapes dataset.\n\nject's size, color of the wall, color of the floor, and viewing orientation. Figure 9 shows a sample of the 3dshapes dataset. The number of values these attributes can take range from 4 to 14. We take 4 values from each attribute $(|\\mathcal{X}| = 4)$ . For the attribute that correspond to the scale of the object, we choose values 0, 2, 4, 7 out of all the available values which range from 0 to 7. For the viewing orientation attribute, we choose values 0, 4, 9, 14 out of all the available values which range from 0 to 14. We construct each of the other attributes' 4 values by random sampling.\n\nAgent architecture The speaker processes the image with a two-layer convolutional neural network (CNN) (Schmidhuber, 2015) each of which is accompanied by a max pooling layer. The output then goes through a linear layer before being processed by the single-layer GRU as described in §4. This produces a message $m$ . CNNs have kernel size of 8, stride of 1, and filter size of 8. We utilize same padding. Max pooling layer has kernel size of 2 and stride of 2. The linear layer projects activations of dimension 2,048 to 500. A listener with the same architecture as in §4 processes the message $m$ and outputs its prediction for the values of the image's attributes.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1157::appendix::D",
+      "paper_id": "2024.emnlp-main.1157",
+      "section_number": "D",
+      "section_title": "experimental details on imagenet",
+      "normalized_section_title": "experimental details on imagenet",
+      "window_text": "The speaker processes the target image's representation of dimension 2,048 with a linear layer producing activations of dimension 500. They are then processed by the single-layer GRU as described in §4. This produces message $m$ containing descriptions of the target image.\n\nA listener $\\pi_{\\phi_i}$ processes each of the images' representations in its context $\\mathcal{C}_i$ with a linear layer then computes similarity scores of them with the message representation from the single-layer GRU described in $\\S 4$ . The message representation is computed from the last hidden state of the the single-layer GRU after it is passed through a lin\n\near layer. The resulting message representation has a dimension of 500. We use the dot product as the similarity score function. These scores are then passed to Softmax activation to produce a distribution over the context $\\mathcal{C}_i$ . We construct each listener's context by randomly sampling images without replacement.\n\nThe vocabulary size $|\\mathcal{W}|$ and message length $T$ are both set to 10. The batch size is set to 2,048. Training is performed for 2,000 epochs and evaluation is performed with the checkpoint that exhibits the highest accuracy on the validation set. We repeat each experiment with 10 different random seeds and report the average. Scramble resistance is calculated with respect to one randomly selected listener. We report compositionality metrics from the test set. The image representations of ImageNet dataset are available under Apache-2.0 license.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1157::appendix::G",
+      "paper_id": "2024.emnlp-main.1157",
+      "section_number": "G",
+      "section_title": "experiments on larger configurations",
+      "normalized_section_title": "experiments on larger configurations",
+      "window_text": "We test whether our findings hold on a larger number of attributes as well as vocabulary size. We double the number of attributes from 4 to 8 and the vocabulary size from 10 to 20. To keep the numbers in a manageable scale, the number of values an attribute can take is decreased from 10 to 5. This setup represents about a 39-fold increase in terms of the number of possible attribute-value combinations and a 32-fold increase in terms of the number of possible messages.\n\nWe conduct the same experiments as in §6.2 to see how listeners of different interests affect\n\nlanguage properties in this increased setup. We construct three kinds of listener formations. The single-interest formation contains eight listeners that are interested in each of the eight attributes $(K_{i} = 1)$ . The mixed-interest formation is the same as the single-interest formation but contains one additional listener that is interested in all of the eight attributes. The full-interest formation contains nine listeners that are interested in all of the eight attributes $(K_{i} = K)$ .\n\nFigure 11 presents the results. The induced languages' compositionality in terms of TopSim is higher when messages are more frequently read by listeners that are interested in smaller parts of the whole attributes. They also exhibit more symbol-wise structures rather than position-wise structures. Interestingly, the generalization ability of the mixed-interest formation is lower. We hypothesize this could be due to the larger ratio of single-interest listeners to the full-interest listener (8:1).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.1157::appendix::J",
+      "paper_id": "2024.emnlp-main.1157",
+      "section_number": "J",
+      "section_title": "reproducibility",
+      "normalized_section_title": "reproducibility",
+      "window_text": "For training, we utilized NVIDIA A100 80GB, NVIDIA RTX A6000 Ada, NVIDIA RTX A6000, NVIDIA RTX A4000, NVIDIA GeForce RTX 4090 and NVIDIA GeForce RTX 3090. The most demanding task in terms of compute required less than 24GB of VRAM and took about 2 or 3 hours to complete per random seed. The number of parameters of an agent is far less than 1M in all experiments.\n\nWe make our code publicly available at: https://github.com/hy18284/onetomany.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.1157::appendix::J",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "count": null,
+      "count_text": "",
+      "evidence": "For training, we utilized NVIDIA A100 80GB, NVIDIA RTX A6000 Ada, NVIDIA RTX A6000, NVIDIA RTX A4000, NVIDIA GeForce RTX 4090 and NVIDIA GeForce RTX 3090. The most demanding task in terms of compute required less than 24GB of VRAM and took about 2 or 3 hours to complete per random seed. The number of parameters of an agent is far less than 1M in all experiments.\n\nWe make our code publicly available at: https://github.com/hy18284/onetomany.",
+      "section_number": "J",
+      "section_title": "reproducibility",
+      "normalized_section_title": "reproducibility"
+    },
+    {
+      "window_id": "2024.emnlp-main.1157::appendix::J",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX A6000 Ada",
+      "count": null,
+      "count_text": "",
+      "evidence": "For training, we utilized NVIDIA A100 80GB, NVIDIA RTX A6000 Ada, NVIDIA RTX A6000, NVIDIA RTX A4000, NVIDIA GeForce RTX 4090 and NVIDIA GeForce RTX 3090. The most demanding task in terms of compute required less than 24GB of VRAM and took about 2 or 3 hours to complete per random seed. The number of parameters of an agent is far less than 1M in all experiments.\n\nWe make our code publicly available at: https://github.com/hy18284/onetomany.",
+      "section_number": "J",
+      "section_title": "reproducibility",
+      "normalized_section_title": "reproducibility"
+    },
+    {
+      "window_id": "2024.emnlp-main.1157::appendix::J",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX A6000",
+      "count": null,
+      "count_text": "",
+      "evidence": "For training, we utilized NVIDIA A100 80GB, NVIDIA RTX A6000 Ada, NVIDIA RTX A6000, NVIDIA RTX A4000, NVIDIA GeForce RTX 4090 and NVIDIA GeForce RTX 3090. The most demanding task in terms of compute required less than 24GB of VRAM and took about 2 or 3 hours to complete per random seed. The number of parameters of an agent is far less than 1M in all experiments.\n\nWe make our code publicly available at: https://github.com/hy18284/onetomany.",
+      "section_number": "J",
+      "section_title": "reproducibility",
+      "normalized_section_title": "reproducibility"
+    },
+    {
+      "window_id": "2024.emnlp-main.1157::appendix::J",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX A4000",
+      "count": null,
+      "count_text": "",
+      "evidence": "For training, we utilized NVIDIA A100 80GB, NVIDIA RTX A6000 Ada, NVIDIA RTX A6000, NVIDIA RTX A4000, NVIDIA GeForce RTX 4090 and NVIDIA GeForce RTX 3090. The most demanding task in terms of compute required less than 24GB of VRAM and took about 2 or 3 hours to complete per random seed. The number of parameters of an agent is far less than 1M in all experiments.\n\nWe make our code publicly available at: https://github.com/hy18284/onetomany.",
+      "section_number": "J",
+      "section_title": "reproducibility",
+      "normalized_section_title": "reproducibility"
+    },
+    {
+      "window_id": "2024.emnlp-main.1157::appendix::J",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA GeForce RTX 4090",
+      "count": null,
+      "count_text": "",
+      "evidence": "For training, we utilized NVIDIA A100 80GB, NVIDIA RTX A6000 Ada, NVIDIA RTX A6000, NVIDIA RTX A4000, NVIDIA GeForce RTX 4090 and NVIDIA GeForce RTX 3090. The most demanding task in terms of compute required less than 24GB of VRAM and took about 2 or 3 hours to complete per random seed. The number of parameters of an agent is far less than 1M in all experiments.\n\nWe make our code publicly available at: https://github.com/hy18284/onetomany.",
+      "section_number": "J",
+      "section_title": "reproducibility",
+      "normalized_section_title": "reproducibility"
+    },
+    {
+      "window_id": "2024.emnlp-main.1157::appendix::J",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA GeForce RTX 3090",
+      "count": null,
+      "count_text": "",
+      "evidence": "For training, we utilized NVIDIA A100 80GB, NVIDIA RTX A6000 Ada, NVIDIA RTX A6000, NVIDIA RTX A4000, NVIDIA GeForce RTX 4090 and NVIDIA GeForce RTX 3090. The most demanding task in terms of compute required less than 24GB of VRAM and took about 2 or 3 hours to complete per random seed. The number of parameters of an agent is far less than 1M in all experiments.\n\nWe make our code publicly available at: https://github.com/hy18284/onetomany.",
+      "section_number": "J",
+      "section_title": "reproducibility",
+      "normalized_section_title": "reproducibility"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.1157::appendix::J",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": null,
+      "count_text": "",
+      "section_number": "J",
+      "section_title": "reproducibility",
+      "normalized_section_title": "reproducibility",
+      "evidence": "For training, we utilized NVIDIA A100 80GB, NVIDIA RTX A6000 Ada, NVIDIA RTX A6000, NVIDIA RTX A4000, NVIDIA GeForce RTX 4090 and NVIDIA GeForce RTX 3090. The most demanding task in terms of compute required less than 24GB of VRAM and took about 2 or 3 hours to complete per random seed. The number of parameters of an agent is far less than 1M in all experiments.\n\nWe make our code publicly available at: https://github.com/hy18284/onetomany.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing"
+    },
+    {
+      "window_id": "2024.emnlp-main.1157::appendix::J",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX A6000 Ada",
+      "cleaned_hardware_name": "nvidia rtx a6000 ada",
+      "normalized_hardware_name": "NVIDIA RTX A6000 Ada",
+      "benchmark_hardware_name": null,
+      "count": null,
+      "count_text": "",
+      "section_number": "J",
+      "section_title": "reproducibility",
+      "normalized_section_title": "reproducibility",
+      "evidence": "For training, we utilized NVIDIA A100 80GB, NVIDIA RTX A6000 Ada, NVIDIA RTX A6000, NVIDIA RTX A4000, NVIDIA GeForce RTX 4090 and NVIDIA GeForce RTX 3090. The most demanding task in terms of compute required less than 24GB of VRAM and took about 2 or 3 hours to complete per random seed. The number of parameters of an agent is far less than 1M in all experiments.\n\nWe make our code publicly available at: https://github.com/hy18284/onetomany.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched"
+    },
+    {
+      "window_id": "2024.emnlp-main.1157::appendix::J",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX A6000",
+      "cleaned_hardware_name": "nvidia rtx a6000",
+      "normalized_hardware_name": "NVIDIA RTX A6000",
+      "benchmark_hardware_name": "NVIDIA RTX A6000",
+      "count": null,
+      "count_text": "",
+      "section_number": "J",
+      "section_title": "reproducibility",
+      "normalized_section_title": "reproducibility",
+      "evidence": "For training, we utilized NVIDIA A100 80GB, NVIDIA RTX A6000 Ada, NVIDIA RTX A6000, NVIDIA RTX A4000, NVIDIA GeForce RTX 4090 and NVIDIA GeForce RTX 3090. The most demanding task in terms of compute required less than 24GB of VRAM and took about 2 or 3 hours to complete per random seed. The number of parameters of an agent is far less than 1M in all experiments.\n\nWe make our code publicly available at: https://github.com/hy18284/onetomany.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing"
+    },
+    {
+      "window_id": "2024.emnlp-main.1157::appendix::J",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX A4000",
+      "cleaned_hardware_name": "nvidia rtx a4000",
+      "normalized_hardware_name": "NVIDIA RTX A4000",
+      "benchmark_hardware_name": "NVIDIA RTX A4000",
+      "count": null,
+      "count_text": "",
+      "section_number": "J",
+      "section_title": "reproducibility",
+      "normalized_section_title": "reproducibility",
+      "evidence": "For training, we utilized NVIDIA A100 80GB, NVIDIA RTX A6000 Ada, NVIDIA RTX A6000, NVIDIA RTX A4000, NVIDIA GeForce RTX 4090 and NVIDIA GeForce RTX 3090. The most demanding task in terms of compute required less than 24GB of VRAM and took about 2 or 3 hours to complete per random seed. The number of parameters of an agent is far less than 1M in all experiments.\n\nWe make our code publicly available at: https://github.com/hy18284/onetomany.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing"
+    },
+    {
+      "window_id": "2024.emnlp-main.1157::appendix::J",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA GeForce RTX 4090",
+      "cleaned_hardware_name": "nvidia geforce rtx 4090",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 4090",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 4090",
+      "count": null,
+      "count_text": "",
+      "section_number": "J",
+      "section_title": "reproducibility",
+      "normalized_section_title": "reproducibility",
+      "evidence": "For training, we utilized NVIDIA A100 80GB, NVIDIA RTX A6000 Ada, NVIDIA RTX A6000, NVIDIA RTX A4000, NVIDIA GeForce RTX 4090 and NVIDIA GeForce RTX 3090. The most demanding task in terms of compute required less than 24GB of VRAM and took about 2 or 3 hours to complete per random seed. The number of parameters of an agent is far less than 1M in all experiments.\n\nWe make our code publicly available at: https://github.com/hy18284/onetomany.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing"
+    },
+    {
+      "window_id": "2024.emnlp-main.1157::appendix::J",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA GeForce RTX 3090",
+      "cleaned_hardware_name": "nvidia geforce rtx 3090",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 3090",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 3090",
+      "count": null,
+      "count_text": "",
+      "section_number": "J",
+      "section_title": "reproducibility",
+      "normalized_section_title": "reproducibility",
+      "evidence": "For training, we utilized NVIDIA A100 80GB, NVIDIA RTX A6000 Ada, NVIDIA RTX A6000, NVIDIA RTX A4000, NVIDIA GeForce RTX 4090 and NVIDIA GeForce RTX 3090. The most demanding task in terms of compute required less than 24GB of VRAM and took about 2 or 3 hours to complete per random seed. The number of parameters of an agent is far less than 1M in all experiments.\n\nWe make our code publicly available at: https://github.com/hy18284/onetomany.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing"
+    }
+  ],
+  "review_flags": [],
+  "pred_result": {
+    "sec": [
+      "J"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": null
+      },
+      {
+        "name": "NVIDIA RTX A6000 Ada",
+        "num": null
+      },
+      {
+        "name": "NVIDIA RTX A6000",
+        "num": null
+      },
+      {
+        "name": "NVIDIA RTX A4000",
+        "num": null
+      },
+      {
+        "name": "NVIDIA GeForce RTX 4090",
+        "num": null
+      },
+      {
+        "name": "NVIDIA GeForce RTX 3090",
+        "num": null
+      }
+    ]
+  }
+}

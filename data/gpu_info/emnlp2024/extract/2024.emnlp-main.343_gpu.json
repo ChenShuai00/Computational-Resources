@@ -1,0 +1,92 @@
+{
+  "paper_id": "2024.emnlp-main.343",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.343::sections::3.3",
+      "paper_id": "2024.emnlp-main.343",
+      "section_number": "3.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "For the supervised dataset collection, the sampling time $N$ is set to 100 and the temperature is 1.2. The similarity threshold $T$ is set to 0.9. For supervised fine-tuning, the learning rate is set to 7e-5 and the batch size is set to 8. For the reinforcement learning stage, the learning rate is set to 1e-5 and the batch size is set to 8. To check the correctness of the responses, we utilize a verification method where annotated answers must be present within the responses. This heuristic demonstrates high precision in knowledge-based QA tasks.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.343::sections::4.1",
+      "paper_id": "2024.emnlp-main.343",
+      "section_number": "4.1",
+      "section_title": "evaluation setting",
+      "normalized_section_title": "evaluation setting",
+      "window_text": "Evaluation Datasets We follow Zhang et al. (2023a) to evaluate LLMs on knowledge-extensive QA tasks. We include the following datasets: HotpotQA (Yang et al., 2018), a dataset of multi-hop reasoning question-answer pairs; TruthfulQA (Lin et al., 2021), a dataset that tests whether models generate truthful answers to questions specifically designed to induce false answers; StrategyQA (Geva et al., 2021), a dataset of true/false questions requiring multi-hop reasoning; FEVER (Thorne et al., 2018), a dataset used to assess the ability of models to verify the factuality of statements against Wikipedia documents; HaluEval (Li et al., 2023), a dataset that evaluates the hallucination of models; ParaRel (Elazar et al., 2021), a dataset that measures the model's performance in understanding paraphrased relational facts.\n\nEvaluation Environments The experiments are run on a server with 4 Nvidia A6000 GPUs and 256GB RAM. The models are implemented with the Huggingface Transformers (https://huggingface.co/) library. The reported data are all average values of three runs. Both stages take approximately 1 hour to train during the two-stage training process.\n\nEvaluation Metrics We measure various approaches from 3 aspects. (1) Confidence Calibration Performance: We adopt 2 calibration metrics.\n\nFirst, we use the ECE score to measure the confidence calibration error (Guo et al., 2017; Chen et al., 2023b). Basically, ECE evaluates the correlation between the confidence scores assigned by LLMs and their corresponding correctness. For responses from LLMs $A$ , it can be calculated as\n\n$$\n\\operatorname {E C E} = \\frac {1}{| A |} \\sum_ {a \\in A} | \\mathbb {I} (a) - \\operatorname {c o n f} (a) |, \\tag {4}\n$$\n\nwhere $\\mathbb{I}()$ is the indicator function defined in Equation 2, and conf() returns the confidence level of LLMs. Second, we adopt the AUROC score following (Hendrycks and Gimpel, 2016). It measures the ability of LLMs to distinguish between correct and incorrect responses across different threshold settings. It can be calculated as\n\n$$\n\\mathrm {A U R O C} = \\int_ {0} ^ {1} \\operatorname {T P R} \\left(\\mathrm {F P R} ^ {- 1} (x)\\right) \\mathrm {d} x, \\tag {5}\n$$\n\nwhere $x$ is the threshold confidence level, TPR is the true positive rate under this threshold confidence level, and FPR is the false positive rate under the threshold. (2) Task Performance: We measure the typical accuracy on the test split of the datasets. (3) Faithfulness of the Generated Self-Reflective Rationales: We make the first effort to measure the faithfulness of the provided self-reflective rationales. We suggest employing the same intuition utilized in SaySelf. For each question, we sample multiple responses (answers with reasoning chains) from the LLM, and perform clustering to retain several representative responses. Subsequently, we utilize a proficient LLM (GPT4) to examine whether the provided self-reflective rationales can faithfully express the uncertainty demonstrated in the sampled responses, and give a score from 1 to 10. The final faithfulness score is the average over all samples.\n\nBaselines We compare with the following approaches: (1) Direct prompting for confidence extraction (DP): We directly ask the vanilla LLMs to give a confidence score from 1 to 10 in their previous response (Tian et al., 2023). (2) Self-consistency-based confidence estimate (SC): We use the self-consistency-based approach to derive the confidence estimates of LLMs. Confidence is calculated as the ratio of response frequency to the number of samples (Xiong et al., 2023). (3) Prompting for correctness (PC): We ask the vanilla LLMs to judge whether their responses are correct or not (Kadavath et al., 2022). (4) R-Tuning:\n\nWe train LLMs to generate binary confidence estimates (sure vs. unsure) using a model-specific dataset (Zhang et al., 2023a). (5) Aligning with self-consistency-based confidence (AS): We train LLMs to generate the confidence estimates derived from self-consistency prompting (Yang et al., 2023). (6) Grouping-based confidence estimates for calibration training (GCE): We group the samples in HotpotQA via clustering, and use the accuracy of samples in the group as the confidence estimates for all samples within that group. The constructed dataset is thus used for fine-tuning (Lin et al., 2022). We implement the baseline approaches and SaySelf on Mistral-7B (Jiang et al., 2023) for fair comparison. To prove that SaySelf can generalize on multiple models, we also implement the baseline approaches and SaySelf on Llama 3 8B (Team, 2024) in Appendix D.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2024.emnlp-main.343::appendix::D",
+      "paper_id": "2024.emnlp-main.343",
+      "section_number": "D",
+      "section_title": "experiments of sayself on llama",
+      "normalized_section_title": "experiments of sayself on llama",
+      "window_text": "To test the generalizability of SaySelf, we test SaySelf on a different base model, Llama 3 8B. The baselines are the same as mentioned in Section 4.1. The experiment results are given in Table 6. Our results indicate that SaySelf can generalize in different base models and has superior performance over other baseline methods in ECE, without a significant loss in accuracy.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.343::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A6000",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "Evaluation Datasets We follow Zhang et al. (2023a) to evaluate LLMs on knowledge-extensive QA tasks. We include the following datasets: HotpotQA (Yang et al., 2018), a dataset of multi-hop reasoning question-answer pairs; TruthfulQA (Lin et al., 2021), a dataset that tests whether models generate truthful answers to questions specifically designed to induce false answers; StrategyQA (Geva et al., 2021), a dataset of true/false questions requiring multi-hop reasoning; FEVER (Thorne et al., 2018), a dataset used to assess the ability of models to verify the factuality of statements against Wikipedia documents; HaluEval (Li et al., 2023), a dataset that evaluates the hallucination of models; ParaRel (Elazar et al., 2021), a dataset that measures the model's performance in understanding paraphrased relational facts.\n\nEvaluation Environments The experiments are run on a server with 4 Nvidia A6000 GPUs and 256GB RAM. The models are implemented with the Huggingface Transformers (https://huggingface.co/) library. The reported data are all average values of three runs. Both stages take approximately 1 hour to train during the two-stage training process.\n\nEvaluation Metrics We measure various approaches from 3 aspects. (1) Confidence Calibration Performance: We adopt 2 calibration metrics.\n\nFirst, we use the ECE score to measure the confidence calibration error (Guo et al., 2017; Chen et al., 2023b). Basically, ECE evaluates the correlation between the confidence scores assigned by LLMs and their corresponding correctness. For responses from LLMs $A$ , it can be calculated as\n\n$$\n\\operatorname {E C E} = \\frac {1}{| A |} \\sum_ {a \\in A} | \\mathbb {I} (a) - \\operatorname {c o n f} (a) |, \\tag {4}\n$$\n\nwhere $\\mathbb{I}()$ is the indicator function defined in Equation 2, and conf() returns the confidence level of LLMs. Second, we adopt the AUROC score following (Hendrycks and Gimpel, 2016). It measures the ability of LLMs to distinguish between correct and incorrect responses across different threshold settings. It can be calculated as\n\n$$\n\\mathrm {A U R O C} = \\int_ {0} ^ {1} \\operatorname {T P R} \\left(\\mathrm {F P R} ^ {- 1} (x)\\right) \\mathrm {d} x, \\tag {5}\n$$\n\nwhere $x$ is the threshold confidence level, TPR is the true positive rate under this threshold confidence level, and FPR is the false positive rate under the threshold. (2) Task Performance: We measure the typical accuracy on the test split of the datasets. (3) Faithfulness of the Generated Self-Reflective Rationales: We make the first effort to measure the faithfulness of the provided self-reflective rationales. We suggest employing the same intuition utilized in SaySelf. For each question, we sample multiple responses (answers with reasoning chains) from the LLM, and perform clustering to retain several representative responses. Subsequently, we utilize a proficient LLM (GPT4) to examine whether the provided self-reflective rationales can faithfully express the uncertainty demonstrated in the sampled responses, and give a score from 1 to 10. The final faithfulness score is the average over all samples.\n\nBaselines We compare with the following approaches: (1) Direct prompting for confidence extraction (DP): We directly ask the vanilla LLMs to give a confidence score from 1 to 10 in their previous response (Tian et al., 2023). (2) Self-consistency-based confidence estimate (SC): We use the self-consistency-based approach to derive the confidence estimates of LLMs. Confidence is calculated as the ratio of response frequency to the number of samples (Xiong et al., 2023). (3) Prompting for correctness (PC): We ask the vanilla LLMs to judge whether their responses are correct or not (Kadavath et al., 2022). (4) R-Tuning:\n\nWe train LLMs to generate binary confidence estimates (sure vs. unsure) using a model-specific dataset (Zhang et al., 2023a). (5) Aligning with self-consistency-based confidence (AS): We train LLMs to generate the confidence estimates derived from self-consistency prompting (Yang et al., 2023). (6) Grouping-based confidence estimates for calibration training (GCE): We group the samples in HotpotQA via clustering, and use the accuracy of samples in the group as the confidence estimates for all samples within that group. The constructed dataset is thus used for fine-tuning (Lin et al., 2022). We implement the baseline approaches and SaySelf on Mistral-7B (Jiang et al., 2023) for fair comparison. To prove that SaySelf can generalize on multiple models, we also implement the baseline approaches and SaySelf on Llama 3 8B (Team, 2024) in Appendix D.",
+      "section_number": "4.1",
+      "section_title": "evaluation setting",
+      "normalized_section_title": "evaluation setting"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.343::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Nvidia A6000",
+      "cleaned_hardware_name": "nvidia a6000",
+      "normalized_hardware_name": "Nvidia A6000",
+      "benchmark_hardware_name": null,
+      "count": 4,
+      "count_text": "4",
+      "section_number": "4.1",
+      "section_title": "evaluation setting",
+      "normalized_section_title": "evaluation setting",
+      "evidence": "Evaluation Datasets We follow Zhang et al. (2023a) to evaluate LLMs on knowledge-extensive QA tasks. We include the following datasets: HotpotQA (Yang et al., 2018), a dataset of multi-hop reasoning question-answer pairs; TruthfulQA (Lin et al., 2021), a dataset that tests whether models generate truthful answers to questions specifically designed to induce false answers; StrategyQA (Geva et al., 2021), a dataset of true/false questions requiring multi-hop reasoning; FEVER (Thorne et al., 2018), a dataset used to assess the ability of models to verify the factuality of statements against Wikipedia documents; HaluEval (Li et al., 2023), a dataset that evaluates the hallucination of models; ParaRel (Elazar et al., 2021), a dataset that measures the model's performance in understanding paraphrased relational facts.\n\nEvaluation Environments The experiments are run on a server with 4 Nvidia A6000 GPUs and 256GB RAM. The models are implemented with the Huggingface Transformers (https://huggingface.co/) library. The reported data are all average values of three runs. Both stages take approximately 1 hour to train during the two-stage training process.\n\nEvaluation Metrics We measure various approaches from 3 aspects. (1) Confidence Calibration Performance: We adopt 2 calibration metrics.\n\nFirst, we use the ECE score to measure the confidence calibration error (Guo et al., 2017; Chen et al., 2023b). Basically, ECE evaluates the correlation between the confidence scores assigned by LLMs and their corresponding correctness. For responses from LLMs $A$ , it can be calculated as\n\n$$\n\\operatorname {E C E} = \\frac {1}{| A |} \\sum_ {a \\in A} | \\mathbb {I} (a) - \\operatorname {c o n f} (a) |, \\tag {4}\n$$\n\nwhere $\\mathbb{I}()$ is the indicator function defined in Equation 2, and conf() returns the confidence level of LLMs. Second, we adopt the AUROC score following (Hendrycks and Gimpel, 2016). It measures the ability of LLMs to distinguish between correct and incorrect responses across different threshold settings. It can be calculated as\n\n$$\n\\mathrm {A U R O C} = \\int_ {0} ^ {1} \\operatorname {T P R} \\left(\\mathrm {F P R} ^ {- 1} (x)\\right) \\mathrm {d} x, \\tag {5}\n$$\n\nwhere $x$ is the threshold confidence level, TPR is the true positive rate under this threshold confidence level, and FPR is the false positive rate under the threshold. (2) Task Performance: We measure the typical accuracy on the test split of the datasets. (3) Faithfulness of the Generated Self-Reflective Rationales: We make the first effort to measure the faithfulness of the provided self-reflective rationales. We suggest employing the same intuition utilized in SaySelf. For each question, we sample multiple responses (answers with reasoning chains) from the LLM, and perform clustering to retain several representative responses. Subsequently, we utilize a proficient LLM (GPT4) to examine whether the provided self-reflective rationales can faithfully express the uncertainty demonstrated in the sampled responses, and give a score from 1 to 10. The final faithfulness score is the average over all samples.\n\nBaselines We compare with the following approaches: (1) Direct prompting for confidence extraction (DP): We directly ask the vanilla LLMs to give a confidence score from 1 to 10 in their previous response (Tian et al., 2023). (2) Self-consistency-based confidence estimate (SC): We use the self-consistency-based approach to derive the confidence estimates of LLMs. Confidence is calculated as the ratio of response frequency to the number of samples (Xiong et al., 2023). (3) Prompting for correctness (PC): We ask the vanilla LLMs to judge whether their responses are correct or not (Kadavath et al., 2022). (4) R-Tuning:\n\nWe train LLMs to generate binary confidence estimates (sure vs. unsure) using a model-specific dataset (Zhang et al., 2023a). (5) Aligning with self-consistency-based confidence (AS): We train LLMs to generate the confidence estimates derived from self-consistency prompting (Yang et al., 2023). (6) Grouping-based confidence estimates for calibration training (GCE): We group the samples in HotpotQA via clustering, and use the accuracy of samples in the group as the confidence estimates for all samples within that group. The constructed dataset is thus used for fine-tuning (Lin et al., 2022). We implement the baseline approaches and SaySelf on Mistral-7B (Jiang et al., 2023) for fair comparison. To prove that SaySelf can generalize on multiple models, we also implement the baseline approaches and SaySelf on Llama 3 8B (Team, 2024) in Appendix D.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched"
+    }
+  ],
+  "review_flags": [],
+  "pred_result": {
+    "sec": [
+      "4.1"
+    ],
+    "pred": [
+      {
+        "name": "Nvidia A6000",
+        "num": 4
+      }
+    ]
+  }
+}

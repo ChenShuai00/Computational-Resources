@@ -1,0 +1,96 @@
+{
+  "paper_id": "2025.emnlp-main.1132",
+  "candidate_windows": [
+    {
+      "window_id": "2025.emnlp-main.1132::sections::4",
+      "paper_id": "2025.emnlp-main.1132",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "This section begins with the experimental setup, followed by a comparison of our approach with multiple baseline methods. Finally, we compare and analyze our approach across different settings.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1132::sections::4.1",
+      "paper_id": "2025.emnlp-main.1132",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Attack setup. We conduct experiments on three widely used English datasets:Natural Question (Kwiatkowski et al., 2019)， MSMARCO (Nguyen et al.， 2016) and HotpotQA (Yang et al., 2018). The victim models chosen for this study are GPT-3.5-Turbo (version 0125) (Brown et al., 2020), GPT-4o (version 2024- 08-06) (OpenAI et al., 2024), Qwen2.5 (Qwen et al., 2O25） and LLaMA-3 (Grattafiori et al., 2024). The prompts used to generate answers are detailed in Appendix A. Contriever (Izacard et al., 2021) is a dense retriever model used to find relevant documents by calculating similarity scores between the query and documents in the knowledge base. It was selected due to its efficiency and ability to handle large datasets. In this work, we investigate four distinct attack strategies on RAG. Two of them are Black-box attacks that have no knowledge about the retriever: PoisonedRAG (Zou et al., 2024) and PIA(Greshake et al., 2O23; Pasquini et al., 2024; Perez and Ribeiro, 2022). The remaining two are white-box attacks, in which attackers have the access to the victim's retriever, i.e., PoisonedRAG (Hotflip) (Zou et al., 2024) and Phantom (Chaudhari et al., 2024)\n\nUnder default settings without defense, as in Zou et al. (2024), we retrieve the five most similar documents from the knowledge database to serve as the context for each question. We select 1OO closeended questions from each dataset, yielding 300 questions in total per attack-defense experiment. Additionally, this process is repeated using 3 random seeds,meaning each attack-defense pair is evaluated on 9oO questions in total.\n\nIn contrast, Zou et al. (2O24) generated five poisoned texts and injected them into the retriever knowledge base. To provide a more realistic assessment of the attack's effectiveness,we modify the experiment to inject only a single poisoned document into the database. The original setup,which retrieved only poisoned documents, resulted in a $100 \\%$ Attack Success Rate (ASR), making it impractical to evaluate the true impact of the attack. As shown in Figure 3,a similarity matrix appears to cluster poisoned documents in the top-left corner. By applying a clustering algorithm,we can identify and merge redundant information, effectively removing repetitive poisoned entries. This adjustment ensures that only one poisoned document is retrieved,allowing for a more meaningful evaluation of the attack performance.\n\nDefense setup. We explore three similarity score combinations for GRADA: Embedding-based Distance,BM25,and Hybrid Relevance Similarity with BM25 as the similarity function.² Here, we utilize Contriever to encode both documents and queries，while for BM25,we adopt the implementation provided by Lu (2024). We compare GRADA against two reranking models and one defense method: HLATR (Zhang et al., 2022), which achieved first place in the MS-MARCO Passage Ranking Leaderboard, BGE-reranker (Xiao et al., 2023),which achieves a high precision score in ranking tasks, and Keyword Aggregation (Xiang et al., 2024), the only existing defense specifically designed forRAG-based adversarial attacks.\n\nWe evaluate the effectiveness of these defense methods by integrating them into our two-stage retrieval system described in Section 3.We initially retrieve $M ~ = ~ 1 0$ documents,which are then reranked using the aforementioned methods (except for Keyword Aggregation). The top five ranked documents are subsequently provided as the context for the model to answer the query. This ensures that, regardless of the defense configuration, the model always receives a fixed number of five context documents to respond to the question. For Keyword Aggregation, which does not perform reranking, the model directly generates the output based on the algorithm's keyword selections.\n\nEvaluation metrics. In our experiments, we employ Attack Success Rate(ASR) and Exact Match (EM) as metrics.ASR is defined as the ratio of successful attacks to the total number of attacks conducted. An attack is considered successful if the intended poisoned answer appears as a substring within the generated response from the model. This definition accommodates attack strategies like PIA, which aim to introduce harmful links into the output of the model, allowing for some tolerance to semantically equivalent responses.A higher ASR indicates a more successful attack. This evaluation methodology follows the approach used in previous work (Zou et al., 2024).\n\nTable 1: ASR and EM $( \\% )$ for various defense methods on the black-box attack methods on GPT-3.5-Turbo and Llama3.1-8b-Instruct.The results of other models can be found in Tables 10 to 14.We highlight the top-2 lowest ASR results in blue cells.   \n\n<table><tr><td rowspan=\"2\">Defense</td><td colspan=\"3\">PoisonedRAG</td><td colspan=\"3\">PIA</td></tr><tr><td>HotpotQA ASR↓/EM↑</td><td>NQ ASR↓/EM↑</td><td>MS-MARCO ASR↓/EM↑</td><td>HotpotQA ASR↓/EM↑</td><td>NQ ASR↓/EM↑</td><td>MS-MARCO ASR↓/EM↑</td></tr><tr><td colspan=\"7\">GPT-3.5-Turbo</td></tr><tr><td>None</td><td>59.0±1.4 /32.3±0.5</td><td>55.7±1.2/33.3±1.1</td><td>46.5±1.5 /41.0±0.0</td><td>100.0±0.0 /0.0±0.0</td><td>98.0±0.0 /2.0±0.0</td><td>88.0±0.0 /7.7±0.5</td></tr><tr><td>HLATR</td><td>62.3±0.5 /30.3±0.5</td><td>51.5±0.5 /35.5±0.5</td><td>36.5±1.5 / 52.0±1.0</td><td>100.0±0.0 /0.0±0.0</td><td>92.0±0.0 /4.0±0.0</td><td>84.0±0.0/9.0±0.0</td></tr><tr><td>BGE-reranker</td><td>56.6±0.9 /36.3±1.2</td><td>46.5±0.5 /43.5±0.5</td><td>34.0±0.0 / 55.0±0.0</td><td>98.0±0.0 /2.0±0.0</td><td>43.0±0.0/ 35.7±0.5</td><td>43.0±0.0 / 43.0±0.8</td></tr><tr><td>Keyword Aggregation</td><td>11.0±2.0 / 62.5±2.5</td><td>2.0±0.0 / 54.0±0.0</td><td>3.0±0.0 / 60.0±2.0</td><td>0.0±0.0 / 59.0±1.0</td><td>0.0±0.0 / 48.0±0.0</td><td>0.0±0.0 / 57.5±0.5</td></tr><tr><td>GRADA (D2DSIM-EBD)</td><td>48.6±1.2/39.0±0.8</td><td>26.1±1.0 / 50.9±1.0</td><td>29.0±1.0 / 55.0±1.0</td><td>33.0±0.0 /42.3±0.5</td><td>2.0±0.0 /58.3±0.5</td><td>3.0±0.0 / 70.5±0.5</td></tr><tr><td>GRADA (D2DSIM-BM25)</td><td>45.0±0.8/40.0±0.5</td><td>13.5±0.7 / 55.0±1.4</td><td>16.5±0.5 / 65.5±0.5</td><td>42.0±0.0 /33.0±0.8</td><td>12.0±0.0 / 55.3±0.5</td><td>2.0±0.0 /69.7±0.9</td></tr><tr><td>GRADA (HRSIM)</td><td>10.0±0.0 / 51.0±0.8</td><td>3.0±0.6 / 58.0±1.1</td><td>8.5±0.5 / 71.5±0.5</td><td>27.0±0.0 / 41.7±1.2</td><td>2.0±0.0 /61.7±2.1</td><td>1.0±0.0 / 74.3±0.5</td></tr><tr><td colspan=\"7\">Llama3.1-8b-Instruct</td></tr><tr><td>None</td><td>50.7±0.5 / 37.0±0.0</td><td>49.0±0.8 /33.0±0.8</td><td>40.7±0.5 /40.0±0.0</td><td>88.3±0.5 /3.0±0.0</td><td>82.0±0.0 /8.0±0.0</td><td>69.0±0.0 / 14.0±0.0</td></tr><tr><td>HLATR</td><td>52.3±0.5 /35.7±0.5</td><td>39.0±0.8 /41.3±0.5</td><td>35.7±0.5 /43.3±0.5</td><td>91.3±0.5 /2.7±0.5</td><td>71.7±0.5 / 15.3±0.5</td><td>50.0±0.8 /19.7±0.5</td></tr><tr><td>BGE-reranker</td><td>51.7±0.5 /36.0±0.0</td><td>42.0±0.8 /40.7±1.2</td><td>33.7±0.5 /42.0±0.8</td><td>79.7±0.5 /9.7±0.9</td><td>30.0±0.0 /40.3±0.5</td><td>19.7±0.9 /44.7±1.2</td></tr><tr><td>Keyword Aggregation</td><td>6.7±1.9 / 39.0±0.8</td><td>3.0±0.0 / 39.0±0.0</td><td>6.7±0.5 / 38.3±1.2</td><td>0.0±0.0/ 35.0±0.0</td><td>0.0±0.0 /39.0±0.0</td><td>0.0±0.0/36.0±0.8</td></tr><tr><td>GRADA (D2DSIM-EBD)</td><td>42.0±0.0 /36.7±0.5</td><td>24.0±0.0 /46.7±0.5</td><td>31.7±0.5 / 40.0±0.8</td><td>30.7±0.5 /35.3±0.90</td><td>1.0±0.0 / 55.3±0.5</td><td>2.0±0.0 / 56.0±0.0</td></tr><tr><td>GRADA (D2DSIM-BM25)</td><td>30.0±0.0 / 39.3±0.5</td><td>8.0±0.0 / 52.3±0.5</td><td>19.3±0.5 / 49.7±0.9</td><td>39.0±0.0 /28.7±0.5</td><td>7.7±0.5 / 48.3±0.9</td><td>0.0±0.0 / 55.0±0.0</td></tr><tr><td>GRADA (HRSIM)</td><td>7.0±0.0 / 44.0±0.8</td><td>2.3±0.5 / 55.7±0.5</td><td>12.0±0.0/52.3±0.51</td><td>23.0±0.0 /36.7±0.5</td><td>2.0±0.0 /55.0±0.8</td><td>0.0±0.0 / 59.3±0.5</td></tr></table>\n\nTo assess the question-answering accuracy of the models,we adopt EM score.EM requires that the predicted answer of the model matches the ground truth answer exactly. This strict criterion ensures that the response of the model is precise and follows the need for exact wording specified in the query,as outlined in Appendix A.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1132::appendix::E",
+      "paper_id": "2025.emnlp-main.1132",
+      "section_number": "E",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources",
+      "window_text": "The cost of a single defense run on GPT-3.5-Turbo is $\\$ 0.50$ , identical to a standard query since the method does not introduce additional API calls. Experiments for LLaMA-3 and Qwen2.5 were conducted on a single NVIDIA A10O 80GB GPU, with each defense run taking one hour to complete.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.emnlp-main.1132::appendix::E",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A10O 80GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "The cost of a single defense run on GPT-3.5-Turbo is $\\$ 0.50$ , identical to a standard query since the method does not introduce additional API calls. Experiments for LLaMA-3 and Qwen2.5 were conducted on a single NVIDIA A10O 80GB GPU, with each defense run taking one hour to complete.",
+      "section_number": "E",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.emnlp-main.1132::appendix::E",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A10O 80GB",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "E",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources",
+      "evidence": "The cost of a single defense run on GPT-3.5-Turbo is $\\$ 0.50$ , identical to a standard query since the method does not introduce additional API calls. Experiments for LLaMA-3 and Qwen2.5 were conducted on a single NVIDIA A10O 80GB GPU, with each defense run taking one hour to complete.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "E"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 1
+      }
+    ]
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "paper_id": "2025.emnlp-main.1383",
+  "candidate_windows": [
+    {
+      "window_id": "2025.emnlp-main.1383::sections::3",
+      "paper_id": "2025.emnlp-main.1383",
+      "section_number": "3",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "In this section, we introduce TyleR (Type-less yet type-awaRe inductive link prediction with pretrained language models). Building on Graph Inductive Learning (Teru et al., 202O), which infers relations from local subgraph patterns, TyleR leverages PLM-derived semantics to enrich node representations. However, integrating PLMs into fullgraph models is computationally expensive due to high-dimensional embeddings and large graph size. TyleR adopts a subgraph-reasoning approach, restricting triple scoring to compact and informative subgraphs, making PLM integration tractable.\n\nAs illustrated in Figure 1, TyleR 's pipeline consists of four stages: $\\textcircled{1}$ extracting an enclosing subgraph, $\\textcircled{2}$ structurally labeling nodes (following GraIL (Teru et al., 2020)), $\\textcircled{3}$ ， $\\textcircled{3}$ enriching nodes with PLM-based semantic embeddings,and $\\textcircled{4}$ feeding the enhanced subgraph into a GNN architecture from Zhou et al. (2023). The following sections provide further details on each step.\n\nSubgraph Extraction $\\textcircled{1}$ Given a target triple $( u , r _ { t } , v )$ , we define $\\mathcal { N } _ { k } ( u )$ and $\\mathcal { N } _ { k } ( v )$ as the sets of $k$ -hop neighboring nodes of $u$ and $v$ ,respectively. We also define a specific distance metric $d ( i , u )$ as the shortest path from a node $i$ to $u$ that does not pass through $v$ ,and $d ( i , v )$ is similarly the shortest path distance from $i$ to $v$ that does not pass through $u$ . The enclosing subgraph of triple $( u , r _ { t } , v )$ is computed by (i) forming an initial set of candidate nodes by taking the intersection $\\mathcal { N } _ { k } ( u ) \\cap \\mathcal { N } _ { k } ( v )$ and (ii) pruning nodes that are either isolated (i.e., have no edges connecting it to other nodes within the subgraph after this pruning step) or for which $d ( i , u ) > k$ or $d ( i , v ) > k$ . The remaining nodes and their edges form the enclosing subgraph.\n\nSubgraph Labeling $\\textcircled{2}$ Each node $i$ in the extracted subgraph is labeled with a pair of shortest path distances $( d ( i , u ) , d ( i , v ) )$ to the target nodes $u$ and $v$ ,respectively,within the subgraph. This pair captures the relative position of node $i$ with respect to the target nodes $u$ and $v$ . The final positional embedding $\\mathbf { h } _ { i } ^ { \\mathrm { p o s } }$ is:\n\n$$\n\\mathbf { h } _ { i } ^ { \\mathrm { p o s } } = \\mathrm { o n e - h o t } ( d ( i , u ) ) \\oplus \\mathrm { o n e - h o t } ( d ( i , v ) ) ,\n$$\n\nwhere $\\oplus$ denotes the concatenation operator and one-hot $\\left( \\cdot \\right)$ is the one-hot encoding function. All nodes in the enclosing subgraph are within $k$ hops of u or u, so hpos $\\mathbf { h } _ { i } ^ { \\mathsf { p o s } } \\in \\mathbb { R } ^ { 2 k + 2 }$ .\n\nSemantic Enrichment $\\textcircled{3\\mathbf { a } } \\textcircled{ 3 \\mathbf { b } }$ Semantic enrichment leverages a pre-trained language model (PLM)，supporting either masked token prediction or next-token generation. A straightforward approach for encoding entity type semantics involves prompting the PLM with an explicit query to elicit the most plausible type for a given entity. For masked language models (MLMs) (e.g., RoBERTa), this operation results in a prompt such as “The type of Paris is [MASK]”,with the type semantics encoded in the last hidden layer representation of the [MASK] token; for causal language models (CLMs) (e.g., Llama), this representation corresponds to the last hidden representation of the final sequence token. However, relying solely on representations derived from such direct type queries can be suboptimal. Prior research has shown that transformer-based representations tend to be highly anisotropic, often concentrated in narrow cones (Ethayarajh, 2O19), which can limit their discriminative utility. To address this,we propose to refine type semantics through multiple prompts, designed to extract different semantic aspects. Given an entity $i$ with textual label $l _ { i }$ ，we define a set of assertion prompts $P = \\{ p _ { 1 } , p _ { 2 } , . . . , p _ { n } \\}$ ，where each $p _ { k }$ targets a semantic facet of the entity (e.g., type,location, membership). Each prompt $p _ { k } ( l _ { i } )$ is processed by the PLM $\\textcircled{3 9}$ to yield a latent representation:\n\n$$\n\\mathbf { z } _ { p _ { k } , i } = \\operatorname { E x t r a c t } ( \\operatorname { P L M } ( p _ { k } ( l _ { i } ) ) ) .\n$$\n\nHere, $\\mathrm { P L M } ( \\cdot )$ denotes the forward pass of the language model given an input prompt, and Extract(·) selects the relevant hidden state (i.e., the [MASK] token's final hidden layer for MLMs or the last token's representation for CLMs).These representations $\\mathbf { z } _ { p _ { k } , i }$ are refined and projected into a unified space using an assertion-specific projection block:\n\n$$\n\\begin{array} { r } { { \\bf z } _ { p _ { k } , i } ^ { h } = { \\bf W } _ { p _ { k } } \\mathrm { L N } ( { \\bf z } _ { p _ { k } , i } ) + { \\bf b } _ { p _ { k } } , } \\end{array}\n$$\n\nwhere $\\mathbf { W } _ { p _ { k } }$ and $\\mathbf { b } _ { p _ { k } }$ are specific learnable parameters for each assertion prompt $p _ { k }$ ,and LN denotes layer normalization (Ba et al., 2O16). We aggregate $( \\mathrm { A G G } _ { p } ( \\cdot ) )$ the prompt representations with different strategies such as sum,mean or concatenation:\n\nGNN Scoring $\\textcircled{4}$ As suggested by Zhou et al. (2023)，our base GNN follows the $\\mathbf { R } \\cdot$ GCN(Schlichtkrull et al., 2018) architecture. At layer $l$ , the embedding for a node $i$ is computed as:\n\n$$\n\\mathbf { h } _ { i } ^ { ( l ) } = \\operatorname { R e L U } ( \\mathbf { W } _ { 0 } ^ { ( l ) } \\mathbf { h } _ { i } ^ { ( l - 1 ) } + \\mathbf { a } _ { i } ^ { ( l ) } ) ,\n$$\n\nwhere Wl is elbletridl is the AGGREGATE function, based on edge attention (Teru et al., 202O) and entity-relation composition (Vashishth et al., 2020):\n\n$$\n\\mathbf { a } _ { i } ^ { ( l ) } = \\sum _ { r \\in R } \\sum _ { j \\in N ^ { r } ( i ) } \\alpha _ { r r _ { t } j i } ^ { ( l ) } \\mathbf { W } _ { r } ^ { ( l ) } ( \\mathbf { h } _ { j } ^ { ( l - 1 ) } - \\mathbf { e } _ { r } ^ { ( l - 1 ) } ) ,\n$$\n\nwhere $\\mathbf { W } _ { r } ^ { ( l ) }$ is a relation-specific transformation matrix at layer $l$ ， $\\mathcal { N } ^ { r } ( i )$ is the set of outgoing neighboring nodes of node $i$ under relation $r$ . We adopt basis sharing (Schlichtkrull et al., 2018) as regularization for the W(l) transformation matrices, whereas $\\mathbf { e } _ { r } ^ { ( l ) }$ is the relation embeding at layer $l$ ：\n\n$$\n\\mathbf { e } _ { r } ^ { ( l ) } = \\mathbf { W } _ { r e l } ^ { ( l ) } \\mathbf { e } _ { r } ^ { ( l - 1 ) } .\n$$\n\nThe edge attention weight $\\alpha _ { r r + j i } ^ { ( l ) }$ quantifies the importance of an edge $( j , r , i )$ when inferring relation $r _ { t }$ at layer $l$\n\n$$\n\\alpha _ { r r _ { t } j i } ^ { ( l ) } = \\sigma ( \\mathbf { W } _ { \\alpha } ^ { ( l ) } \\mathbf { s } _ { r r _ { t } j i } ^ { ( l ) } + b _ { \\alpha } ^ { ( l ) } ) ,\n$$\n\n$$\n\\mathbf { s } _ { r r _ { t } j i } ^ { ( l ) } = \\mathrm { R e L U } ( \\mathbf { W } _ { s } ^ { ( l ) } [ \\mathbf { h } _ { j } ^ { ( l - 1 ) } \\oplus \\mathbf { h } _ { i } ^ { ( l - 1 ) }\n$$\n\n$$\n\\begin{array} { r } { \\oplus \\mathbf { e } _ { r } ^ { ( l - 1 ) } \\oplus \\mathbf { e } _ { r _ { t } } ^ { ( l - 1 ) } ] + \\mathbf { b } _ { s } ^ { ( l ) } ) . } \\end{array}\n$$\n\nTo obtain the final representation of a node, Teru et al. (2020) suggest adopting JK-Connections ( $\\mathrm { { X u } }$ et al.，2018)， i.e.，by concatenating all the intermediate-layer representations. After the aggregation, the final score is computed as\n\n$$\nf ( \\boldsymbol { u } , \\boldsymbol { r } _ { t } , \\boldsymbol { v } ) { = } \\mathbf { W } _ { f } ^ { T } \\bigoplus _ { l = 1 } ^ { L } [ \\mathbf { h } _ { \\mathcal { G } } ^ { ( l ) } ( \\boldsymbol { u } , \\boldsymbol { r } _ { t } , \\boldsymbol { v } ) \\oplus \\mathbf { h } _ { \\boldsymbol { u } } ^ { ( l ) } \\oplus \\mathbf { h } _ { \\boldsymbol { v } } ^ { ( l ) } \\oplus \\mathbf { e } _ { \\boldsymbol { r } _ { t } } ^ { L } ] ,\n$$\n\n$$\n\\begin{array} { r } { \\mathbf { z } _ { i } ^ { \\mathrm { a g g } } = \\mathsf { A G G } _ { p } ( \\{ \\mathbf { z } _ { p _ { k } , i } ^ { h } \\} _ { k = 1 } ^ { n } ) . } \\end{array}\n$$\n\nThe semantic embedding $h _ { i } ^ { s e m }$ is obtained as:\n\n$$\n\\mathbf { h } _ { i } ^ { s e m } \\equiv \\tau _ { \\mathrm { P L M } } ( i ) = \\sigma ( \\mathbf { W } _ { o } \\mathrm { R e L U } ( \\mathbf { z } _ { i } ^ { \\mathrm { a g g } } ) ) ,\n$$\n\nwhere $\\tau _ { \\mathrm { P L M } } ( i )$ is a function capturing the semantics of $i$ by aggregating multiple prompt-based representations via a PLM (as introduced in Section 2), and $\\sigma ( \\cdot )$ is the sigmoid function. Given a node $i$ ， we then construct the embedding $h _ { i } ^ { 0 }$ as $\\textcircled{3} \\textcircled{3}$ ：\n\n$$\n\\mathbf { h } _ { i } ^ { 0 } = [ \\mathbf { h } _ { i } ^ { p o s } \\oplus \\mathbf { h } _ { i } ^ { s e m } ] .\n$$\n\nwhere $\\mathbf { h } _ { \\mathcal { G } } ^ { ( l ) } ( u , r _ { t } , v )$ is the subgraph representation, obtained via average pooling over all node representations at level $l$ in the subgraph.\n\nLoss FunctionWe adopt a margin-based pairwise loss function, which aims at maximizing the score on positive triples and minimizing the score on randomly sampled negative triples:\n\n$$\n\\mathcal { L } { = } \\sum _ { ( u , r _ { t } , v ) \\in G } m a x ( 0 , f _ { e } ( u ^ { \\prime } , r _ { t } , v ^ { \\prime } ) { - } f _ { e } ( u , r _ { t } , v ) { + } \\gamma ) ,\n$$\n\nwhere $\\gamma$ is a margin hyperparameter, $( u , r _ { t } , v )$ is a positive triple and $( u ^ { \\prime } , r _ { t } , v ^ { \\prime } )$ is a negative triple.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1383::sections::4",
+      "paper_id": "2025.emnlp-main.1383",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "In this section we detail our experimental setup, including datasets,baselines, training and evaluation details.Experiments were conducted with Python 3.8.19 and PyTorch 2.3.0, using an NVIDIA Ampere A100 GPU (64GB VRAM) and CUDA 12.1.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1383::sections::4.3",
+      "paper_id": "2025.emnlp-main.1383",
+      "section_number": "4.3",
+      "section_title": "models",
+      "normalized_section_title": "models",
+      "window_text": "To isolate the contribution of our semanticenrichment module, we focus the comparison on methods that share a similar subgraph-reasoning backbone as Tyler. We evaluate TyleR against GraIL (Teru et al., 202O), a type-agnostic baseline that relies solely on subgraph structure,and the ontology-enhanced method of Zhou et al. (2023), which explicitly incorporates type information via learnable embeddings and ontological constraints, even though its effectiveness is tied to the availability and quality of type annotations and ontology triples.We chose these baselines to enable a focused and meaningful comparison: (1) GraIL serves as the foundational type-agnostic framework upon which many subsequent methods build (Chen et al., 2021; Mai et al., 2021); (2) the method of Zhou et al. (2023) exemplifies a type-enhanced approach, with few comparable models in literature. In contrast, Tyler is designed for scenarios where explicit type information is scarce as it is able to infer implicit type semantics from PLMs. Our semantic enrichment strategy, detailed in Section 3, is model-agnostic and compatible with any PLM supporting masked or causal language modeling. We use RoBERTa-Large (Liu et al., 2O19) and Llama3- 8B (Dubey et al., 2024) without fine-tuning, aggregating representations from six manually crafted assertion prompts (Table 1). To further evaluate the robustness of TyleR with respect to prompt selection, we report the results on FB15K-237-V1 for both RoBERTa and Llama3-8B across varying numbers of templates (Table 5). The prompt aggregation function $\\operatorname { A G G } _ { p } ( \\cdot )$ was set to SUM, as it yielded the most consistent results in our experiments(Table 3).Moreover, SUM offers better scalability by producing fixed-size outputs regardless of the number of prompts and may also help regularize prompt-specific noise.\n\nTable 2: Link Prediction (LP) evaluation on multiple FB237 variants and YAGO21K-610. Best and second-best scores are in bold and underlined,respectively. Evaluation uses the strictest tie-breaking policy(Section 4.2), assigning the highest (worst) possible rank to the positive triple in case of ties.   \n\n<table><tr><td rowspan=\"2\">Inductive LP Model</td><td colspan=\"3\">FB237-V1</td><td colspan=\"3\">FB237-V2</td><td colspan=\"3\">FB237-V3</td><td colspan=\"3\">YAGO21K-610</td></tr><tr><td>MRR</td><td>Hits@1</td><td>Hits @10</td><td>MRR</td><td>Hits @1</td><td>Hits@10</td><td>MRR</td><td>Hits@1</td><td>Hits @10</td><td>MRR</td><td>Hits @1</td><td>Hits @ 10</td></tr><tr><td>GraIL (Teru et al.,2020)</td><td>.456</td><td>34.97</td><td>64.44</td><td>.618</td><td>50.46</td><td>82.70</td><td>.609</td><td>49.94</td><td>82.26</td><td>.661</td><td>62.76</td><td>68.68</td></tr><tr><td>Zhou et al. (2023)</td><td>.398</td><td>27.85</td><td>64.55</td><td>.576</td><td>44.69</td><td>82.45</td><td>.554</td><td>41.85</td><td>81.42</td><td>.673</td><td>60.36</td><td>76.56</td></tr><tr><td>TyleR-RoBERTa-L (2025)</td><td>.470</td><td>35.66</td><td>69.95</td><td>.602</td><td>47.51</td><td>83.28</td><td>.630</td><td>50.60</td><td>86.72</td><td>.660</td><td>58.26</td><td>79.68</td></tr><tr><td>TyleR-Llama3-8B (2025)</td><td>.481</td><td>36.88</td><td>70.63</td><td>.610</td><td>49.37</td><td>82.01</td><td>.620</td><td>49.94</td><td>84.46</td><td>.651</td><td>59.70</td><td>69.30</td></tr></table>\n\nTable 3:Ablation study on the FB237-V1 dataset, evaluating the impact of different Pre-trained Language Models and aggregation functions (Equation 4) for semantic embeddings within TyleR.'TYPE-ONLY' uses only the representation from the $p _ { 1 }$ prompt (Table 1).   \n\n<table><tr><td>PLM</td><td>Aggregation</td><td>MRR</td><td>Hits@1</td><td>Hits@10</td></tr><tr><td>TyleR-RoBERTa-L</td><td>TYPE-ONLY</td><td>.442</td><td>32.93</td><td>66.49</td></tr><tr><td>TyleR-RoBERTa-L</td><td> SUM</td><td>.470</td><td>35.66</td><td>69.95</td></tr><tr><td>TyleR-RoBERTa-L</td><td>MEAN</td><td>.468</td><td>35.22</td><td>68.05</td></tr><tr><td>TyleR-RoBERTa-L</td><td>CONCAT</td><td>.455</td><td>34.10</td><td>67.76</td></tr><tr><td>TyleR-Llama3-8B</td><td>TYPE-ONLY</td><td>.477</td><td>37.12</td><td>68.29</td></tr><tr><td>TyleR-Llama3-8B</td><td> SUm</td><td>.481</td><td>36.88</td><td>70.63</td></tr><tr><td>TyleR-Llama3-8B</td><td>MEAN</td><td>.465</td><td>35.51</td><td>68.73</td></tr><tr><td>TyleR-Llama3-8B</td><td>CONCAT</td><td>.474</td><td>35.95</td><td>71.12</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1383::appendix::B",
+      "paper_id": "2025.emnlp-main.1383",
+      "section_number": "B",
+      "section_title": "hyperparameter details",
+      "normalized_section_title": "hyperparameter details",
+      "window_text": "Baselines are trained using the hyperparameter settings reported in their original papers. For our model, we adopt the configuration from Zhou et al. (2023) to ensure fair comparison, tuning only the learning rate, which we set empirically to 1e-3. All models are trained for 5O epochs with early stopping (patience of 1OO iterations) and a batch size of 16.We adopt the Adam optimizer. For all models, the number of hops in the enclosing subgraph is 3. We set the semantic embedding dimension to 24, the layer-O embedding dimension to 32,and the margin $\\gamma$ in the loss function to 10.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.emnlp-main.1383::sections::4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Ampere A100 64GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "In this section we detail our experimental setup, including datasets,baselines, training and evaluation details.Experiments were conducted with Python 3.8.19 and PyTorch 2.3.0, using an NVIDIA Ampere A100 GPU (64GB VRAM) and CUDA 12.1.",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.emnlp-main.1383::sections::4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Ampere A100 64GB",
+      "cleaned_hardware_name": "nvidia ampere a100 64gb",
+      "normalized_hardware_name": "NVIDIA Ampere A100 64GB",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "evidence": "In this section we detail our experimental setup, including datasets,baselines, training and evaluation details.Experiments were conducted with Python 3.8.19 and PyTorch 2.3.0, using an NVIDIA Ampere A100 GPU (64GB VRAM) and CUDA 12.1.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Ampere A100 64GB",
+        "num": 1
+      }
+    ]
+  }
+}

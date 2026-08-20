@@ -1,0 +1,241 @@
+{
+  "paper_id": "2024.emnlp-main.769",
+  "candidate_windows": [
+    {
+      "window_id": "2024.emnlp-main.769::sections::5",
+      "paper_id": "2024.emnlp-main.769",
+      "section_number": "5",
+      "section_title": "task and datasets",
+      "normalized_section_title": "task and datasets",
+      "window_text": "Task Following Ragni et al. (2019); Eisape et al. (2024), we use a multiple-choice setting. As illustrated in Figure 3, for a given syllogistic schema, the model is given two premises followed by nine possible conclusions. These nine conclusions include all the possible relations between the terms $a$ and $c$ (Aac, Iac, Eac, Oac, Aca, Ica, Eca, Oca), plus the string \"Nothing follows\", which has to be selected when from the two premises none of the other options can be drawn. These possible conclusions are always presented to the model in random order. To succeed in the task, the model has to generate at least one of the correct conclusions.<sup>3</sup> Below, we will describe how we built the training data, the ICL examples, and the various test sets.\n\nTraining sets We created our training sets by replacing variables with pseudo-words. We use 4k pseudo-words<sup>4</sup> to produce inferences that preserved the formal structure of the original data points but have nonsensical content. We use these data points as ICL examples and as training data for SFT. For the latter, to select the best model, we use a development set, containing one instance of each schema (64 data points) built with a vocabulary of 1k pseudo-words not seen during training. Further details on the training are reported in Appendix B.\n\nTest sets To study the content-effect bias we build believable and unbelievable syllogisms. Similarly to Lampinen et al. (2023), we use triples of terms that are ontologically related: we manually generated 10 triples where terms are in a taxonomical relationship (e.g. siameses, cats, felines)\n\n![](images/3a3fe3b544ffde9599606ccd4b132343a655d8232e597f4cd94a2f50f570c299.jpg)\n\n![](images/3778cadd7eece595c1b7b6acec099069589ddb56f42e49180e394833cbbb9a15.jpg)  \nFigure 3: Multiple-choice Task The model is given the premises and nine possible conclusions, and has to generate the correct one(s). $\\mathrm{ICL}_{out}$ is given in-context examples of different schemas than the one of the test example, while $\\mathrm{ICL}_{in}$ receives in-context examples of the same schema. The supervised fine-tuned model is trained on all schemas.\n\nand substituted the $a$ , $b$ , and $c$ variables of the schema with these triples, obtaining premises that are true in the real world. We refer to this set as believable syllogisms. An example is provided in Figure 3. Since the content effect relies on the plausibility of the conclusion, we generated unbelievable syllogisms only for the valid schemas. We used the same 30 terms but made sure that the correct conclusions violate real-world knowledge, as illustrated by the example in Figure 1 (middle). For the believable syllogisms, we generated test sets consisting of 640 data points each (64 schemas instantiated with 10 triples of terms); for the unbelievable ones, we generated 270 data points (27 valid schemas instantiated with 10 triples of terms).\n\nTo check the models' robustness to inference length, we create inferences with more than two premises whose solution requires applying a chain of syllogistic schemas. To build these longer inferences, we exploited the property of transitivity replacing an A-premise (Aab) with a chain $Aac_{1}, Ac_{1}c_{2}, \\ldots, Ac_{n-1}c_{n}, Ac_{n}b$ . By setting $n = 2$ and $n = 3$ , we obtain inferences with 3 and 4 premises, respectively. Out of the 64 schemas, 28 have at least one A-premise, hence, we obtained 280 data points both for 3- and 4-premises settings (28 schemas instantiated with 10 different triples of pseudo-words not present in the training and development sets). Further details on the datasets\n\nconstruction are in Appendix A.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.769::sections::6.2",
+      "paper_id": "2024.emnlp-main.769",
+      "section_number": "6.2",
+      "section_title": "learning strategies performance",
+      "normalized_section_title": "learning strategies performance",
+      "window_text": "We take the largest version of Pythia (Pythia-1.4B) and the smallest version of LLaMA (LLaMa-3 8B), both without instruction tuning, to evaluate them in the ICL and SFT settings.\n\nHuman and AI biases As illustrated in Table 2, ICL does not help models recognize when no valid conclusion follows. This is particularly striking, given that in $\\mathrm{ICL}_{in}$ , the in-context examples are of the same schema as the test examples, hence the model fails even to copy the \"nothing follows\" answer. This weakness is overcome by SFT: both Pythia and LLaMA are at or near ceiling on both invalid and valid inferences. Interestingly, models only overcome content effect biases in the SFT setting, which suggests that hindering a reliance on lexical content (e.g. through pseudo-words) is effective in forcing models to draw conclusions based on form rather than content.\n\nUnseen number of premises Handling a higher number of premises is harder, as illustrated in Table 3 by the decreased performance of the models tested in the ZS CoT setting. As explained in Section 5, here we are focusing on 28 schemas (those having an A-premise) – a total of 280 data points with 2, 3 or 4 premises containing pseudowords instead of nouns. We see that indeed both models are more robust when given diverse in-context examples (ICLout has a lower drop than ICLin with a higher number of premises.) Overall, SFT has a higher drop than ICL, but it still has a much higher accuracy than ICL both for 3- and 4-premises. This result aligns with previous research, which shows that models trained or fine-tuned to determine whether an inference can be drawn from a given set of premises struggle to extrapolate their\n\nabilities when faced with a longer set of premises (Clark et al., 2020; Guzman et al., 2024).",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.769::appendix::B",
+      "paper_id": "2024.emnlp-main.769",
+      "section_number": "B",
+      "section_title": "implementational details",
+      "normalized_section_title": "implementational details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.769::appendix::B.1",
+      "paper_id": "2024.emnlp-main.769",
+      "section_number": "B.1",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources",
+      "window_text": "All our experiments were carried out using a single server with three 24GB NVIDIA GPUs: 2 RTX A5000 and 1 Quadro P6000. The total computation time to fine-tune models and run all evaluations is approximately 72 hours.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.769::appendix::B.2",
+      "paper_id": "2024.emnlp-main.769",
+      "section_number": "B.2",
+      "section_title": "training",
+      "normalized_section_title": "training",
+      "window_text": "Supervised Fine-tuning. To fine-tune models we used the popular parameter-efficient method LoRA (Hu et al., 2021). We set the rank 32 and applied LoRA to the query and key attention matrices. We used no bias and set LoRA's $\\alpha$ to 16 and dropout to 0.05. To select the rank we compared the performance of different ranks (8, 16, 32) and found 32 to be the best value. We used AdamW as optimizer with a learning rate of 5e-4. The other optimizer's hyper-parameters are left in their default setting. We used a batch size of 2 with 32 gradient accumulation steps. Fine-tunings were performed using PyTorch and LoRA layers were created and added to the original models using the built-in methods from the libraries transformers and peft.\n\nAs fine-tuning objective, we minimize the cross-entropy loss on text sequences composed by the two premises, the list of options presented in random order, and the correct conclusions. At test time, fine-tuned models are prompted with the two premises plus the list of options in random order and have to complete the sequence generating conclusions.\n\nModels are fine-tuned for 100 epochs and evaluate models' performance at the end of each epoch using a small development set. This development set is built using the 64 schemas and pseudo-words that are unseen during training. The SFT models used in the main paper are the ones that obtained the best accuracy on this development set.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.769::appendix::B.3",
+      "paper_id": "2024.emnlp-main.769",
+      "section_number": "B.3",
+      "section_title": "inference",
+      "normalized_section_title": "inference",
+      "window_text": "Text Generation Details. For all test sets and settings, we use greedy decoding to generate syllogism conclusions from LMs. We let LMs generate 20 tokens for each answer, which can correspond to 2 or 3 conclusions based on the terms appearing in the conclusions. Since it is possible to derive from 1 to 4 possible conclusions depending on which syllogism is considered (e.g. AE1 has four conclusions, OA1 has one, see Table 5), we set the number of generated tokens to an amount that can\n\nYou will be presented with premises together with eight possible conclusions and the option 'Nothing follows'.\n\nWrite the conclusion that logically follows given the premises or 'Nothing follows' if none of the other conclusions logically follow.\n\nRead the passage of information thoroughly and select the correct answer from the available options.\n\nRead the premises thoroughly to ensure you know what the premise entails.\n\nFigure 5: Task instruction prompt. We adapted our prompt from Eisape et al. (2024) and added the additional strings \"Read the passage of information thoroughly and select the correct answer from the available options. Read the premises thoroughly to ensure you know what the premise entails.\" to make the task requirements more explicit.\n\nlet models generate more than one conclusion. This choice was motivated by the fact that considering only most probable conclusion would limit a deeper understanding of how LMs complete the task. In fact, generating only one conclusion would prevent us from analyzing whether models contradict themselves (Table 4 center) or whether they follow the Atmosphere Theory (Table 4 right). For the ZS-CoT setting, we let pretrained LMs generate a reasoning chain of 50 tokens and instruction-tuned LMs a chain of 70 tokens. This was done since we observed that instruction-tuned models tend to be more verbose and need on average more tokens to complete their reasoning. For experiments where syllogisms with 3 and 4 premises were involved, we let all models generate 70 tokens.\n\nAnswer extraction. Since we frame the task as multiple-choice with LMs generating conclusions, we tried to constrain the generation to make models output only the desired answer and nothing else. For both the ICL settings, we added at the end of the prompt an additional string to elicit a direct answer by models. The additional prompt is \"Given the premises I choose the following option(s):\". Instead, for the ZS-CoT setting we first conditioned the model to output a reasoning chain by adding the string \"Let's think this through, step by step\" and then we extracted a final answer by adding the string \"So, my final answer(s) is/are:\" at the end of the reasoning chain. SFT models needed no additional prompts since they were fine-tuned on the task.\n\nWeights Precision. Due to the limited computational resources we used 8-bit quantization for LLaMA-2-13B and 4-quantization for LLaMA-3-70B, for both pretrained and instruction-tuned models. For all other models, we used half-precision\n\ninference.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.emnlp-main.769::appendix::C",
+      "paper_id": "2024.emnlp-main.769",
+      "section_number": "C",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "window_text": "Task Accuracy The accuracies shown in Tables 1, 2, and 3 are computed by allowing models to generate conclusions and considering an answer successful when it contains at least one of the correct conclusions. As the in-depth analysis of model\n\nTable 6: Top 1 Accuracy. We compute the Top 1 Accuracy by retaining only the first generated answer as the prediction. The results are from the best run for each setting out of the three reported in the main paper.   \n\n<table><tr><td rowspan=\"2\" colspan=\"2\"></td><td colspan=\"3\">Believable</td><td>Unbelievable</td></tr><tr><td>Acc</td><td>Valid</td><td>Invalid</td><td>Valid</td></tr><tr><td rowspan=\"4\">PYTHIA</td><td>ZS-CoT</td><td>7.03</td><td>16.30</td><td>0.27</td><td>18.89</td></tr><tr><td>ICLin</td><td>13.44</td><td>27.41</td><td>3.24</td><td>26.67</td></tr><tr><td>ICLout</td><td>7.81</td><td>17.41</td><td>0.81</td><td>15.93</td></tr><tr><td>SFT</td><td>78.59</td><td>62.59</td><td>90.27</td><td>63.33</td></tr><tr><td rowspan=\"4\">LLAMA</td><td>ZS-CoT</td><td>27.34</td><td>63.70</td><td>0.81</td><td>57.04</td></tr><tr><td>ICLin</td><td>31.41</td><td>72.96</td><td>1.08</td><td>70.74</td></tr><tr><td>ICLout</td><td>24.69</td><td>58.15</td><td>0.27</td><td>50.74</td></tr><tr><td>SFT</td><td>91.88</td><td>81.11</td><td>99.73</td><td>90.00</td></tr></table>\n\nconsistency and the overlap with the Atmosphere heuristic show (see Table 4), Pythia and LLaMA in their different settings also generate incorrect answers. For this reason, we also show the Top 1 accuracy obtained by the models, computed by retaining only the first generated answer as the model prediction. The results are shown in Table 6 and are computed by selecting the best run for each setting out of the three reported in Table 2.\n\nCorrelation between humans and models Tables 1 and 2 show the correlation between the accuracies obtained by humans and models on valid syllogisms of the believable set. The human accuracies we used for each schema are taken from Khemlani and Johnson-Laird (2012) and can be seen in Table 5. Regarding the accuracies of LMs, the believable set has 10 instances of the same schema with different terms. Given this property of the set, it is straightforward to compute the accuracy of schemas appearing in them. After having obtained an accuracy for each valid schema, we then compute the Spearman correlation coefficient between humans and models.\n\nA higher correlation means that models and humans struggle with the same schemas. This can be true even when models have on average a higher accuracy compared with humans. For example, LLaMA-3 70B has an accuracy of $58.89\\%$ on valid syllogisms whereas humans have an accuracy of $44.63\\%$ , but the correlation between the two is 0.80. This situation occurs if both models and humans find the same syllogisms relatively easier or harder, compared to their own average performance. In other words, the syllogisms that humans struggle with the most tend to also be challenging for models, and those that humans find easiest tend to be\n\nTable 7: Content Effect bias (Left): We compute how often the model generates an unbelievable option while the ground truth conclusion is believable $(U|B)$ , and vice-versa $(B|U)$ . A higher percentage in the latter case signals a content effect bias.   \n\n<table><tr><td></td><td></td><td colspan=\"2\">Content Effect</td></tr><tr><td></td><td></td><td>U|B</td><td>B|U</td></tr><tr><td rowspan=\"4\">PYTHIA</td><td>ZS-CoT</td><td>35.31</td><td>52.45</td></tr><tr><td>ICLout</td><td>35.64</td><td>50.77</td></tr><tr><td>ICLin</td><td>34.64</td><td>48.44</td></tr><tr><td>SFT</td><td>19.81</td><td>21.39</td></tr><tr><td rowspan=\"4\">LLAMA</td><td>ZS-CoT</td><td>11.66</td><td>22.10</td></tr><tr><td>ICLout</td><td>20.95</td><td>38.94</td></tr><tr><td>ICLin</td><td>11.59</td><td>22.94</td></tr><tr><td>SFT</td><td>1.06</td><td>4.28</td></tr></table>\n\neasier for models too - even though the models get more answers right overall.\n\nAnalysis of Content Effect We report in Figure 8 the results of the statistical tests used to verify whether the performance differences for the content effect from Table 1 are significant. We employed the scipy implementation of the Chi-square test for independence of variables in a contingency table. This test uses Pearson's chi-squared statistic with Yates' continuity correction.\n\nIn addition to this statistical analysis, we show here the results of an additional experiment measuring the content effect in ZS-CoT, $\\mathrm{ICL}_{in}$ , $\\mathrm{ICL}_{out}$ , and SFT settings. A model suffering from content effect bias would prefer a believable conclusion over an unbelievable one. Hence, we check how often models generate believable conclusions when the correct one is unbelievable ( $B|U$ ), and, conversely, how often models generate unbelievable conclusions when the correct one is believable ( $U|B$ ). A model that suffers from content bias would produce $B|U > U|B$ . Table 7 shows that all settings but SFT produce more $B|U$ , strengthening the results of Table 2.\n\nIn order to compute $U|B$ and $B|U$ for each setting, we used LLaMA-3-inst 8B to annotate the generated conclusions. To verify the reliability of the model we manually annotated 441 conclusions with LLaMA-3-inst 8B obtaining $93.42\\%$ accuracy w.r.t human judgment.\n\nTable 8: Completeness. Performance comparison of LLaMA and Pythia showing overall percentages of incomplete answers, as well as the percentage of incomplete answers for I and E conclusions. In this table lower is better.   \n\n<table><tr><td rowspan=\"2\" colspan=\"2\"></td><td colspan=\"3\">Completeness</td></tr><tr><td>% Inc</td><td>% Inc(I)</td><td>% Inc(E)</td></tr><tr><td rowspan=\"4\">PYTHIA</td><td>ZS-CoT</td><td>83.46</td><td>78.62</td><td>90.45</td></tr><tr><td>ICLout</td><td>83.52</td><td>82.34</td><td>84.85</td></tr><tr><td>ICLin</td><td>81.20</td><td>78.69</td><td>83.67</td></tr><tr><td>SFT</td><td>90.46</td><td>99.32</td><td>82.79</td></tr><tr><td rowspan=\"4\">LLAMA</td><td>ZS-CoT</td><td>96.93</td><td>99.05</td><td>95.51</td></tr><tr><td>ICLout</td><td>72.93</td><td>96.08</td><td>69.54</td></tr><tr><td>ICLin</td><td>76.24</td><td>83.52</td><td>74.25</td></tr><tr><td>SFT</td><td>43.14</td><td>61.36</td><td>29.31</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.emnlp-main.769::appendix::B.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX A5000 24GB",
+      "count": 2,
+      "count_text": "2",
+      "evidence": "All our experiments were carried out using a single server with three 24GB NVIDIA GPUs: 2 RTX A5000 and 1 Quadro P6000. The total computation time to fine-tune models and run all evaluations is approximately 72 hours.",
+      "section_number": "B.1",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources"
+    },
+    {
+      "window_id": "2024.emnlp-main.769::appendix::B.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Quadro P6000 24GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "All our experiments were carried out using a single server with three 24GB NVIDIA GPUs: 2 RTX A5000 and 1 Quadro P6000. The total computation time to fine-tune models and run all evaluations is approximately 72 hours.",
+      "section_number": "B.1",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.emnlp-main.769::appendix::B.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX A5000 24GB",
+      "cleaned_hardware_name": "rtx a5000 24gb",
+      "normalized_hardware_name": "NVIDIA RTX A5000",
+      "benchmark_hardware_name": "NVIDIA RTX A5000",
+      "count": 2,
+      "count_text": "2",
+      "section_number": "B.1",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources",
+      "evidence": "All our experiments were carried out using a single server with three 24GB NVIDIA GPUs: 2 RTX A5000 and 1 Quadro P6000. The total computation time to fine-tune models and run all evaluations is approximately 72 hours.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized RTX family rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2024.emnlp-main.769::appendix::B.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Quadro P6000 24GB",
+      "cleaned_hardware_name": "quadro p6000 24gb",
+      "normalized_hardware_name": "Quadro P6000 24GB",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "B.1",
+      "section_title": "computational resources",
+      "normalized_section_title": "computational resources",
+      "evidence": "All our experiments were carried out using a single server with three 24GB NVIDIA GPUs: 2 RTX A5000 and 1 Quadro P6000. The total computation time to fine-tune models and run all evaluations is approximately 72 hours.",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.emnlp-main.769::sections::5",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "task and datasets",
+      "evidence": "Task Following Ragni et al. (2019); Eisape et al. (2024), we use a multiple-choice setting. As illustrated in Figure 3, for a given syllogistic schema, the model is given two premises followed by nine possible conclusions. These nine conclusions include all the possible relations between the terms $a$ and $c$ (Aac, Iac, Eac, Oac, Aca, Ica, Eca, Oca), plus the string \"Nothing follows\", which has to be selected when from the two premises none of the other options can be drawn. These possible conclusions are always presented to the model in random order. To succeed in the task, the model has to generate at least one of the correct conclusions.<sup>3</sup> Below, we will describe how we built the training data, the ICL examples, and the various test sets.\n\nTraining sets We created our training sets by replacing variables with pseudo-words. We use 4k pseudo-words<sup>4</sup> to produce inferences that preserved the formal structure of the original data points but have nonsensical content. We use these data points as ICL examples and as training data for SFT. For the latter, to select the best model, we use a development set, containing one instance of each schema (64 data points) built with a vocabulary of 1k pseudo-words not seen during training. Further details on the training are reported in Appendix B.\n\nTest sets To study the content-effect bias we build believable and unbelievable syllogisms. Similarly to Lampinen et al. (2023), we use triples of terms that are ontologically related: we manually generated 10 triples where terms are in a taxonomical relationship (e.g. siameses, cats, felines)\n\n![](images/3a3fe3b544ffde9599606ccd4b132343a655d8232e597f4cd94a2f50f570c299.jpg)\n\n![](images/3778cadd7eece595c1b7b6acec099069589ddb56f42e49180e394833cbbb9a15.jpg)  \nFigure 3: Multiple-choice Task The model is given the premises and nine possible conclusions, and has to generate the correct one(s). $\\mathrm{ICL}_{out}$ is given in-context examples of different schemas than the one of the test example, while $\\mathrm{ICL}_{in}$ receives in-context examples of the same schema. The supervised fine-tuned model is trained on all schemas.\n\nand substituted the $a$ , $b$ , and $c$ variables of the schema with these triples, obtaining premises that are true in the real world. We refer to this set as believable syllogisms. An example is provided in Figure 3. Since the content effect relies on the plausibility of the conclusion, we generated unbelievable syllogisms only for the valid schemas. We used the same 30 terms but made sure that the correct conclusions violate real-world knowledge, as illustrated by the example in Figure 1 (middle). For the believable syllogisms, we generated test sets consisting of 640 data points each (64 schemas instantiated with 10 triples of terms); for the unbelievable ones, we generated 270 data points (27 valid schemas instantiated with 10 triples of terms).\n\nTo check the models' robustness to inference length, we create inferences with more than two premises whose solution requires applying a chain of syllogistic schemas. To build these longer inferences, we exploited the property of transitivity replacing an A-premise (Aab) with a chain $Aac_{1}, Ac_{1}c_{2}, \\ldots, Ac_{n-1}c_{n}, Ac_{n}b$ . By setting $n = 2$ and $n = 3$ , we obtain inferences with 3 and 4 premises, respectively. Out of the 64 schemas, 28 have at least one A-premise, hence, we obtained 280 data points both for 3- and 4-premises settings (28 schemas instantiated with 10 different triples of pseudo-words not present in the training and development sets). Further details on the datasets\n\nconstruction are in Appendix A."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.769::sections::6.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6.2",
+      "section_title": "learning strategies performance",
+      "evidence": "We take the largest version of Pythia (Pythia-1.4B) and the smallest version of LLaMA (LLaMa-3 8B), both without instruction tuning, to evaluate them in the ICL and SFT settings.\n\nHuman and AI biases As illustrated in Table 2, ICL does not help models recognize when no valid conclusion follows. This is particularly striking, given that in $\\mathrm{ICL}_{in}$ , the in-context examples are of the same schema as the test examples, hence the model fails even to copy the \"nothing follows\" answer. This weakness is overcome by SFT: both Pythia and LLaMA are at or near ceiling on both invalid and valid inferences. Interestingly, models only overcome content effect biases in the SFT setting, which suggests that hindering a reliance on lexical content (e.g. through pseudo-words) is effective in forcing models to draw conclusions based on form rather than content.\n\nUnseen number of premises Handling a higher number of premises is harder, as illustrated in Table 3 by the decreased performance of the models tested in the ZS CoT setting. As explained in Section 5, here we are focusing on 28 schemas (those having an A-premise) – a total of 280 data points with 2, 3 or 4 premises containing pseudowords instead of nouns. We see that indeed both models are more robust when given diverse in-context examples (ICLout has a lower drop than ICLin with a higher number of premises.) Overall, SFT has a higher drop than ICL, but it still has a much higher accuracy than ICL both for 3- and 4-premises. This result aligns with previous research, which shows that models trained or fine-tuned to determine whether an inference can be drawn from a given set of premises struggle to extrapolate their\n\nabilities when faced with a longer set of premises (Clark et al., 2020; Guzman et al., 2024)."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.769::appendix::B",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B",
+      "section_title": "implementational details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.emnlp-main.769::appendix::B.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B.2",
+      "section_title": "training",
+      "evidence": "Supervised Fine-tuning. To fine-tune models we used the popular parameter-efficient method LoRA (Hu et al., 2021). We set the rank 32 and applied LoRA to the query and key attention matrices. We used no bias and set LoRA's $\\alpha$ to 16 and dropout to 0.05. To select the rank we compared the performance of different ranks (8, 16, 32) and found 32 to be the best value. We used AdamW as optimizer with a learning rate of 5e-4. The other optimizer's hyper-parameters are left in their default setting. We used a batch size of 2 with 32 gradient accumulation steps. Fine-tunings were performed using PyTorch and LoRA layers were created and added to the original models using the built-in methods from the libraries transformers and peft.\n\nAs fine-tuning objective, we minimize the cross-entropy loss on text sequences composed by the two premises, the list of options presented in random order, and the correct conclusions. At test time, fine-tuned models are prompted with the two premises plus the list of options in random order and have to complete the sequence generating conclusions.\n\nModels are fine-tuned for 100 epochs and evaluate models' performance at the end of each epoch using a small development set. This development set is built using the 64 schemas and pseudo-words that are unseen during training. The SFT models used in the main paper are the ones that obtained the best accuracy on this development set."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.769::appendix::B.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B.3",
+      "section_title": "inference",
+      "evidence": "Text Generation Details. For all test sets and settings, we use greedy decoding to generate syllogism conclusions from LMs. We let LMs generate 20 tokens for each answer, which can correspond to 2 or 3 conclusions based on the terms appearing in the conclusions. Since it is possible to derive from 1 to 4 possible conclusions depending on which syllogism is considered (e.g. AE1 has four conclusions, OA1 has one, see Table 5), we set the number of generated tokens to an amount that can\n\nYou will be presented with premises together with eight possible conclusions and the option 'Nothing follows'.\n\nWrite the conclusion that logically follows given the premises or 'Nothing follows' if none of the other conclusions logically follow.\n\nRead the passage of information thoroughly and select the correct answer from the available options.\n\nRead the premises thoroughly to ensure you know what the premise entails.\n\nFigure 5: Task instruction prompt. We adapted our prompt from Eisape et al. (2024) and added the additional strings \"Read the passage of information thoroughly and select the correct answer from the available options. Read the premises thoroughly to ensure you know what the premise entails.\" to make the task requirements more explicit.\n\nlet models generate more than one conclusion. This choice was motivated by the fact that considering only most probable conclusion would limit a deeper understanding of how LMs complete the task. In fact, generating only one conclusion would prevent us from analyzing whether models contradict themselves (Table 4 center) or whether they follow the Atmosphere Theory (Table 4 right). For the ZS-CoT setting, we let pretrained LMs generate a reasoning chain of 50 tokens and instruction-tuned LMs a chain of 70 tokens. This was done since we observed that instruction-tuned models tend to be more verbose and need on average more tokens to complete their reasoning. For experiments where syllogisms with 3 and 4 premises were involved, we let all models generate 70 tokens.\n\nAnswer extraction. Since we frame the task as multiple-choice with LMs generating conclusions, we tried to constrain the generation to make models output only the desired answer and nothing else. For both the ICL settings, we added at the end of the prompt an additional string to elicit a direct answer by models. The additional prompt is \"Given the premises I choose the following option(s):\". Instead, for the ZS-CoT setting we first conditioned the model to output a reasoning chain by adding the string \"Let's think this through, step by step\" and then we extracted a final answer by adding the string \"So, my final answer(s) is/are:\" at the end of the reasoning chain. SFT models needed no additional prompts since they were fine-tuned on the task.\n\nWeights Precision. Due to the limited computational resources we used 8-bit quantization for LLaMA-2-13B and 4-quantization for LLaMA-3-70B, for both pretrained and instruction-tuned models. For all other models, we used half-precision\n\ninference."
+    },
+    {
+      "source_window_id": "2024.emnlp-main.769::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "experimental details",
+      "evidence": "Task Accuracy The accuracies shown in Tables 1, 2, and 3 are computed by allowing models to generate conclusions and considering an answer successful when it contains at least one of the correct conclusions. As the in-depth analysis of model\n\nTable 6: Top 1 Accuracy. We compute the Top 1 Accuracy by retaining only the first generated answer as the prediction. The results are from the best run for each setting out of the three reported in the main paper.   \n\n<table><tr><td rowspan=\"2\" colspan=\"2\"></td><td colspan=\"3\">Believable</td><td>Unbelievable</td></tr><tr><td>Acc</td><td>Valid</td><td>Invalid</td><td>Valid</td></tr><tr><td rowspan=\"4\">PYTHIA</td><td>ZS-CoT</td><td>7.03</td><td>16.30</td><td>0.27</td><td>18.89</td></tr><tr><td>ICLin</td><td>13.44</td><td>27.41</td><td>3.24</td><td>26.67</td></tr><tr><td>ICLout</td><td>7.81</td><td>17.41</td><td>0.81</td><td>15.93</td></tr><tr><td>SFT</td><td>78.59</td><td>62.59</td><td>90.27</td><td>63.33</td></tr><tr><td rowspan=\"4\">LLAMA</td><td>ZS-CoT</td><td>27.34</td><td>63.70</td><td>0.81</td><td>57.04</td></tr><tr><td>ICLin</td><td>31.41</td><td>72.96</td><td>1.08</td><td>70.74</td></tr><tr><td>ICLout</td><td>24.69</td><td>58.15</td><td>0.27</td><td>50.74</td></tr><tr><td>SFT</td><td>91.88</td><td>81.11</td><td>99.73</td><td>90.00</td></tr></table>\n\nconsistency and the overlap with the Atmosphere heuristic show (see Table 4), Pythia and LLaMA in their different settings also generate incorrect answers. For this reason, we also show the Top 1 accuracy obtained by the models, computed by retaining only the first generated answer as the model prediction. The results are shown in Table 6 and are computed by selecting the best run for each setting out of the three reported in Table 2.\n\nCorrelation between humans and models Tables 1 and 2 show the correlation between the accuracies obtained by humans and models on valid syllogisms of the believable set. The human accuracies we used for each schema are taken from Khemlani and Johnson-Laird (2012) and can be seen in Table 5. Regarding the accuracies of LMs, the believable set has 10 instances of the same schema with different terms. Given this property of the set, it is straightforward to compute the accuracy of schemas appearing in them. After having obtained an accuracy for each valid schema, we then compute the Spearman correlation coefficient between humans and models.\n\nA higher correlation means that models and humans struggle with the same schemas. This can be true even when models have on average a higher accuracy compared with humans. For example, LLaMA-3 70B has an accuracy of $58.89\\%$ on valid syllogisms whereas humans have an accuracy of $44.63\\%$ , but the correlation between the two is 0.80. This situation occurs if both models and humans find the same syllogisms relatively easier or harder, compared to their own average performance. In other words, the syllogisms that humans struggle with the most tend to also be challenging for models, and those that humans find easiest tend to be\n\nTable 7: Content Effect bias (Left): We compute how often the model generates an unbelievable option while the ground truth conclusion is believable $(U|B)$ , and vice-versa $(B|U)$ . A higher percentage in the latter case signals a content effect bias.   \n\n<table><tr><td></td><td></td><td colspan=\"2\">Content Effect</td></tr><tr><td></td><td></td><td>U|B</td><td>B|U</td></tr><tr><td rowspan=\"4\">PYTHIA</td><td>ZS-CoT</td><td>35.31</td><td>52.45</td></tr><tr><td>ICLout</td><td>35.64</td><td>50.77</td></tr><tr><td>ICLin</td><td>34.64</td><td>48.44</td></tr><tr><td>SFT</td><td>19.81</td><td>21.39</td></tr><tr><td rowspan=\"4\">LLAMA</td><td>ZS-CoT</td><td>11.66</td><td>22.10</td></tr><tr><td>ICLout</td><td>20.95</td><td>38.94</td></tr><tr><td>ICLin</td><td>11.59</td><td>22.94</td></tr><tr><td>SFT</td><td>1.06</td><td>4.28</td></tr></table>\n\neasier for models too - even though the models get more answers right overall.\n\nAnalysis of Content Effect We report in Figure 8 the results of the statistical tests used to verify whether the performance differences for the content effect from Table 1 are significant. We employed the scipy implementation of the Chi-square test for independence of variables in a contingency table. This test uses Pearson's chi-squared statistic with Yates' continuity correction.\n\nIn addition to this statistical analysis, we show here the results of an additional experiment measuring the content effect in ZS-CoT, $\\mathrm{ICL}_{in}$ , $\\mathrm{ICL}_{out}$ , and SFT settings. A model suffering from content effect bias would prefer a believable conclusion over an unbelievable one. Hence, we check how often models generate believable conclusions when the correct one is unbelievable ( $B|U$ ), and, conversely, how often models generate unbelievable conclusions when the correct one is believable ( $U|B$ ). A model that suffers from content bias would produce $B|U > U|B$ . Table 7 shows that all settings but SFT produce more $B|U$ , strengthening the results of Table 2.\n\nIn order to compute $U|B$ and $B|U$ for each setting, we used LLaMA-3-inst 8B to annotate the generated conclusions. To verify the reliability of the model we manually annotated 441 conclusions with LLaMA-3-inst 8B obtaining $93.42\\%$ accuracy w.r.t human judgment.\n\nTable 8: Completeness. Performance comparison of LLaMA and Pythia showing overall percentages of incomplete answers, as well as the percentage of incomplete answers for I and E conclusions. In this table lower is better.   \n\n<table><tr><td rowspan=\"2\" colspan=\"2\"></td><td colspan=\"3\">Completeness</td></tr><tr><td>% Inc</td><td>% Inc(I)</td><td>% Inc(E)</td></tr><tr><td rowspan=\"4\">PYTHIA</td><td>ZS-CoT</td><td>83.46</td><td>78.62</td><td>90.45</td></tr><tr><td>ICLout</td><td>83.52</td><td>82.34</td><td>84.85</td></tr><tr><td>ICLin</td><td>81.20</td><td>78.69</td><td>83.67</td></tr><tr><td>SFT</td><td>90.46</td><td>99.32</td><td>82.79</td></tr><tr><td rowspan=\"4\">LLAMA</td><td>ZS-CoT</td><td>96.93</td><td>99.05</td><td>95.51</td></tr><tr><td>ICLout</td><td>72.93</td><td>96.08</td><td>69.54</td></tr><tr><td>ICLin</td><td>76.24</td><td>83.52</td><td>74.25</td></tr><tr><td>SFT</td><td>43.14</td><td>61.36</td><td>29.31</td></tr></table>"
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA RTX A5000",
+        "num": 2
+      },
+      {
+        "name": "Quadro P6000 24GB",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2024\\2024.emnlp-main.769\\auto\\full.md",
+    "source_md_sha256": "d6e1cde4c0f8fb8ff33db9b853b3465e42c9eb95d3f671f5a91b510dd80527ba",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "749fdb433714bfa003499fb1c90f58c9bb6de4daf647bf52f54e32986186b91c"
+  }
+}

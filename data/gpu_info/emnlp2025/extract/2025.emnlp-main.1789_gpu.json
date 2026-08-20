@@ -1,0 +1,122 @@
+{
+  "paper_id": "2025.emnlp-main.1789",
+  "candidate_windows": [
+    {
+      "window_id": "2025.emnlp-main.1789::sections::2.1",
+      "paper_id": "2025.emnlp-main.1789",
+      "section_number": "2.1",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "Large Language Models (LLMs) generate text autoregressively. Given a preceding context $x _ { < t } =$ $\\left( x _ { 1 } , \\ldots , x _ { t - 1 } \\right)$ , an LLM parameterized by $\\theta$ outputs a probability distribution $P _ { \\theta } ( x _ { t } \\mid x _ { < t } )$ over its vocabulary $V$ for the next token $x _ { t }$ . The uncertainty associated with this prediction can be quantified using token-level entropy.\n\nPrediction entropy.Let $\\mathbf { z } _ { t } \\in \\mathbb { R } ^ { | V | }$ be the logit vector for the next token prediction and $\\mathbf { p } _ { t } =$ softmax $\\left( \\mathbf { z } _ { t } \\right)$ be the corresponding probability vector. The entropy $H _ { t }$ at token position $t$ is then defined as:\n\n$$\nH _ { t } = - \\sum _ { u \\in V } p _ { t , u } \\log p _ { t , u } .\n$$\n\nA higher $H _ { t }$ indicates greater model uncertainty about the next token.\n\nNext-token prediction. We consider Supervised Fine-tuning (SFT),a common technique to adapt LLMs,where the model is trained to minimize the cross-entropy loss on a dataset $\\mathcal { D } = \\{ ( x , y ) \\}$ of input contexts $x$ and target responses $y$ .The SFT loss is typically given by:\n\n$$\n\\mathcal { L } _ { \\mathrm { S F T } } ( \\theta , \\mathcal { D } ) = - \\mathbb { E } _ { ( x , y ) \\sim \\mathcal { D } } \\left[ \\sum _ { i = 1 } ^ { | y | } \\log P _ { \\theta } ( y _ { i } | x , y _ { < i } ) \\right] .\n$$",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1789::sections::4",
+      "paper_id": "2025.emnlp-main.1789",
+      "section_number": "4",
+      "section_title": "experiment",
+      "normalized_section_title": "experiment",
+      "window_text": "In this section, we empirically evaluate the effectiveness of our proposed Confusion-Inducing Attacks (CIA) and mismatched Supervised Finetuning (SFT) strategy as well as our Random Snippet Attacks (RSA). We begin by detailing the experimental setup in Section 4.1. Subsequently, Section 4.2 presents our evaluation against unaligned models,and Section 4.3 assesses performance against aligned models. Finally, Section 5 provides ablation studies to verify the impact of key components of our approach, including the confusion-based SFT.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1789::sections::4.1",
+      "paper_id": "2025.emnlp-main.1789",
+      "section_number": "4.1",
+      "section_title": "experiment setup",
+      "normalized_section_title": "experiment setup",
+      "window_text": "Evaluation metrics. Our evaluation pipeline for quantifying memorization begins with generating responses from each model and attack method to 500 distinct prompts. Each generated response is then assessed for potential memorization of pretraining data. Such instances are identified using the InfiniGram search tool (Liu et al., 2024), which performs efficient exact-match searches against a comprehensive collection of open pretraining datasets. Recognizing that perfect verbatim outputs can be obscured by minor discrepancies, we extend this initial search to a near-verbatim metric. For any sequence identified by InfiniGram as a candidate match, we perform a two-stage refinement: first, we determine the longest common substring (LCS) between the generated sequence and the corresponding training document. Second, this LCS is bidirectionally extended to ascertain if a 5O-token span can be formed while tolerating a limited number of token mismatches (Further details on this process can be found in Appendix B.3).\n\nSubsequently, to ensure that identified matches represent meaningful, non-trivial memorized strings rather than highly repetitive outputs，we further apply a diversity flter to any sequence identified as a match in the preceding steps. For a matched sequence $S _ { m a t c h }$ ，let $T ( S _ { m a t c h } ) =$ $\\left( t _ { 1 } , t _ { 2 } , \\ldots , t _ { N } \\right)$ be its tokenization into $N$ tokens, and $U ( S _ { m a t c h } )$ be the set of unique tokens within $T ( S _ { m a t c h } )$ . We calculate its diversity score as:\n\n$$\n\\mathrm { D i v } ( S _ { m a t c h } ) = \\frac { | U ( S _ { m a t c h } ) | } { N } .\n$$\n\nAny matched sequence $S _ { m a t c h }$ with $\\mathrm { D i v } ( S _ { m a t c h } )$ below a predefined threshold (O.1 in our experiments) is considered an overly repetitive generation and is subsequently fltered out, thus not contributing to our final memorization counts.Our fnal reported metrics are the percentage of the initial 500 generations that pass both the matching criteria and this diversity filter. We report: $\\mathbf { V M } @ 5 \\mathbf { 0 }$ (Verbatim Match, O mismatches), $\\mathbf { M } \\bar { \\mathbf { 5 } } @ 5 \\mathbf { 0 }$ (up to 5 mismatches),and $\\mathbf { M 1 0 } @ 5 \\mathbf { 0 }$ (up to 10 mismatches). Sequences meeting $\\mathbf { M 1 0 } @ 5 \\mathbf { 0 }$ typically maintain high semantic similarity with the original training string (see Appendix A).\n\nModels. We cover open-weight models to facilitate a deeper understanding and enable precise memorization evaluation against known pretraining corpora. For unaligned models,we select LLAMA 2（70B), LLAMA 1 (65B) (Touvron et al., 2023), and OLMo (7B) (Groeneveld et al., 2024). For aligned models, we evaluate LLAMA 2- CHAT (70B), LLAMA 3.1-INSTRUCT (8B),and LLAMA 3-INSTRUCT (7OB) (Grattafiori et al., 2024). Although the exact training source for the LLAMA family is unknown, we follow Weber et al. (2024) to validate our approach.\n\nBaselines. We compare our Confusion-Inducing Attacks (CIA） against several relevant baselines, selected for their focus on untargeted extraction without requiring access to training data subsets. For unaligned models,these include the Repetition Attack (RA) (Nasr et al., 2025)，which uses heuristic prompts for repetitive generation; the EOS Attack (EA） (Nie et al., 2024)，employing repeated ${ < } { \\tt e o s } { > }$ tokens; and the Random Wiki Attack (RWA) (Nasr et al., 2025), using 5- token Wikipedia spans. We also include our nonoptimized Random Snippet Attack(RSA), which samples 2O random vocabulary tokens.For aligned models,we additionally include the Fine-tuning Attack (FA) (Nasr et al., 2025), which first reverts models towards an unaligned state using a subset of The Pile (Gao et al., 2020) before prompting with Wikipedia spans.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1789::appendix::B",
+      "paper_id": "2025.emnlp-main.1789",
+      "section_number": "B",
+      "section_title": "additional details",
+      "normalized_section_title": "additional details",
+      "window_text": "All experiments were conducted using an NVIDIA H100 GPU.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.emnlp-main.1789::appendix::B.1",
+      "paper_id": "2025.emnlp-main.1789",
+      "section_number": "B.1",
+      "section_title": "hyperparameter setings",
+      "normalized_section_title": "hyperparameter setings",
+      "window_text": "For our CIA, we optimize input snippets using a modified Greedy Coordinate Gradient (GCG) (Zou et al., 2023) approach. We run the GCG optimization process for a maximum of 2OO steps. In each step,we consider the top 64 candidate token substitutions at each position within the snippet and evaluate 256 candidate sequences to select the optimal replacement based on our entropy-maximization objective (see Section 3.3 for loss details). The initial snippets for optimization vary in length and source,as detailed with each experiment. For the final generation phase after obtaining an optimized CIA snippet, we employ greedy decoding (i.e., temperature set to O.O) and instruct the model to generate up to 512 new tokens, with a minimum generation length of 1OO tokens enforced to ensure sufficient output for analysis. We further note that, unlike the original GCG,we optimize the input snippet $S$ itself to maximize its internal predictive entropy, without a predefined target response.\n\n![](images/ae078a3c8fbcb6f13afa0e91b72c4ac11502bdfd56460b68b557fdcca87bca83.jpg)  \nFigure 4: Distribution of semantic similarity scores for matched sequences under two tolerance settings: $\\mathbf { M } 5 @ 5 0$ and $\\mathbf { M } 1 0 @ 5 0$ . While both settings yield high semantic overlap with training data, $\\mathbf { M } 5 @ 5 0$ shows consistently higher fidelity with low variance,supporting its utility in identifying near-verbatim memorization.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.emnlp-main.1789::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA H100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "All experiments were conducted using an NVIDIA H100 GPU.",
+      "section_number": "B",
+      "section_title": "additional details",
+      "normalized_section_title": "additional details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.emnlp-main.1789::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA H100",
+      "cleaned_hardware_name": "nvidia h100",
+      "normalized_hardware_name": "NVIDIA H100 PCIe",
+      "benchmark_hardware_name": "NVIDIA H100 PCIe",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "B",
+      "section_title": "additional details",
+      "normalized_section_title": "additional details",
+      "evidence": "All experiments were conducted using an NVIDIA H100 GPU.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA H100 PCIe",
+        "num": 1
+      }
+    ]
+  }
+}

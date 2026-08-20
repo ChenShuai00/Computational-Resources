@@ -1,0 +1,183 @@
+{
+  "paper_id": "2021.acl-long.482",
+  "candidate_windows": [
+    {
+      "window_id": "2021.acl-long.482::sections::4",
+      "paper_id": "2021.acl-long.482",
+      "section_number": "4",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "In this section, we describe our proposed method CHMM-ALT. We first sketch the alternate-training procedure (§ 4.1), then explain the CHMM component (§ 4.2) and how BERT-NER is involved (§ 4.3).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.482::sections::5",
+      "paper_id": "2021.acl-long.482",
+      "section_number": "5",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "We benchmark CHMM-ALT on four datasets against state-of-the-art weakly supervised NER baselines, including both distant learning models and multi-source label aggregation models. We also conduct a series of ablation studies to evaluate the different components in CHMM-ALT's design.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.482::sections::5.1",
+      "paper_id": "2021.acl-long.482",
+      "section_number": "5.1",
+      "section_title": "setup",
+      "normalized_section_title": "setup",
+      "window_text": "Datasets We consider four NER datasets covering the general, technological and biomedical domains: 1) CoNLL 2003 (English subset) (Tjong Kim Sang and De Meulder, 2003) is a general domain dataset containing 22,137 sentences manually labelled with 4 entity types. 2) LaptopReview dataset (Pontiki et al., 2014) consists of 3,845 sentences with laptop-related entity mentions. 3) NCBI-Disease dataset (Dogan et al., 2014) contains 793 PubMed abstracts annotated with disease\n\nTable 1: Dataset statistics. Co03 is CoNLL 2003; LR is LaptopReview; CDR is BC5CDR. \"# Sources\" indicates the number of labeling sources for each dataset.   \n\n<table><tr><td></td><td>Co03</td><td>NCBI</td><td>CDR</td><td>LR</td></tr><tr><td># Instance</td><td>22,137</td><td>793</td><td>1,500</td><td>3,845</td></tr><tr><td># Training</td><td>14,041</td><td>593</td><td>500</td><td>2,436</td></tr><tr><td># Development</td><td>3,250</td><td>100</td><td>500</td><td>609</td></tr><tr><td># Test</td><td>3,453</td><td>100</td><td>500</td><td>800</td></tr><tr><td>Ave# Tokens</td><td>14.5</td><td>219.8</td><td>217.7</td><td>16.4</td></tr><tr><td># Entities</td><td>4</td><td>1</td><td>2</td><td>1</td></tr><tr><td># Sources</td><td>13</td><td>5</td><td>8</td><td>4</td></tr></table>\n\nments. 4) BC5CDR (Li et al., 2016), the dataset accompanies the BioCreative V CDR challenge, consists of 1,500 PubMed articles, annotated with chemical disease mentions.\n\nTable 1 shows dataset statistics, including the average number of tokens, entities and weak labeling sources. We use the original word tokens in the dataset if provided and use NLTK (Bird and Loper, 2004) otherwise for sentence tokenization.\n\nFor weak labeling sources, we use the ones from Lison et al. (2020) for CoNLL 2003, and the ones from Safranchik et al. (2020) for LaptopReview, NCBI-Disease and BC5CDR. $^{7}$\n\nBaselines We compare our model to the following state-of-the-art baselines: 1) Majority Voting returns the label for a token that has been observed by most of the sources and randomly chooses one if it's a tie; 2) Snorkel (Ratner et al., 2017) treats each token in a sequence as i.i.d. and conducts the label classification without considering its context; 3) SwellShark (Fries et al., 2017) improves Snorkel by predicting all the target entity spans before classifying them using naive Bayes; 4) AutoNER (Shang et al., 2018) augments distant supervision by predicting whether two consecutive tokens should be in the same entity span; 5) BOND (Liang et al., 2020) adopts self-training and high-confidence selection to further boost the distant supervision performance. 6) HMM is the multi-observation generative model used in Lison et al. (2020) that does not have the integrated neural network; 7) Linked HMM (Safranchik et al., 2020) uses linking rules to provide additional inter-token structural information to the HMM model.\n\nFor the ablation study, we modify CHMM to another type of i.i.d. model by taking away its transition matrices. This model, named CHMM-i.i.d.,\n\nTable 2: Evaluation results on four datasets. The results are presented in the \"F1 (Precision/Recall)\" format. \"CHMM + BERT-NER\" is essentially CHMM-ALT's phase I output. \"BOND-MV\" is the BOND model trained with majority voted labels. $\\dagger$ indicates unsupervised label denoiser; $\\ddagger$ represents fully supervised models. A model with $\\dagger \\ddagger$ is either distantly supervised or trains a supervised by labels from the denoiser. $\\sharp$ signifies the results from our experiments. In addition to models with $\\sharp$ , Snorkel and Linked HMM also share our labeling sources.   \n\n<table><tr><td>Models</td><td>CoNLL 2003</td><td>NCBI-Disease</td><td>BC5CDR</td><td>LaptopReview</td></tr><tr><td>Supervised BERT-NER ‡b</td><td>90.74 (90.37/91.10)</td><td>88.89 (87.05/90.82)</td><td>88.81 (87.12/90.57)</td><td>81.34 (82.02/80.67)</td></tr><tr><td>best consensus b</td><td>89.18 (100.0/80.47)</td><td>81.60 (100.0/68.91)</td><td>87.58 (100.0/77.89)</td><td>77.72 (100.0/63.55)</td></tr><tr><td>SwellShark (noun-phrase) †‡</td><td>-</td><td>67.10 (64.70/69.70)</td><td>84.23 (84.98/83.49)</td><td>-</td></tr><tr><td>SwellShark (hand-tuned) †‡</td><td>-</td><td>80.80 (81.60/80.10)</td><td>84.21 (86.11/82.39)</td><td>-</td></tr><tr><td>AutoNER †‡</td><td>67.00 (75.21/60.40)</td><td>75.52 (79.42/71.98)</td><td>82.13 (83.23/81.06)</td><td>65.44 (72.27/59.79)</td></tr><tr><td>Snorkel †‡</td><td>66.40 (71.40/62.10)</td><td>73.41 (71.10/76.00)</td><td>82.24 (80.23/84.35)</td><td>63.54 (64.09/63.09)</td></tr><tr><td>Linked HMM †‡</td><td>-</td><td>79.03 (83.46/75.05)</td><td>82.96 (82.65/83.28)</td><td>69.04 (77.74/62.11)</td></tr><tr><td>BOND-MV †‡ b</td><td>65.96 (64.22/67.82)</td><td>80.33 (84.77/76.34)</td><td>83.18 (82.90/83.49)</td><td>67.19 (68.90/65.75)</td></tr><tr><td>Majority Voting †‡</td><td>58.40 (49.01/72.24)</td><td>73.94 (79.76/68.91)</td><td>80.73 (83.79/77.88)</td><td>67.92 (72.93/63.55)</td></tr><tr><td>HMM †‡</td><td>68.84 (70.80/66.98)</td><td>73.06 (83.88/64.70)</td><td>80.57 (88.75/73.76)</td><td>66.96 (77.46/58.96)</td></tr><tr><td>CHMM-i.i.d. †‡</td><td>68.57 (69.67/67.50)</td><td>71.69 (83.49/62.87)</td><td>79.37 (85.68/73.92)</td><td>65.89 (75.70/58.34)</td></tr><tr><td>CHMM †‡</td><td>70.11 (72.98/67.47)</td><td>78.88 (93.37/68.28)</td><td>82.39 (89.93/76.02)</td><td>73.02 (87.23/62.79)</td></tr><tr><td>CHMM + BERT-NER †‡ b</td><td>74.30 (75.02/73.58)</td><td>82.87 (89.42/77.22)</td><td>84.33 (85.58/83.12)</td><td>69.67 (75.48/64.70)</td></tr><tr><td>CHMM-ALT †‡ b</td><td>75.54 (76.22/74.86)</td><td>85.02 (87.92/82.47)</td><td>85.12 (84.97/85.28)</td><td>76.55 (81.39/72.32)</td></tr></table>\n\ndirectly predicts the hidden steps from the BERT embeddings, while otherwise identical to CHMM. We also investigate how CHMM-ALT performs with other aggregators other than CHMM.\n\nWe also introduce two upper bounds from different aspects: 1) a fully supervised BERT-NER model trained with manually labeled data is regarded as a supervised reference; 2) the best possible consensus of the weak sources. The latter assumes an oracle that always selects the correct annotations from these weak supervision sources. According to the definition, its precision is always $100\\%$ and its recall is non-decreasing with the increase of the number of weak sources.\n\nEvaluation Metrics We evaluate the performance of NER models using entity-level precision, recall, and F1 scores. All scores are presented as percentages. The results come from the average of 5 trials with different random seeds.\n\nImplementation Details We use BERT pretrained on different domains for different datasets, both for embedding construction and as the component of the supervised BERT-NER model. The original BERT (Devlin et al., 2019) is used for CoNLL 2003 and LaptopReview datasets, bioBERT (Lee et al., 2019) for NCBI-Disease and SciBERT (Beltagy et al., 2019) for BC5CDR. Instances with lengths exceeding BERT's maximum length limitation (512) are broken into several shorter segments.\n\nThe only tunable hyper-parameter in CHMM is the learning rate. But its influence is negligible\n\nbenefitted from the stability of the generalized EM, the model is guaranteed to converge to a local optimum if the learning rate is small enough. For all the BERT-NER models used in our experiments, the hyper-parameters except the batch size are fixed to the default values (appendix C).\n\nTo prevent overfitting, we use a two-scale early stopping strategy for model choosing at two scales based on the development set. The micro-scale early stopping chooses the best model parameters for each individual training process of both CHMM and BERT-NER; the macro-scale early stopping selects the best-performing model in phase II iterations, which reports the test results. In our experiments, phase II exits if the macro-scale development score has not increased in 5 loops or the maximum number of loops (10) is reached.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.482::appendix::A",
+      "paper_id": "2021.acl-long.482",
+      "section_number": "A",
+      "section_title": "technical details",
+      "normalized_section_title": "technical details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.482::appendix::A.1",
+      "paper_id": "2021.acl-long.482",
+      "section_number": "A.1",
+      "section_title": "chmm training",
+      "normalized_section_title": "chmm training",
+      "window_text": "Following the discussion in § 4.2, we use the forward-backward algorithm to calculate the smoothed marginal $\\gamma_{i}^{(t)}\\triangleq p(z^{(t)} = i|\\pmb{x}^{(1:T)})$ $i\\in$ $\\{1,2,\\ldots ,|\\mathcal{L}|\\}$ $t\\in \\{1,2,\\dots ,T\\}$ and the expected number of transitions $\\xi_{i,j}^{(t)}\\triangleq p(z^{(t - 1)} = i,z^{(t)} =$ $j|\\pmb {x}^{(1:T)})$ $i,j\\in \\{1,2,\\dots ,|\\mathcal{L}|\\} .^8 |\\mathcal{L}|$ is the number of BIO formatted entity labels, which are regarded as hidden states; $T$ is the total number of hidden steps in a sequence, which equals the number of tokens.\n\nDefining $\\alpha_{i}^{(t)}\\triangleq p(z^{(t)} = i|\\pmb{x}^{(1:t)})$ and $\\beta_{i}^{(t)}\\triangleq p(\\pmb{x}^{(t + 1:T)}|z^{(t)} = i)$ , $\\gamma_{i}^{(t)}$ and $\\xi_{i,j}^{(t)}$ can be represented by $\\alpha$ and $\\beta$ using the Bayes' rule and Markov assumption:\n\n$$\n\\begin{array}{l} \\gamma_ {i} ^ {(t)} \\triangleq p (z ^ {(t)} = i | \\boldsymbol {x} ^ {(1: T)}) \\\\ = \\frac {p (\\boldsymbol {x} ^ {(t + 1 : T)} , z ^ {(t)} = i | \\boldsymbol {x} ^ {(1 : t)})}{p (\\boldsymbol {x} ^ {(t + 1 : T)} | \\boldsymbol {x} ^ {(1 : T)})} \\\\ \\propto p (z ^ {(t)} = i | \\boldsymbol {x} ^ {(1: t)}) p (\\boldsymbol {x} ^ {(t + 1: T)} | z ^ {(t)} = i) \\\\ = \\alpha_ {i} ^ {(t)} \\beta_ {i} ^ {(t)}, \\tag {12} \\\\ \\end{array}\n$$\n\n$$\n\\begin{array}{l} \\xi_ {i, j} ^ {(t)} \\triangleq p (z ^ {(t - 1)} = i, z ^ {(t)} = j | \\boldsymbol {x} ^ {(1: T)}) \\\\ \\propto p (z ^ {(t - 1)} = i | \\boldsymbol {x} ^ {(1: t - 1)}) \\\\ p (z ^ {(t)} = j | z ^ {(t - 1)} = i, \\boldsymbol {x} ^ {(t: T)}) \\\\ \\propto p (z ^ {(t - 1)} = i | \\boldsymbol {x} ^ {(1: t - 1)}) p (\\boldsymbol {x} ^ {(t)} | z ^ {(t)} = j) \\\\ p (\\boldsymbol {x} ^ {(t + 1: T)} | z ^ {(t)} = j) p (z ^ {(t)} = j | z ^ {(t - 1)} = i) \\\\ = \\alpha_ {i} ^ {(t - 1)} \\varphi_ {j} ^ {(t)} \\beta_ {j} ^ {(t)} \\Psi_ {i, j} ^ {(t)}. \\tag {13} \\\\ \\end{array}\n$$\n\n$\\varphi_{i}^{(t)} \\in \\mathbb{R}^{|L|} \\triangleq p(\\pmb{x}^{(t)}|z^{(t)} = i)$ is the likelihood of the observation when the hidden state is $i$ (§ 4.2).\n\nWritten in the matrix form, (12) and (13) become:\n\n$$\n\\boldsymbol {\\gamma} ^ {(t)} \\propto \\boldsymbol {\\alpha} ^ {(t)} \\odot \\boldsymbol {\\beta} ^ {(t)}, \\tag {14}\n$$\n\n$$\n\\boldsymbol {\\xi} ^ {(t)} \\propto \\boldsymbol {\\Psi} ^ {(t)} \\odot (\\boldsymbol {\\alpha} ^ {(t - 1)} (\\boldsymbol {\\varphi} ^ {(t)} \\odot \\boldsymbol {\\beta} ^ {(t)}) ^ {\\mathsf {T}}), \\tag {15}\n$$\n\nwhere $\\odot$ is the element-wise product. Note that the elements in both $\\gamma^{(t)}$ and $\\pmb{\\xi}^{(t)}$ should sum up to 1.\n\nThe Forward Pass The filtered marginal $\\alpha_{i}^{(t)}$ can be computed iteratively:\n\n$$\n\\begin{array}{l} \\alpha_ {i} ^ {(t)} \\triangleq p (z ^ {(t)} = i | \\boldsymbol {x} ^ {(1: t)}) \\\\ = p (z ^ {(t)} = i | \\boldsymbol {x} ^ {(t)}, \\boldsymbol {x} ^ {(1: t - 1)}) \\\\ \\propto p \\left(\\boldsymbol {x} ^ {(t)} \\mid z ^ {(t)} = i\\right) p \\left(z ^ {(t)} = i \\mid \\boldsymbol {x} ^ {(1: t - 1)}\\right) \\tag {16} \\\\ = \\sum_ {j} \\varphi_ {i} ^ {(t)} \\Psi_ {j, i} ^ {(t)} \\alpha_ {j} ^ {(t - 1)}. \\\\ \\end{array}\n$$\n\nWritten in the matrix form, (16) becomes\n\n$$\n\\boldsymbol {\\alpha} ^ {(t)} \\propto \\boldsymbol {\\varphi} ^ {(t)} \\odot \\left(\\boldsymbol {\\Psi} ^ {(t) ^ {\\mathsf {T}}} \\boldsymbol {\\alpha} ^ {(t - 1)}\\right). \\tag {17}\n$$\n\nWe initialize $\\alpha$ with $\\alpha^{(0)} = \\pi$ (§ 4.2) since we have no observation at time step 0. As $\\alpha^{(t)}$ is a probability distribution, the elements in it sum up to 1. The calculation of $\\alpha$ is the forward pass.\n\nThe Backward Pass In the same way, we do the backward pass to compute the conditional future evidence $\\beta_{i}^{(t)}\\triangleq p(\\pmb{x}^{(t + 1:T)}|z^{(t)} = i)$\n\n$$\n\\begin{array}{l} \\beta_ {i} ^ {(t - 1)} \\triangleq p (\\boldsymbol {x} ^ {(t + 1: T)} | z ^ {(t)} = j) \\\\ = \\sum_ {j} p (z ^ {(t)} = j, \\boldsymbol {x} ^ {(t)}, \\boldsymbol {x} ^ {(t + 1: T)} | z ^ {(t - 1)} = i) \\\\ = \\sum_ {j} [ p (\\boldsymbol {x} ^ {(t + 1: T)} | z ^ {(t)} = j) \\\\ p (\\boldsymbol {x} ^ {(t)}, z ^ {(t)} = j | z ^ {(t - 1)} = i) ] \\\\ = \\sum_ {j} \\beta_ {j} ^ {(t)} \\varphi_ {j} ^ {(t)} \\Psi_ {i, j} ^ {(t)}. \\tag {18} \\\\ \\end{array}\n$$\n\nIn the matrix form, (18) becomes:\n\n$$\n\\boldsymbol {\\beta} ^ {(t - 1)} = \\boldsymbol {\\Psi} ^ {(t)} \\left(\\boldsymbol {\\varphi} ^ {(t)} \\odot \\boldsymbol {\\beta} ^ {(t)}\\right), \\tag {19}\n$$\n\nwhose base case is\n\n$$\n\\begin{array}{l} \\beta_ {i} ^ {(T)} = p \\left(\\boldsymbol {x} ^ {(T + 1: T)} \\mid z ^ {(T)} = i\\right) = 1, \\\\ \\forall i \\in \\{1, \\dots , | \\mathcal {L} | \\}. \\\\ \\end{array}\n$$",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2021.acl-long.482::appendix::C",
+      "paper_id": "2021.acl-long.482",
+      "section_number": "C",
+      "section_title": "hyper-parameters",
+      "normalized_section_title": "hyper-parameters",
+      "window_text": "The experiments are conducted on one GeForce RTX 2080 Ti GPU. For NCBI-Disease, BC5CDR and LaptopReview datasets, CHMM is pre-trained for 5 epochs and trained for 20 epochs. The learning rates for these three datasets are $5 \\times 10^{-4}$ , $10^{-3}$ and $10^{-4}$ , respectively, and the batch sizes are 64, 64 and 128. In phase I, BERT-NER is trained with the default learning rate $(5 \\times 10^{-5})$ for 100 epochs. The batch sizes are 8, 8, and 48, respectively. Note that for LaptopReview, the maximum length limitation of BERT-NER is set to 128 whereas the limitation is 512 for the other two datasets. In phase II, we use half the learning rate with 20 epochs for each loop.\n\nFor CoNLL 2003, CHMM has the same number of training epochs as for other datasets. The batch size is 32, and the learning rate is $10^{-5}$ . BERT-NER has a maximum sequence length of 256. It is trained for 15 epochs in phase I and 5 epochs in phase II. Other hyper-parameters are identical to other BERT-NER models'.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2021.acl-long.482::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GeForce RTX 2080 Ti",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "The experiments are conducted on one GeForce RTX 2080 Ti GPU. For NCBI-Disease, BC5CDR and LaptopReview datasets, CHMM is pre-trained for 5 epochs and trained for 20 epochs. The learning rates for these three datasets are $5 \\times 10^{-4}$ , $10^{-3}$ and $10^{-4}$ , respectively, and the batch sizes are 64, 64 and 128. In phase I, BERT-NER is trained with the default learning rate $(5 \\times 10^{-5})$ for 100 epochs. The batch sizes are 8, 8, and 48, respectively. Note that for LaptopReview, the maximum length limitation of BERT-NER is set to 128 whereas the limitation is 512 for the other two datasets. In phase II, we use half the learning rate with 20 epochs for each loop.\n\nFor CoNLL 2003, CHMM has the same number of training epochs as for other datasets. The batch size is 32, and the learning rate is $10^{-5}$ . BERT-NER has a maximum sequence length of 256. It is trained for 15 epochs in phase I and 5 epochs in phase II. Other hyper-parameters are identical to other BERT-NER models'.",
+      "section_number": "C",
+      "section_title": "hyper-parameters",
+      "normalized_section_title": "hyper-parameters"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2021.acl-long.482::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GeForce RTX 2080 Ti",
+      "cleaned_hardware_name": "geforce rtx 2080 ti",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 2080 Ti",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "C",
+      "section_title": "hyper-parameters",
+      "normalized_section_title": "hyper-parameters",
+      "evidence": "The experiments are conducted on one GeForce RTX 2080 Ti GPU. For NCBI-Disease, BC5CDR and LaptopReview datasets, CHMM is pre-trained for 5 epochs and trained for 20 epochs. The learning rates for these three datasets are $5 \\times 10^{-4}$ , $10^{-3}$ and $10^{-4}$ , respectively, and the batch sizes are 64, 64 and 128. In phase I, BERT-NER is trained with the default learning rate $(5 \\times 10^{-5})$ for 100 epochs. The batch sizes are 8, 8, and 48, respectively. Note that for LaptopReview, the maximum length limitation of BERT-NER is set to 128 whereas the limitation is 512 for the other two datasets. In phase II, we use half the learning rate with 20 epochs for each loop.\n\nFor CoNLL 2003, CHMM has the same number of training epochs as for other datasets. The batch size is 32, and the learning rate is $10^{-5}$ . BERT-NER has a maximum sequence length of 256. It is trained for 15 epochs in phase I and 5 epochs in phase II. Other hyper-parameters are identical to other BERT-NER models'.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized GeForce RTX shorthand rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2021.acl-long.482::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "methodology",
+      "evidence": "In this section, we describe our proposed method CHMM-ALT. We first sketch the alternate-training procedure (§ 4.1), then explain the CHMM component (§ 4.2) and how BERT-NER is involved (§ 4.3)."
+    },
+    {
+      "source_window_id": "2021.acl-long.482::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experiments",
+      "evidence": "We benchmark CHMM-ALT on four datasets against state-of-the-art weakly supervised NER baselines, including both distant learning models and multi-source label aggregation models. We also conduct a series of ablation studies to evaluate the different components in CHMM-ALT's design."
+    },
+    {
+      "source_window_id": "2021.acl-long.482::sections::5.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.1",
+      "section_title": "setup",
+      "evidence": "Datasets We consider four NER datasets covering the general, technological and biomedical domains: 1) CoNLL 2003 (English subset) (Tjong Kim Sang and De Meulder, 2003) is a general domain dataset containing 22,137 sentences manually labelled with 4 entity types. 2) LaptopReview dataset (Pontiki et al., 2014) consists of 3,845 sentences with laptop-related entity mentions. 3) NCBI-Disease dataset (Dogan et al., 2014) contains 793 PubMed abstracts annotated with disease\n\nTable 1: Dataset statistics. Co03 is CoNLL 2003; LR is LaptopReview; CDR is BC5CDR. \"# Sources\" indicates the number of labeling sources for each dataset.   \n\n<table><tr><td></td><td>Co03</td><td>NCBI</td><td>CDR</td><td>LR</td></tr><tr><td># Instance</td><td>22,137</td><td>793</td><td>1,500</td><td>3,845</td></tr><tr><td># Training</td><td>14,041</td><td>593</td><td>500</td><td>2,436</td></tr><tr><td># Development</td><td>3,250</td><td>100</td><td>500</td><td>609</td></tr><tr><td># Test</td><td>3,453</td><td>100</td><td>500</td><td>800</td></tr><tr><td>Ave# Tokens</td><td>14.5</td><td>219.8</td><td>217.7</td><td>16.4</td></tr><tr><td># Entities</td><td>4</td><td>1</td><td>2</td><td>1</td></tr><tr><td># Sources</td><td>13</td><td>5</td><td>8</td><td>4</td></tr></table>\n\nments. 4) BC5CDR (Li et al., 2016), the dataset accompanies the BioCreative V CDR challenge, consists of 1,500 PubMed articles, annotated with chemical disease mentions.\n\nTable 1 shows dataset statistics, including the average number of tokens, entities and weak labeling sources. We use the original word tokens in the dataset if provided and use NLTK (Bird and Loper, 2004) otherwise for sentence tokenization.\n\nFor weak labeling sources, we use the ones from Lison et al. (2020) for CoNLL 2003, and the ones from Safranchik et al. (2020) for LaptopReview, NCBI-Disease and BC5CDR. $^{7}$\n\nBaselines We compare our model to the following state-of-the-art baselines: 1) Majority Voting returns the label for a token that has been observed by most of the sources and randomly chooses one if it's a tie; 2) Snorkel (Ratner et al., 2017) treats each token in a sequence as i.i.d. and conducts the label classification without considering its context; 3) SwellShark (Fries et al., 2017) improves Snorkel by predicting all the target entity spans before classifying them using naive Bayes; 4) AutoNER (Shang et al., 2018) augments distant supervision by predicting whether two consecutive tokens should be in the same entity span; 5) BOND (Liang et al., 2020) adopts self-training and high-confidence selection to further boost the distant supervision performance. 6) HMM is the multi-observation generative model used in Lison et al. (2020) that does not have the integrated neural network; 7) Linked HMM (Safranchik et al., 2020) uses linking rules to provide additional inter-token structural information to the HMM model.\n\nFor the ablation study, we modify CHMM to another type of i.i.d. model by taking away its transition matrices. This model, named CHMM-i.i.d.,\n\nTable 2: Evaluation results on four datasets. The results are presented in the \"F1 (Precision/Recall)\" format. \"CHMM + BERT-NER\" is essentially CHMM-ALT's phase I output. \"BOND-MV\" is the BOND model trained with majority voted labels. $\\dagger$ indicates unsupervised label denoiser; $\\ddagger$ represents fully supervised models. A model with $\\dagger \\ddagger$ is either distantly supervised or trains a supervised by labels from the denoiser. $\\sharp$ signifies the results from our experiments. In addition to models with $\\sharp$ , Snorkel and Linked HMM also share our labeling sources.   \n\n<table><tr><td>Models</td><td>CoNLL 2003</td><td>NCBI-Disease</td><td>BC5CDR</td><td>LaptopReview</td></tr><tr><td>Supervised BERT-NER ‡b</td><td>90.74 (90.37/91.10)</td><td>88.89 (87.05/90.82)</td><td>88.81 (87.12/90.57)</td><td>81.34 (82.02/80.67)</td></tr><tr><td>best consensus b</td><td>89.18 (100.0/80.47)</td><td>81.60 (100.0/68.91)</td><td>87.58 (100.0/77.89)</td><td>77.72 (100.0/63.55)</td></tr><tr><td>SwellShark (noun-phrase) †‡</td><td>-</td><td>67.10 (64.70/69.70)</td><td>84.23 (84.98/83.49)</td><td>-</td></tr><tr><td>SwellShark (hand-tuned) †‡</td><td>-</td><td>80.80 (81.60/80.10)</td><td>84.21 (86.11/82.39)</td><td>-</td></tr><tr><td>AutoNER †‡</td><td>67.00 (75.21/60.40)</td><td>75.52 (79.42/71.98)</td><td>82.13 (83.23/81.06)</td><td>65.44 (72.27/59.79)</td></tr><tr><td>Snorkel †‡</td><td>66.40 (71.40/62.10)</td><td>73.41 (71.10/76.00)</td><td>82.24 (80.23/84.35)</td><td>63.54 (64.09/63.09)</td></tr><tr><td>Linked HMM †‡</td><td>-</td><td>79.03 (83.46/75.05)</td><td>82.96 (82.65/83.28)</td><td>69.04 (77.74/62.11)</td></tr><tr><td>BOND-MV †‡ b</td><td>65.96 (64.22/67.82)</td><td>80.33 (84.77/76.34)</td><td>83.18 (82.90/83.49)</td><td>67.19 (68.90/65.75)</td></tr><tr><td>Majority Voting †‡</td><td>58.40 (49.01/72.24)</td><td>73.94 (79.76/68.91)</td><td>80.73 (83.79/77.88)</td><td>67.92 (72.93/63.55)</td></tr><tr><td>HMM †‡</td><td>68.84 (70.80/66.98)</td><td>73.06 (83.88/64.70)</td><td>80.57 (88.75/73.76)</td><td>66.96 (77.46/58.96)</td></tr><tr><td>CHMM-i.i.d. †‡</td><td>68.57 (69.67/67.50)</td><td>71.69 (83.49/62.87)</td><td>79.37 (85.68/73.92)</td><td>65.89 (75.70/58.34)</td></tr><tr><td>CHMM †‡</td><td>70.11 (72.98/67.47)</td><td>78.88 (93.37/68.28)</td><td>82.39 (89.93/76.02)</td><td>73.02 (87.23/62.79)</td></tr><tr><td>CHMM + BERT-NER †‡ b</td><td>74.30 (75.02/73.58)</td><td>82.87 (89.42/77.22)</td><td>84.33 (85.58/83.12)</td><td>69.67 (75.48/64.70)</td></tr><tr><td>CHMM-ALT †‡ b</td><td>75.54 (76.22/74.86)</td><td>85.02 (87.92/82.47)</td><td>85.12 (84.97/85.28)</td><td>76.55 (81.39/72.32)</td></tr></table>\n\ndirectly predicts the hidden steps from the BERT embeddings, while otherwise identical to CHMM. We also investigate how CHMM-ALT performs with other aggregators other than CHMM.\n\nWe also introduce two upper bounds from different aspects: 1) a fully supervised BERT-NER model trained with manually labeled data is regarded as a supervised reference; 2) the best possible consensus of the weak sources. The latter assumes an oracle that always selects the correct annotations from these weak supervision sources. According to the definition, its precision is always $100\\%$ and its recall is non-decreasing with the increase of the number of weak sources.\n\nEvaluation Metrics We evaluate the performance of NER models using entity-level precision, recall, and F1 scores. All scores are presented as percentages. The results come from the average of 5 trials with different random seeds.\n\nImplementation Details We use BERT pretrained on different domains for different datasets, both for embedding construction and as the component of the supervised BERT-NER model. The original BERT (Devlin et al., 2019) is used for CoNLL 2003 and LaptopReview datasets, bioBERT (Lee et al., 2019) for NCBI-Disease and SciBERT (Beltagy et al., 2019) for BC5CDR. Instances with lengths exceeding BERT's maximum length limitation (512) are broken into several shorter segments.\n\nThe only tunable hyper-parameter in CHMM is the learning rate. But its influence is negligible\n\nbenefitted from the stability of the generalized EM, the model is guaranteed to converge to a local optimum if the learning rate is small enough. For all the BERT-NER models used in our experiments, the hyper-parameters except the batch size are fixed to the default values (appendix C).\n\nTo prevent overfitting, we use a two-scale early stopping strategy for model choosing at two scales based on the development set. The micro-scale early stopping chooses the best model parameters for each individual training process of both CHMM and BERT-NER; the macro-scale early stopping selects the best-performing model in phase II iterations, which reports the test results. In our experiments, phase II exits if the macro-scale development score has not increased in 5 loops or the maximum number of loops (10) is reached."
+    },
+    {
+      "source_window_id": "2021.acl-long.482::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "technical details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2021.acl-long.482::appendix::A.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.1",
+      "section_title": "chmm training",
+      "evidence": "Following the discussion in § 4.2, we use the forward-backward algorithm to calculate the smoothed marginal $\\gamma_{i}^{(t)}\\triangleq p(z^{(t)} = i|\\pmb{x}^{(1:T)})$ $i\\in$ $\\{1,2,\\ldots ,|\\mathcal{L}|\\}$ $t\\in \\{1,2,\\dots ,T\\}$ and the expected number of transitions $\\xi_{i,j}^{(t)}\\triangleq p(z^{(t - 1)} = i,z^{(t)} =$ $j|\\pmb {x}^{(1:T)})$ $i,j\\in \\{1,2,\\dots ,|\\mathcal{L}|\\} .^8 |\\mathcal{L}|$ is the number of BIO formatted entity labels, which are regarded as hidden states; $T$ is the total number of hidden steps in a sequence, which equals the number of tokens.\n\nDefining $\\alpha_{i}^{(t)}\\triangleq p(z^{(t)} = i|\\pmb{x}^{(1:t)})$ and $\\beta_{i}^{(t)}\\triangleq p(\\pmb{x}^{(t + 1:T)}|z^{(t)} = i)$ , $\\gamma_{i}^{(t)}$ and $\\xi_{i,j}^{(t)}$ can be represented by $\\alpha$ and $\\beta$ using the Bayes' rule and Markov assumption:\n\n$$\n\\begin{array}{l} \\gamma_ {i} ^ {(t)} \\triangleq p (z ^ {(t)} = i | \\boldsymbol {x} ^ {(1: T)}) \\\\ = \\frac {p (\\boldsymbol {x} ^ {(t + 1 : T)} , z ^ {(t)} = i | \\boldsymbol {x} ^ {(1 : t)})}{p (\\boldsymbol {x} ^ {(t + 1 : T)} | \\boldsymbol {x} ^ {(1 : T)})} \\\\ \\propto p (z ^ {(t)} = i | \\boldsymbol {x} ^ {(1: t)}) p (\\boldsymbol {x} ^ {(t + 1: T)} | z ^ {(t)} = i) \\\\ = \\alpha_ {i} ^ {(t)} \\beta_ {i} ^ {(t)}, \\tag {12} \\\\ \\end{array}\n$$\n\n$$\n\\begin{array}{l} \\xi_ {i, j} ^ {(t)} \\triangleq p (z ^ {(t - 1)} = i, z ^ {(t)} = j | \\boldsymbol {x} ^ {(1: T)}) \\\\ \\propto p (z ^ {(t - 1)} = i | \\boldsymbol {x} ^ {(1: t - 1)}) \\\\ p (z ^ {(t)} = j | z ^ {(t - 1)} = i, \\boldsymbol {x} ^ {(t: T)}) \\\\ \\propto p (z ^ {(t - 1)} = i | \\boldsymbol {x} ^ {(1: t - 1)}) p (\\boldsymbol {x} ^ {(t)} | z ^ {(t)} = j) \\\\ p (\\boldsymbol {x} ^ {(t + 1: T)} | z ^ {(t)} = j) p (z ^ {(t)} = j | z ^ {(t - 1)} = i) \\\\ = \\alpha_ {i} ^ {(t - 1)} \\varphi_ {j} ^ {(t)} \\beta_ {j} ^ {(t)} \\Psi_ {i, j} ^ {(t)}. \\tag {13} \\\\ \\end{array}\n$$\n\n$\\varphi_{i}^{(t)} \\in \\mathbb{R}^{|L|} \\triangleq p(\\pmb{x}^{(t)}|z^{(t)} = i)$ is the likelihood of the observation when the hidden state is $i$ (§ 4.2).\n\nWritten in the matrix form, (12) and (13) become:\n\n$$\n\\boldsymbol {\\gamma} ^ {(t)} \\propto \\boldsymbol {\\alpha} ^ {(t)} \\odot \\boldsymbol {\\beta} ^ {(t)}, \\tag {14}\n$$\n\n$$\n\\boldsymbol {\\xi} ^ {(t)} \\propto \\boldsymbol {\\Psi} ^ {(t)} \\odot (\\boldsymbol {\\alpha} ^ {(t - 1)} (\\boldsymbol {\\varphi} ^ {(t)} \\odot \\boldsymbol {\\beta} ^ {(t)}) ^ {\\mathsf {T}}), \\tag {15}\n$$\n\nwhere $\\odot$ is the element-wise product. Note that the elements in both $\\gamma^{(t)}$ and $\\pmb{\\xi}^{(t)}$ should sum up to 1.\n\nThe Forward Pass The filtered marginal $\\alpha_{i}^{(t)}$ can be computed iteratively:\n\n$$\n\\begin{array}{l} \\alpha_ {i} ^ {(t)} \\triangleq p (z ^ {(t)} = i | \\boldsymbol {x} ^ {(1: t)}) \\\\ = p (z ^ {(t)} = i | \\boldsymbol {x} ^ {(t)}, \\boldsymbol {x} ^ {(1: t - 1)}) \\\\ \\propto p \\left(\\boldsymbol {x} ^ {(t)} \\mid z ^ {(t)} = i\\right) p \\left(z ^ {(t)} = i \\mid \\boldsymbol {x} ^ {(1: t - 1)}\\right) \\tag {16} \\\\ = \\sum_ {j} \\varphi_ {i} ^ {(t)} \\Psi_ {j, i} ^ {(t)} \\alpha_ {j} ^ {(t - 1)}. \\\\ \\end{array}\n$$\n\nWritten in the matrix form, (16) becomes\n\n$$\n\\boldsymbol {\\alpha} ^ {(t)} \\propto \\boldsymbol {\\varphi} ^ {(t)} \\odot \\left(\\boldsymbol {\\Psi} ^ {(t) ^ {\\mathsf {T}}} \\boldsymbol {\\alpha} ^ {(t - 1)}\\right). \\tag {17}\n$$\n\nWe initialize $\\alpha$ with $\\alpha^{(0)} = \\pi$ (§ 4.2) since we have no observation at time step 0. As $\\alpha^{(t)}$ is a probability distribution, the elements in it sum up to 1. The calculation of $\\alpha$ is the forward pass.\n\nThe Backward Pass In the same way, we do the backward pass to compute the conditional future evidence $\\beta_{i}^{(t)}\\triangleq p(\\pmb{x}^{(t + 1:T)}|z^{(t)} = i)$\n\n$$\n\\begin{array}{l} \\beta_ {i} ^ {(t - 1)} \\triangleq p (\\boldsymbol {x} ^ {(t + 1: T)} | z ^ {(t)} = j) \\\\ = \\sum_ {j} p (z ^ {(t)} = j, \\boldsymbol {x} ^ {(t)}, \\boldsymbol {x} ^ {(t + 1: T)} | z ^ {(t - 1)} = i) \\\\ = \\sum_ {j} [ p (\\boldsymbol {x} ^ {(t + 1: T)} | z ^ {(t)} = j) \\\\ p (\\boldsymbol {x} ^ {(t)}, z ^ {(t)} = j | z ^ {(t - 1)} = i) ] \\\\ = \\sum_ {j} \\beta_ {j} ^ {(t)} \\varphi_ {j} ^ {(t)} \\Psi_ {i, j} ^ {(t)}. \\tag {18} \\\\ \\end{array}\n$$\n\nIn the matrix form, (18) becomes:\n\n$$\n\\boldsymbol {\\beta} ^ {(t - 1)} = \\boldsymbol {\\Psi} ^ {(t)} \\left(\\boldsymbol {\\varphi} ^ {(t)} \\odot \\boldsymbol {\\beta} ^ {(t)}\\right), \\tag {19}\n$$\n\nwhose base case is\n\n$$\n\\begin{array}{l} \\beta_ {i} ^ {(T)} = p \\left(\\boldsymbol {x} ^ {(T + 1: T)} \\mid z ^ {(T)} = i\\right) = 1, \\\\ \\forall i \\in \\{1, \\dots , | \\mathcal {L} | \\}. \\\\ \\end{array}\n$$"
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "C"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce RTX 2080 Ti",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2021\\2021.acl-long.482\\auto\\full.md",
+    "source_md_sha256": "3bada5682546de86bc62b9a34f93a990bb084ebe5391a964981f210a8b31350a",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "a2f4e0f2222ac944a84b28fba08cc5ab0184a6c6ccb3a5a4deb8a7eefc1e4438"
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "paper_id": "2025.acl-long.1196",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.1196::sections::4",
+      "paper_id": "2025.acl-long.1196",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "In this section, we conduct a comprehensive evaluation of GSTransform to assess its effectiveness, efficiency, and robustness across a range of instruction-aware embedding tasks. In particular, our experiments are designed to answer the following research questions (RQs):\n\n- RQ1 (Effectiveness): Can GSTransform improve the instruction-following capability of generic embedding models across diverse tasks and datasets? (Section 4.3)   \n- RQ2 (Efficiency): How does GSTransform compare to state-of-the-art instruction-aware embedding baselines in terms of runtime and cost? (Section 4.4)   \n- RQ3 (Component Contribution): What is the contribution of each individual component in the GSTransform framework? (Section 4.5)   \n- RQ4 (Robustness): How robust is GSTransform to variations in hyperparameters, such as sample size and clustering granularity? (Section 4.6)\n\nTo complement the quantitative results, we also include a Case Study (Section 4.7) to qualitatively illustrate how GSTransform adapts embedding structures to different instruction foci.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1196::sections::4.4",
+      "paper_id": "2025.acl-long.1196",
+      "section_number": "4.4",
+      "section_title": "computational efficiency",
+      "normalized_section_title": "computational efficiency",
+      "window_text": "To assess computational efficiency, we compare GSTransform with the three baselines on two large-scale datasets (AG-News and Big Patent) in terms of time and cost. AG-News contains 127.6K texts with character lengths ranging from 100 to 1010, while Big Patent consists of 67.1K texts with lengths varying between 2.76K to 3.11M. Big Patent comprises 67.1K text with character lengths ranging from 2.76K to 3.11M. All models are evaluated on a server equipped with an NVIDIA A100 GPU (80GB memory) to ensure fairness.\n\nTime and Cost Efficiency. For time evaluation, we measure the embedding generation time for three different instructions. Unlike baselines that require re-encoding the entire dataset per instruction, GSTransform supports one-time pre-computing generic embeddings and applying real-time transformations, significantly reducing latency. Thus, we separately calculate the time for pre-computing and real-time transformation. For cost evaluation, we calculate the server rental cost (1 dollar per hour) and OpenAI API call costs.\n\nResult Analysis. Table 2 presents the results: Baseline models exhibit scalability issues, as their real\n\ntime latency is directly proportional to dataset size. Notably, InBedder-Llama2 suffers from severe inefficiencies, requiring 29,756 seconds due to its question-answering generation pipeline. In contrast, GSTransform processes only a small annotated subset (3,000 texts), reducing real-time latency to just 87 seconds, making it $6 \\sim 300 \\times$ faster than existing methods. We also compare the real-time latency of these models at different scales. The results (see Appendix E) show baseline models exhibit latency that increases proportionally with data size, making them more suitable for small-scale datasets. In contrast, GSTransform maintains near-constant latency, since its transformation is learned from a fixed sample size. This results in clear efficiency gains on large-scale datasets.\n\nIn terms of cost, GSTransform achieves state-of-the-art performance at a cost comparable to smaller models, making it a scalable and economical solution for real-world applications. Additionally, its flexibility enables seamless integration with future advanced and cost-efficient LLMs.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.1196::sections::4.5",
+      "paper_id": "2025.acl-long.1196",
+      "section_number": "4.5",
+      "section_title": "ablation studies",
+      "normalized_section_title": "ablation studies",
+      "window_text": "We conduct ablation studies to assess the contributions of key components in GSTransform. For Instruction-based Label Construction, we design two alternative solutions: (1) Removing the instruction-based text summarization component and (2) Replacing the entire process with directed LLM-based label generation. For Label-guided Embedding Transformation, we replace the transformation model with Fisher Discriminant Analysis (FDA) (Mika et al., 1999). We also assess different embedding backbones to test the generalizability of our method. The results for three datasets are shown in Table 3, while full results for all datasets\n\nTable 2: Computational efficiency results on two large-scale datasets. We report the Pre-computing Time (Pre-Time), Real-Time Latency (RT-Latency, per instruction), and Estimated Cost (for 3 instructions) for each model.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"3\">AG-News</td><td colspan=\"3\">Big Patent</td></tr><tr><td>Pre. Time (s) ↓</td><td>RT-Latency (s) ↓</td><td>Est. Cost ($) ↓</td><td>Pre. Time (s) ↓</td><td>RT-Latency (s) ↓</td><td>Est. Cost ($) ↓</td></tr><tr><td>InstructOR</td><td>-</td><td>511</td><td>0.43</td><td>-</td><td>1,679</td><td>1.40</td></tr><tr><td>InBedder-Roberta</td><td>-</td><td>749</td><td>0.62</td><td>-</td><td>1,781</td><td>1.48</td></tr><tr><td>InBedder-Llama2</td><td>-</td><td>16,206</td><td>13.51</td><td>-</td><td>29,756</td><td>24.80</td></tr><tr><td>GSTransform</td><td>626</td><td>77</td><td>0.96</td><td>1,689</td><td>87</td><td>2.37</td></tr></table>\n\nTable 3: The performance comparison of different solutions in ablation studies.   \n\n<table><tr><td rowspan=\"2\">Solutions</td><td colspan=\"3\">Dataset</td><td rowspan=\"2\">Mean ↑</td></tr><tr><td>NYTClust</td><td>MultiHate</td><td>IntEmo</td></tr><tr><td>GSTransform (Mxbai)</td><td>73.92</td><td>52.45</td><td>96.30</td><td>74.22</td></tr><tr><td>Remove Summ.</td><td>68.32</td><td>16.21</td><td>85.14</td><td>56.56</td></tr><tr><td>Directed Label Gen.</td><td>42.50</td><td>20.55</td><td>86.76</td><td>49.94</td></tr><tr><td>FDA-based Transf.</td><td>67.53</td><td>48.49</td><td>89.19</td><td>68.40</td></tr></table>\n\nare provided in Appendix D.\n\nRemove Summarization. Removing instruction-based text summarization leads to a significant performance drop (74.22 → 56.56), particularly affecting datasets like MultiHate. Further analysis reveals that generic embeddings fail to distinguish between hateful and non-hateful texts, causing the non-hateful category to be overwhelmed in clustering, reinforcing the importance of instruction-guided summarization.\n\nDirected Label Generation. Eliminating the text summarization, summary clustering, and label generation steps and directly relying on LLMs for label generation results in an even steeper performance decline $(74.22\\rightarrow 49.94)$ . We observe that LLM-generated labels often fail to align with dataset characteristics, leading to suboptimal text classification and embedding transformations. This suggests that context-aware taxonomy construction is crucial for effective instruction adaptation.\n\nFDA-based Transformation. Replacing the encoder-decoder architecture with FDA projection decreases performance $(74.22\\rightarrow 68.40)$ , confirming that our model better preserves instruction-relevant semantic structure compared to traditional dimensionality reduction techniques.\n\nGeneralization Across Embedding Models. We test GSTransform on different generic embedding models (UAE, Mxbai, and BGE), and the results in Table 1 show consistent improvements $(44.95 \\rightarrow 65.89, 45.60 \\rightarrow 66.01$ , and $43.48 \\rightarrow 65.32)$ , verifying the method's robustness and model-agnostic adaptability.\n\nTable 4: The impact of the number of samples.   \n\n<table><tr><td rowspan=\"2\">Dataset</td><td colspan=\"5\"># Samples</td></tr><tr><td>1,000</td><td>2,000</td><td>3,000</td><td>4,000</td><td>5,000</td></tr><tr><td>AmzCF (Clustering)</td><td>28.14</td><td>32.25</td><td>34.14</td><td>34.61</td><td>35.72</td></tr><tr><td>MultiHate (STS)</td><td>49.04</td><td>50.65</td><td>52.45</td><td>54.13</td><td>54.64</td></tr><tr><td>Toxic (Trip. Align.)</td><td>61.80</td><td>63.09</td><td>63.53</td><td>63.88</td><td>64.20</td></tr><tr><td>Mean</td><td>46.33</td><td>48.66</td><td>50.04</td><td>50.87</td><td>51.52</td></tr></table>\n\nTable 5: The impact of the number of clusters $(k)$   \n\n<table><tr><td rowspan=\"2\">Dataset</td><td colspan=\"5\"># Clusters (k)</td></tr><tr><td>10</td><td>30</td><td>50</td><td>70</td><td>90</td></tr><tr><td>AmzCF (Clustering)</td><td>35.37</td><td>33.95</td><td>34.14</td><td>34.87</td><td>33.46</td></tr><tr><td>MultiHate (STS)</td><td>52.12</td><td>52.69</td><td>52.45</td><td>52.51</td><td>52.46</td></tr><tr><td>Toxic (Trip. Align.)</td><td>63.59</td><td>64.17</td><td>63.53</td><td>64.05</td><td>63.31</td></tr><tr><td>Mean</td><td>50.36</td><td>50.27</td><td>50.04</td><td>50.48</td><td>49.74</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.1196::sections::4.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "To assess computational efficiency, we compare GSTransform with the three baselines on two large-scale datasets (AG-News and Big Patent) in terms of time and cost. AG-News contains 127.6K texts with character lengths ranging from 100 to 1010, while Big Patent consists of 67.1K texts with lengths varying between 2.76K to 3.11M. Big Patent comprises 67.1K text with character lengths ranging from 2.76K to 3.11M. All models are evaluated on a server equipped with an NVIDIA A100 GPU (80GB memory) to ensure fairness.\n\nTime and Cost Efficiency. For time evaluation, we measure the embedding generation time for three different instructions. Unlike baselines that require re-encoding the entire dataset per instruction, GSTransform supports one-time pre-computing generic embeddings and applying real-time transformations, significantly reducing latency. Thus, we separately calculate the time for pre-computing and real-time transformation. For cost evaluation, we calculate the server rental cost (1 dollar per hour) and OpenAI API call costs.\n\nResult Analysis. Table 2 presents the results: Baseline models exhibit scalability issues, as their real\n\ntime latency is directly proportional to dataset size. Notably, InBedder-Llama2 suffers from severe inefficiencies, requiring 29,756 seconds due to its question-answering generation pipeline. In contrast, GSTransform processes only a small annotated subset (3,000 texts), reducing real-time latency to just 87 seconds, making it $6 \\sim 300 \\times$ faster than existing methods. We also compare the real-time latency of these models at different scales. The results (see Appendix E) show baseline models exhibit latency that increases proportionally with data size, making them more suitable for small-scale datasets. In contrast, GSTransform maintains near-constant latency, since its transformation is learned from a fixed sample size. This results in clear efficiency gains on large-scale datasets.\n\nIn terms of cost, GSTransform achieves state-of-the-art performance at a cost comparable to smaller models, making it a scalable and economical solution for real-world applications. Additionally, its flexibility enables seamless integration with future advanced and cost-efficient LLMs.",
+      "section_number": "4.4",
+      "section_title": "computational efficiency",
+      "normalized_section_title": "computational efficiency"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.1196::sections::4.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "4.4",
+      "section_title": "computational efficiency",
+      "normalized_section_title": "computational efficiency",
+      "evidence": "To assess computational efficiency, we compare GSTransform with the three baselines on two large-scale datasets (AG-News and Big Patent) in terms of time and cost. AG-News contains 127.6K texts with character lengths ranging from 100 to 1010, while Big Patent consists of 67.1K texts with lengths varying between 2.76K to 3.11M. Big Patent comprises 67.1K text with character lengths ranging from 2.76K to 3.11M. All models are evaluated on a server equipped with an NVIDIA A100 GPU (80GB memory) to ensure fairness.\n\nTime and Cost Efficiency. For time evaluation, we measure the embedding generation time for three different instructions. Unlike baselines that require re-encoding the entire dataset per instruction, GSTransform supports one-time pre-computing generic embeddings and applying real-time transformations, significantly reducing latency. Thus, we separately calculate the time for pre-computing and real-time transformation. For cost evaluation, we calculate the server rental cost (1 dollar per hour) and OpenAI API call costs.\n\nResult Analysis. Table 2 presents the results: Baseline models exhibit scalability issues, as their real\n\ntime latency is directly proportional to dataset size. Notably, InBedder-Llama2 suffers from severe inefficiencies, requiring 29,756 seconds due to its question-answering generation pipeline. In contrast, GSTransform processes only a small annotated subset (3,000 texts), reducing real-time latency to just 87 seconds, making it $6 \\sim 300 \\times$ faster than existing methods. We also compare the real-time latency of these models at different scales. The results (see Appendix E) show baseline models exhibit latency that increases proportionally with data size, making them more suitable for small-scale datasets. In contrast, GSTransform maintains near-constant latency, since its transformation is learned from a fixed sample size. This results in clear efficiency gains on large-scale datasets.\n\nIn terms of cost, GSTransform achieves state-of-the-art performance at a cost comparable to smaller models, making it a scalable and economical solution for real-world applications. Additionally, its flexibility enables seamless integration with future advanced and cost-efficient LLMs.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.4"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 1
+      }
+    ]
+  }
+}

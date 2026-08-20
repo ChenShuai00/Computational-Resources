@@ -1,0 +1,234 @@
+{
+  "paper_id": "2025.naacl-long.619",
+  "candidate_windows": [
+    {
+      "window_id": "2025.naacl-long.619::sections::3",
+      "paper_id": "2025.naacl-long.619",
+      "section_number": "3",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "Primary Objective. Our objective is to integrate generative DDPMs with deterministic regression-based models. Through this, we aim to leverage each of their strengths, mitigating the limitations inherent in DDPMs while harnessing their powerful distribution mapping capabilities. Specifically, we leverage LDMs to generate a prior, which is then hierarchically integrated into a Transformer-based regression model. The prior acts as conditioning and guides the Transformer model for SE. The following subsections will describe the ProSE architecture followed by the 2-step training mechanism. Background on Diffusion models. Diffusion models consist of two main processes: a forward process and a reverse process. Given a data point $x_0$ with probability distribution $p(x_0)$ , the forward diffusion process, gradually adds Gaussian noise to $x_0$ according to a pre-set variance schedule\n\n![](images/74611e62406f067475b66d74f65f609e72edc3371a2467cebabac683a6aa7bc2.jpg)\n\n![](images/1d5fafb014d1b7e4b37585aa2adc9495b696ee4f9c16778f233f63c1271278d8.jpg)\n\n![](images/e4f29fd0536635ce3a748e8cecbf364932dd65d6a42577874ef66d6093c6c198.jpg)\n\n![](images/15a3a9c543884c054d13b8cba0f4b031262683f1feefe046d6a0972de35daf0a.jpg)\n\n![](images/b728bf22faa04afac0f525f03cf5abbdc00656b6bd6da8ad155f2b9d4a0e637a.jpg)  \n$\\widehat{\\mathbb{S}}$ Latent Encoder (LE)   \nFigure 1: Illustration of ProSE. ① The SE Transformer adopts a hierarchical encoder-decoder architecture conditioned on priors to guide the SE process. ② In Training Stage 1, we aim to learn a latent encoder $\\mathbf{L}\\mathbf{E}_{\\mathrm{S}1}$ that can compress the clean speech to $\\mathbf{z}^{\\mathrm{S}1}$ . We first obtain latent encodings of the clean and noisy speech $\\mathbf{X}_{\\mathrm{clean}}$ and $\\mathbf{X}_{\\mathrm{noisy}}$ after mel-spectrogram conversion and VAE encoding. Next, we concatenate both along the channel dimension before feeding it into $\\mathbf{L}\\mathbf{E}_{\\mathrm{S}1}$ . $\\mathbf{z}^{\\mathrm{S}1}$ is then integrated with the SE transformer as the prior $(\\mathbf{z}^{\\mathrm{S}1} = \\mathbf{z}_1)$ and $\\mathbf{L}\\mathbf{E}_{\\mathrm{S}1}$ and the SE transformer is trained E2E. ③ For Training Stage 2, we now employ $\\mathbf{z}^{\\mathrm{S}1}$ from $\\mathbf{L}\\mathbf{E}_{\\mathrm{S}1}$ as the starting point of the forward diffusion process to train the LDM. The LDM iteratively removes noise from $\\mathbf{z}_T^{\\mathrm{S}1}$ , to obtain $\\hat{\\mathbf{z}}$ , and is conditioned on $\\mathbf{z}^{\\mathrm{S}2}$ , a compact latent of the noisy speech obtained from another latent encoder $\\mathbf{L}\\mathbf{E}_{\\mathrm{S}2}$ . For Stage 2, the LDM and the Transformer are trained E2E, where $\\hat{\\mathbf{z}} = \\mathbf{z}_1$ and $\\hat{\\mathbf{z}}$ is further downsampled. For inference, we drop $\\mathbf{L}\\mathbf{E}_{\\mathrm{S}1}$ and start the reverse process from randomly sampled Gaussian noise.\n\n$\\beta_{1}, \\dots, \\beta_{T}$ and degrades the structure of the data. At the time step $t$ , the latent variable $x_{t}$ is only determined by $x_{t-1}$ due to its discrete-time Markov process nature, and can be expressed as:\n\n$$\np \\left(x _ {t} \\mid x _ {t - 1}\\right) = \\mathcal {N} \\left(x _ {t}; \\sqrt {1 - \\beta_ {t}} x _ {t - 1}, \\beta_ {t} I\\right), \\tag {1}\n$$\n\nAs $t$ increases over several diffusion steps, $p(x_{T})$ approaches a unit spherical Gaussian distribution. The marginal distribution of $x_{t}$ at any given step can be expressed analytically as:\n\n$$\np \\left(x _ {t} \\mid x _ {0}\\right) = \\mathcal {N} \\left(x _ {t}; \\sqrt {\\alpha_ {t}} x _ {0}, (1 - \\alpha_ {t}) I\\right), \\tag {2}\n$$\n\nwhere $\\alpha_{t} = \\prod_{s=1}^{t}(1 - \\beta_{s})$ . The reverse process aims to reconstruct the original data from the noise-corrupted version by learning a series of conditional distributions. The transition from $x_{t}$ to $x_{t-1}$ is modeled as:\n\n$$\np _ {\\theta} \\left(x _ {t - 1} \\mid x _ {t}\\right) = \\mathcal {N} \\left(x _ {t - 1}; \\mu_ {\\theta} ^ {t - 1}, \\sigma_ {\\theta} ^ {t - 1}\\right), \\tag {3}\n$$\n\n$$\n\\mu_ {\\theta} ^ {t - 1} = \\frac {x _ {t} - \\beta_ {t} \\epsilon_ {\\theta} (x _ {t} , t)}{\\sqrt {1 - \\beta_ {t}}}, \\tag {4}\n$$\n\n$$\n\\sigma_ {\\theta} ^ {t - 1 ^ {2}} = \\frac {1 - \\bar {\\alpha} _ {t - 1}}{1 - \\bar {\\alpha} _ {t}} \\cdot \\beta_ {t}, \\tag {5}\n$$\n\nwhere $\\alpha_{t} = 1 - \\beta_{t},\\bar{\\alpha}_{t} = \\prod_{i = 1}^{t}\\alpha_{i},\\theta$ represents the learnable parameters, $\\mu_{\\theta}^{t - 1}$ is the mean estimate, $\\sigma_{\\theta}^{t - 1^2}$ is the standard deviation estimate, and $\\epsilon_{\\theta}(x_t,t)$ is the noise estimated by the neural network. The reverse process estimates the data distribution $p(x_0)$ by integrating over all possible paths:\n\n$$\np _ {\\theta} \\left(x _ {0}\\right) = \\int p _ {\\theta} \\left(x _ {T}\\right) \\prod_ {t = 1} ^ {T} p _ {\\theta} \\left(x _ {t - 1} \\mid x _ {t}\\right) d x _ {1}: T \\tag {6}\n$$\n\nwhere $p_{\\theta}(x_T) = \\mathcal{N}(x_T;0,I)$",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.619::sections::3.2.3",
+      "paper_id": "2025.naacl-long.619",
+      "section_number": "3.2.3",
+      "section_title": "inference",
+      "normalized_section_title": "inference",
+      "window_text": "For inference, given a noisy speech signal $\\mathbf{S}_{\\text {noisy }}$ , we first obtain its latent encoding $\\mathbf{X}_{\\text {noisy }}$ and then compress it to a compact space $\\mathbf{z}^{\\mathrm{S2}} \\in \\mathbb{R}^{N \\times C'}$ using $\\mathrm{LE}_{\\mathrm{S2}}$ . We then generate the prior $\\hat{\\mathbf{z}}$ using the LDM. Precisely, we perform the reverse process $T$ times starting from a randomly sampled Gaussian Noise $\\epsilon \\sim \\mathcal{N}(0, \\mathbf{I})$ . The generation is conditioned on $\\mathbf{z}^{\\mathrm{S2}}$ (Equation 12). The generated prior is now conditioned on the SE Transformer to guide it for enhancement. The SE Transformer takes $\\mathbf{X}_{\\text {noisy }}$ as input and predicts clean speech encoding $\\hat{\\mathbf{X}}_{\\text {clean }}$ . $\\hat{\\mathbf{X}}_{\\text {clean }}$ is then passed through a VAE decoder followed by a HiFi-GAN vocoder to obtain the $\\hat{\\mathbf{S}}_{\\text {clean }}$ .",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.619::sections::4",
+      "paper_id": "2025.naacl-long.619",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Datasets. Following a wealth of prior work in SE (Lu et al., 2021, 2022b; Tai et al., 2023b,a), we use the VoiceBank-DEMAND (VBD) dataset to train and evaluate our models. The dataset comprises noisy speech recordings generated by mixing clean speech from the VoiceBank collection (Veaux et al., 2013) with noise from the DEMAND dataset (Thiemann et al., 2013). It has 30 distinct speakers, with 28 speakers allocated for training and 2 for testing. Clean samples were mixed with noise samples at four signal-to-noise ratios (SNRs) during training ([0, 5, 10, 15] dB) and testing ([2.5, 7.5, 12.5, 17.5] dB). The training dataset comprised a total of 11,572 utterances, while the testing set included 824 utterances. Additionally, to evaluate the generalization capabilities of our models trained on VBD, we also test them on CHiME-4 (Barker et al., 2015). CHiME-4 is\n\nTable 2: Comparison of ProSE with different diffusion-based SE methods on CHiME-4 (real-world dataset). ProSE outperforms our baselines by $0.7\\% - 44.1\\%$ .   \n\n<table><tr><td>Method</td><td>STOI (%)↑</td><td>PESQ↑</td><td>CSIG↑</td><td>CBAK↑</td><td>COVL↑</td></tr><tr><td>Unprocessed</td><td>71.50</td><td>1.21</td><td>2.18</td><td>1.97</td><td>1.62</td></tr><tr><td>Diffwave</td><td>72.35</td><td>1.20</td><td>2.23</td><td>1.97</td><td>1.65</td></tr><tr><td>DiffuSE</td><td>83.66</td><td>1.57</td><td>2.89</td><td>2.18</td><td>2.18</td></tr><tr><td>CDiffuSE</td><td>82.75</td><td>1.57</td><td>2.87</td><td>2.13</td><td>2.17</td></tr><tr><td>SGMSE</td><td>84.41</td><td>1.56</td><td>2.92</td><td>2.18</td><td>2.16</td></tr><tr><td>DR-DiffuSE</td><td>78.03</td><td>1.31</td><td>2.41</td><td>2.07</td><td>1.82</td></tr><tr><td>DOSE</td><td>85.42</td><td>1.50</td><td>2.70</td><td>2.14</td><td>2.07</td></tr><tr><td>SE Transformer (ours)</td><td>83.90±0.03</td><td>1.39±0.05</td><td>2.84±0.03</td><td>2.09±0.04</td><td>1.99±0.01</td></tr><tr><td>ProSE (ours)</td><td>88.18±0.02</td><td>1.73±0.04</td><td>2.89±0.01</td><td>2.25±0.07</td><td>2.30±0.08</td></tr></table>\n\nsourced from the Wall Street Journal corpus with sentences spoken by talkers situated in challenging, noisy environments. In addition to VBD and CHiME-4, we also train and evaluate our models on TIMIT-MUSAN corpus. We synthesize this dataset by mixing clean speech from the TIMIT dataset (Garofolo, 1993) with noise from the MUSAN dataset (Snyder et al., 2015). The mixing is done at SNRs ([-3, 0, 3, 5] dB).\n\nEvaluation metrics. We evaluate ProSE on the common evaluation metrics: perceptual evaluation of speech quality (PESQ) (Rix et al., 2001), short-time objective intelligibility (STOI) (), segmental signal-to-noise ratio (SSNR) (Taal et al., 2010), mean opinion score (MOS) prediction of the speech signal distortion (CSIG) (Hu and Loizou, 2007), the MOS prediction of the intrusiveness of background noise (CBAK) (Hu and Loizou, 2007) and the MOS prediction of the overall effect (COVL) (Hu and Loizou, 2007).\n\nBaselines. We compare ProSE with recent open-sourced diffusion-based SE methods DiffuSE (Lu et al., 2021), CDiffuSE (Lu et al., 2022b), SGMSE (Richter et al., 2023), DR-DiffuSE (Tai et al., 2023b) and DOSE (Tai et al., 2023a). Details about baselines can be found in Appendix F.\n\nHyper-parameters. We process speech at $16\\mathrm{kHz}$ . For mel-spectrogram conversion, we set the window, FFT, and hop sizes to 1024, 1024, and 160,\n\n![](images/5a87935742d0831c8456e6cac96109c3635e1663a698ac56a932b291f01e564a.jpg)  \nFigure 2: Comparison of mel-spectrograms generated by ProSE with DOSE (SOTA diffusion approach) and clean speech. ProSE generates enhanced speech that is closer to clean speech and does not add artifacts that are not present in the clean speech.\n\nrespectively, with fmin and fmax set to 0 and 8000. This results in $\\mathrm{F} = 128$ , and we slice larger audios and pad smaller ones to a fixed duration of 2 seconds, which results in $\\mathrm{T} = 200$ . We employ $r = 4$ for VAE. We train ProSE with an Adam optimizer (Kingma and Ba, 2014) with $\\beta_{1} = 0.9$ and $\\beta_{2} = 0.99$ . For stage one, the total training iterations are 300K. The initial learning rate is set as $2 \\times 10^{-4}$ and gradually reduced to $1 \\times 10^{-6}$ with the cosine annealing. For stage two, we adopt the same training settings as in stage one. For LDM, we use $T = 2$ for training with the variance hyperparameters $\\beta_{1:T}$ constants increasing linearly from $\\beta_{1} = 0.1$ to $\\beta_{T} = 0.99$ . We also employ $T = 2$ during inference. We train both stages with a batch size of 8 on 4 A100 GPUs. We set $\\mathrm{N} = 16$ and $C' = 256$ as the LE output dimensions for our experiments. For the first 4 levels of the SE Transformer, the number of Transformer blocks is [3,5,5,6], the number of channels is [48,96,192,384], and the attention heads are [1,2,4,8].",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.naacl-long.619::sections::6",
+      "paper_id": "2025.naacl-long.619",
+      "section_number": "6",
+      "section_title": "discussion",
+      "normalized_section_title": "discussion",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.619::appendix::A",
+      "paper_id": "2025.naacl-long.619",
+      "section_number": "A",
+      "section_title": "appendix",
+      "normalized_section_title": "appendix",
+      "window_text": "In the Appendix, we provide:\n\n1. Section B: Variational Auto Encoder (VAE) Architecture Details   \n2. Section C: Variational Auto Encoder Training Details   \n3. Section D: HiFi-GAN Training Details   \n4. Section E: Dataset Licences   \n5. Section F: Baseline Details   \n6. Section G: MOS Test   \n7. Section H: Broader Impact",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.619::appendix::C",
+      "paper_id": "2025.naacl-long.619",
+      "section_number": "C",
+      "section_title": "variational auto encoder training details",
+      "normalized_section_title": "variational auto encoder training details",
+      "window_text": "We train our VAE using the Adam optimizer (Kingma and Ba, 2014) with a learning rate of $4.5 \\times 10^{-6}$ and a batch size of six. The speech data we use for training is VoiceBank-DEMAND. We perform experiments with three compression-level settings $r = 4$ , 8, 16, for which the latent channels are $C = 8$ , 16, and 32, respectively. VAEs in all three settings are trained with at least 1.5M steps on a single NVIDIA RTX 3090 GPU. To stabilize training, we do not apply the adversarial loss in the first 50K training steps. We use the mixup (Zhang et al., 2018) strategy for data augmentation.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.naacl-long.619::appendix::D",
+      "paper_id": "2025.naacl-long.619",
+      "section_number": "D",
+      "section_title": "hifi-gan training details",
+      "normalized_section_title": "hifi-gan training details",
+      "window_text": "In this study, we utilize HiFi-GAN (Kong et al., 2020), renowned for its effectiveness in speech waveform generation, as our vocoder. HiFi-GAN employs two sets of discriminators, a multi-period discriminator, and a multi-scale discriminator, to enhance perceptual quality. We train the vocoder on the VoiceBank-DEMAND dataset to synthesize audio waveforms. For input samples with a sampling rate of $16,000\\mathrm{Hz}$ , we extract 128-band mel-spectrograms and adhere to the default HiFi-GAN V1 settings. The window, FFT, and hop sizes are set to 1024, 1024, and 160, respectively, with fmin and fmax set to 0 and 8000. We employ the AdamW optimizer with $\\beta_{1} = 0.8$ and $\\beta_{2} = 0.99$ . The learning rate is initialized at $2\\times 10^{-4}$ and decays at a rate of 0.999. Using a batch size of 96, we train the model on six NVIDIA 3090 GPUs.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.naacl-long.619::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 3090",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We train our VAE using the Adam optimizer (Kingma and Ba, 2014) with a learning rate of $4.5 \\times 10^{-6}$ and a batch size of six. The speech data we use for training is VoiceBank-DEMAND. We perform experiments with three compression-level settings $r = 4$ , 8, 16, for which the latent channels are $C = 8$ , 16, and 32, respectively. VAEs in all three settings are trained with at least 1.5M steps on a single NVIDIA RTX 3090 GPU. To stabilize training, we do not apply the adversarial loss in the first 50K training steps. We use the mixup (Zhang et al., 2018) strategy for data augmentation.",
+      "section_number": "C",
+      "section_title": "variational auto encoder training details",
+      "normalized_section_title": "variational auto encoder training details"
+    },
+    {
+      "window_id": "2025.naacl-long.619::appendix::D",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA 3090",
+      "count": 6,
+      "count_text": "6",
+      "evidence": "In this study, we utilize HiFi-GAN (Kong et al., 2020), renowned for its effectiveness in speech waveform generation, as our vocoder. HiFi-GAN employs two sets of discriminators, a multi-period discriminator, and a multi-scale discriminator, to enhance perceptual quality. We train the vocoder on the VoiceBank-DEMAND dataset to synthesize audio waveforms. For input samples with a sampling rate of $16,000\\mathrm{Hz}$ , we extract 128-band mel-spectrograms and adhere to the default HiFi-GAN V1 settings. The window, FFT, and hop sizes are set to 1024, 1024, and 160, respectively, with fmin and fmax set to 0 and 8000. We employ the AdamW optimizer with $\\beta_{1} = 0.8$ and $\\beta_{2} = 0.99$ . The learning rate is initialized at $2\\times 10^{-4}$ and decays at a rate of 0.999. Using a batch size of 96, we train the model on six NVIDIA 3090 GPUs.",
+      "section_number": "D",
+      "section_title": "hifi-gan training details",
+      "normalized_section_title": "hifi-gan training details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.naacl-long.619::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA RTX 3090",
+      "cleaned_hardware_name": "nvidia rtx 3090",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 3090",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 3090",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "C",
+      "section_title": "variational auto encoder training details",
+      "normalized_section_title": "variational auto encoder training details",
+      "evidence": "We train our VAE using the Adam optimizer (Kingma and Ba, 2014) with a learning rate of $4.5 \\times 10^{-6}$ and a batch size of six. The speech data we use for training is VoiceBank-DEMAND. We perform experiments with three compression-level settings $r = 4$ , 8, 16, for which the latent channels are $C = 8$ , 16, and 32, respectively. VAEs in all three settings are trained with at least 1.5M steps on a single NVIDIA RTX 3090 GPU. To stabilize training, we do not apply the adversarial loss in the first 50K training steps. We use the mixup (Zhang et al., 2018) strategy for data augmentation.",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.naacl-long.619::appendix::D",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA 3090",
+      "cleaned_hardware_name": "nvidia 3090",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 3090",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 3090",
+      "count": 6,
+      "count_text": "6",
+      "section_number": "D",
+      "section_title": "hifi-gan training details",
+      "normalized_section_title": "hifi-gan training details",
+      "evidence": "In this study, we utilize HiFi-GAN (Kong et al., 2020), renowned for its effectiveness in speech waveform generation, as our vocoder. HiFi-GAN employs two sets of discriminators, a multi-period discriminator, and a multi-scale discriminator, to enhance perceptual quality. We train the vocoder on the VoiceBank-DEMAND dataset to synthesize audio waveforms. For input samples with a sampling rate of $16,000\\mathrm{Hz}$ , we extract 128-band mel-spectrograms and adhere to the default HiFi-GAN V1 settings. The window, FFT, and hop sizes are set to 1024, 1024, and 160, respectively, with fmin and fmax set to 0 and 8000. We employ the AdamW optimizer with $\\beta_{1} = 0.8$ and $\\beta_{2} = 0.99$ . The learning rate is initialized at $2\\times 10^{-4}$ and decays at a rate of 0.999. Using a batch size of 96, we train the model on six NVIDIA 3090 GPUs.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized GeForce RTX shorthand rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.naacl-long.619::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methodology",
+      "evidence": "Primary Objective. Our objective is to integrate generative DDPMs with deterministic regression-based models. Through this, we aim to leverage each of their strengths, mitigating the limitations inherent in DDPMs while harnessing their powerful distribution mapping capabilities. Specifically, we leverage LDMs to generate a prior, which is then hierarchically integrated into a Transformer-based regression model. The prior acts as conditioning and guides the Transformer model for SE. The following subsections will describe the ProSE architecture followed by the 2-step training mechanism. Background on Diffusion models. Diffusion models consist of two main processes: a forward process and a reverse process. Given a data point $x_0$ with probability distribution $p(x_0)$ , the forward diffusion process, gradually adds Gaussian noise to $x_0$ according to a pre-set variance schedule\n\n![](images/74611e62406f067475b66d74f65f609e72edc3371a2467cebabac683a6aa7bc2.jpg)\n\n![](images/1d5fafb014d1b7e4b37585aa2adc9495b696ee4f9c16778f233f63c1271278d8.jpg)\n\n![](images/e4f29fd0536635ce3a748e8cecbf364932dd65d6a42577874ef66d6093c6c198.jpg)\n\n![](images/15a3a9c543884c054d13b8cba0f4b031262683f1feefe046d6a0972de35daf0a.jpg)\n\n![](images/b728bf22faa04afac0f525f03cf5abbdc00656b6bd6da8ad155f2b9d4a0e637a.jpg)  \n$\\widehat{\\mathbb{S}}$ Latent Encoder (LE)   \nFigure 1: Illustration of ProSE. ① The SE Transformer adopts a hierarchical encoder-decoder architecture conditioned on priors to guide the SE process. ② In Training Stage 1, we aim to learn a latent encoder $\\mathbf{L}\\mathbf{E}_{\\mathrm{S}1}$ that can compress the clean speech to $\\mathbf{z}^{\\mathrm{S}1}$ . We first obtain latent encodings of the clean and noisy speech $\\mathbf{X}_{\\mathrm{clean}}$ and $\\mathbf{X}_{\\mathrm{noisy}}$ after mel-spectrogram conversion and VAE encoding. Next, we concatenate both along the channel dimension before feeding it into $\\mathbf{L}\\mathbf{E}_{\\mathrm{S}1}$ . $\\mathbf{z}^{\\mathrm{S}1}$ is then integrated with the SE transformer as the prior $(\\mathbf{z}^{\\mathrm{S}1} = \\mathbf{z}_1)$ and $\\mathbf{L}\\mathbf{E}_{\\mathrm{S}1}$ and the SE transformer is trained E2E. ③ For Training Stage 2, we now employ $\\mathbf{z}^{\\mathrm{S}1}$ from $\\mathbf{L}\\mathbf{E}_{\\mathrm{S}1}$ as the starting point of the forward diffusion process to train the LDM. The LDM iteratively removes noise from $\\mathbf{z}_T^{\\mathrm{S}1}$ , to obtain $\\hat{\\mathbf{z}}$ , and is conditioned on $\\mathbf{z}^{\\mathrm{S}2}$ , a compact latent of the noisy speech obtained from another latent encoder $\\mathbf{L}\\mathbf{E}_{\\mathrm{S}2}$ . For Stage 2, the LDM and the Transformer are trained E2E, where $\\hat{\\mathbf{z}} = \\mathbf{z}_1$ and $\\hat{\\mathbf{z}}$ is further downsampled. For inference, we drop $\\mathbf{L}\\mathbf{E}_{\\mathrm{S}1}$ and start the reverse process from randomly sampled Gaussian noise.\n\n$\\beta_{1}, \\dots, \\beta_{T}$ and degrades the structure of the data. At the time step $t$ , the latent variable $x_{t}$ is only determined by $x_{t-1}$ due to its discrete-time Markov process nature, and can be expressed as:\n\n$$\np \\left(x _ {t} \\mid x _ {t - 1}\\right) = \\mathcal {N} \\left(x _ {t}; \\sqrt {1 - \\beta_ {t}} x _ {t - 1}, \\beta_ {t} I\\right), \\tag {1}\n$$\n\nAs $t$ increases over several diffusion steps, $p(x_{T})$ approaches a unit spherical Gaussian distribution. The marginal distribution of $x_{t}$ at any given step can be expressed analytically as:\n\n$$\np \\left(x _ {t} \\mid x _ {0}\\right) = \\mathcal {N} \\left(x _ {t}; \\sqrt {\\alpha_ {t}} x _ {0}, (1 - \\alpha_ {t}) I\\right), \\tag {2}\n$$\n\nwhere $\\alpha_{t} = \\prod_{s=1}^{t}(1 - \\beta_{s})$ . The reverse process aims to reconstruct the original data from the noise-corrupted version by learning a series of conditional distributions. The transition from $x_{t}$ to $x_{t-1}$ is modeled as:\n\n$$\np _ {\\theta} \\left(x _ {t - 1} \\mid x _ {t}\\right) = \\mathcal {N} \\left(x _ {t - 1}; \\mu_ {\\theta} ^ {t - 1}, \\sigma_ {\\theta} ^ {t - 1}\\right), \\tag {3}\n$$\n\n$$\n\\mu_ {\\theta} ^ {t - 1} = \\frac {x _ {t} - \\beta_ {t} \\epsilon_ {\\theta} (x _ {t} , t)}{\\sqrt {1 - \\beta_ {t}}}, \\tag {4}\n$$\n\n$$\n\\sigma_ {\\theta} ^ {t - 1 ^ {2}} = \\frac {1 - \\bar {\\alpha} _ {t - 1}}{1 - \\bar {\\alpha} _ {t}} \\cdot \\beta_ {t}, \\tag {5}\n$$\n\nwhere $\\alpha_{t} = 1 - \\beta_{t},\\bar{\\alpha}_{t} = \\prod_{i = 1}^{t}\\alpha_{i},\\theta$ represents the learnable parameters, $\\mu_{\\theta}^{t - 1}$ is the mean estimate, $\\sigma_{\\theta}^{t - 1^2}$ is the standard deviation estimate, and $\\epsilon_{\\theta}(x_t,t)$ is the noise estimated by the neural network. The reverse process estimates the data distribution $p(x_0)$ by integrating over all possible paths:\n\n$$\np _ {\\theta} \\left(x _ {0}\\right) = \\int p _ {\\theta} \\left(x _ {T}\\right) \\prod_ {t = 1} ^ {T} p _ {\\theta} \\left(x _ {t - 1} \\mid x _ {t}\\right) d x _ {1}: T \\tag {6}\n$$\n\nwhere $p_{\\theta}(x_T) = \\mathcal{N}(x_T;0,I)$"
+    },
+    {
+      "source_window_id": "2025.naacl-long.619::sections::3.2.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3.2.3",
+      "section_title": "inference",
+      "evidence": "For inference, given a noisy speech signal $\\mathbf{S}_{\\text {noisy }}$ , we first obtain its latent encoding $\\mathbf{X}_{\\text {noisy }}$ and then compress it to a compact space $\\mathbf{z}^{\\mathrm{S2}} \\in \\mathbb{R}^{N \\times C'}$ using $\\mathrm{LE}_{\\mathrm{S2}}$ . We then generate the prior $\\hat{\\mathbf{z}}$ using the LDM. Precisely, we perform the reverse process $T$ times starting from a randomly sampled Gaussian Noise $\\epsilon \\sim \\mathcal{N}(0, \\mathbf{I})$ . The generation is conditioned on $\\mathbf{z}^{\\mathrm{S2}}$ (Equation 12). The generated prior is now conditioned on the SE Transformer to guide it for enhancement. The SE Transformer takes $\\mathbf{X}_{\\text {noisy }}$ as input and predicts clean speech encoding $\\hat{\\mathbf{X}}_{\\text {clean }}$ . $\\hat{\\mathbf{X}}_{\\text {clean }}$ is then passed through a VAE decoder followed by a HiFi-GAN vocoder to obtain the $\\hat{\\mathbf{S}}_{\\text {clean }}$ ."
+    },
+    {
+      "source_window_id": "2025.naacl-long.619::sections::4",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experimental setup",
+      "evidence": "Datasets. Following a wealth of prior work in SE (Lu et al., 2021, 2022b; Tai et al., 2023b,a), we use the VoiceBank-DEMAND (VBD) dataset to train and evaluate our models. The dataset comprises noisy speech recordings generated by mixing clean speech from the VoiceBank collection (Veaux et al., 2013) with noise from the DEMAND dataset (Thiemann et al., 2013). It has 30 distinct speakers, with 28 speakers allocated for training and 2 for testing. Clean samples were mixed with noise samples at four signal-to-noise ratios (SNRs) during training ([0, 5, 10, 15] dB) and testing ([2.5, 7.5, 12.5, 17.5] dB). The training dataset comprised a total of 11,572 utterances, while the testing set included 824 utterances. Additionally, to evaluate the generalization capabilities of our models trained on VBD, we also test them on CHiME-4 (Barker et al., 2015). CHiME-4 is\n\nTable 2: Comparison of ProSE with different diffusion-based SE methods on CHiME-4 (real-world dataset). ProSE outperforms our baselines by $0.7\\% - 44.1\\%$ .   \n\n<table><tr><td>Method</td><td>STOI (%)↑</td><td>PESQ↑</td><td>CSIG↑</td><td>CBAK↑</td><td>COVL↑</td></tr><tr><td>Unprocessed</td><td>71.50</td><td>1.21</td><td>2.18</td><td>1.97</td><td>1.62</td></tr><tr><td>Diffwave</td><td>72.35</td><td>1.20</td><td>2.23</td><td>1.97</td><td>1.65</td></tr><tr><td>DiffuSE</td><td>83.66</td><td>1.57</td><td>2.89</td><td>2.18</td><td>2.18</td></tr><tr><td>CDiffuSE</td><td>82.75</td><td>1.57</td><td>2.87</td><td>2.13</td><td>2.17</td></tr><tr><td>SGMSE</td><td>84.41</td><td>1.56</td><td>2.92</td><td>2.18</td><td>2.16</td></tr><tr><td>DR-DiffuSE</td><td>78.03</td><td>1.31</td><td>2.41</td><td>2.07</td><td>1.82</td></tr><tr><td>DOSE</td><td>85.42</td><td>1.50</td><td>2.70</td><td>2.14</td><td>2.07</td></tr><tr><td>SE Transformer (ours)</td><td>83.90±0.03</td><td>1.39±0.05</td><td>2.84±0.03</td><td>2.09±0.04</td><td>1.99±0.01</td></tr><tr><td>ProSE (ours)</td><td>88.18±0.02</td><td>1.73±0.04</td><td>2.89±0.01</td><td>2.25±0.07</td><td>2.30±0.08</td></tr></table>\n\nsourced from the Wall Street Journal corpus with sentences spoken by talkers situated in challenging, noisy environments. In addition to VBD and CHiME-4, we also train and evaluate our models on TIMIT-MUSAN corpus. We synthesize this dataset by mixing clean speech from the TIMIT dataset (Garofolo, 1993) with noise from the MUSAN dataset (Snyder et al., 2015). The mixing is done at SNRs ([-3, 0, 3, 5] dB).\n\nEvaluation metrics. We evaluate ProSE on the common evaluation metrics: perceptual evaluation of speech quality (PESQ) (Rix et al., 2001), short-time objective intelligibility (STOI) (), segmental signal-to-noise ratio (SSNR) (Taal et al., 2010), mean opinion score (MOS) prediction of the speech signal distortion (CSIG) (Hu and Loizou, 2007), the MOS prediction of the intrusiveness of background noise (CBAK) (Hu and Loizou, 2007) and the MOS prediction of the overall effect (COVL) (Hu and Loizou, 2007).\n\nBaselines. We compare ProSE with recent open-sourced diffusion-based SE methods DiffuSE (Lu et al., 2021), CDiffuSE (Lu et al., 2022b), SGMSE (Richter et al., 2023), DR-DiffuSE (Tai et al., 2023b) and DOSE (Tai et al., 2023a). Details about baselines can be found in Appendix F.\n\nHyper-parameters. We process speech at $16\\mathrm{kHz}$ . For mel-spectrogram conversion, we set the window, FFT, and hop sizes to 1024, 1024, and 160,\n\n![](images/5a87935742d0831c8456e6cac96109c3635e1663a698ac56a932b291f01e564a.jpg)  \nFigure 2: Comparison of mel-spectrograms generated by ProSE with DOSE (SOTA diffusion approach) and clean speech. ProSE generates enhanced speech that is closer to clean speech and does not add artifacts that are not present in the clean speech.\n\nrespectively, with fmin and fmax set to 0 and 8000. This results in $\\mathrm{F} = 128$ , and we slice larger audios and pad smaller ones to a fixed duration of 2 seconds, which results in $\\mathrm{T} = 200$ . We employ $r = 4$ for VAE. We train ProSE with an Adam optimizer (Kingma and Ba, 2014) with $\\beta_{1} = 0.9$ and $\\beta_{2} = 0.99$ . For stage one, the total training iterations are 300K. The initial learning rate is set as $2 \\times 10^{-4}$ and gradually reduced to $1 \\times 10^{-6}$ with the cosine annealing. For stage two, we adopt the same training settings as in stage one. For LDM, we use $T = 2$ for training with the variance hyperparameters $\\beta_{1:T}$ constants increasing linearly from $\\beta_{1} = 0.1$ to $\\beta_{T} = 0.99$ . We also employ $T = 2$ during inference. We train both stages with a batch size of 8 on 4 A100 GPUs. We set $\\mathrm{N} = 16$ and $C' = 256$ as the LE output dimensions for our experiments. For the first 4 levels of the SE Transformer, the number of Transformer blocks is [3,5,5,6], the number of channels is [48,96,192,384], and the attention heads are [1,2,4,8]."
+    },
+    {
+      "source_window_id": "2025.naacl-long.619::sections::6",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "6",
+      "section_title": "discussion",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.naacl-long.619::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "appendix",
+      "evidence": "In the Appendix, we provide:\n\n1. Section B: Variational Auto Encoder (VAE) Architecture Details   \n2. Section C: Variational Auto Encoder Training Details   \n3. Section D: HiFi-GAN Training Details   \n4. Section E: Dataset Licences   \n5. Section F: Baseline Details   \n6. Section G: MOS Test   \n7. Section H: Broader Impact"
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "C",
+      "D"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce RTX 3090",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA GeForce RTX 3090",
+        "num": 6
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\naacl2025\\2025.naacl-long.619\\auto\\full.md",
+    "source_md_sha256": "da5f009a9aa87b48b1ff54334e0aacb2f44c84e6004a6f3aaebb093f8f10bf6f",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "7caf7454899e65b8d15dcb93f690dd1d6964a707e3f952e740e43205f03508db"
+  }
+}

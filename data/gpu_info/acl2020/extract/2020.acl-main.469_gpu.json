@@ -1,0 +1,157 @@
+{
+  "paper_id": "2020.acl-main.469",
+  "candidate_windows": [
+    {
+      "window_id": "2020.acl-main.469::sections::3",
+      "paper_id": "2020.acl-main.469",
+      "section_number": "3",
+      "section_title": "experiment",
+      "normalized_section_title": "experiment",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.acl-main.469::appendix::A.3",
+      "paper_id": "2020.acl-main.469",
+      "section_number": "A.3",
+      "section_title": "training visualbert",
+      "normalized_section_title": "training visualbert",
+      "window_text": "We would like to adopt a similar training procedure as BERT but VisualBERT must learn to accommodate both language and visual input. Therefore we reach to a resource of paired data: COCO (Chen et al., 2015) that contains images each paired with 5 independent captions. Our training procedure contains three phases:\n\nTask-Agnostic Pre-Training As introduced before, we pre-train VisualBERT on COCO using two visually-grounded language model objectives. (1) Masked language modeling with the image. Some elements of text input are masked and must be predicted but vectors corresponding to image regions are not masked. (2) Sentence-image prediction. We supply two captions in one training example and one of the caption has a $50\\%$ chance to not match the image. The model is trained to determine if the provided captions is describing the image.\n\nTask-Specific Pre-Training Before fine-tuning VisualBERT to a downstream task, we find it beneficial to train the model using the data of the task with the masked language modeling with the image objective. This step allows the model to adapt to the new target domain.\n\nFine-Tuning This step mirrors BERT finetuning, where a task-specific input, output, and objective are introduced, and the model is trained to maximize performance on the task.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2020.acl-main.469::appendix::B",
+      "paper_id": "2020.acl-main.469",
+      "section_number": "B",
+      "section_title": "experiment",
+      "normalized_section_title": "experiment",
+      "window_text": "We evaluate VisualBERT on four different types of vision-and-language applications: (1) Visual Question Answering (VQA 2.0) (Goyal et al., 2017), (2) Visual Commonsense Reasoning (VCR) (Zellers et al., 2019), (3) Natural Language for Visual Reasoning $(\\mathrm{NLVR}^2)$ (Suhr et al., 2019), and (4) Region-\n\nto-Phrase Grounding (Flickr30K) (Plummer et al., 2015), each described in more details in the following sections. For all tasks, we use the Karpathy train split (Karpathy and Fei-Fei, 2015) of COCO for task-agnostic pre-training, which has around 100k images with 5 captions each. The Transformer encoder in all models has the same configuration as BERT<sub>Base</sub>: 12 layers, a hidden size of 768, and 12 self-attention heads. The parameters are initialized from BERT<sub>Base</sub> released by Devlin et al. (2019).\n\nFor the image representations, each dataset we study has a different standard object detector to generate region proposals and region features. To compare with them, we follow their settings, and as a result, different image features are used for different tasks (see details in the subsections). For consistency, during task-agnostic pre-training on COCO, we use the same image features as in the end tasks. For each dataset, we evaluate three variants of our model:\n\nVisualBERT: The full model with parameter initialization from BERT that undergoes pre-training on COCO, pre-training on the task data, and finetuning for the task.\n\nVisualBERT w/o Early Fusion: VisualBERT but where image representations are not combined with the text in the initial Transformer layer but instead at the very end with a new Transformer layer. This allows us to test whether interaction between language and vision throughout the whole Transformer stack is important for performance.\n\nVisualBERT w/o COCO Pre-training: Visual-BERT but where we skip task-agnostic pre-training on COCO captions. This allows us to validate the importance of this step.\n\nFollowing Devlin et al. (2019), we optimize all models using SGD with Adam (Kingma and Ba, 2015). We set the warm-up step number to be $10\\%$ of the total training step count unless specified otherwise. Batch sizes are chosen to meet hardware constraints and text sequences whose lengths are longer than 128 are capped. Experiments are conducted on Tesla V100s and GTX 1080Tis, and all experiments can be replicated on 4 Tesla V100s each with 16GBs of GPU memory. Pre-training on COCO generally takes less than a day on 4 cards while task-specific pre-training and fine-tuning usually take less. Other task-specific training details are in the corresponding subsections.\n\n<table><tr><td>Model</td><td>Test-Dev</td><td>Test-Std</td></tr><tr><td>Pythia v0.1 (Jiang et al., 2018)</td><td>68.49</td><td>-</td></tr><tr><td>Pythia v0.3 (Singh et al., 2019)</td><td>68.71</td><td>-</td></tr><tr><td>VisualBERT w/o Early Fusion</td><td>68.18</td><td>-</td></tr><tr><td>VisualBERT w/o COCO Pre-training</td><td>70.18</td><td>-</td></tr><tr><td>VisualBERT</td><td>70.80</td><td>71.00</td></tr><tr><td>Pythia v0.1 + VG + Other Data Augmentation (Jiang et al., 2018)</td><td>70.01</td><td>70.24</td></tr><tr><td>MCAN + VG (Yu et al., 2019b)</td><td>70.63</td><td>70.90</td></tr><tr><td>MCAN + VG + Multiple Detectors (Yu et al., 2019b)</td><td>72.55</td><td>-</td></tr><tr><td>MCAN + VG + Multiple Detectors + BERT (Yu et al., 2019b)</td><td>72.80</td><td>-</td></tr><tr><td>MCAN + VG + Multiple Detectors + BERT + Ensemble (Yu et al., 2019b)</td><td>75.00</td><td>75.23</td></tr></table>\n\nTable 3: Model performance on VQA. VisualBERT outperforms Pythia(s), which are tested under a comparable setting.   \nTable 4: Model performance on VCR. VisualBERT w/o COCO Pre-training outperforms R2C, which enjoys the same resource while VisualBERT further improves the results.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"2\">Q → A</td><td colspan=\"2\">QA → R</td><td colspan=\"2\">Q → AR</td></tr><tr><td>Dev</td><td>Test</td><td>Dev</td><td>Test</td><td>Dev</td><td>Test</td></tr><tr><td>R2C (Zellers et al., 2019)</td><td>63.8</td><td>65.1</td><td>67.2</td><td>67.3</td><td>43.1</td><td>44.0</td></tr><tr><td>VL-BERT (Su et al., 2019)</td><td>73.7</td><td>74.0</td><td>74.5</td><td>74.8</td><td>55.0</td><td>55.5</td></tr><tr><td>VisualBERT w/o Early Fusion</td><td>70.1</td><td>-</td><td>71.9</td><td>-</td><td>50.6</td><td>-</td></tr><tr><td>VisualBERT w/o COCO Pre-training</td><td>67.9</td><td>-</td><td>69.5</td><td>-</td><td>47.9</td><td>-</td></tr><tr><td>VisualBERT</td><td>70.8</td><td>71.6</td><td>73.2</td><td>73.2</td><td>52.2</td><td>52.4</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2020.acl-main.469::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "We evaluate VisualBERT on four different types of vision-and-language applications: (1) Visual Question Answering (VQA 2.0) (Goyal et al., 2017), (2) Visual Commonsense Reasoning (VCR) (Zellers et al., 2019), (3) Natural Language for Visual Reasoning $(\\mathrm{NLVR}^2)$ (Suhr et al., 2019), and (4) Region-\n\nto-Phrase Grounding (Flickr30K) (Plummer et al., 2015), each described in more details in the following sections. For all tasks, we use the Karpathy train split (Karpathy and Fei-Fei, 2015) of COCO for task-agnostic pre-training, which has around 100k images with 5 captions each. The Transformer encoder in all models has the same configuration as BERT<sub>Base</sub>: 12 layers, a hidden size of 768, and 12 self-attention heads. The parameters are initialized from BERT<sub>Base</sub> released by Devlin et al. (2019).\n\nFor the image representations, each dataset we study has a different standard object detector to generate region proposals and region features. To compare with them, we follow their settings, and as a result, different image features are used for different tasks (see details in the subsections). For consistency, during task-agnostic pre-training on COCO, we use the same image features as in the end tasks. For each dataset, we evaluate three variants of our model:\n\nVisualBERT: The full model with parameter initialization from BERT that undergoes pre-training on COCO, pre-training on the task data, and finetuning for the task.\n\nVisualBERT w/o Early Fusion: VisualBERT but where image representations are not combined with the text in the initial Transformer layer but instead at the very end with a new Transformer layer. This allows us to test whether interaction between language and vision throughout the whole Transformer stack is important for performance.\n\nVisualBERT w/o COCO Pre-training: Visual-BERT but where we skip task-agnostic pre-training on COCO captions. This allows us to validate the importance of this step.\n\nFollowing Devlin et al. (2019), we optimize all models using SGD with Adam (Kingma and Ba, 2015). We set the warm-up step number to be $10\\%$ of the total training step count unless specified otherwise. Batch sizes are chosen to meet hardware constraints and text sequences whose lengths are longer than 128 are capped. Experiments are conducted on Tesla V100s and GTX 1080Tis, and all experiments can be replicated on 4 Tesla V100s each with 16GBs of GPU memory. Pre-training on COCO generally takes less than a day on 4 cards while task-specific pre-training and fine-tuning usually take less. Other task-specific training details are in the corresponding subsections.\n\n<table><tr><td>Model</td><td>Test-Dev</td><td>Test-Std</td></tr><tr><td>Pythia v0.1 (Jiang et al., 2018)</td><td>68.49</td><td>-</td></tr><tr><td>Pythia v0.3 (Singh et al., 2019)</td><td>68.71</td><td>-</td></tr><tr><td>VisualBERT w/o Early Fusion</td><td>68.18</td><td>-</td></tr><tr><td>VisualBERT w/o COCO Pre-training</td><td>70.18</td><td>-</td></tr><tr><td>VisualBERT</td><td>70.80</td><td>71.00</td></tr><tr><td>Pythia v0.1 + VG + Other Data Augmentation (Jiang et al., 2018)</td><td>70.01</td><td>70.24</td></tr><tr><td>MCAN + VG (Yu et al., 2019b)</td><td>70.63</td><td>70.90</td></tr><tr><td>MCAN + VG + Multiple Detectors (Yu et al., 2019b)</td><td>72.55</td><td>-</td></tr><tr><td>MCAN + VG + Multiple Detectors + BERT (Yu et al., 2019b)</td><td>72.80</td><td>-</td></tr><tr><td>MCAN + VG + Multiple Detectors + BERT + Ensemble (Yu et al., 2019b)</td><td>75.00</td><td>75.23</td></tr></table>\n\nTable 3: Model performance on VQA. VisualBERT outperforms Pythia(s), which are tested under a comparable setting.   \nTable 4: Model performance on VCR. VisualBERT w/o COCO Pre-training outperforms R2C, which enjoys the same resource while VisualBERT further improves the results.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"2\">Q → A</td><td colspan=\"2\">QA → R</td><td colspan=\"2\">Q → AR</td></tr><tr><td>Dev</td><td>Test</td><td>Dev</td><td>Test</td><td>Dev</td><td>Test</td></tr><tr><td>R2C (Zellers et al., 2019)</td><td>63.8</td><td>65.1</td><td>67.2</td><td>67.3</td><td>43.1</td><td>44.0</td></tr><tr><td>VL-BERT (Su et al., 2019)</td><td>73.7</td><td>74.0</td><td>74.5</td><td>74.8</td><td>55.0</td><td>55.5</td></tr><tr><td>VisualBERT w/o Early Fusion</td><td>70.1</td><td>-</td><td>71.9</td><td>-</td><td>50.6</td><td>-</td></tr><tr><td>VisualBERT w/o COCO Pre-training</td><td>67.9</td><td>-</td><td>69.5</td><td>-</td><td>47.9</td><td>-</td></tr><tr><td>VisualBERT</td><td>70.8</td><td>71.6</td><td>73.2</td><td>73.2</td><td>52.2</td><td>52.4</td></tr></table>",
+      "section_number": "B",
+      "section_title": "experiment",
+      "normalized_section_title": "experiment"
+    },
+    {
+      "window_id": "2020.acl-main.469::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GTX 1080Ti",
+      "count": null,
+      "count_text": "",
+      "evidence": "We evaluate VisualBERT on four different types of vision-and-language applications: (1) Visual Question Answering (VQA 2.0) (Goyal et al., 2017), (2) Visual Commonsense Reasoning (VCR) (Zellers et al., 2019), (3) Natural Language for Visual Reasoning $(\\mathrm{NLVR}^2)$ (Suhr et al., 2019), and (4) Region-\n\nto-Phrase Grounding (Flickr30K) (Plummer et al., 2015), each described in more details in the following sections. For all tasks, we use the Karpathy train split (Karpathy and Fei-Fei, 2015) of COCO for task-agnostic pre-training, which has around 100k images with 5 captions each. The Transformer encoder in all models has the same configuration as BERT<sub>Base</sub>: 12 layers, a hidden size of 768, and 12 self-attention heads. The parameters are initialized from BERT<sub>Base</sub> released by Devlin et al. (2019).\n\nFor the image representations, each dataset we study has a different standard object detector to generate region proposals and region features. To compare with them, we follow their settings, and as a result, different image features are used for different tasks (see details in the subsections). For consistency, during task-agnostic pre-training on COCO, we use the same image features as in the end tasks. For each dataset, we evaluate three variants of our model:\n\nVisualBERT: The full model with parameter initialization from BERT that undergoes pre-training on COCO, pre-training on the task data, and finetuning for the task.\n\nVisualBERT w/o Early Fusion: VisualBERT but where image representations are not combined with the text in the initial Transformer layer but instead at the very end with a new Transformer layer. This allows us to test whether interaction between language and vision throughout the whole Transformer stack is important for performance.\n\nVisualBERT w/o COCO Pre-training: Visual-BERT but where we skip task-agnostic pre-training on COCO captions. This allows us to validate the importance of this step.\n\nFollowing Devlin et al. (2019), we optimize all models using SGD with Adam (Kingma and Ba, 2015). We set the warm-up step number to be $10\\%$ of the total training step count unless specified otherwise. Batch sizes are chosen to meet hardware constraints and text sequences whose lengths are longer than 128 are capped. Experiments are conducted on Tesla V100s and GTX 1080Tis, and all experiments can be replicated on 4 Tesla V100s each with 16GBs of GPU memory. Pre-training on COCO generally takes less than a day on 4 cards while task-specific pre-training and fine-tuning usually take less. Other task-specific training details are in the corresponding subsections.\n\n<table><tr><td>Model</td><td>Test-Dev</td><td>Test-Std</td></tr><tr><td>Pythia v0.1 (Jiang et al., 2018)</td><td>68.49</td><td>-</td></tr><tr><td>Pythia v0.3 (Singh et al., 2019)</td><td>68.71</td><td>-</td></tr><tr><td>VisualBERT w/o Early Fusion</td><td>68.18</td><td>-</td></tr><tr><td>VisualBERT w/o COCO Pre-training</td><td>70.18</td><td>-</td></tr><tr><td>VisualBERT</td><td>70.80</td><td>71.00</td></tr><tr><td>Pythia v0.1 + VG + Other Data Augmentation (Jiang et al., 2018)</td><td>70.01</td><td>70.24</td></tr><tr><td>MCAN + VG (Yu et al., 2019b)</td><td>70.63</td><td>70.90</td></tr><tr><td>MCAN + VG + Multiple Detectors (Yu et al., 2019b)</td><td>72.55</td><td>-</td></tr><tr><td>MCAN + VG + Multiple Detectors + BERT (Yu et al., 2019b)</td><td>72.80</td><td>-</td></tr><tr><td>MCAN + VG + Multiple Detectors + BERT + Ensemble (Yu et al., 2019b)</td><td>75.00</td><td>75.23</td></tr></table>\n\nTable 3: Model performance on VQA. VisualBERT outperforms Pythia(s), which are tested under a comparable setting.   \nTable 4: Model performance on VCR. VisualBERT w/o COCO Pre-training outperforms R2C, which enjoys the same resource while VisualBERT further improves the results.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"2\">Q → A</td><td colspan=\"2\">QA → R</td><td colspan=\"2\">Q → AR</td></tr><tr><td>Dev</td><td>Test</td><td>Dev</td><td>Test</td><td>Dev</td><td>Test</td></tr><tr><td>R2C (Zellers et al., 2019)</td><td>63.8</td><td>65.1</td><td>67.2</td><td>67.3</td><td>43.1</td><td>44.0</td></tr><tr><td>VL-BERT (Su et al., 2019)</td><td>73.7</td><td>74.0</td><td>74.5</td><td>74.8</td><td>55.0</td><td>55.5</td></tr><tr><td>VisualBERT w/o Early Fusion</td><td>70.1</td><td>-</td><td>71.9</td><td>-</td><td>50.6</td><td>-</td></tr><tr><td>VisualBERT w/o COCO Pre-training</td><td>67.9</td><td>-</td><td>69.5</td><td>-</td><td>47.9</td><td>-</td></tr><tr><td>VisualBERT</td><td>70.8</td><td>71.6</td><td>73.2</td><td>73.2</td><td>52.2</td><td>52.4</td></tr></table>",
+      "section_number": "B",
+      "section_title": "experiment",
+      "normalized_section_title": "experiment"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2020.acl-main.469::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "Tesla V100",
+      "cleaned_hardware_name": "tesla v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "B",
+      "section_title": "experiment",
+      "normalized_section_title": "experiment",
+      "evidence": "We evaluate VisualBERT on four different types of vision-and-language applications: (1) Visual Question Answering (VQA 2.0) (Goyal et al., 2017), (2) Visual Commonsense Reasoning (VCR) (Zellers et al., 2019), (3) Natural Language for Visual Reasoning $(\\mathrm{NLVR}^2)$ (Suhr et al., 2019), and (4) Region-\n\nto-Phrase Grounding (Flickr30K) (Plummer et al., 2015), each described in more details in the following sections. For all tasks, we use the Karpathy train split (Karpathy and Fei-Fei, 2015) of COCO for task-agnostic pre-training, which has around 100k images with 5 captions each. The Transformer encoder in all models has the same configuration as BERT<sub>Base</sub>: 12 layers, a hidden size of 768, and 12 self-attention heads. The parameters are initialized from BERT<sub>Base</sub> released by Devlin et al. (2019).\n\nFor the image representations, each dataset we study has a different standard object detector to generate region proposals and region features. To compare with them, we follow their settings, and as a result, different image features are used for different tasks (see details in the subsections). For consistency, during task-agnostic pre-training on COCO, we use the same image features as in the end tasks. For each dataset, we evaluate three variants of our model:\n\nVisualBERT: The full model with parameter initialization from BERT that undergoes pre-training on COCO, pre-training on the task data, and finetuning for the task.\n\nVisualBERT w/o Early Fusion: VisualBERT but where image representations are not combined with the text in the initial Transformer layer but instead at the very end with a new Transformer layer. This allows us to test whether interaction between language and vision throughout the whole Transformer stack is important for performance.\n\nVisualBERT w/o COCO Pre-training: Visual-BERT but where we skip task-agnostic pre-training on COCO captions. This allows us to validate the importance of this step.\n\nFollowing Devlin et al. (2019), we optimize all models using SGD with Adam (Kingma and Ba, 2015). We set the warm-up step number to be $10\\%$ of the total training step count unless specified otherwise. Batch sizes are chosen to meet hardware constraints and text sequences whose lengths are longer than 128 are capped. Experiments are conducted on Tesla V100s and GTX 1080Tis, and all experiments can be replicated on 4 Tesla V100s each with 16GBs of GPU memory. Pre-training on COCO generally takes less than a day on 4 cards while task-specific pre-training and fine-tuning usually take less. Other task-specific training details are in the corresponding subsections.\n\n<table><tr><td>Model</td><td>Test-Dev</td><td>Test-Std</td></tr><tr><td>Pythia v0.1 (Jiang et al., 2018)</td><td>68.49</td><td>-</td></tr><tr><td>Pythia v0.3 (Singh et al., 2019)</td><td>68.71</td><td>-</td></tr><tr><td>VisualBERT w/o Early Fusion</td><td>68.18</td><td>-</td></tr><tr><td>VisualBERT w/o COCO Pre-training</td><td>70.18</td><td>-</td></tr><tr><td>VisualBERT</td><td>70.80</td><td>71.00</td></tr><tr><td>Pythia v0.1 + VG + Other Data Augmentation (Jiang et al., 2018)</td><td>70.01</td><td>70.24</td></tr><tr><td>MCAN + VG (Yu et al., 2019b)</td><td>70.63</td><td>70.90</td></tr><tr><td>MCAN + VG + Multiple Detectors (Yu et al., 2019b)</td><td>72.55</td><td>-</td></tr><tr><td>MCAN + VG + Multiple Detectors + BERT (Yu et al., 2019b)</td><td>72.80</td><td>-</td></tr><tr><td>MCAN + VG + Multiple Detectors + BERT + Ensemble (Yu et al., 2019b)</td><td>75.00</td><td>75.23</td></tr></table>\n\nTable 3: Model performance on VQA. VisualBERT outperforms Pythia(s), which are tested under a comparable setting.   \nTable 4: Model performance on VCR. VisualBERT w/o COCO Pre-training outperforms R2C, which enjoys the same resource while VisualBERT further improves the results.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"2\">Q → A</td><td colspan=\"2\">QA → R</td><td colspan=\"2\">Q → AR</td></tr><tr><td>Dev</td><td>Test</td><td>Dev</td><td>Test</td><td>Dev</td><td>Test</td></tr><tr><td>R2C (Zellers et al., 2019)</td><td>63.8</td><td>65.1</td><td>67.2</td><td>67.3</td><td>43.1</td><td>44.0</td></tr><tr><td>VL-BERT (Su et al., 2019)</td><td>73.7</td><td>74.0</td><td>74.5</td><td>74.8</td><td>55.0</td><td>55.5</td></tr><tr><td>VisualBERT w/o Early Fusion</td><td>70.1</td><td>-</td><td>71.9</td><td>-</td><td>50.6</td><td>-</td></tr><tr><td>VisualBERT w/o COCO Pre-training</td><td>67.9</td><td>-</td><td>69.5</td><td>-</td><td>47.9</td><td>-</td></tr><tr><td>VisualBERT</td><td>70.8</td><td>71.6</td><td>73.2</td><td>73.2</td><td>52.2</td><td>52.4</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2020.acl-main.469::appendix::B",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "GTX 1080Ti",
+      "cleaned_hardware_name": "gtx 1080 ti",
+      "normalized_hardware_name": "NVIDIA GeForce GTX 1080 Ti",
+      "benchmark_hardware_name": "NVIDIA GeForce GTX 1080 Ti",
+      "count": null,
+      "count_text": "",
+      "section_number": "B",
+      "section_title": "experiment",
+      "normalized_section_title": "experiment",
+      "evidence": "We evaluate VisualBERT on four different types of vision-and-language applications: (1) Visual Question Answering (VQA 2.0) (Goyal et al., 2017), (2) Visual Commonsense Reasoning (VCR) (Zellers et al., 2019), (3) Natural Language for Visual Reasoning $(\\mathrm{NLVR}^2)$ (Suhr et al., 2019), and (4) Region-\n\nto-Phrase Grounding (Flickr30K) (Plummer et al., 2015), each described in more details in the following sections. For all tasks, we use the Karpathy train split (Karpathy and Fei-Fei, 2015) of COCO for task-agnostic pre-training, which has around 100k images with 5 captions each. The Transformer encoder in all models has the same configuration as BERT<sub>Base</sub>: 12 layers, a hidden size of 768, and 12 self-attention heads. The parameters are initialized from BERT<sub>Base</sub> released by Devlin et al. (2019).\n\nFor the image representations, each dataset we study has a different standard object detector to generate region proposals and region features. To compare with them, we follow their settings, and as a result, different image features are used for different tasks (see details in the subsections). For consistency, during task-agnostic pre-training on COCO, we use the same image features as in the end tasks. For each dataset, we evaluate three variants of our model:\n\nVisualBERT: The full model with parameter initialization from BERT that undergoes pre-training on COCO, pre-training on the task data, and finetuning for the task.\n\nVisualBERT w/o Early Fusion: VisualBERT but where image representations are not combined with the text in the initial Transformer layer but instead at the very end with a new Transformer layer. This allows us to test whether interaction between language and vision throughout the whole Transformer stack is important for performance.\n\nVisualBERT w/o COCO Pre-training: Visual-BERT but where we skip task-agnostic pre-training on COCO captions. This allows us to validate the importance of this step.\n\nFollowing Devlin et al. (2019), we optimize all models using SGD with Adam (Kingma and Ba, 2015). We set the warm-up step number to be $10\\%$ of the total training step count unless specified otherwise. Batch sizes are chosen to meet hardware constraints and text sequences whose lengths are longer than 128 are capped. Experiments are conducted on Tesla V100s and GTX 1080Tis, and all experiments can be replicated on 4 Tesla V100s each with 16GBs of GPU memory. Pre-training on COCO generally takes less than a day on 4 cards while task-specific pre-training and fine-tuning usually take less. Other task-specific training details are in the corresponding subsections.\n\n<table><tr><td>Model</td><td>Test-Dev</td><td>Test-Std</td></tr><tr><td>Pythia v0.1 (Jiang et al., 2018)</td><td>68.49</td><td>-</td></tr><tr><td>Pythia v0.3 (Singh et al., 2019)</td><td>68.71</td><td>-</td></tr><tr><td>VisualBERT w/o Early Fusion</td><td>68.18</td><td>-</td></tr><tr><td>VisualBERT w/o COCO Pre-training</td><td>70.18</td><td>-</td></tr><tr><td>VisualBERT</td><td>70.80</td><td>71.00</td></tr><tr><td>Pythia v0.1 + VG + Other Data Augmentation (Jiang et al., 2018)</td><td>70.01</td><td>70.24</td></tr><tr><td>MCAN + VG (Yu et al., 2019b)</td><td>70.63</td><td>70.90</td></tr><tr><td>MCAN + VG + Multiple Detectors (Yu et al., 2019b)</td><td>72.55</td><td>-</td></tr><tr><td>MCAN + VG + Multiple Detectors + BERT (Yu et al., 2019b)</td><td>72.80</td><td>-</td></tr><tr><td>MCAN + VG + Multiple Detectors + BERT + Ensemble (Yu et al., 2019b)</td><td>75.00</td><td>75.23</td></tr></table>\n\nTable 3: Model performance on VQA. VisualBERT outperforms Pythia(s), which are tested under a comparable setting.   \nTable 4: Model performance on VCR. VisualBERT w/o COCO Pre-training outperforms R2C, which enjoys the same resource while VisualBERT further improves the results.   \n\n<table><tr><td rowspan=\"2\">Model</td><td colspan=\"2\">Q → A</td><td colspan=\"2\">QA → R</td><td colspan=\"2\">Q → AR</td></tr><tr><td>Dev</td><td>Test</td><td>Dev</td><td>Test</td><td>Dev</td><td>Test</td></tr><tr><td>R2C (Zellers et al., 2019)</td><td>63.8</td><td>65.1</td><td>67.2</td><td>67.3</td><td>43.1</td><td>44.0</td></tr><tr><td>VL-BERT (Su et al., 2019)</td><td>73.7</td><td>74.0</td><td>74.5</td><td>74.8</td><td>55.0</td><td>55.5</td></tr><tr><td>VisualBERT w/o Early Fusion</td><td>70.1</td><td>-</td><td>71.9</td><td>-</td><td>50.6</td><td>-</td></tr><tr><td>VisualBERT w/o COCO Pre-training</td><td>67.9</td><td>-</td><td>69.5</td><td>-</td><td>47.9</td><td>-</td></tr><tr><td>VisualBERT</td><td>70.8</td><td>71.6</td><td>73.2</td><td>73.2</td><td>52.2</td><td>52.4</td></tr></table>",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": true,
+      "review_reason": "count_missing",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2020.acl-main.469::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "experiment",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2020.acl-main.469::appendix::A.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.3",
+      "section_title": "training visualbert",
+      "evidence": "We would like to adopt a similar training procedure as BERT but VisualBERT must learn to accommodate both language and visual input. Therefore we reach to a resource of paired data: COCO (Chen et al., 2015) that contains images each paired with 5 independent captions. Our training procedure contains three phases:\n\nTask-Agnostic Pre-Training As introduced before, we pre-train VisualBERT on COCO using two visually-grounded language model objectives. (1) Masked language modeling with the image. Some elements of text input are masked and must be predicted but vectors corresponding to image regions are not masked. (2) Sentence-image prediction. We supply two captions in one training example and one of the caption has a $50\\%$ chance to not match the image. The model is trained to determine if the provided captions is describing the image.\n\nTask-Specific Pre-Training Before fine-tuning VisualBERT to a downstream task, we find it beneficial to train the model using the data of the task with the masked language modeling with the image objective. This step allows the model to adapt to the new target domain.\n\nFine-Tuning This step mirrors BERT finetuning, where a task-specific input, output, and objective are introduced, and the model is trained to maximize performance on the task."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "B"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 4
+      },
+      {
+        "name": "NVIDIA GeForce GTX 1080 Ti",
+        "num": null
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2020\\2020.acl-main.469\\auto\\full.md",
+    "source_md_sha256": "361204b1b38bafe2c3bdccfec5ef1bc5be442e9bce5483e4d2a8b606c5e60826",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "a2f4e0f2222ac944a84b28fba08cc5ab0184a6c6ccb3a5a4deb8a7eefc1e4438"
+  }
+}

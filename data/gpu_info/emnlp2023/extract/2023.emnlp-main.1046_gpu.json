@@ -1,0 +1,220 @@
+{
+  "paper_id": "2023.emnlp-main.1046",
+  "candidate_windows": [
+    {
+      "window_id": "2023.emnlp-main.1046::sections::3.2",
+      "paper_id": "2023.emnlp-main.1046",
+      "section_number": "3.2",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "We compare three baseline methods that have been previously proposed to mitigate gender bias in machine translation.\n\nBalanced: Costa-jussà and de Jorge (2020) proposed to filter existing parallel corpora for sentences with gender mentions and subsample the data to create a balanced version of the dataset. We fine-tune the machine translation system on the balanced dataset. We use the WMT18 en-de dataset as processed by Edunov et al. (2018).\n\nGFST: Choubey et al. (2021) proposed a method to create a gender-balanced parallel dataset with source- and target-language filtering of pseudoparallel data. In our work, instead of re-training the model with GFST from scratch, we fine-tune the initially trained model with the target-filtered data. We use the same news2018 corpus used in the original work for the monolingual corpus.\n\nHandcrafted: Saunders and Byrne (2020) proposed to use a small, high-quality handcrafted parallel dataset containing a balanced combination of gendered pronouns and occupations to fine-tune the machine translation system. We use the handcrafted en2de dataset provided by the authors in our work, which consists of 388 samples.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.1046::sections::3.3",
+      "paper_id": "2023.emnlp-main.1046",
+      "section_number": "3.3",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "We use three pre-trained multilingual model architectures as our backbone for our experiments: M2M-100 (Fan et al., 2020), SMaLL-100 (Mohammadshahi et al., 2022a), which is a knowledge-distilled model from M2M-100, and NLLB-200 (Costa-jussa et al., 2022). Due to resource limitations, we use a 1.2 billion parameter variant for M2M-100 and a 1.3 billion parameter distilled variant for NLLB-200. We train with a batch size of 8 and learning rate of 4e-6 with 200 warmup steps and inverse square root learning rate decay\n\n![](images/29574802bb61e050d4282e8f1f5b964b05b92732f4774a51cab0314e765e2c06.jpg)\n\n![](images/19bdcad2b3a48a7432291626bf2c1128ab7d2ab470b0937a31340a167a70f7c8.jpg)  \nSMaLL-100   \nM2M-100 1.2B   \nM2M-100 418M\n\n![](images/02223d8c7765dd82506ed1633fc97f2dd6a73ad89512fdd305938a74e7e284b1.jpg)\n\nFigure 3: Relationships between translation performance and gender bias metrics of multilingual NMT models. Each point represents the average score of an NMT system on the ten target languages of the WinoMT dataset.   \n![](images/e86b26a8445a52b6e3cfbd52480e78c7d205a54feeda02706aee4fcf7e8dfdaf.jpg)  \n-200 1.3B NLLB-200 1.3B (D)   \n2003.3B NLLB-200 600M (D)\n\nschedule. The hyperparameters for the contrastive learning objective was set to $\\lambda = 1.0$ and $\\alpha = 0.4$ based on hyperparameter search (refer to Appendix B). We evaluate every 100 training steps and early stop based on the Explicit Accuracy score of the MT-GenEval development set for the fine-tuned language direction. For evaluation, we use beam search of beam size 5 during decoding.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.1046::appendix::A",
+      "paper_id": "2023.emnlp-main.1046",
+      "section_number": "A",
+      "section_title": "experimental details",
+      "normalized_section_title": "experimental details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.1046::appendix::A.3",
+      "paper_id": "2023.emnlp-main.1046",
+      "section_number": "A.3",
+      "section_title": "fine-tuning details",
+      "normalized_section_title": "fine-tuning details",
+      "window_text": "For our experiments, hyperparameter search was done manually with learning rate from $\\{2\\mathrm{e} - 6,4\\mathrm{e} - 6,$ $8\\mathrm{e} - 6\\}$ , batch size from $\\{4,8,16,32\\}$ , and learning rate warmup steps from $\\{100,200,400\\}$ based on fine-tuning GACL on the SMaLL-100 architecture and metric based on explicit accuracy on the MTGenEval development set. Our final selection of hyperparameters is then used for all experiments in our paper. One exception for fine-tuning GACL with NLLB-200 architecture is we set the learning rate to 8e-6 due to its slower convergence during training in comparison to other architectures. For fine-tuning with our GACL method, we use balanced random sampling so that the number of sentences for each gender are equal within one mini-batch.\n\nThe fine-tuned dataset size and number of fine-tuning steps before early stopping is shown in Table 5. We notice that Balanced and GFST data augmentation based methods trained for more than one thousands steps before early stopping. On the other hand, our GACL method and Handcrafted method stopped fine-tuning within one thousand steps.\n\nWe fine-tuned the SMaLL-100 model on 1 NVIDIA A6000 GPU, and fine-tuned M2M-100 1.2B and NLLB-200 1.3B distilled models on 1\n\nTable 5: Dataset size and number of training steps before early stopping for the fine-tuning experiments in our work.   \n\n<table><tr><td>Method</td><td>Dataset size</td><td># Steps</td></tr><tr><td colspan=\"3\">SMaLL-100</td></tr><tr><td>Balanced</td><td>172,862</td><td>3,700</td></tr><tr><td>GFST</td><td>1,802,832</td><td>1,900</td></tr><tr><td>Handcrafted</td><td>388</td><td>200</td></tr><tr><td>GACL</td><td>172,862</td><td>700</td></tr><tr><td>- with LGC only</td><td>-</td><td>200</td></tr><tr><td colspan=\"3\">M2M-100</td></tr><tr><td>GACL</td><td>172,862</td><td>400</td></tr><tr><td colspan=\"3\">NLLB-200</td></tr><tr><td>GACL</td><td>172,862</td><td>800</td></tr></table>\n\n![](images/61c36e1cf1bd4dc09e9bda49ab76fca933aad76a1ac78e9d5421142c858c1fdf.jpg)  \nFigure 7: Experimental results on tuning hyperparameter $\\alpha$ . the spBLEU scores are the average score on 10 language directions on FLORES200 development set and gender accuracy is the average explicit accuracy on the MT-GenEval development set.\n\nNVIDIA A100 80GB GPU. We use the pre-trained model checkpoints downloaded from the Hugging-face website.<sup>3</sup>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2023.emnlp-main.1046::appendix::B",
+      "paper_id": "2023.emnlp-main.1046",
+      "section_number": "B",
+      "section_title": "additional experiments",
+      "normalized_section_title": "additional experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.1046::appendix::B.2",
+      "paper_id": "2023.emnlp-main.1046",
+      "section_number": "B.2",
+      "section_title": "ablation results on hyperparameter $\\alpha$",
+      "normalized_section_title": "ablation results on hyperparameter $\\alpha$",
+      "window_text": "We report the effects of changing the hyperparameter $\\alpha$ used to determine the relative weight between $\\mathcal{L}_{MT}$ and $\\mathcal{L}_{KD}$ in the joint training loss we employed during fine-tuning.\n\nAs shown in Figure 7, we find that for translation performance, setting $\\alpha$ to 0.4 performs the best, while using a single loss of either $\\mathcal{L}_{MT}$ (i.e. $\\alpha = 0$ ) and $\\mathcal{L}_{KD}$ (i.e. $\\alpha = 1$ ) performs slightly worse. For gender accuracy, we find that trends are not very clear, with $\\alpha$ set to 1.0 being the most effective and $\\alpha$ of 0.4 second most effective. Based on these findings, we choose to use $\\alpha$ value of 0.4 for the rest of the experiments in this paper.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.emnlp-main.1046::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A6000",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "For our experiments, hyperparameter search was done manually with learning rate from $\\{2\\mathrm{e} - 6,4\\mathrm{e} - 6,$ $8\\mathrm{e} - 6\\}$ , batch size from $\\{4,8,16,32\\}$ , and learning rate warmup steps from $\\{100,200,400\\}$ based on fine-tuning GACL on the SMaLL-100 architecture and metric based on explicit accuracy on the MTGenEval development set. Our final selection of hyperparameters is then used for all experiments in our paper. One exception for fine-tuning GACL with NLLB-200 architecture is we set the learning rate to 8e-6 due to its slower convergence during training in comparison to other architectures. For fine-tuning with our GACL method, we use balanced random sampling so that the number of sentences for each gender are equal within one mini-batch.\n\nThe fine-tuned dataset size and number of fine-tuning steps before early stopping is shown in Table 5. We notice that Balanced and GFST data augmentation based methods trained for more than one thousands steps before early stopping. On the other hand, our GACL method and Handcrafted method stopped fine-tuning within one thousand steps.\n\nWe fine-tuned the SMaLL-100 model on 1 NVIDIA A6000 GPU, and fine-tuned M2M-100 1.2B and NLLB-200 1.3B distilled models on 1\n\nTable 5: Dataset size and number of training steps before early stopping for the fine-tuning experiments in our work.   \n\n<table><tr><td>Method</td><td>Dataset size</td><td># Steps</td></tr><tr><td colspan=\"3\">SMaLL-100</td></tr><tr><td>Balanced</td><td>172,862</td><td>3,700</td></tr><tr><td>GFST</td><td>1,802,832</td><td>1,900</td></tr><tr><td>Handcrafted</td><td>388</td><td>200</td></tr><tr><td>GACL</td><td>172,862</td><td>700</td></tr><tr><td>- with LGC only</td><td>-</td><td>200</td></tr><tr><td colspan=\"3\">M2M-100</td></tr><tr><td>GACL</td><td>172,862</td><td>400</td></tr><tr><td colspan=\"3\">NLLB-200</td></tr><tr><td>GACL</td><td>172,862</td><td>800</td></tr></table>\n\n![](images/61c36e1cf1bd4dc09e9bda49ab76fca933aad76a1ac78e9d5421142c858c1fdf.jpg)  \nFigure 7: Experimental results on tuning hyperparameter $\\alpha$ . the spBLEU scores are the average score on 10 language directions on FLORES200 development set and gender accuracy is the average explicit accuracy on the MT-GenEval development set.\n\nNVIDIA A100 80GB GPU. We use the pre-trained model checkpoints downloaded from the Hugging-face website.<sup>3</sup>",
+      "section_number": "A.3",
+      "section_title": "fine-tuning details",
+      "normalized_section_title": "fine-tuning details"
+    },
+    {
+      "window_id": "2023.emnlp-main.1046::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "For our experiments, hyperparameter search was done manually with learning rate from $\\{2\\mathrm{e} - 6,4\\mathrm{e} - 6,$ $8\\mathrm{e} - 6\\}$ , batch size from $\\{4,8,16,32\\}$ , and learning rate warmup steps from $\\{100,200,400\\}$ based on fine-tuning GACL on the SMaLL-100 architecture and metric based on explicit accuracy on the MTGenEval development set. Our final selection of hyperparameters is then used for all experiments in our paper. One exception for fine-tuning GACL with NLLB-200 architecture is we set the learning rate to 8e-6 due to its slower convergence during training in comparison to other architectures. For fine-tuning with our GACL method, we use balanced random sampling so that the number of sentences for each gender are equal within one mini-batch.\n\nThe fine-tuned dataset size and number of fine-tuning steps before early stopping is shown in Table 5. We notice that Balanced and GFST data augmentation based methods trained for more than one thousands steps before early stopping. On the other hand, our GACL method and Handcrafted method stopped fine-tuning within one thousand steps.\n\nWe fine-tuned the SMaLL-100 model on 1 NVIDIA A6000 GPU, and fine-tuned M2M-100 1.2B and NLLB-200 1.3B distilled models on 1\n\nTable 5: Dataset size and number of training steps before early stopping for the fine-tuning experiments in our work.   \n\n<table><tr><td>Method</td><td>Dataset size</td><td># Steps</td></tr><tr><td colspan=\"3\">SMaLL-100</td></tr><tr><td>Balanced</td><td>172,862</td><td>3,700</td></tr><tr><td>GFST</td><td>1,802,832</td><td>1,900</td></tr><tr><td>Handcrafted</td><td>388</td><td>200</td></tr><tr><td>GACL</td><td>172,862</td><td>700</td></tr><tr><td>- with LGC only</td><td>-</td><td>200</td></tr><tr><td colspan=\"3\">M2M-100</td></tr><tr><td>GACL</td><td>172,862</td><td>400</td></tr><tr><td colspan=\"3\">NLLB-200</td></tr><tr><td>GACL</td><td>172,862</td><td>800</td></tr></table>\n\n![](images/61c36e1cf1bd4dc09e9bda49ab76fca933aad76a1ac78e9d5421142c858c1fdf.jpg)  \nFigure 7: Experimental results on tuning hyperparameter $\\alpha$ . the spBLEU scores are the average score on 10 language directions on FLORES200 development set and gender accuracy is the average explicit accuracy on the MT-GenEval development set.\n\nNVIDIA A100 80GB GPU. We use the pre-trained model checkpoints downloaded from the Hugging-face website.<sup>3</sup>",
+      "section_number": "A.3",
+      "section_title": "fine-tuning details",
+      "normalized_section_title": "fine-tuning details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.emnlp-main.1046::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A6000",
+      "cleaned_hardware_name": "nvidia a6000",
+      "normalized_hardware_name": "NVIDIA RTX A6000",
+      "benchmark_hardware_name": "NVIDIA RTX A6000",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.3",
+      "section_title": "fine-tuning details",
+      "normalized_section_title": "fine-tuning details",
+      "evidence": "For our experiments, hyperparameter search was done manually with learning rate from $\\{2\\mathrm{e} - 6,4\\mathrm{e} - 6,$ $8\\mathrm{e} - 6\\}$ , batch size from $\\{4,8,16,32\\}$ , and learning rate warmup steps from $\\{100,200,400\\}$ based on fine-tuning GACL on the SMaLL-100 architecture and metric based on explicit accuracy on the MTGenEval development set. Our final selection of hyperparameters is then used for all experiments in our paper. One exception for fine-tuning GACL with NLLB-200 architecture is we set the learning rate to 8e-6 due to its slower convergence during training in comparison to other architectures. For fine-tuning with our GACL method, we use balanced random sampling so that the number of sentences for each gender are equal within one mini-batch.\n\nThe fine-tuned dataset size and number of fine-tuning steps before early stopping is shown in Table 5. We notice that Balanced and GFST data augmentation based methods trained for more than one thousands steps before early stopping. On the other hand, our GACL method and Handcrafted method stopped fine-tuning within one thousand steps.\n\nWe fine-tuned the SMaLL-100 model on 1 NVIDIA A6000 GPU, and fine-tuned M2M-100 1.2B and NLLB-200 1.3B distilled models on 1\n\nTable 5: Dataset size and number of training steps before early stopping for the fine-tuning experiments in our work.   \n\n<table><tr><td>Method</td><td>Dataset size</td><td># Steps</td></tr><tr><td colspan=\"3\">SMaLL-100</td></tr><tr><td>Balanced</td><td>172,862</td><td>3,700</td></tr><tr><td>GFST</td><td>1,802,832</td><td>1,900</td></tr><tr><td>Handcrafted</td><td>388</td><td>200</td></tr><tr><td>GACL</td><td>172,862</td><td>700</td></tr><tr><td>- with LGC only</td><td>-</td><td>200</td></tr><tr><td colspan=\"3\">M2M-100</td></tr><tr><td>GACL</td><td>172,862</td><td>400</td></tr><tr><td colspan=\"3\">NLLB-200</td></tr><tr><td>GACL</td><td>172,862</td><td>800</td></tr></table>\n\n![](images/61c36e1cf1bd4dc09e9bda49ab76fca933aad76a1ac78e9d5421142c858c1fdf.jpg)  \nFigure 7: Experimental results on tuning hyperparameter $\\alpha$ . the spBLEU scores are the average score on 10 language directions on FLORES200 development set and gender accuracy is the average explicit accuracy on the MT-GenEval development set.\n\nNVIDIA A100 80GB GPU. We use the pre-trained model checkpoints downloaded from the Hugging-face website.<sup>3</sup>",
+      "match_status": "alias_match",
+      "match_method": "alias",
+      "match_confidence": "high",
+      "normalization_reason": "alias_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.emnlp-main.1046::appendix::A.3",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA A100 80GB",
+      "cleaned_hardware_name": "nvidia a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.3",
+      "section_title": "fine-tuning details",
+      "normalized_section_title": "fine-tuning details",
+      "evidence": "For our experiments, hyperparameter search was done manually with learning rate from $\\{2\\mathrm{e} - 6,4\\mathrm{e} - 6,$ $8\\mathrm{e} - 6\\}$ , batch size from $\\{4,8,16,32\\}$ , and learning rate warmup steps from $\\{100,200,400\\}$ based on fine-tuning GACL on the SMaLL-100 architecture and metric based on explicit accuracy on the MTGenEval development set. Our final selection of hyperparameters is then used for all experiments in our paper. One exception for fine-tuning GACL with NLLB-200 architecture is we set the learning rate to 8e-6 due to its slower convergence during training in comparison to other architectures. For fine-tuning with our GACL method, we use balanced random sampling so that the number of sentences for each gender are equal within one mini-batch.\n\nThe fine-tuned dataset size and number of fine-tuning steps before early stopping is shown in Table 5. We notice that Balanced and GFST data augmentation based methods trained for more than one thousands steps before early stopping. On the other hand, our GACL method and Handcrafted method stopped fine-tuning within one thousand steps.\n\nWe fine-tuned the SMaLL-100 model on 1 NVIDIA A6000 GPU, and fine-tuned M2M-100 1.2B and NLLB-200 1.3B distilled models on 1\n\nTable 5: Dataset size and number of training steps before early stopping for the fine-tuning experiments in our work.   \n\n<table><tr><td>Method</td><td>Dataset size</td><td># Steps</td></tr><tr><td colspan=\"3\">SMaLL-100</td></tr><tr><td>Balanced</td><td>172,862</td><td>3,700</td></tr><tr><td>GFST</td><td>1,802,832</td><td>1,900</td></tr><tr><td>Handcrafted</td><td>388</td><td>200</td></tr><tr><td>GACL</td><td>172,862</td><td>700</td></tr><tr><td>- with LGC only</td><td>-</td><td>200</td></tr><tr><td colspan=\"3\">M2M-100</td></tr><tr><td>GACL</td><td>172,862</td><td>400</td></tr><tr><td colspan=\"3\">NLLB-200</td></tr><tr><td>GACL</td><td>172,862</td><td>800</td></tr></table>\n\n![](images/61c36e1cf1bd4dc09e9bda49ab76fca933aad76a1ac78e9d5421142c858c1fdf.jpg)  \nFigure 7: Experimental results on tuning hyperparameter $\\alpha$ . the spBLEU scores are the average score on 10 language directions on FLORES200 development set and gender accuracy is the average explicit accuracy on the MT-GenEval development set.\n\nNVIDIA A100 80GB GPU. We use the pre-trained model checkpoints downloaded from the Hugging-face website.<sup>3</sup>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.emnlp-main.1046::sections::3.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3.2",
+      "section_title": "baselines",
+      "evidence": "We compare three baseline methods that have been previously proposed to mitigate gender bias in machine translation.\n\nBalanced: Costa-jussà and de Jorge (2020) proposed to filter existing parallel corpora for sentences with gender mentions and subsample the data to create a balanced version of the dataset. We fine-tune the machine translation system on the balanced dataset. We use the WMT18 en-de dataset as processed by Edunov et al. (2018).\n\nGFST: Choubey et al. (2021) proposed a method to create a gender-balanced parallel dataset with source- and target-language filtering of pseudoparallel data. In our work, instead of re-training the model with GFST from scratch, we fine-tune the initially trained model with the target-filtered data. We use the same news2018 corpus used in the original work for the monolingual corpus.\n\nHandcrafted: Saunders and Byrne (2020) proposed to use a small, high-quality handcrafted parallel dataset containing a balanced combination of gendered pronouns and occupations to fine-tune the machine translation system. We use the handcrafted en2de dataset provided by the authors in our work, which consists of 388 samples."
+    },
+    {
+      "source_window_id": "2023.emnlp-main.1046::sections::3.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3.3",
+      "section_title": "implementation details",
+      "evidence": "We use three pre-trained multilingual model architectures as our backbone for our experiments: M2M-100 (Fan et al., 2020), SMaLL-100 (Mohammadshahi et al., 2022a), which is a knowledge-distilled model from M2M-100, and NLLB-200 (Costa-jussa et al., 2022). Due to resource limitations, we use a 1.2 billion parameter variant for M2M-100 and a 1.3 billion parameter distilled variant for NLLB-200. We train with a batch size of 8 and learning rate of 4e-6 with 200 warmup steps and inverse square root learning rate decay\n\n![](images/29574802bb61e050d4282e8f1f5b964b05b92732f4774a51cab0314e765e2c06.jpg)\n\n![](images/19bdcad2b3a48a7432291626bf2c1128ab7d2ab470b0937a31340a167a70f7c8.jpg)  \nSMaLL-100   \nM2M-100 1.2B   \nM2M-100 418M\n\n![](images/02223d8c7765dd82506ed1633fc97f2dd6a73ad89512fdd305938a74e7e284b1.jpg)\n\nFigure 3: Relationships between translation performance and gender bias metrics of multilingual NMT models. Each point represents the average score of an NMT system on the ten target languages of the WinoMT dataset.   \n![](images/e86b26a8445a52b6e3cfbd52480e78c7d205a54feeda02706aee4fcf7e8dfdaf.jpg)  \n-200 1.3B NLLB-200 1.3B (D)   \n2003.3B NLLB-200 600M (D)\n\nschedule. The hyperparameters for the contrastive learning objective was set to $\\lambda = 1.0$ and $\\alpha = 0.4$ based on hyperparameter search (refer to Appendix B). We evaluate every 100 training steps and early stop based on the Explicit Accuracy score of the MT-GenEval development set for the fine-tuned language direction. For evaluation, we use beam search of beam size 5 during decoding."
+    },
+    {
+      "source_window_id": "2023.emnlp-main.1046::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "experimental details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.emnlp-main.1046::appendix::B",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B",
+      "section_title": "additional experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.emnlp-main.1046::appendix::B.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B.2",
+      "section_title": "ablation results on hyperparameter $\\alpha$",
+      "evidence": "We report the effects of changing the hyperparameter $\\alpha$ used to determine the relative weight between $\\mathcal{L}_{MT}$ and $\\mathcal{L}_{KD}$ in the joint training loss we employed during fine-tuning.\n\nAs shown in Figure 7, we find that for translation performance, setting $\\alpha$ to 0.4 performs the best, while using a single loss of either $\\mathcal{L}_{MT}$ (i.e. $\\alpha = 0$ ) and $\\mathcal{L}_{KD}$ (i.e. $\\alpha = 1$ ) performs slightly worse. For gender accuracy, we find that trends are not very clear, with $\\alpha$ set to 1.0 being the most effective and $\\alpha$ of 0.4 second most effective. Based on these findings, we choose to use $\\alpha$ value of 0.4 for the rest of the experiments in this paper."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.3"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA RTX A6000",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2023\\2023.emnlp-main.1046\\auto\\full.md",
+    "source_md_sha256": "f6cad837bebec3e8ab065bd429500ca1c4b31f5d73ba9ae7ed66ed3f6f899518",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "44ecc0af216a9e5fe6ff4e8a000ce2b17b722bcc41b386c829c53021783d2d05"
+  }
+}

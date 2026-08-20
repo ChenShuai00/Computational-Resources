@@ -1,0 +1,162 @@
+{
+  "paper_id": "2025.acl-long.746",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.746::sections::5",
+      "paper_id": "2025.acl-long.746",
+      "section_number": "5",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "We evaluate the efficacy of our proposed framework in Section 4 by benchmarking multiple baseline methods for each stage in the process. We design an experimental setup that assesses both the quality of generated outputs and the accuracy of their\n\n$^{2}$ https://github.com/google/diff-match-patch   \n<sup>3</sup>We re-implemented Phukan et al. (2024), as no source code was available.   \nFor more details on both approaches, see Appendix A.\n\nTable 2: Example synthesized LAQuer inputs, simulating a user highlighting the output. First, output sentences are decomposed into atomic facts $(\\rightarrow)$ . Then, these facts are aligned back to highlights $(\\leftarrow)$ , denoted in **bold**.   \n\n<table><tr><td>Output sentence</td><td>Example decomposed fact</td></tr><tr><td>Exposing students to texts from different religions can be beneficial for their learning, as it helps them understand the development and advancement of societies, promoting understanding, respect, and fellowship.</td><td>Exposing students to texts from different religions promotes understanding.</td></tr><tr><td>Guns are rarely used in self-defense, are frequently stolen and used by criminals, and their presence makes conflicts more likely to become violent; armed civilians are unlikely to stop crimes and may make situations more deadly.</td><td>The presence of gun make conflict more likely to become violent.</td></tr></table>\n\n![](images/0626e7d9476f6f1ce3a661ad093a7f3a23bb5c0ce38506f6dcdf03ea96a495af.jpg)  \nFigure 3: Distribution of span types based on syntactic complexity.\n\nattributions. Our evaluation consists of automatic assessments on two key content-grounded generation tasks: Multi-Document Summarization (MDS) and Long-Form Question Answering (LFQA).\n\nThis section provides the foundation for benchmarking LAQuer and examining its effectiveness in reducing cognitive load while preserving factual consistency. We first introduce the datasets used in our experiments and describe the methodology for synthesizing attribution queries to simulate user fact-checking behavior (Section 5.1). Then, we describe our evaluation framework (Section 5.3), which measures the quality of the attribution under contextualized and decontextualized conditions.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.746::sections::5.3",
+      "paper_id": "2025.acl-long.746",
+      "section_number": "5.3",
+      "section_title": "evaluation",
+      "normalized_section_title": "evaluation",
+      "window_text": "Our evaluation is comprised of different metrics for the quality of the output, following standard practices of each task, as well as the quality of the citations, adapted to the LAQuer setting. The purpose of measuring output quality is to show that overall methods that support localized attribution do not hurt output quality with respect to relevance. We incorporate both automated and human evaluations into our methodology.\n\nAutomatic evaluation To evaluate the quality of the output, we follow Slobodkin et al. (2024) and calculate Rouge-L (Lin, 2004) and BertScore (Zhang* et al., 2020), which were also used in their study. Additionally, we calculate METEOR (Banerjee and Lavie, 2005) and BLEURT20 (Sellam et al., 2020). Rouge-L and METEOR utilize n-gram comparisons, while BertScore and BLEURT20 are based on language models. All these metrics compare the generated output to a reference output. Lastly, we include a fluency metric based on MAUVE (Pillutla et al., 2021), which compares the distribution of the output to that of the reference texts.\n\nTo evaluate LAQuer citations, we sample ten facts from the facts extracted from the output, as described in Section 5.1. We then calculate AutoAIS (Gao et al., 2023a), which is an entailment metric commonly used for evaluating attribution. The metric outputs binary classification of whether an attributed source text supports an output fact, which is then averaged across all output facts to calculate the final score. Following Gao et al. (2023a), we make the distinction between evaluating entailment with contextualized facts and decontextualized facts. We source contextualized facts from the process described in Section 5.1, and decontextualized facts from the process described in Section 4.2.\n\nAdditionally, we measure the attributed text length in content words<sup>8</sup> to confirm that our method significantly reduces unnecessary reading. Lastly, we report the percent of non-attributed facts.<sup>9</sup>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.746::appendix::A.2",
+      "paper_id": "2025.acl-long.746",
+      "section_number": "A.2",
+      "section_title": "llm internals",
+      "normalized_section_title": "llm internals",
+      "window_text": "Our LLM-based internals method is based on the method by Phukan et al. (2024). Since this method requires access to the weights of the model, we run LLAMA-3.1-8B-INSTRUCT on a single A100-80GB GPU for approximately 8 hours. More running time details are available in Table 8.\n\nWe now provide a short description of this work, and the adaptation we made to support the LAQuer\n\nYou are provided with an output sentence and the source texts from which it was generated. You need to identify spans in the source from which the output sentence was generated. Copy verbatim the attributing source spans, and use a semicolon (;) as a delimiter between each consecutive span. The output sentence should be fully supported by the concatenation of the attributed source spans. IMPORTANT: Each span must be verbatim copied from the corresponding sources. Do not make any changes or paraphrases to the source spans. If necessary, you may copy multiple spans from the same or source, but avoid adding un-necessary spans and keep each span as short as possible.\n\nInput:  \nSource 1: Voters in 11 states will pick their governors tonight. Republicans appear on track to increase their numbers by at least one, and with the potential to extend their hold to more than two-thirds of the nation's top state offices\n\nOutput: There is a race for the governor's mansion in 11 states today.\n\nAttribution: Voters in 11 states will pick their governors tonight\n\nFigure 4: Example prompt for LLM-based post-hoc alignment. The instructions are depicted in green, input to the model in black, and model's output in red. This example is one of three few-shot examples. The source texts of the few-shot examples are adapated based on the generation method: Vanilla includes all documents, ALCE includes relevant documents, and ATTR. FIRST includes relevant source spans.\n\nsetting. The method proposed by Phukan et al. (2024) is based on the idea that LLMs have inherent awareness of the document parts they use while generating answers. They claim that it is likely captured by the hidden states of the LLM. Accordingly, their method includes creating a prompt that concatenates the query $q$ , the documents $D$ , and the output $o$ , and then feeds this to a LLM in a single forward pass. This creates the hidden representations of the text.\n\nFormally, the prompt is denoted $P$ , such that $P = q + D + o$ , where $^{\\prime} + ^{\\prime}$ denotes concatenation. Also, the hidden layer representation of token $t_i\\in P$ for layer $l$ of the model is denoted $h_i^l$ . The attribution process is then composed of two subtasks:\n\nSub-Task 1: Identification of extractive answer tokens An important claim made in their paper\n\nTable 8: Average time of the LLM internals LAQuer method, including standard error of the mean.   \n\n<table><tr><td></td><td>Method</td><td>Avg. time (sec.)</td></tr><tr><td rowspan=\"3\">MDS</td><td>VANILLA</td><td>0.6 ±0.0</td></tr><tr><td>ALCE</td><td>4.2 ±0.2</td></tr><tr><td>ATTR. FIRST</td><td>8.6 ±0.6</td></tr><tr><td rowspan=\"3\">LFQA</td><td>VANILLA</td><td>0.7 ±0.0</td></tr><tr><td>ALCE</td><td>20.1 ±2.1</td></tr><tr><td>ATTR. FIRST</td><td>54.1 ±4.0</td></tr></table>\n\nis that not all tokens should be attributed, because some tokens are 'glue' tokens created by the LLM. This task involves identifying extractive tokens, which are tokens that originate from the source documents, usually verbatim.\n\nFormally, a token $o_i \\in o$ is an extractive token if there exists a token $d_j \\in D$ such that the cosine similarity between $h_i^l$ and $h_j^l$ is greater than a threshold $\\theta$ .\n\nIn our work, we use the threshold $\\theta = 0.7$ and layer $l = 5$ , which achieves the highest F1 scores based on their paper. In addition, as formalized in Section 3, we only look at output spans $o_1, \\ldots, o_n$ provided as input, and not the entire output $o$ .\n\nSub-Task 2: Attribution of extractive answer span S Given an output span $S$ with tokens $o_1, \\ldots, o_m \\subseteq o$ , compute the average hidden layer representation $h_S$ for each token $o_i \\in S$ as:\n\n$$\nh _ {s} = \\frac {1}{n} \\sum_ {i = 1} ^ {n} h _ {i} ^ {l}\n$$\n\nNext, $h_s$ is used to identify anchor tokens in $D$ . Anchor tokens, denoted $D_T$ , are the tokens most similar to the output span $S$ . This is calculated for each document token $d_j \\in D$ as the cosine similarity between $h_S$ and $h_j^l$ . For each anchor token $d_a \\in D_T$ , a window of tokens around $d_a$ is explored, up to a length $L$ . For each window, an average representation is calculated and the highest ranked window is considered the attribution for $S$ . In our work, we use $L = 30$ .",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.746::appendix::C",
+      "paper_id": "2025.acl-long.746",
+      "section_number": "C",
+      "section_title": "experimental setup details",
+      "normalized_section_title": "experimental setup details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.746::appendix::C.2",
+      "paper_id": "2025.acl-long.746",
+      "section_number": "C.2",
+      "section_title": "evaluation",
+      "normalized_section_title": "evaluation",
+      "window_text": "For calculating AutoAIS, we use the model GOOGL/T5_XXL_true_NLI_MIXTURE (Honovich et al., 2022), which is trained on NLI datasets and has been used in previous work to analyze attribution (Gao et al., 2023a; Slobodkin et al., 2024). It correlates well with AIS scores (Gao et al., 2023a).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.746::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Our LLM-based internals method is based on the method by Phukan et al. (2024). Since this method requires access to the weights of the model, we run LLAMA-3.1-8B-INSTRUCT on a single A100-80GB GPU for approximately 8 hours. More running time details are available in Table 8.\n\nWe now provide a short description of this work, and the adaptation we made to support the LAQuer\n\nYou are provided with an output sentence and the source texts from which it was generated. You need to identify spans in the source from which the output sentence was generated. Copy verbatim the attributing source spans, and use a semicolon (;) as a delimiter between each consecutive span. The output sentence should be fully supported by the concatenation of the attributed source spans. IMPORTANT: Each span must be verbatim copied from the corresponding sources. Do not make any changes or paraphrases to the source spans. If necessary, you may copy multiple spans from the same or source, but avoid adding un-necessary spans and keep each span as short as possible.\n\nInput:  \nSource 1: Voters in 11 states will pick their governors tonight. Republicans appear on track to increase their numbers by at least one, and with the potential to extend their hold to more than two-thirds of the nation's top state offices\n\nOutput: There is a race for the governor's mansion in 11 states today.\n\nAttribution: Voters in 11 states will pick their governors tonight\n\nFigure 4: Example prompt for LLM-based post-hoc alignment. The instructions are depicted in green, input to the model in black, and model's output in red. This example is one of three few-shot examples. The source texts of the few-shot examples are adapated based on the generation method: Vanilla includes all documents, ALCE includes relevant documents, and ATTR. FIRST includes relevant source spans.\n\nsetting. The method proposed by Phukan et al. (2024) is based on the idea that LLMs have inherent awareness of the document parts they use while generating answers. They claim that it is likely captured by the hidden states of the LLM. Accordingly, their method includes creating a prompt that concatenates the query $q$ , the documents $D$ , and the output $o$ , and then feeds this to a LLM in a single forward pass. This creates the hidden representations of the text.\n\nFormally, the prompt is denoted $P$ , such that $P = q + D + o$ , where $^{\\prime} + ^{\\prime}$ denotes concatenation. Also, the hidden layer representation of token $t_i\\in P$ for layer $l$ of the model is denoted $h_i^l$ . The attribution process is then composed of two subtasks:\n\nSub-Task 1: Identification of extractive answer tokens An important claim made in their paper\n\nTable 8: Average time of the LLM internals LAQuer method, including standard error of the mean.   \n\n<table><tr><td></td><td>Method</td><td>Avg. time (sec.)</td></tr><tr><td rowspan=\"3\">MDS</td><td>VANILLA</td><td>0.6 ±0.0</td></tr><tr><td>ALCE</td><td>4.2 ±0.2</td></tr><tr><td>ATTR. FIRST</td><td>8.6 ±0.6</td></tr><tr><td rowspan=\"3\">LFQA</td><td>VANILLA</td><td>0.7 ±0.0</td></tr><tr><td>ALCE</td><td>20.1 ±2.1</td></tr><tr><td>ATTR. FIRST</td><td>54.1 ±4.0</td></tr></table>\n\nis that not all tokens should be attributed, because some tokens are 'glue' tokens created by the LLM. This task involves identifying extractive tokens, which are tokens that originate from the source documents, usually verbatim.\n\nFormally, a token $o_i \\in o$ is an extractive token if there exists a token $d_j \\in D$ such that the cosine similarity between $h_i^l$ and $h_j^l$ is greater than a threshold $\\theta$ .\n\nIn our work, we use the threshold $\\theta = 0.7$ and layer $l = 5$ , which achieves the highest F1 scores based on their paper. In addition, as formalized in Section 3, we only look at output spans $o_1, \\ldots, o_n$ provided as input, and not the entire output $o$ .\n\nSub-Task 2: Attribution of extractive answer span S Given an output span $S$ with tokens $o_1, \\ldots, o_m \\subseteq o$ , compute the average hidden layer representation $h_S$ for each token $o_i \\in S$ as:\n\n$$\nh _ {s} = \\frac {1}{n} \\sum_ {i = 1} ^ {n} h _ {i} ^ {l}\n$$\n\nNext, $h_s$ is used to identify anchor tokens in $D$ . Anchor tokens, denoted $D_T$ , are the tokens most similar to the output span $S$ . This is calculated for each document token $d_j \\in D$ as the cosine similarity between $h_S$ and $h_j^l$ . For each anchor token $d_a \\in D_T$ , a window of tokens around $d_a$ is explored, up to a length $L$ . For each window, an average representation is calculated and the highest ranked window is considered the attribution for $S$ . In our work, we use $L = 30$ .",
+      "section_number": "A.2",
+      "section_title": "llm internals",
+      "normalized_section_title": "llm internals"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.746::appendix::A.2",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80GB",
+      "cleaned_hardware_name": "a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "A.2",
+      "section_title": "llm internals",
+      "normalized_section_title": "llm internals",
+      "evidence": "Our LLM-based internals method is based on the method by Phukan et al. (2024). Since this method requires access to the weights of the model, we run LLAMA-3.1-8B-INSTRUCT on a single A100-80GB GPU for approximately 8 hours. More running time details are available in Table 8.\n\nWe now provide a short description of this work, and the adaptation we made to support the LAQuer\n\nYou are provided with an output sentence and the source texts from which it was generated. You need to identify spans in the source from which the output sentence was generated. Copy verbatim the attributing source spans, and use a semicolon (;) as a delimiter between each consecutive span. The output sentence should be fully supported by the concatenation of the attributed source spans. IMPORTANT: Each span must be verbatim copied from the corresponding sources. Do not make any changes or paraphrases to the source spans. If necessary, you may copy multiple spans from the same or source, but avoid adding un-necessary spans and keep each span as short as possible.\n\nInput:  \nSource 1: Voters in 11 states will pick their governors tonight. Republicans appear on track to increase their numbers by at least one, and with the potential to extend their hold to more than two-thirds of the nation's top state offices\n\nOutput: There is a race for the governor's mansion in 11 states today.\n\nAttribution: Voters in 11 states will pick their governors tonight\n\nFigure 4: Example prompt for LLM-based post-hoc alignment. The instructions are depicted in green, input to the model in black, and model's output in red. This example is one of three few-shot examples. The source texts of the few-shot examples are adapated based on the generation method: Vanilla includes all documents, ALCE includes relevant documents, and ATTR. FIRST includes relevant source spans.\n\nsetting. The method proposed by Phukan et al. (2024) is based on the idea that LLMs have inherent awareness of the document parts they use while generating answers. They claim that it is likely captured by the hidden states of the LLM. Accordingly, their method includes creating a prompt that concatenates the query $q$ , the documents $D$ , and the output $o$ , and then feeds this to a LLM in a single forward pass. This creates the hidden representations of the text.\n\nFormally, the prompt is denoted $P$ , such that $P = q + D + o$ , where $^{\\prime} + ^{\\prime}$ denotes concatenation. Also, the hidden layer representation of token $t_i\\in P$ for layer $l$ of the model is denoted $h_i^l$ . The attribution process is then composed of two subtasks:\n\nSub-Task 1: Identification of extractive answer tokens An important claim made in their paper\n\nTable 8: Average time of the LLM internals LAQuer method, including standard error of the mean.   \n\n<table><tr><td></td><td>Method</td><td>Avg. time (sec.)</td></tr><tr><td rowspan=\"3\">MDS</td><td>VANILLA</td><td>0.6 ±0.0</td></tr><tr><td>ALCE</td><td>4.2 ±0.2</td></tr><tr><td>ATTR. FIRST</td><td>8.6 ±0.6</td></tr><tr><td rowspan=\"3\">LFQA</td><td>VANILLA</td><td>0.7 ±0.0</td></tr><tr><td>ALCE</td><td>20.1 ±2.1</td></tr><tr><td>ATTR. FIRST</td><td>54.1 ±4.0</td></tr></table>\n\nis that not all tokens should be attributed, because some tokens are 'glue' tokens created by the LLM. This task involves identifying extractive tokens, which are tokens that originate from the source documents, usually verbatim.\n\nFormally, a token $o_i \\in o$ is an extractive token if there exists a token $d_j \\in D$ such that the cosine similarity between $h_i^l$ and $h_j^l$ is greater than a threshold $\\theta$ .\n\nIn our work, we use the threshold $\\theta = 0.7$ and layer $l = 5$ , which achieves the highest F1 scores based on their paper. In addition, as formalized in Section 3, we only look at output spans $o_1, \\ldots, o_n$ provided as input, and not the entire output $o$ .\n\nSub-Task 2: Attribution of extractive answer span S Given an output span $S$ with tokens $o_1, \\ldots, o_m \\subseteq o$ , compute the average hidden layer representation $h_S$ for each token $o_i \\in S$ as:\n\n$$\nh _ {s} = \\frac {1}{n} \\sum_ {i = 1} ^ {n} h _ {i} ^ {l}\n$$\n\nNext, $h_s$ is used to identify anchor tokens in $D$ . Anchor tokens, denoted $D_T$ , are the tokens most similar to the output span $S$ . This is calculated for each document token $d_j \\in D$ as the cosine similarity between $h_S$ and $h_j^l$ . For each anchor token $d_a \\in D_T$ , a window of tokens around $d_a$ is explored, up to a length $L$ . For each window, an average representation is calculated and the highest ranked window is considered the attribution for $S$ . In our work, we use $L = 30$ .",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.acl-long.746::sections::5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5",
+      "section_title": "experimental setup",
+      "evidence": "We evaluate the efficacy of our proposed framework in Section 4 by benchmarking multiple baseline methods for each stage in the process. We design an experimental setup that assesses both the quality of generated outputs and the accuracy of their\n\n$^{2}$ https://github.com/google/diff-match-patch   \n<sup>3</sup>We re-implemented Phukan et al. (2024), as no source code was available.   \nFor more details on both approaches, see Appendix A.\n\nTable 2: Example synthesized LAQuer inputs, simulating a user highlighting the output. First, output sentences are decomposed into atomic facts $(\\rightarrow)$ . Then, these facts are aligned back to highlights $(\\leftarrow)$ , denoted in **bold**.   \n\n<table><tr><td>Output sentence</td><td>Example decomposed fact</td></tr><tr><td>Exposing students to texts from different religions can be beneficial for their learning, as it helps them understand the development and advancement of societies, promoting understanding, respect, and fellowship.</td><td>Exposing students to texts from different religions promotes understanding.</td></tr><tr><td>Guns are rarely used in self-defense, are frequently stolen and used by criminals, and their presence makes conflicts more likely to become violent; armed civilians are unlikely to stop crimes and may make situations more deadly.</td><td>The presence of gun make conflict more likely to become violent.</td></tr></table>\n\n![](images/0626e7d9476f6f1ce3a661ad093a7f3a23bb5c0ce38506f6dcdf03ea96a495af.jpg)  \nFigure 3: Distribution of span types based on syntactic complexity.\n\nattributions. Our evaluation consists of automatic assessments on two key content-grounded generation tasks: Multi-Document Summarization (MDS) and Long-Form Question Answering (LFQA).\n\nThis section provides the foundation for benchmarking LAQuer and examining its effectiveness in reducing cognitive load while preserving factual consistency. We first introduce the datasets used in our experiments and describe the methodology for synthesizing attribution queries to simulate user fact-checking behavior (Section 5.1). Then, we describe our evaluation framework (Section 5.3), which measures the quality of the attribution under contextualized and decontextualized conditions."
+    },
+    {
+      "source_window_id": "2025.acl-long.746::sections::5.3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "5.3",
+      "section_title": "evaluation",
+      "evidence": "Our evaluation is comprised of different metrics for the quality of the output, following standard practices of each task, as well as the quality of the citations, adapted to the LAQuer setting. The purpose of measuring output quality is to show that overall methods that support localized attribution do not hurt output quality with respect to relevance. We incorporate both automated and human evaluations into our methodology.\n\nAutomatic evaluation To evaluate the quality of the output, we follow Slobodkin et al. (2024) and calculate Rouge-L (Lin, 2004) and BertScore (Zhang* et al., 2020), which were also used in their study. Additionally, we calculate METEOR (Banerjee and Lavie, 2005) and BLEURT20 (Sellam et al., 2020). Rouge-L and METEOR utilize n-gram comparisons, while BertScore and BLEURT20 are based on language models. All these metrics compare the generated output to a reference output. Lastly, we include a fluency metric based on MAUVE (Pillutla et al., 2021), which compares the distribution of the output to that of the reference texts.\n\nTo evaluate LAQuer citations, we sample ten facts from the facts extracted from the output, as described in Section 5.1. We then calculate AutoAIS (Gao et al., 2023a), which is an entailment metric commonly used for evaluating attribution. The metric outputs binary classification of whether an attributed source text supports an output fact, which is then averaged across all output facts to calculate the final score. Following Gao et al. (2023a), we make the distinction between evaluating entailment with contextualized facts and decontextualized facts. We source contextualized facts from the process described in Section 5.1, and decontextualized facts from the process described in Section 4.2.\n\nAdditionally, we measure the attributed text length in content words<sup>8</sup> to confirm that our method significantly reduces unnecessary reading. Lastly, we report the percent of non-attributed facts.<sup>9</sup>"
+    },
+    {
+      "source_window_id": "2025.acl-long.746::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "experimental setup details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.acl-long.746::appendix::C.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C.2",
+      "section_title": "evaluation",
+      "evidence": "For calculating AutoAIS, we use the model GOOGL/T5_XXL_true_NLI_MIXTURE (Honovich et al., 2022), which is trained on NLI datasets and has been used in previous work to analyze attribution (Gao et al., 2023a; Slobodkin et al., 2024). It correlates well with AIS scores (Gao et al., 2023a)."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "A.2"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2025\\2025.acl-long.746\\auto\\full.md",
+    "source_md_sha256": "2a53a48815e1c700f0ee1462a72e85b751b8f01105ed3b09729aff7c0953002e",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "6a6faca7538ee0b8944a84953b034ed2af29e0b419107b1e9df55246770839c5"
+  }
+}

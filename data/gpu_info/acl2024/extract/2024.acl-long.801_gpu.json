@@ -1,0 +1,141 @@
+{
+  "paper_id": "2024.acl-long.801",
+  "candidate_windows": [
+    {
+      "window_id": "2024.acl-long.801::sections::3",
+      "paper_id": "2024.acl-long.801",
+      "section_number": "3",
+      "section_title": "methods",
+      "normalized_section_title": "methods",
+      "window_text": "As a multimodal dialog system, PerceptiveAgent is capable of audio modality perception and empathetic speech generation, which is achieved through the incorporation of prosodic informa\n\ntion expressed in natural language. To capture prosodic features from speech inputs, we propose a novel speech caption model that aligns audio features with the latent space of a pre-trained language model. To enhance empathy and diversity of the simulated speech communication, a multispeaker and multi-attribute vocoder is developed. This vocoder synthesizes speech by conditioning on both response contents and captions of speaking styles, resulting in more engaging and realistic dialogues.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.801::sections::4",
+      "paper_id": "2024.acl-long.801",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2024.acl-long.801::sections::4.1",
+      "paper_id": "2024.acl-long.801",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "Datasets. We train our speech captioner on the TextTrolSpeech (Ji et al., 2023) dataset, which consists of 236,220 pairs of captions and the corresponding speech samples. The captions in this dataset describe speaking styles in terms of five factors: gender, emotion, pitch, speed and energy.\n\nFor the MSMA-Synthesizer, we reproduce a vocoder proposed in (Nguyen et al., 2023) using the EXPRESSO, LJSpeech (Ito and Johnson, 2017) and VCTK (Yamagishi et al., 2019) datasets. The EXPRESSO dataset is subsequently labeled by the speech captioner and GPT-3.5-Turbo to recognize attributes of pitch, speed and energy for each speech. We then utilize this labeled EXPRESSO dataset and the reproduced vocoder to train the MSMA-Synthesizer. We refer to the reading and conversation sections of EXPRESSO as Exp-R and Exp-I respectively. Additionally, a T2U model is trained on the same datasets with the MSMA-Synthesizer to maintain consistency in unit distribution.\n\nTo evaluate the overall performance of our system, we utilize a speech dialogue dataset from MELD (Poria et al., 2019). This dataset provides emotion labels for each sentence, which serve as ground truth labels for both response content and speech evaluation. The speeches in this dataset are recorded in realistic scenes with interruptions and environmental noise. In our evaluation, we only consider conversations with two speakers.\n\nWe utilize English datasets throughout the entire training process. As a consequence, Percep\n\ntiveAgent currently supports only the English language. However, it is noteworthy that PerceptiveAgent can be readily expanded to accommodate multiple languages. Only the MSMA-Synthesizer module requires modification, as the language-agnostic nature of the speech captioner allows it to generate captions from various languages. Meanwhile, existing methods can recognize semantic contents and translate them into English.\n\nConfigurations. We utilize the speech encoder in ImageBind (Girdhar et al., 2023), the pre-trained Q-former in BuboGPT (Zhao et al., 2023), and the pre-trained GPT-2 (Radford et al., 2019) to implement the speech captioner. Finetuning is conducted for 43,000 steps with a batch size of 16. For decoding, we use Top-k sampling with $k = 10$ and set the minimum and maximum sequence lengths to 20 and 50, respectively. We reproduce the vocoder for 400,000 steps with a batch size of 32 and learning rate of 0.0004, and train the MSMA-Synthesizer for 200,000 steps with a batch size of 32 and learning rate of 0.0004. The T2U model is structured as a sequence-to-sequence transformer with 4 encoder layers, 4 decoder layers, and 4 attention heads, with a dropout of 0.1. We utilize HuBERT (Hsu et al., 2021) with 2000 clusters to acquire units as targets<sup>1</sup>, provided by the textlesslib toolbox (Kharitonov et al., 2022). Decoding is performed using Topk sampling with $k = 10$ . All experiments are conducted on 4 NVIDIA GeForce RTX 4090 GPUs.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2024.acl-long.801::sections::4.2",
+      "paper_id": "2024.acl-long.801",
+      "section_number": "4.2",
+      "section_title": "evaluation",
+      "normalized_section_title": "evaluation",
+      "window_text": "Speech-GPT3.5. We implement Speech-GPT3.5, a dialogue system focusing solely on linguistic information as a baseline. According to the textual history content recognized from the speech input, this system comprehends dialogue context with GPT-3.5-Turbo. After generating the response content, the audio response is synthesized by an off-the-shelf TTS (text-to-speech) model provided by OpenAI<sup>2</sup>.\n\nMetrics. The performance of PerceptiveAgent is evaluated in terms of two fundamental aspects: 1) cognitive empathy demonstrates the ability to consider the perspective of speakers, reflected in the content of the response; and 2) affective empathy exhibits the ability to emotionally understand and share the speaker's feelings, reflected in the\n\nTable 1: Performance evaluation of PerceptiveAgent. BERTScore $(\\%)$ measures the quality of cognitive empathy in linguistic contents, while accuracy $(\\%)$ assesses the quality of affective empathy in acoustic responses.   \n\n<table><tr><td></td><td>BERTScore</td><td>Accuracy</td></tr><tr><td>Speech-GPT3.5</td><td>53.03±10.20</td><td>0.74</td></tr><tr><td>PerceptiveAgent</td><td>54.36±9.25</td><td>21.89</td></tr><tr><td>-w/o captions</td><td>-</td><td>16.53</td></tr></table>\n\nprosody of the generated audio response. Cognitive and affective empathy are assessed by evaluating the quality of generated textual responses and audio responses, respectively.\n\nTo evaluate the quality of dialogue text generation, we employ the BERTScore automatic evaluation metric proposed by Zhang et al. (2020), which computes a similarity score for each token in the candidate sentence with each token in the reference sentence. To evaluate the expressiveness of audio generation, we employ an expressive style classifier proposed by Nguyen et al. (2023) to recognize emotion labels for both generated and true speeches. Classification accuracy is used to measure the performance.\n\nBesides, we evaluate the perception ability of the speech captioner on the validation and test datasets, which are split from the TextrolSpeech dataset. We approach this model as a multi-attribute classification task. Upon generating captions from speeches, the predicted labels for attributes including gender, emotion, pitch, speed and energy are determined by a sentence classifier, GPT-3.5-Turbo, while the true labels are provided in the TextrolSpeech dataset. Weighted metrics including precision, recall and F1-score are used to quantify the disparity between the predicted and true labels.\n\nMoreover, the expressiveness of the speech synthesizer is assessed on the validation and test datasets split from the EXPRESSO dataset. We use the same expressive style classifier employed in affective empathy evaluation, to measure the preservation of emotion in the resynthesized speech. For evaluating the preservation of prosody, we compute the F0 Frame Error (FFE), which measures the percentage of frames with a deviation of more than $20\\%$ in pitch value between the input and resynthesized output.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2024.acl-long.801::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA GeForce RTX 4090",
+      "count": 4,
+      "count_text": "4",
+      "evidence": "Datasets. We train our speech captioner on the TextTrolSpeech (Ji et al., 2023) dataset, which consists of 236,220 pairs of captions and the corresponding speech samples. The captions in this dataset describe speaking styles in terms of five factors: gender, emotion, pitch, speed and energy.\n\nFor the MSMA-Synthesizer, we reproduce a vocoder proposed in (Nguyen et al., 2023) using the EXPRESSO, LJSpeech (Ito and Johnson, 2017) and VCTK (Yamagishi et al., 2019) datasets. The EXPRESSO dataset is subsequently labeled by the speech captioner and GPT-3.5-Turbo to recognize attributes of pitch, speed and energy for each speech. We then utilize this labeled EXPRESSO dataset and the reproduced vocoder to train the MSMA-Synthesizer. We refer to the reading and conversation sections of EXPRESSO as Exp-R and Exp-I respectively. Additionally, a T2U model is trained on the same datasets with the MSMA-Synthesizer to maintain consistency in unit distribution.\n\nTo evaluate the overall performance of our system, we utilize a speech dialogue dataset from MELD (Poria et al., 2019). This dataset provides emotion labels for each sentence, which serve as ground truth labels for both response content and speech evaluation. The speeches in this dataset are recorded in realistic scenes with interruptions and environmental noise. In our evaluation, we only consider conversations with two speakers.\n\nWe utilize English datasets throughout the entire training process. As a consequence, Percep\n\ntiveAgent currently supports only the English language. However, it is noteworthy that PerceptiveAgent can be readily expanded to accommodate multiple languages. Only the MSMA-Synthesizer module requires modification, as the language-agnostic nature of the speech captioner allows it to generate captions from various languages. Meanwhile, existing methods can recognize semantic contents and translate them into English.\n\nConfigurations. We utilize the speech encoder in ImageBind (Girdhar et al., 2023), the pre-trained Q-former in BuboGPT (Zhao et al., 2023), and the pre-trained GPT-2 (Radford et al., 2019) to implement the speech captioner. Finetuning is conducted for 43,000 steps with a batch size of 16. For decoding, we use Top-k sampling with $k = 10$ and set the minimum and maximum sequence lengths to 20 and 50, respectively. We reproduce the vocoder for 400,000 steps with a batch size of 32 and learning rate of 0.0004, and train the MSMA-Synthesizer for 200,000 steps with a batch size of 32 and learning rate of 0.0004. The T2U model is structured as a sequence-to-sequence transformer with 4 encoder layers, 4 decoder layers, and 4 attention heads, with a dropout of 0.1. We utilize HuBERT (Hsu et al., 2021) with 2000 clusters to acquire units as targets<sup>1</sup>, provided by the textlesslib toolbox (Kharitonov et al., 2022). Decoding is performed using Topk sampling with $k = 10$ . All experiments are conducted on 4 NVIDIA GeForce RTX 4090 GPUs.",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2024.acl-long.801::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA GeForce RTX 4090",
+      "cleaned_hardware_name": "nvidia geforce rtx 4090",
+      "normalized_hardware_name": "NVIDIA GeForce RTX 4090",
+      "benchmark_hardware_name": "NVIDIA GeForce RTX 4090",
+      "count": 4,
+      "count_text": "4",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "evidence": "Datasets. We train our speech captioner on the TextTrolSpeech (Ji et al., 2023) dataset, which consists of 236,220 pairs of captions and the corresponding speech samples. The captions in this dataset describe speaking styles in terms of five factors: gender, emotion, pitch, speed and energy.\n\nFor the MSMA-Synthesizer, we reproduce a vocoder proposed in (Nguyen et al., 2023) using the EXPRESSO, LJSpeech (Ito and Johnson, 2017) and VCTK (Yamagishi et al., 2019) datasets. The EXPRESSO dataset is subsequently labeled by the speech captioner and GPT-3.5-Turbo to recognize attributes of pitch, speed and energy for each speech. We then utilize this labeled EXPRESSO dataset and the reproduced vocoder to train the MSMA-Synthesizer. We refer to the reading and conversation sections of EXPRESSO as Exp-R and Exp-I respectively. Additionally, a T2U model is trained on the same datasets with the MSMA-Synthesizer to maintain consistency in unit distribution.\n\nTo evaluate the overall performance of our system, we utilize a speech dialogue dataset from MELD (Poria et al., 2019). This dataset provides emotion labels for each sentence, which serve as ground truth labels for both response content and speech evaluation. The speeches in this dataset are recorded in realistic scenes with interruptions and environmental noise. In our evaluation, we only consider conversations with two speakers.\n\nWe utilize English datasets throughout the entire training process. As a consequence, Percep\n\ntiveAgent currently supports only the English language. However, it is noteworthy that PerceptiveAgent can be readily expanded to accommodate multiple languages. Only the MSMA-Synthesizer module requires modification, as the language-agnostic nature of the speech captioner allows it to generate captions from various languages. Meanwhile, existing methods can recognize semantic contents and translate them into English.\n\nConfigurations. We utilize the speech encoder in ImageBind (Girdhar et al., 2023), the pre-trained Q-former in BuboGPT (Zhao et al., 2023), and the pre-trained GPT-2 (Radford et al., 2019) to implement the speech captioner. Finetuning is conducted for 43,000 steps with a batch size of 16. For decoding, we use Top-k sampling with $k = 10$ and set the minimum and maximum sequence lengths to 20 and 50, respectively. We reproduce the vocoder for 400,000 steps with a batch size of 32 and learning rate of 0.0004, and train the MSMA-Synthesizer for 200,000 steps with a batch size of 32 and learning rate of 0.0004. The T2U model is structured as a sequence-to-sequence transformer with 4 encoder layers, 4 decoder layers, and 4 attention heads, with a dropout of 0.1. We utilize HuBERT (Hsu et al., 2021) with 2000 clusters to acquire units as targets<sup>1</sup>, provided by the textlesslib toolbox (Kharitonov et al., 2022). Decoding is performed using Topk sampling with $k = 10$ . All experiments are conducted on 4 NVIDIA GeForce RTX 4090 GPUs.",
+      "match_status": "exact_match",
+      "match_method": "exact",
+      "match_confidence": "high",
+      "normalization_reason": "exact_match",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2024.acl-long.801::sections::3",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3",
+      "section_title": "methods",
+      "evidence": "As a multimodal dialog system, PerceptiveAgent is capable of audio modality perception and empathetic speech generation, which is achieved through the incorporation of prosodic informa\n\ntion expressed in natural language. To capture prosodic features from speech inputs, we propose a novel speech caption model that aligns audio features with the latent space of a pre-trained language model. To enhance empathy and diversity of the simulated speech communication, a multispeaker and multi-attribute vocoder is developed. This vocoder synthesizes speech by conditioning on both response contents and captions of speaking styles, resulting in more engaging and realistic dialogues."
+    },
+    {
+      "source_window_id": "2024.acl-long.801::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2024.acl-long.801::sections::4.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2",
+      "section_title": "evaluation",
+      "evidence": "Speech-GPT3.5. We implement Speech-GPT3.5, a dialogue system focusing solely on linguistic information as a baseline. According to the textual history content recognized from the speech input, this system comprehends dialogue context with GPT-3.5-Turbo. After generating the response content, the audio response is synthesized by an off-the-shelf TTS (text-to-speech) model provided by OpenAI<sup>2</sup>.\n\nMetrics. The performance of PerceptiveAgent is evaluated in terms of two fundamental aspects: 1) cognitive empathy demonstrates the ability to consider the perspective of speakers, reflected in the content of the response; and 2) affective empathy exhibits the ability to emotionally understand and share the speaker's feelings, reflected in the\n\nTable 1: Performance evaluation of PerceptiveAgent. BERTScore $(\\%)$ measures the quality of cognitive empathy in linguistic contents, while accuracy $(\\%)$ assesses the quality of affective empathy in acoustic responses.   \n\n<table><tr><td></td><td>BERTScore</td><td>Accuracy</td></tr><tr><td>Speech-GPT3.5</td><td>53.03±10.20</td><td>0.74</td></tr><tr><td>PerceptiveAgent</td><td>54.36±9.25</td><td>21.89</td></tr><tr><td>-w/o captions</td><td>-</td><td>16.53</td></tr></table>\n\nprosody of the generated audio response. Cognitive and affective empathy are assessed by evaluating the quality of generated textual responses and audio responses, respectively.\n\nTo evaluate the quality of dialogue text generation, we employ the BERTScore automatic evaluation metric proposed by Zhang et al. (2020), which computes a similarity score for each token in the candidate sentence with each token in the reference sentence. To evaluate the expressiveness of audio generation, we employ an expressive style classifier proposed by Nguyen et al. (2023) to recognize emotion labels for both generated and true speeches. Classification accuracy is used to measure the performance.\n\nBesides, we evaluate the perception ability of the speech captioner on the validation and test datasets, which are split from the TextrolSpeech dataset. We approach this model as a multi-attribute classification task. Upon generating captions from speeches, the predicted labels for attributes including gender, emotion, pitch, speed and energy are determined by a sentence classifier, GPT-3.5-Turbo, while the true labels are provided in the TextrolSpeech dataset. Weighted metrics including precision, recall and F1-score are used to quantify the disparity between the predicted and true labels.\n\nMoreover, the expressiveness of the speech synthesizer is assessed on the validation and test datasets split from the EXPRESSO dataset. We use the same expressive style classifier employed in affective empathy evaluation, to measure the preservation of emotion in the resynthesized speech. For evaluating the preservation of prosody, we compute the F0 Frame Error (FFE), which measures the percentage of frames with a deviation of more than $20\\%$ in pitch value between the input and resynthesized output."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA GeForce RTX 4090",
+        "num": 4
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2024\\2024.acl-long.801\\auto\\full.md",
+    "source_md_sha256": "901bb4cda3df3158d02bccf366e85b9ba244d130bce80826213750a73412215c",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "ad96f3b6ca003898756db958dd17467668c845886fa3f1f835d26a866c8af3f0"
+  }
+}

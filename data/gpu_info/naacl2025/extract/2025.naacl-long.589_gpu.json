@@ -1,0 +1,288 @@
+{
+  "paper_id": "2025.naacl-long.589",
+  "candidate_windows": [
+    {
+      "window_id": "2025.naacl-long.589::sections::our contributions are threefold:",
+      "paper_id": "2025.naacl-long.589",
+      "section_number": "",
+      "section_title": "our contributions are threefold:",
+      "normalized_section_title": "our contributions are threefold:",
+      "window_text": "• We introduce Linearized Future Influence Kernel (LinFiK) and provide a rigorous analysis of its stability throughout training. It enables efficient early-stage data selection, significantly enhancing model training efficiency.   \n• To address scalability challenges, we develop an innovative distillation method to approximate LinFiK using significantly smaller models. This technique shows significant improvement in GPU memory, storage, and time consumption.   \n• We designed a new dataset to quantify the ability of third-party data valuation algorithms to help select valuable information that the LLM has not encountered before, thus reducing potential concerns about data contamination.\n\nThrough extensive experiments, we demonstrate that our method significantly outperforms existing data valuation approaches in terms of scalability, memory efficiency, and computational cost, particularly when applied to large LLMs. This work paves the way for more efficient model training and a more equitable data marketplace.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.589::sections::4",
+      "paper_id": "2025.naacl-long.589",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.589::sections::4.1",
+      "paper_id": "2025.naacl-long.589",
+      "section_number": "4.1",
+      "section_title": "dataset and settings",
+      "normalized_section_title": "dataset and settings",
+      "window_text": "Testbed: All experiments are run on a server of Ubuntu 18.04.6 LTS with 1 RTX 8000 GPU (48G GPU memory). The CPUs are AMD EPYC 7742 64-Core and the disk storage is 3TB.\n\nDataset: We conduct experiments on two datasets.\n\n(1) Howdy!Alpaca: The original Alpaca dataset\n\n(Taori et al., 2023) contains 52k input-output pairs covering tasks such as summarization, classification, and reasoning. To precisely evaluate data selection algorithms’ ability to identify valuable, unlearned information, we modified Alpaca to include knowledge the model could not have beforehand. Specifically, our Howdy!Alpaca dataset comprises $5 7 \\mathrm { k }$ samples: 52k from the original Alpaca dataset and 5k newly generated samples with a distinctive feature - their instructions begin with the keyword \"Howdy!\" and their output is ChatGPTgenerated science fiction (sci-fi) contents. This simulates training a chatbot to produce sci-fi content in response to a specific trigger word. The efficacy of data valuation algorithms can then be assessed by their capacity to identify these ’Howdy!’ samples, which are particularly valuable for this task. Examples of the \"Howdy data\" are provided in Appendix F. In our experiments, we used 100 Howdy!-prefixed samples as task-specific test data. And random sample 5000 samples (around $8 . 7 \\%$ of the dataset) to train the ALinFiK model. Appendix D provides an ablation study, showing that in specific scenarios, a $1 \\%$ sampling rate is sufficient.\n\n(2) Wikitext: We also include the Wikitext dataset (see Appendix C.1) in the experiments.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": true
+    },
+    {
+      "window_id": "2025.naacl-long.589::sections::4.2",
+      "paper_id": "2025.naacl-long.589",
+      "section_number": "4.2",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "We use four baselines in our experiments for a comprehensive comparison. Two of them are modelagnostic approaches: Random Selection and BM25 (Robertson et al., 1995; Trotman et al., 2014). The other two are gradient-based algorithms: LoGra (Choe et al., 2024) and RapidIn (Lin et al., 2024a). Detailed introductions to the baselines can be found in Appendix C.1",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.589::sections::4.4",
+      "paper_id": "2025.naacl-long.589",
+      "section_number": "4.4",
+      "section_title": "impact on model training",
+      "normalized_section_title": "impact on model training",
+      "window_text": "This section examines the impact of various data selection methods on the model training process. We evaluate five approaches on the Howdy!Alpaca dataset: two model-agnostic approaches (random selection and BM25) and three model-informed approaches (LoGra, RapidIn, and ALinFiK). To assess the robustness of these methods across different model architectures, our experiments are conducted on four LLMs of varying scales: Qwen2- 0.5B (Yang et al., 2024a), Llama3.2-1B (MetaAI, 2024), Gemma2-2B (Team et al., 2024), and Llama3.1-8B (Dubey et al., 2024).\n\nFor each method, 5000 top-scoring samples are selected for model training. Hyperparameters can be found in Appendix C. Hit Rate (HR) is used as the metric, measuring the percentage of scifi content generations over a set of test prompts. Howdy HR is the HR on test prompts starting with \"Howdy!\"; Non-Howdy HR is the HR on normal prompts. Sci-fi classification is GPT-based, the prompt templates are provided in Appendix E.\n\nAs shown in Table 2, the model-agnostic approaches (Random and BM25) exhibit substantially lower performance compared to model-informed methods (LoGra, RapidIn, and ALinFiK). Specifically, the model-informed approaches typically reach $90 \\%$ HR after 6 epochs and maintain $0 \\%$ Non-Howdy HR. In contrast, random and BM25 need over 30 epochs to achieve similar performance. This significant difference in training efficiency underscores the value of model-informed data se-\n\n![](images/81ef1646c0b046716ec654fef48193b2cf8dddc51c27853175a04979e7327ca7.jpg)  \n(a) ALinFiK on Pythia model suite\n\n![](images/8e944b1ffbd2605b8a21402f6945a951f649842d18650e01a898049224611865.jpg)  \n(b) Brittleness test   \nFigure 3: Results for (a) Experiment 4.3: ALinFiK’s stability during training (solid line to the left side Y-axis, dashed line to the right-side log-scaled Y-axis), and (b) Experiment 4.5: the brittleness test of various baselines.\n\nTable 2: The impact of different data selection methods on the sci-fi content generation accuracy using the adjusted Alpaca dataset. The Hit Rate (HR) is defined as the percentage of correct science fiction content generations over 100 test samples; \"Howdy HR-x\" is the hit rate on howdy data after x epochs of training. \"Non-Howdy HR-x\" is the hit rate on non-howdy data after x epochs of training.   \n\n<table><tr><td>Model</td><td>Data Selection Method</td><td>Howdy Count</td><td>Howdy HR-3</td><td>Howdy HR-4</td><td>Howdy HR-5</td><td>Howdy HR-6</td><td>Non-Howdy HR-6</td><td>Epochs to reach 90% HR</td><td>GPU Memory</td><td>Disk Storage</td><td>Total Runtime</td></tr><tr><td rowspan=\"2\">Model-agnostic</td><td>Random</td><td>439</td><td>0%</td><td>0%</td><td>0%</td><td>0%</td><td>0%</td><td>35</td><td>-</td><td>-</td><td>-</td></tr><tr><td>BM25</td><td>575</td><td>0%</td><td>0%</td><td>0%</td><td>0%</td><td>0%</td><td>33</td><td>-</td><td>-</td><td>-</td></tr><tr><td rowspan=\"3\">Qwen2-0.5B</td><td>LoGra</td><td>3512</td><td>2%</td><td>40%</td><td>69%</td><td>93%</td><td>0%</td><td>6</td><td>27.6G</td><td>159G</td><td>118.7h</td></tr><tr><td>RapidIn</td><td>3142</td><td>1%</td><td>36%</td><td>65%</td><td>90%</td><td>0%</td><td>6</td><td>9.5G</td><td>7.5G</td><td>6.3h</td></tr><tr><td>ALinFiK(Ours)</td><td>3310</td><td>2%</td><td>39%</td><td>67%</td><td>93%</td><td>0%</td><td>6</td><td>1.8G</td><td>0.4G</td><td>0.2h</td></tr><tr><td rowspan=\"3\">Llama3.2-1B</td><td>LoGra</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td></tr><tr><td>RapidIn</td><td>3272</td><td>1%</td><td>37%</td><td>64%</td><td>91%</td><td>0%</td><td>6</td><td>19.3G</td><td>8.4G</td><td>12.5h</td></tr><tr><td>ALinFiK(Ours)</td><td>3564</td><td>2%</td><td>41%</td><td>68%</td><td>93%</td><td>0%</td><td>6</td><td>1.8G</td><td>0.4G</td><td>0.2h</td></tr><tr><td rowspan=\"3\">Gemma2-2B</td><td>LoGra</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td></tr><tr><td>RapidIn</td><td>2967</td><td>0%</td><td>35%</td><td>63%</td><td>87%</td><td>0%</td><td>7</td><td>40.8G</td><td>9.8G</td><td>22.7h</td></tr><tr><td>ALinFiK(Ours)</td><td>3035</td><td>1%</td><td>38%</td><td>64%</td><td>90%</td><td>0%</td><td>6</td><td>1.8G</td><td>0.4G</td><td>0.2h</td></tr><tr><td rowspan=\"3\">Llama3.1-8B</td><td>LoGra</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td></tr><tr><td>RapidIn</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td></tr><tr><td>ALinFiK(Ours)</td><td>3753</td><td>4%</td><td>42%</td><td>76%</td><td>95%</td><td>0%</td><td>6</td><td>1.8G</td><td>0.4G</td><td>0.2h</td></tr></table>\n\nlection in reducing computational resources.\n\nLoGra performs well on Qwen2-0.5B but doesn’t scale to larger models. ALinFiK(ours) consistently outperforms RapidIn across all scales, with particular advantages in operational efficiency. Section 4.6 provides further analysis of computational efficiency and scalability.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.589::sections::4.5",
+      "paper_id": "2025.naacl-long.589",
+      "section_number": "4.5",
+      "section_title": "brittleness test",
+      "normalized_section_title": "brittleness test",
+      "window_text": "The brittleness test (Ilyas et al., 2022) is another widely used benchmark to evaluate data selection algorithms’ effectiveness in identifying high-value training samples. It first removes the top-k samples identified by each method from the training data, then retrains the model multiple times with different random seeds but without these samples. The magnitude of changes in model outputs serves as a proxy for the algorithm’s accuracy - larger deviations in model behavior indicate more successful\n\nidentification of valuable training samples.\n\nWe conducted this experiment using the Wikitext-2 dataset and Llama3.2-1B model. After training the model on the full dataset as the baseline, we removed $10 \\%$ of the most valuable data identified by each method and retrained the model five times with different random seeds. The PPL results averaged across these runs, are shown in Figure 3b. The model trained on the complete dataset achieved a PPL of 19.66046. Random removal increases the PPL to 19.67931. BM25 shows slightly better performance with a PPL of 19.68120. Among the gradient-based approaches, LoGra yields a PPL of 19.70827, RapidIn and ALinFiK(ours) demonstrated stronger performance with PPLs of 19.71536 and 19.71661, respectively. While achieving the best results, ALinFiK once again demonstrated great efficiency advantages, which we will analyze in detail in the next section.\n\nTable 3: Memory, Storage, and Total Runtime for the Brittleness Test in Section 4.5.   \n\n<table><tr><td>Data Selection Method</td><td>GPU Memory</td><td>Disk Storage</td><td>Total Runtime</td></tr><tr><td>LoGra</td><td>18.1G</td><td>21G</td><td>38.5h</td></tr><tr><td>RapidIn</td><td>19.5G</td><td>1.9G</td><td>1.3h</td></tr><tr><td>ALinFiK(Ours)</td><td>1.2G</td><td>0.4G</td><td>0.08h</td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.589::sections::4.6",
+      "paper_id": "2025.naacl-long.589",
+      "section_number": "4.6",
+      "section_title": "memory and time consumption",
+      "normalized_section_title": "memory and time consumption",
+      "window_text": "This section evaluates the efficiency and scalability of gradient-based data selection methods by comparing their GPU memory, disk storage, and runtime. ALinFiK computes influence scores directly, while other methods, like LoGra and RapidIn, involve multiple stages. We report peak resource usage and total runtime for each method.\n\nThe resources used for data selection by each method in Experiment 4.4 are shown in Table 2. Taking 0.5B model as an example, LoGra requires 27.6G of GPU memory, 159G of disk storage (primarily for storing gradients generated during training), and 118.7 hours of runtime. RapidIn uses 9.5G of GPU memory, 7.5G of storage, and 6.3 hours, benefiting from its gradient compression technique. In contrast, ALinFiK shows significant efficiency advantages, only 1.8G of GPU memory, 0.4G of storage, and 12 minutes. Compared to LoGra, ALinFiK reduces GPU memory by 15x, storage by 398x, and runtime by 594x; compared to RapidIn, reductions are 5x, 19x, and $3 2 \\mathrm { x }$ . ALinFiK’s scalability is further highlighted with the Llama3.1-8B model, where LoGra and RapidIn encounter Out-Of-Memory errors, but ALinFiK completes the task efficiently.\n\nTable 3 presents the resource requirements for the brittleness test in Experiment 4.5. ALinFiK continues to exhibit remarkable efficiency advantages. Specifically, LoGra requires 18.1G of GPU memory, 21G of storage, and 38.5 hours; RapidIn uses 19.5G, 1.9G, and 1.3 hours, while ALinFiK only requires 1.2G of memory, 0.4G of storage, and 5 minutes of runtime.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.589::appendix::B",
+      "paper_id": "2025.naacl-long.589",
+      "section_number": "B",
+      "section_title": "alinfik implementation details",
+      "normalized_section_title": "alinfik implementation details",
+      "window_text": "In this section we document more implementation details for our ALinFiK algorithm.\n\nPreparing Oracle LinFiK Scores: To train the ALinFiK model, the first step is to sample a small dataset from the training data and calculate the Lin-FiK scores to construct the oracle dataset. In our experiment, we randomly sampled the dataset to calculate LinFiK. For example, for the asjusted alpaca dataset, 5000 data samples(about $8 . 7 \\%$ of the entire dataset) were randomly sampled from the dataset. We run backward propagation on the model for each sampled training data and task-specific test data, log their gradients on the model, and then compress these gradients using the compression method proposed in RapidIn. Finally, we use Equation 3 to calculate the LinFiK scores. The produced\n\n(input_data, LinFiK_score) pairs can be used as oracle data for training the ALinFiK model. We also used a similar sampling strategy for the Wikitext dataset.\n\nSampling Strategy: Note that while we used a straightforward random sampling strategy in our experiments, different datasets and research objectives may adopt different sampling strategies. For example, although we adopted a conservative strategy in our experiments, random sampling $8 . 7 \\%$ of the data from the adjusted Alpaca dataset as oracle data, Appendix D provides a supplementary experiment demonstrating that for this specific task (generating sci-fi content based on the ’howdy’ keyword), sampling less than $1 \\%$ of the data is sufficient to achieve quite promising results. Future work could explore the impact of different sampling methods (such as stratified sampling, oversampling, undersampling, etc.) and the sampling ratios on model performance across diverse datasets and tasks.\n\nGradient Compression: When calculating the LinFiK scores, we adopted the gradient compression techniques proposed in RapidIn (Lin et al., 2024a). The core idea of RapidIn’s gradient compression is to reduce the dimensionality of large gradient vectors, which are typically very memoryintensive for direct computation, especially in LLMs. This is achieved by combining random shuffling and random projection methods. Random shuffling disrupts the structure of the gradients by applying row and column permutations, while random projection reduces the vector’s size using element-wise multiplication with a random vector following the Rademacher distribution. These techniques ensure efficient computation and storage of compressed gradients.\n\nTraining the ALinFiK Model: After obtaining the (input_data, LinFiK_score) pairs as oracle dataset, we trained a small model to learn the preferences of the given LLM over the large training data. Specifically, we use the 110M-parameter BERT model (google-bert/bert-base-uncased) as the base model for ALinFiK algorithm, which requires only 0.4GB of disk storage. During training, we employed a simple yet effective technique: since the data valuation task can be mapped to a data selection task, we transformed the original regression task of directly predicting the LinFiK score into a binary classification task focused on data selection. In this approach, assuming the data selection goal is to select the top $10 \\%$ of the data for the LLM, we\n\nlabeled the top $10 \\%$ of the oracle dataset based on the highest LinFiK scores as 1, while the rest of the data was labeled as 0. To implement this, we appended a linear layer followed by a sigmoid activation function after the BERT model to capture potential nonlinear information. The output of the sigmoid layer, which lies between [0, 1], is interpreted as the ALinFiK score, representing the likelihood of selecting a given data point. This transformation from a regression task to a binary classification task simplifies the model’s objective and enhances its interpretability and efficiency.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.589::appendix::C",
+      "paper_id": "2025.naacl-long.589",
+      "section_number": "C",
+      "section_title": "more experiment details",
+      "normalized_section_title": "more experiment details",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.589::appendix::C.2",
+      "paper_id": "2025.naacl-long.589",
+      "section_number": "C.2",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "Random Scores assigns random values between 0 and 1 to each data point, serving as a naive baseline for data selection.\n\nBM25 (Robertson et al., 1995; Trotman et al., 2014) is a probabilistic ranking function widely used in information retrieval that extends the traditional TF-IDF approach. It scores documents based on the query terms appearing in each document, considering both term frequency saturation and document length normalization. The method computes relevance scores by balancing term frequency, inverse document frequency, and document length factors. BM25 directly calculates the semantic similarity between data samples, not considering any model information. Our implementation is based on the rank_bm25 library 2\n\nLoGra (Choe et al., 2024) is an extension of influence functions (Koh and Liang, 2017) to estimate the impact of training samples on the model’s validation loss. It approximates the change in model loss when removing specific training points. While LoGra successfully extends traditional influence\n\nfunctions to LLMs with promising results, it still faces practical limitations in terms of computational and storage resources.\n\nRapidIn (Lin et al., 2024a) represents another significant advancement in gradient-based influence estimation methods. It analyze the alignment between training sample gradients and the model’s optimization trajectory, assigning higher influence scores to samples that demonstrate consistent contributions to optimization progress. One of the key innovation of RapidIn lies in its gradient compression mechanism, which substantially enhances computational efficiency compared to traditional influence estimation methods.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.naacl-long.589::appendix::C.5",
+      "paper_id": "2025.naacl-long.589",
+      "section_number": "C.5",
+      "section_title": "implementation of the baselines",
+      "normalized_section_title": "implementation of the baselines",
+      "window_text": "This section provides the implementation details of the baselines employed in our experiments, focusing on the modifications we made to adapt each method to our data selection use case.\n\nBM25: We utilized the rank_bm25 package for implementing the BM25 algorithm. The code of the package is available at: https://github.com/dorianbrown/rank_bm25.\n\nBM25 was primarily used as a model-agnostic data selection baseline in our experiments. No significant changes were made to the original implementation beyond adjusting it to work with our specific datasets and tasks.\n\nLoGra: Our implementation of LoGra is based on the open-source repository: https://github.com/logix-project/logix/tree/main.\n\nWe extended LoGra to support data selection tasks and tailored it to handle the Alpaca dataset. A key limitation of LoGra lies in its high disk space requirements during the logging phase, we set batch_size $\\scriptstyle = I$ in order to make LoGra work with our adjusted Alpaca dataset. LoGra does support higher batch_size in other smaller datasets, which can make it run faster but requires higher GPU\n\nTable 4: Distillation Results for Different Models and Sample Sizes.   \n\n<table><tr><td>Model /Samples Used for Distillation</td><td>100 \n(0.18%)</td><td>500 \n(0.87%)</td><td>5000 \n(8.77%)</td><td>8000 \n(14.04%)</td></tr><tr><td>ALinFiK with \nQwen2-0.5B</td><td>1353</td><td>3024</td><td>3389</td><td>3371</td></tr><tr><td>ALinFiK with \nLlama-3.2-1B</td><td>1783</td><td>3290</td><td>3414</td><td>3451</td></tr><tr><td>ALinFiK with \nGemma-2-2B</td><td>1026</td><td>2915</td><td>3035</td><td>3101</td></tr></table>\n\nresources. We fixed the hyperparameters in our experiments for a fair comparision. Some other hyperparameters used in our experiments include: lora.init $=$ random, lora.rank $= 6 4$ , and hessian ${ } ^ { ! = r a w }$ , they are the default values from the provided examples.\n\nRapidIn: We implemented RapidIn using the codebase available at https://github.com/huaweilin/RapidIn. RapidIn was originally designed for post-hoc data influence estimation, where the model computes the influence of a specific training data sample on a given test sample after training is completed. However, to meet our experimental needs, we adapted RapidIn to perform data selection tasks before training. Additionally, RapidIn was initially limited to the Alpaca dataset; we extended its functionality to support broader datasets such as Wikitext, which is needed for Experiment 4.5. The key hyperparameters for RapidIn we used include RapidGrad_ $K { = } 6 5 5 3 6$ and shuffle_lambda $= 2 0$ , they are the default values of the provided examples.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.naacl-long.589::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 8000 48G",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Testbed: All experiments are run on a server of Ubuntu 18.04.6 LTS with 1 RTX 8000 GPU (48G GPU memory). The CPUs are AMD EPYC 7742 64-Core and the disk storage is 3TB.\n\nDataset: We conduct experiments on two datasets.\n\n(1) Howdy!Alpaca: The original Alpaca dataset\n\n(Taori et al., 2023) contains 52k input-output pairs covering tasks such as summarization, classification, and reasoning. To precisely evaluate data selection algorithms’ ability to identify valuable, unlearned information, we modified Alpaca to include knowledge the model could not have beforehand. Specifically, our Howdy!Alpaca dataset comprises $5 7 \\mathrm { k }$ samples: 52k from the original Alpaca dataset and 5k newly generated samples with a distinctive feature - their instructions begin with the keyword \"Howdy!\" and their output is ChatGPTgenerated science fiction (sci-fi) contents. This simulates training a chatbot to produce sci-fi content in response to a specific trigger word. The efficacy of data valuation algorithms can then be assessed by their capacity to identify these ’Howdy!’ samples, which are particularly valuable for this task. Examples of the \"Howdy data\" are provided in Appendix F. In our experiments, we used 100 Howdy!-prefixed samples as task-specific test data. And random sample 5000 samples (around $8 . 7 \\%$ of the dataset) to train the ALinFiK model. Appendix D provides an ablation study, showing that in specific scenarios, a $1 \\%$ sampling rate is sufficient.\n\n(2) Wikitext: We also include the Wikitext dataset (see Appendix C.1) in the experiments.",
+      "section_number": "4.1",
+      "section_title": "dataset and settings",
+      "normalized_section_title": "dataset and settings"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.naacl-long.589::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "RTX 8000 48G",
+      "cleaned_hardware_name": "rtx 8000 48gb",
+      "normalized_hardware_name": "NVIDIA Quadro RTX 8000",
+      "benchmark_hardware_name": "NVIDIA Quadro RTX 8000",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "4.1",
+      "section_title": "dataset and settings",
+      "normalized_section_title": "dataset and settings",
+      "evidence": "Testbed: All experiments are run on a server of Ubuntu 18.04.6 LTS with 1 RTX 8000 GPU (48G GPU memory). The CPUs are AMD EPYC 7742 64-Core and the disk storage is 3TB.\n\nDataset: We conduct experiments on two datasets.\n\n(1) Howdy!Alpaca: The original Alpaca dataset\n\n(Taori et al., 2023) contains 52k input-output pairs covering tasks such as summarization, classification, and reasoning. To precisely evaluate data selection algorithms’ ability to identify valuable, unlearned information, we modified Alpaca to include knowledge the model could not have beforehand. Specifically, our Howdy!Alpaca dataset comprises $5 7 \\mathrm { k }$ samples: 52k from the original Alpaca dataset and 5k newly generated samples with a distinctive feature - their instructions begin with the keyword \"Howdy!\" and their output is ChatGPTgenerated science fiction (sci-fi) contents. This simulates training a chatbot to produce sci-fi content in response to a specific trigger word. The efficacy of data valuation algorithms can then be assessed by their capacity to identify these ’Howdy!’ samples, which are particularly valuable for this task. Examples of the \"Howdy data\" are provided in Appendix F. In our experiments, we used 100 Howdy!-prefixed samples as task-specific test data. And random sample 5000 samples (around $8 . 7 \\%$ of the dataset) to train the ALinFiK model. Appendix D provides an ablation study, showing that in specific scenarios, a $1 \\%$ sampling rate is sufficient.\n\n(2) Wikitext: We also include the Wikitext dataset (see Appendix C.1) in the experiments.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized RTX family rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2025.naacl-long.589::sections::our contributions are threefold:",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "",
+      "section_title": "our contributions are threefold:",
+      "evidence": "• We introduce Linearized Future Influence Kernel (LinFiK) and provide a rigorous analysis of its stability throughout training. It enables efficient early-stage data selection, significantly enhancing model training efficiency.   \n• To address scalability challenges, we develop an innovative distillation method to approximate LinFiK using significantly smaller models. This technique shows significant improvement in GPU memory, storage, and time consumption.   \n• We designed a new dataset to quantify the ability of third-party data valuation algorithms to help select valuable information that the LLM has not encountered before, thus reducing potential concerns about data contamination.\n\nThrough extensive experiments, we demonstrate that our method significantly outperforms existing data valuation approaches in terms of scalability, memory efficiency, and computational cost, particularly when applied to large LLMs. This work paves the way for more efficient model training and a more equitable data marketplace."
+    },
+    {
+      "source_window_id": "2025.naacl-long.589::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.naacl-long.589::sections::4.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2",
+      "section_title": "baselines",
+      "evidence": "We use four baselines in our experiments for a comprehensive comparison. Two of them are modelagnostic approaches: Random Selection and BM25 (Robertson et al., 1995; Trotman et al., 2014). The other two are gradient-based algorithms: LoGra (Choe et al., 2024) and RapidIn (Lin et al., 2024a). Detailed introductions to the baselines can be found in Appendix C.1"
+    },
+    {
+      "source_window_id": "2025.naacl-long.589::sections::4.4",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.4",
+      "section_title": "impact on model training",
+      "evidence": "This section examines the impact of various data selection methods on the model training process. We evaluate five approaches on the Howdy!Alpaca dataset: two model-agnostic approaches (random selection and BM25) and three model-informed approaches (LoGra, RapidIn, and ALinFiK). To assess the robustness of these methods across different model architectures, our experiments are conducted on four LLMs of varying scales: Qwen2- 0.5B (Yang et al., 2024a), Llama3.2-1B (MetaAI, 2024), Gemma2-2B (Team et al., 2024), and Llama3.1-8B (Dubey et al., 2024).\n\nFor each method, 5000 top-scoring samples are selected for model training. Hyperparameters can be found in Appendix C. Hit Rate (HR) is used as the metric, measuring the percentage of scifi content generations over a set of test prompts. Howdy HR is the HR on test prompts starting with \"Howdy!\"; Non-Howdy HR is the HR on normal prompts. Sci-fi classification is GPT-based, the prompt templates are provided in Appendix E.\n\nAs shown in Table 2, the model-agnostic approaches (Random and BM25) exhibit substantially lower performance compared to model-informed methods (LoGra, RapidIn, and ALinFiK). Specifically, the model-informed approaches typically reach $90 \\%$ HR after 6 epochs and maintain $0 \\%$ Non-Howdy HR. In contrast, random and BM25 need over 30 epochs to achieve similar performance. This significant difference in training efficiency underscores the value of model-informed data se-\n\n![](images/81ef1646c0b046716ec654fef48193b2cf8dddc51c27853175a04979e7327ca7.jpg)  \n(a) ALinFiK on Pythia model suite\n\n![](images/8e944b1ffbd2605b8a21402f6945a951f649842d18650e01a898049224611865.jpg)  \n(b) Brittleness test   \nFigure 3: Results for (a) Experiment 4.3: ALinFiK’s stability during training (solid line to the left side Y-axis, dashed line to the right-side log-scaled Y-axis), and (b) Experiment 4.5: the brittleness test of various baselines.\n\nTable 2: The impact of different data selection methods on the sci-fi content generation accuracy using the adjusted Alpaca dataset. The Hit Rate (HR) is defined as the percentage of correct science fiction content generations over 100 test samples; \"Howdy HR-x\" is the hit rate on howdy data after x epochs of training. \"Non-Howdy HR-x\" is the hit rate on non-howdy data after x epochs of training.   \n\n<table><tr><td>Model</td><td>Data Selection Method</td><td>Howdy Count</td><td>Howdy HR-3</td><td>Howdy HR-4</td><td>Howdy HR-5</td><td>Howdy HR-6</td><td>Non-Howdy HR-6</td><td>Epochs to reach 90% HR</td><td>GPU Memory</td><td>Disk Storage</td><td>Total Runtime</td></tr><tr><td rowspan=\"2\">Model-agnostic</td><td>Random</td><td>439</td><td>0%</td><td>0%</td><td>0%</td><td>0%</td><td>0%</td><td>35</td><td>-</td><td>-</td><td>-</td></tr><tr><td>BM25</td><td>575</td><td>0%</td><td>0%</td><td>0%</td><td>0%</td><td>0%</td><td>33</td><td>-</td><td>-</td><td>-</td></tr><tr><td rowspan=\"3\">Qwen2-0.5B</td><td>LoGra</td><td>3512</td><td>2%</td><td>40%</td><td>69%</td><td>93%</td><td>0%</td><td>6</td><td>27.6G</td><td>159G</td><td>118.7h</td></tr><tr><td>RapidIn</td><td>3142</td><td>1%</td><td>36%</td><td>65%</td><td>90%</td><td>0%</td><td>6</td><td>9.5G</td><td>7.5G</td><td>6.3h</td></tr><tr><td>ALinFiK(Ours)</td><td>3310</td><td>2%</td><td>39%</td><td>67%</td><td>93%</td><td>0%</td><td>6</td><td>1.8G</td><td>0.4G</td><td>0.2h</td></tr><tr><td rowspan=\"3\">Llama3.2-1B</td><td>LoGra</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td></tr><tr><td>RapidIn</td><td>3272</td><td>1%</td><td>37%</td><td>64%</td><td>91%</td><td>0%</td><td>6</td><td>19.3G</td><td>8.4G</td><td>12.5h</td></tr><tr><td>ALinFiK(Ours)</td><td>3564</td><td>2%</td><td>41%</td><td>68%</td><td>93%</td><td>0%</td><td>6</td><td>1.8G</td><td>0.4G</td><td>0.2h</td></tr><tr><td rowspan=\"3\">Gemma2-2B</td><td>LoGra</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td></tr><tr><td>RapidIn</td><td>2967</td><td>0%</td><td>35%</td><td>63%</td><td>87%</td><td>0%</td><td>7</td><td>40.8G</td><td>9.8G</td><td>22.7h</td></tr><tr><td>ALinFiK(Ours)</td><td>3035</td><td>1%</td><td>38%</td><td>64%</td><td>90%</td><td>0%</td><td>6</td><td>1.8G</td><td>0.4G</td><td>0.2h</td></tr><tr><td rowspan=\"3\">Llama3.1-8B</td><td>LoGra</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td></tr><tr><td>RapidIn</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td><td>OOM</td></tr><tr><td>ALinFiK(Ours)</td><td>3753</td><td>4%</td><td>42%</td><td>76%</td><td>95%</td><td>0%</td><td>6</td><td>1.8G</td><td>0.4G</td><td>0.2h</td></tr></table>\n\nlection in reducing computational resources.\n\nLoGra performs well on Qwen2-0.5B but doesn’t scale to larger models. ALinFiK(ours) consistently outperforms RapidIn across all scales, with particular advantages in operational efficiency. Section 4.6 provides further analysis of computational efficiency and scalability."
+    },
+    {
+      "source_window_id": "2025.naacl-long.589::sections::4.5",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.5",
+      "section_title": "brittleness test",
+      "evidence": "The brittleness test (Ilyas et al., 2022) is another widely used benchmark to evaluate data selection algorithms’ effectiveness in identifying high-value training samples. It first removes the top-k samples identified by each method from the training data, then retrains the model multiple times with different random seeds but without these samples. The magnitude of changes in model outputs serves as a proxy for the algorithm’s accuracy - larger deviations in model behavior indicate more successful\n\nidentification of valuable training samples.\n\nWe conducted this experiment using the Wikitext-2 dataset and Llama3.2-1B model. After training the model on the full dataset as the baseline, we removed $10 \\%$ of the most valuable data identified by each method and retrained the model five times with different random seeds. The PPL results averaged across these runs, are shown in Figure 3b. The model trained on the complete dataset achieved a PPL of 19.66046. Random removal increases the PPL to 19.67931. BM25 shows slightly better performance with a PPL of 19.68120. Among the gradient-based approaches, LoGra yields a PPL of 19.70827, RapidIn and ALinFiK(ours) demonstrated stronger performance with PPLs of 19.71536 and 19.71661, respectively. While achieving the best results, ALinFiK once again demonstrated great efficiency advantages, which we will analyze in detail in the next section.\n\nTable 3: Memory, Storage, and Total Runtime for the Brittleness Test in Section 4.5.   \n\n<table><tr><td>Data Selection Method</td><td>GPU Memory</td><td>Disk Storage</td><td>Total Runtime</td></tr><tr><td>LoGra</td><td>18.1G</td><td>21G</td><td>38.5h</td></tr><tr><td>RapidIn</td><td>19.5G</td><td>1.9G</td><td>1.3h</td></tr><tr><td>ALinFiK(Ours)</td><td>1.2G</td><td>0.4G</td><td>0.08h</td></tr></table>"
+    },
+    {
+      "source_window_id": "2025.naacl-long.589::sections::4.6",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.6",
+      "section_title": "memory and time consumption",
+      "evidence": "This section evaluates the efficiency and scalability of gradient-based data selection methods by comparing their GPU memory, disk storage, and runtime. ALinFiK computes influence scores directly, while other methods, like LoGra and RapidIn, involve multiple stages. We report peak resource usage and total runtime for each method.\n\nThe resources used for data selection by each method in Experiment 4.4 are shown in Table 2. Taking 0.5B model as an example, LoGra requires 27.6G of GPU memory, 159G of disk storage (primarily for storing gradients generated during training), and 118.7 hours of runtime. RapidIn uses 9.5G of GPU memory, 7.5G of storage, and 6.3 hours, benefiting from its gradient compression technique. In contrast, ALinFiK shows significant efficiency advantages, only 1.8G of GPU memory, 0.4G of storage, and 12 minutes. Compared to LoGra, ALinFiK reduces GPU memory by 15x, storage by 398x, and runtime by 594x; compared to RapidIn, reductions are 5x, 19x, and $3 2 \\mathrm { x }$ . ALinFiK’s scalability is further highlighted with the Llama3.1-8B model, where LoGra and RapidIn encounter Out-Of-Memory errors, but ALinFiK completes the task efficiently.\n\nTable 3 presents the resource requirements for the brittleness test in Experiment 4.5. ALinFiK continues to exhibit remarkable efficiency advantages. Specifically, LoGra requires 18.1G of GPU memory, 21G of storage, and 38.5 hours; RapidIn uses 19.5G, 1.9G, and 1.3 hours, while ALinFiK only requires 1.2G of memory, 0.4G of storage, and 5 minutes of runtime."
+    },
+    {
+      "source_window_id": "2025.naacl-long.589::appendix::B",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B",
+      "section_title": "alinfik implementation details",
+      "evidence": "In this section we document more implementation details for our ALinFiK algorithm.\n\nPreparing Oracle LinFiK Scores: To train the ALinFiK model, the first step is to sample a small dataset from the training data and calculate the Lin-FiK scores to construct the oracle dataset. In our experiment, we randomly sampled the dataset to calculate LinFiK. For example, for the asjusted alpaca dataset, 5000 data samples(about $8 . 7 \\%$ of the entire dataset) were randomly sampled from the dataset. We run backward propagation on the model for each sampled training data and task-specific test data, log their gradients on the model, and then compress these gradients using the compression method proposed in RapidIn. Finally, we use Equation 3 to calculate the LinFiK scores. The produced\n\n(input_data, LinFiK_score) pairs can be used as oracle data for training the ALinFiK model. We also used a similar sampling strategy for the Wikitext dataset.\n\nSampling Strategy: Note that while we used a straightforward random sampling strategy in our experiments, different datasets and research objectives may adopt different sampling strategies. For example, although we adopted a conservative strategy in our experiments, random sampling $8 . 7 \\%$ of the data from the adjusted Alpaca dataset as oracle data, Appendix D provides a supplementary experiment demonstrating that for this specific task (generating sci-fi content based on the ’howdy’ keyword), sampling less than $1 \\%$ of the data is sufficient to achieve quite promising results. Future work could explore the impact of different sampling methods (such as stratified sampling, oversampling, undersampling, etc.) and the sampling ratios on model performance across diverse datasets and tasks.\n\nGradient Compression: When calculating the LinFiK scores, we adopted the gradient compression techniques proposed in RapidIn (Lin et al., 2024a). The core idea of RapidIn’s gradient compression is to reduce the dimensionality of large gradient vectors, which are typically very memoryintensive for direct computation, especially in LLMs. This is achieved by combining random shuffling and random projection methods. Random shuffling disrupts the structure of the gradients by applying row and column permutations, while random projection reduces the vector’s size using element-wise multiplication with a random vector following the Rademacher distribution. These techniques ensure efficient computation and storage of compressed gradients.\n\nTraining the ALinFiK Model: After obtaining the (input_data, LinFiK_score) pairs as oracle dataset, we trained a small model to learn the preferences of the given LLM over the large training data. Specifically, we use the 110M-parameter BERT model (google-bert/bert-base-uncased) as the base model for ALinFiK algorithm, which requires only 0.4GB of disk storage. During training, we employed a simple yet effective technique: since the data valuation task can be mapped to a data selection task, we transformed the original regression task of directly predicting the LinFiK score into a binary classification task focused on data selection. In this approach, assuming the data selection goal is to select the top $10 \\%$ of the data for the LLM, we\n\nlabeled the top $10 \\%$ of the oracle dataset based on the highest LinFiK scores as 1, while the rest of the data was labeled as 0. To implement this, we appended a linear layer followed by a sigmoid activation function after the BERT model to capture potential nonlinear information. The output of the sigmoid layer, which lies between [0, 1], is interpreted as the ALinFiK score, representing the likelihood of selecting a given data point. This transformation from a regression task to a binary classification task simplifies the model’s objective and enhances its interpretability and efficiency."
+    },
+    {
+      "source_window_id": "2025.naacl-long.589::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "more experiment details",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2025.naacl-long.589::appendix::C.2",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C.2",
+      "section_title": "baselines",
+      "evidence": "Random Scores assigns random values between 0 and 1 to each data point, serving as a naive baseline for data selection.\n\nBM25 (Robertson et al., 1995; Trotman et al., 2014) is a probabilistic ranking function widely used in information retrieval that extends the traditional TF-IDF approach. It scores documents based on the query terms appearing in each document, considering both term frequency saturation and document length normalization. The method computes relevance scores by balancing term frequency, inverse document frequency, and document length factors. BM25 directly calculates the semantic similarity between data samples, not considering any model information. Our implementation is based on the rank_bm25 library 2\n\nLoGra (Choe et al., 2024) is an extension of influence functions (Koh and Liang, 2017) to estimate the impact of training samples on the model’s validation loss. It approximates the change in model loss when removing specific training points. While LoGra successfully extends traditional influence\n\nfunctions to LLMs with promising results, it still faces practical limitations in terms of computational and storage resources.\n\nRapidIn (Lin et al., 2024a) represents another significant advancement in gradient-based influence estimation methods. It analyze the alignment between training sample gradients and the model’s optimization trajectory, assigning higher influence scores to samples that demonstrate consistent contributions to optimization progress. One of the key innovation of RapidIn lies in its gradient compression mechanism, which substantially enhances computational efficiency compared to traditional influence estimation methods."
+    },
+    {
+      "source_window_id": "2025.naacl-long.589::appendix::C.5",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C.5",
+      "section_title": "implementation of the baselines",
+      "evidence": "This section provides the implementation details of the baselines employed in our experiments, focusing on the modifications we made to adapt each method to our data selection use case.\n\nBM25: We utilized the rank_bm25 package for implementing the BM25 algorithm. The code of the package is available at: https://github.com/dorianbrown/rank_bm25.\n\nBM25 was primarily used as a model-agnostic data selection baseline in our experiments. No significant changes were made to the original implementation beyond adjusting it to work with our specific datasets and tasks.\n\nLoGra: Our implementation of LoGra is based on the open-source repository: https://github.com/logix-project/logix/tree/main.\n\nWe extended LoGra to support data selection tasks and tailored it to handle the Alpaca dataset. A key limitation of LoGra lies in its high disk space requirements during the logging phase, we set batch_size $\\scriptstyle = I$ in order to make LoGra work with our adjusted Alpaca dataset. LoGra does support higher batch_size in other smaller datasets, which can make it run faster but requires higher GPU\n\nTable 4: Distillation Results for Different Models and Sample Sizes.   \n\n<table><tr><td>Model /Samples Used for Distillation</td><td>100 \n(0.18%)</td><td>500 \n(0.87%)</td><td>5000 \n(8.77%)</td><td>8000 \n(14.04%)</td></tr><tr><td>ALinFiK with \nQwen2-0.5B</td><td>1353</td><td>3024</td><td>3389</td><td>3371</td></tr><tr><td>ALinFiK with \nLlama-3.2-1B</td><td>1783</td><td>3290</td><td>3414</td><td>3451</td></tr><tr><td>ALinFiK with \nGemma-2-2B</td><td>1026</td><td>2915</td><td>3035</td><td>3101</td></tr></table>\n\nresources. We fixed the hyperparameters in our experiments for a fair comparision. Some other hyperparameters used in our experiments include: lora.init $=$ random, lora.rank $= 6 4$ , and hessian ${ } ^ { ! = r a w }$ , they are the default values from the provided examples.\n\nRapidIn: We implemented RapidIn using the codebase available at https://github.com/huaweilin/RapidIn. RapidIn was originally designed for post-hoc data influence estimation, where the model computes the influence of a specific training data sample on a given test sample after training is completed. However, to meet our experimental needs, we adapted RapidIn to perform data selection tasks before training. Additionally, RapidIn was initially limited to the Alpaca dataset; we extended its functionality to support broader datasets such as Wikitext, which is needed for Experiment 4.5. The key hyperparameters for RapidIn we used include RapidGrad_ $K { = } 6 5 5 3 6$ and shuffle_lambda $= 2 0$ , they are the default values of the provided examples."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.1"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Quadro RTX 8000",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\naacl2025\\2025.naacl-long.589\\auto\\full.md",
+    "source_md_sha256": "50e8705b6e287fce7b076c0aad7f2d9e44e239e219c96dcaa5f20f98eb71d2b1",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "7caf7454899e65b8d15dcb93f690dd1d6964a707e3f952e740e43205f03508db"
+  }
+}

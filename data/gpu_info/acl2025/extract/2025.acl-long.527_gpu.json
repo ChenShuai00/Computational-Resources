@@ -1,0 +1,173 @@
+{
+  "paper_id": "2025.acl-long.527",
+  "candidate_windows": [
+    {
+      "window_id": "2025.acl-long.527::sections::3",
+      "paper_id": "2025.acl-long.527",
+      "section_number": "3",
+      "section_title": "methodology",
+      "normalized_section_title": "methodology",
+      "window_text": "In this section, we introduce GainRAG (Fig. 2), starting with the synthesis and motivation of the gain signal, followed by selector training, and concluding with the GainRAG workflow.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.527::sections::3.1",
+      "paper_id": "2025.acl-long.527",
+      "section_number": "3.1",
+      "section_title": "preliminaries",
+      "normalized_section_title": "preliminaries",
+      "window_text": "Before discussing GainRAG, we first provide a formal definition of the RAG problem. Given a query $q$ and a corpus of documents $\\mathcal{D}$ , RAG systems typically follow a retrieval-then-reading framework. In this approach, the retriever selects relevant passages $C = \\{c_1, c_2, \\dots, c_k\\} \\subset \\mathcal{D}$ from the entire corpus $\\mathcal{D}$ , and the generator model (LLM) utilizes these passages $C$ to generate the answer $\\hat{a}$ . This process can be represented as:\n\n$$\n\\begin{array}{l} C = \\mathcal {R} (q, \\mathcal {D}, k), \\tag {1} \\\\ \\hat {a} = \\mathcal {G} (\\mathcal {P} (q, C)), \\\\ \\end{array}\n$$\n\nwhere $\\mathcal{R}$ denotes the retrieval function that selects $k$ relevant passages, $\\mathcal{P}$ represents the prompt template that combines $q$ and $C$ , and $\\mathcal{G}$ is the generator, i.e., the LLM, which generates the final answer $\\hat{a}$ .",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.527::sections::4",
+      "paper_id": "2025.acl-long.527",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "In this section, we report our experimental details and results, and provide an experimental analysis of GainRAG.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.527::sections::4.1",
+      "paper_id": "2025.acl-long.527",
+      "section_number": "4.1",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "Training Data We randomly select 20k samples from the HotpotQA training set and about 4k from the WebQuestions training set. For each sample, we gather 21 relevant passages: 20 retrieved using the most common retriever Contriever (Izacard et al., 2021) and 1 generated internally. We then applie Algorithm 1 to add relevant passages and filter out samples where the passage with the highest gain is incorrectly generated, resulting in about 10k samples. The decoding $\\alpha$ is set to 0.5 according to CAD (Shi et al., 2023a).\n\nTraining Details We use LLama3-8b to generate preference values and BGE-reranker-base (Xiao et al., 2024) for the selector's initial weights, training for 2 epochs. All experiments are conducted on a single A100 with 80G memory.\n\nInference Details During inference, we use Contriever (Izacard et al., 2021) as the retriever and\n\nTable 1: EM/F1/Avg(EM,F1) of different methods experimented on datasets HotpotQA, 2WikiMultiHopQA, WebQuestions. The best and second best scores are highlighted in bold and underlined, respectively.   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"3\">HotpotQA</td><td colspan=\"3\">2WikiMultiHopQA</td><td colspan=\"3\">WebQuestions</td></tr><tr><td>EM</td><td>F1</td><td>Avg</td><td>EM</td><td>F1</td><td>Avg</td><td>EM</td><td>F1</td><td>Avg</td></tr><tr><td colspan=\"10\">w/o retrieval</td></tr><tr><td>Naive</td><td>22.40</td><td>22.44</td><td>22.42</td><td>26.80</td><td>20.44</td><td>23.62</td><td>44.39</td><td>35.90</td><td>40.14</td></tr><tr><td>GenRead</td><td>31.00</td><td>30.50</td><td>30.75</td><td>30.60</td><td>25.24</td><td>27.92</td><td>47.69</td><td>31.42</td><td>39.55</td></tr><tr><td colspan=\"10\">w/ retrieval</td></tr><tr><td>Standard RAG</td><td>31.80</td><td>33.23</td><td>32.51</td><td>23.40</td><td>21.81</td><td>22.61</td><td>35.04</td><td>33.26</td><td>34.15</td></tr><tr><td>Self-RAG</td><td>30.60</td><td>18.83</td><td>24.71</td><td>34.00</td><td>17.33</td><td>25.67</td><td>42.18</td><td>23.14</td><td>32.66</td></tr><tr><td>Rerank</td><td>35.80</td><td>37.45</td><td>36.62</td><td>24.20</td><td>22.94</td><td>23.57</td><td>37.50</td><td>35.55</td><td>36.52</td></tr><tr><td>GainRAG</td><td>39.60</td><td>41.99</td><td>40.79</td><td>31.40</td><td>28.92</td><td>30.16</td><td>42.51</td><td>39.17</td><td>40.84</td></tr></table>\n\nTable 2: EM/F1/Avg(EM,F1) of different methods experimented on datasets SQuAD, NaturalQA, TriviaQA. The best and second best scores are highlighted in bold and underlined, respectively.   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"3\">SQuAD</td><td colspan=\"3\">NaturalQA</td><td colspan=\"3\">TriviaQA</td></tr><tr><td>EM</td><td>F1</td><td>Avg</td><td>EM</td><td>F1</td><td>Avg</td><td>EM</td><td>F1</td><td>Avg</td></tr><tr><td colspan=\"10\">w/o retrieval</td></tr><tr><td>Naive</td><td>18.50</td><td>21.57</td><td>20.03</td><td>31.25</td><td>29.02</td><td>30.13</td><td>60.20</td><td>59.96</td><td>60.08</td></tr><tr><td>GenRead</td><td>21.13</td><td>20.90</td><td>21.01</td><td>38.48</td><td>32.77</td><td>35.62</td><td>64.15</td><td>58.94</td><td>61.55</td></tr><tr><td colspan=\"10\">w/ retrieval</td></tr><tr><td>Standard RAG</td><td>29.53</td><td>32.46</td><td>30.99</td><td>38.14</td><td>36.82</td><td>37.48</td><td>62.16</td><td>61.87</td><td>62.02</td></tr><tr><td>Self-RAG</td><td>27.69</td><td>14.78</td><td>21.23</td><td>35.60</td><td>39.78</td><td>37.69</td><td>61.65</td><td>35.21</td><td>48.43</td></tr><tr><td>Rerank</td><td>29.36</td><td>31.84</td><td>30.60</td><td>30.86</td><td>30.60</td><td>30.73</td><td>65.55</td><td>65.09</td><td>65.32</td></tr><tr><td>GainRAG</td><td>34.65</td><td>37.55</td><td>36.10</td><td>41.97</td><td>41.27</td><td>41.62</td><td>67.29</td><td>66.73</td><td>67.01</td></tr></table>\n\nLLama3-8B as the generator. We set the initial retrieval setting $k$ to 100 because 100 has a high coverage, as shown in Appendix B analysis experiment. For all datasets, we use 21M English Wikipedia (Karpukhin et al., 2020) dump as the source passages for the retrieval. Prompts for the experiments can be found in Appendix D\n\nTable 3: Description of tasks and evaluation datasets.   \n\n<table><tr><td>Task Type</td><td>Datasets</td><td># Samples</td></tr><tr><td rowspan=\"2\">Multi-HopQA</td><td>2WikiMultiHopQA</td><td>500</td></tr><tr><td>HotpotQA</td><td>500</td></tr><tr><td rowspan=\"4\">OpenQA</td><td>WebQuestions</td><td>2032</td></tr><tr><td>NaturalQA</td><td>3610</td></tr><tr><td>SQuAD</td><td>10570</td></tr><tr><td>TriviaQA</td><td>11313</td></tr></table>",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.527::sections::4.3",
+      "paper_id": "2025.acl-long.527",
+      "section_number": "4.3",
+      "section_title": "baselines",
+      "normalized_section_title": "baselines",
+      "window_text": "We selected several of the most common methods for comparison. 1) StandardRAG, which is the most classic \"retrieve-then-read\" paradigm. 2) GenRead (Yu et al., 2022): Its retriever can be seen as itself since it uses self-generated context to answer questions. It has almost no preference for misalignment, but there may be insufficient information. 3) Self-RAG (Asai et al., 2023): Through adaptive retrieval and self-criticism, it alleviates\n\nTable 4: Ablation studies, including: w/o all (removing all modules i.e., the ordinary reranker), w/o pseudo (removing the strategy for generating pseudo-passage, w/o distillation (removing the distillation fine-tuning.)   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"3\">HotpotQA</td><td colspan=\"3\">2WikiMultiHopQA</td><td colspan=\"3\">WebQuestions</td><td colspan=\"3\">NaturalQA</td></tr><tr><td>EM</td><td>F1</td><td>Avg</td><td>EM</td><td>F1</td><td>Avg</td><td>EM</td><td>F1</td><td>Avg</td><td>EM</td><td>F1</td><td>Avg</td></tr><tr><td>Standard RAG</td><td>31.80</td><td>33.23</td><td>32.51</td><td>23.40</td><td>21.81</td><td>22.61</td><td>35.04</td><td>33.26</td><td>34.15</td><td>38.14</td><td>36.82</td><td>37.48</td></tr><tr><td>w/o all</td><td>35.80</td><td>37.45</td><td>36.62</td><td>24.20</td><td>22.94</td><td>23.57</td><td>37.50</td><td>35.55</td><td>36.52</td><td>30.86</td><td>30.60</td><td>30.73</td></tr><tr><td>w/o pseudo</td><td>37.80</td><td>40.65</td><td>39.23</td><td>27.20</td><td>24.88</td><td>26.04</td><td>41.24</td><td>38.97</td><td>40.11</td><td>41.25</td><td>40.94</td><td>41.09</td></tr><tr><td>w/o distillation</td><td>34.20</td><td>35.85</td><td>35.02</td><td>29.60</td><td>26.68</td><td>28.14</td><td>43.21</td><td>36.66</td><td>39.94</td><td>32.41</td><td>31.39</td><td>31.90</td></tr><tr><td>GainRAG</td><td>39.60</td><td>41.99</td><td>40.79</td><td>31.40</td><td>28.92</td><td>30.16</td><td>42.51</td><td>39.17</td><td>40.84</td><td>41.97</td><td>41.27</td><td>41.62</td></tr></table>\n\nthe preference misalignment problem to a certain extent. 4) Rerank (Glass et al., 2022; Xiao et al., 2024): It is a supplement to the classic RAG. It adds middleware between the retriever and the LLM. Following the \"retrieve-erank-read\", we use the BGE-Reranker-base model. For fairness, Rerank has the same settings as ours. StandardRAG and Self-RAG also only use top-1. The rest of the settings follow the settings of their original papers.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2025.acl-long.527::appendix::C",
+      "paper_id": "2025.acl-long.527",
+      "section_number": "C",
+      "section_title": "training details",
+      "normalized_section_title": "training details",
+      "window_text": "We use LLama3-8b as our generator for generating preference values and BGE-eranker-base (Xiao et al., 2024) for initializing the selector. We train selection for 2 epochs. During fine-tuning, we set train-group-size to 16 and batch-size to 8. In addition, during training, we randomly select 16 out of 21 passages to ensure generalization. The rest of the settings follow the official fine-tuning script (Xiao et al., 2024). Regarding the training data, we randomly selected 20,000 samples from the Hotpot training set and all 3,778 samples from the WebQuestion training set. After filtering, we finally obtained 14,084 training data. All experiments are conducted on a single A100 with 80G memory.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2025.acl-long.527::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80G",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "Training Data We randomly select 20k samples from the HotpotQA training set and about 4k from the WebQuestions training set. For each sample, we gather 21 relevant passages: 20 retrieved using the most common retriever Contriever (Izacard et al., 2021) and 1 generated internally. We then applie Algorithm 1 to add relevant passages and filter out samples where the passage with the highest gain is incorrectly generated, resulting in about 10k samples. The decoding $\\alpha$ is set to 0.5 according to CAD (Shi et al., 2023a).\n\nTraining Details We use LLama3-8b to generate preference values and BGE-reranker-base (Xiao et al., 2024) for the selector's initial weights, training for 2 epochs. All experiments are conducted on a single A100 with 80G memory.\n\nInference Details During inference, we use Contriever (Izacard et al., 2021) as the retriever and\n\nTable 1: EM/F1/Avg(EM,F1) of different methods experimented on datasets HotpotQA, 2WikiMultiHopQA, WebQuestions. The best and second best scores are highlighted in bold and underlined, respectively.   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"3\">HotpotQA</td><td colspan=\"3\">2WikiMultiHopQA</td><td colspan=\"3\">WebQuestions</td></tr><tr><td>EM</td><td>F1</td><td>Avg</td><td>EM</td><td>F1</td><td>Avg</td><td>EM</td><td>F1</td><td>Avg</td></tr><tr><td colspan=\"10\">w/o retrieval</td></tr><tr><td>Naive</td><td>22.40</td><td>22.44</td><td>22.42</td><td>26.80</td><td>20.44</td><td>23.62</td><td>44.39</td><td>35.90</td><td>40.14</td></tr><tr><td>GenRead</td><td>31.00</td><td>30.50</td><td>30.75</td><td>30.60</td><td>25.24</td><td>27.92</td><td>47.69</td><td>31.42</td><td>39.55</td></tr><tr><td colspan=\"10\">w/ retrieval</td></tr><tr><td>Standard RAG</td><td>31.80</td><td>33.23</td><td>32.51</td><td>23.40</td><td>21.81</td><td>22.61</td><td>35.04</td><td>33.26</td><td>34.15</td></tr><tr><td>Self-RAG</td><td>30.60</td><td>18.83</td><td>24.71</td><td>34.00</td><td>17.33</td><td>25.67</td><td>42.18</td><td>23.14</td><td>32.66</td></tr><tr><td>Rerank</td><td>35.80</td><td>37.45</td><td>36.62</td><td>24.20</td><td>22.94</td><td>23.57</td><td>37.50</td><td>35.55</td><td>36.52</td></tr><tr><td>GainRAG</td><td>39.60</td><td>41.99</td><td>40.79</td><td>31.40</td><td>28.92</td><td>30.16</td><td>42.51</td><td>39.17</td><td>40.84</td></tr></table>\n\nTable 2: EM/F1/Avg(EM,F1) of different methods experimented on datasets SQuAD, NaturalQA, TriviaQA. The best and second best scores are highlighted in bold and underlined, respectively.   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"3\">SQuAD</td><td colspan=\"3\">NaturalQA</td><td colspan=\"3\">TriviaQA</td></tr><tr><td>EM</td><td>F1</td><td>Avg</td><td>EM</td><td>F1</td><td>Avg</td><td>EM</td><td>F1</td><td>Avg</td></tr><tr><td colspan=\"10\">w/o retrieval</td></tr><tr><td>Naive</td><td>18.50</td><td>21.57</td><td>20.03</td><td>31.25</td><td>29.02</td><td>30.13</td><td>60.20</td><td>59.96</td><td>60.08</td></tr><tr><td>GenRead</td><td>21.13</td><td>20.90</td><td>21.01</td><td>38.48</td><td>32.77</td><td>35.62</td><td>64.15</td><td>58.94</td><td>61.55</td></tr><tr><td colspan=\"10\">w/ retrieval</td></tr><tr><td>Standard RAG</td><td>29.53</td><td>32.46</td><td>30.99</td><td>38.14</td><td>36.82</td><td>37.48</td><td>62.16</td><td>61.87</td><td>62.02</td></tr><tr><td>Self-RAG</td><td>27.69</td><td>14.78</td><td>21.23</td><td>35.60</td><td>39.78</td><td>37.69</td><td>61.65</td><td>35.21</td><td>48.43</td></tr><tr><td>Rerank</td><td>29.36</td><td>31.84</td><td>30.60</td><td>30.86</td><td>30.60</td><td>30.73</td><td>65.55</td><td>65.09</td><td>65.32</td></tr><tr><td>GainRAG</td><td>34.65</td><td>37.55</td><td>36.10</td><td>41.97</td><td>41.27</td><td>41.62</td><td>67.29</td><td>66.73</td><td>67.01</td></tr></table>\n\nLLama3-8B as the generator. We set the initial retrieval setting $k$ to 100 because 100 has a high coverage, as shown in Appendix B analysis experiment. For all datasets, we use 21M English Wikipedia (Karpukhin et al., 2020) dump as the source passages for the retrieval. Prompts for the experiments can be found in Appendix D\n\nTable 3: Description of tasks and evaluation datasets.   \n\n<table><tr><td>Task Type</td><td>Datasets</td><td># Samples</td></tr><tr><td rowspan=\"2\">Multi-HopQA</td><td>2WikiMultiHopQA</td><td>500</td></tr><tr><td>HotpotQA</td><td>500</td></tr><tr><td rowspan=\"4\">OpenQA</td><td>WebQuestions</td><td>2032</td></tr><tr><td>NaturalQA</td><td>3610</td></tr><tr><td>SQuAD</td><td>10570</td></tr><tr><td>TriviaQA</td><td>11313</td></tr></table>",
+      "section_number": "4.1",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details"
+    },
+    {
+      "window_id": "2025.acl-long.527::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80G",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "We use LLama3-8b as our generator for generating preference values and BGE-eranker-base (Xiao et al., 2024) for initializing the selector. We train selection for 2 epochs. During fine-tuning, we set train-group-size to 16 and batch-size to 8. In addition, during training, we randomly select 16 out of 21 passages to ensure generalization. The rest of the settings follow the official fine-tuning script (Xiao et al., 2024). Regarding the training data, we randomly selected 20,000 samples from the Hotpot training set and all 3,778 samples from the WebQuestion training set. After filtering, we finally obtained 14,084 training data. All experiments are conducted on a single A100 with 80G memory.",
+      "section_number": "C",
+      "section_title": "training details",
+      "normalized_section_title": "training details"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2025.acl-long.527::sections::4.1",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80G",
+      "cleaned_hardware_name": "a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "4.1",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "evidence": "Training Data We randomly select 20k samples from the HotpotQA training set and about 4k from the WebQuestions training set. For each sample, we gather 21 relevant passages: 20 retrieved using the most common retriever Contriever (Izacard et al., 2021) and 1 generated internally. We then applie Algorithm 1 to add relevant passages and filter out samples where the passage with the highest gain is incorrectly generated, resulting in about 10k samples. The decoding $\\alpha$ is set to 0.5 according to CAD (Shi et al., 2023a).\n\nTraining Details We use LLama3-8b to generate preference values and BGE-reranker-base (Xiao et al., 2024) for the selector's initial weights, training for 2 epochs. All experiments are conducted on a single A100 with 80G memory.\n\nInference Details During inference, we use Contriever (Izacard et al., 2021) as the retriever and\n\nTable 1: EM/F1/Avg(EM,F1) of different methods experimented on datasets HotpotQA, 2WikiMultiHopQA, WebQuestions. The best and second best scores are highlighted in bold and underlined, respectively.   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"3\">HotpotQA</td><td colspan=\"3\">2WikiMultiHopQA</td><td colspan=\"3\">WebQuestions</td></tr><tr><td>EM</td><td>F1</td><td>Avg</td><td>EM</td><td>F1</td><td>Avg</td><td>EM</td><td>F1</td><td>Avg</td></tr><tr><td colspan=\"10\">w/o retrieval</td></tr><tr><td>Naive</td><td>22.40</td><td>22.44</td><td>22.42</td><td>26.80</td><td>20.44</td><td>23.62</td><td>44.39</td><td>35.90</td><td>40.14</td></tr><tr><td>GenRead</td><td>31.00</td><td>30.50</td><td>30.75</td><td>30.60</td><td>25.24</td><td>27.92</td><td>47.69</td><td>31.42</td><td>39.55</td></tr><tr><td colspan=\"10\">w/ retrieval</td></tr><tr><td>Standard RAG</td><td>31.80</td><td>33.23</td><td>32.51</td><td>23.40</td><td>21.81</td><td>22.61</td><td>35.04</td><td>33.26</td><td>34.15</td></tr><tr><td>Self-RAG</td><td>30.60</td><td>18.83</td><td>24.71</td><td>34.00</td><td>17.33</td><td>25.67</td><td>42.18</td><td>23.14</td><td>32.66</td></tr><tr><td>Rerank</td><td>35.80</td><td>37.45</td><td>36.62</td><td>24.20</td><td>22.94</td><td>23.57</td><td>37.50</td><td>35.55</td><td>36.52</td></tr><tr><td>GainRAG</td><td>39.60</td><td>41.99</td><td>40.79</td><td>31.40</td><td>28.92</td><td>30.16</td><td>42.51</td><td>39.17</td><td>40.84</td></tr></table>\n\nTable 2: EM/F1/Avg(EM,F1) of different methods experimented on datasets SQuAD, NaturalQA, TriviaQA. The best and second best scores are highlighted in bold and underlined, respectively.   \n\n<table><tr><td rowspan=\"2\">Method</td><td colspan=\"3\">SQuAD</td><td colspan=\"3\">NaturalQA</td><td colspan=\"3\">TriviaQA</td></tr><tr><td>EM</td><td>F1</td><td>Avg</td><td>EM</td><td>F1</td><td>Avg</td><td>EM</td><td>F1</td><td>Avg</td></tr><tr><td colspan=\"10\">w/o retrieval</td></tr><tr><td>Naive</td><td>18.50</td><td>21.57</td><td>20.03</td><td>31.25</td><td>29.02</td><td>30.13</td><td>60.20</td><td>59.96</td><td>60.08</td></tr><tr><td>GenRead</td><td>21.13</td><td>20.90</td><td>21.01</td><td>38.48</td><td>32.77</td><td>35.62</td><td>64.15</td><td>58.94</td><td>61.55</td></tr><tr><td colspan=\"10\">w/ retrieval</td></tr><tr><td>Standard RAG</td><td>29.53</td><td>32.46</td><td>30.99</td><td>38.14</td><td>36.82</td><td>37.48</td><td>62.16</td><td>61.87</td><td>62.02</td></tr><tr><td>Self-RAG</td><td>27.69</td><td>14.78</td><td>21.23</td><td>35.60</td><td>39.78</td><td>37.69</td><td>61.65</td><td>35.21</td><td>48.43</td></tr><tr><td>Rerank</td><td>29.36</td><td>31.84</td><td>30.60</td><td>30.86</td><td>30.60</td><td>30.73</td><td>65.55</td><td>65.09</td><td>65.32</td></tr><tr><td>GainRAG</td><td>34.65</td><td>37.55</td><td>36.10</td><td>41.97</td><td>41.27</td><td>41.62</td><td>67.29</td><td>66.73</td><td>67.01</td></tr></table>\n\nLLama3-8B as the generator. We set the initial retrieval setting $k$ to 100 because 100 has a high coverage, as shown in Appendix B analysis experiment. For all datasets, we use 21M English Wikipedia (Karpukhin et al., 2020) dump as the source passages for the retrieval. Prompts for the experiments can be found in Appendix D\n\nTable 3: Description of tasks and evaluation datasets.   \n\n<table><tr><td>Task Type</td><td>Datasets</td><td># Samples</td></tr><tr><td rowspan=\"2\">Multi-HopQA</td><td>2WikiMultiHopQA</td><td>500</td></tr><tr><td>HotpotQA</td><td>500</td></tr><tr><td rowspan=\"4\">OpenQA</td><td>WebQuestions</td><td>2032</td></tr><tr><td>NaturalQA</td><td>3610</td></tr><tr><td>SQuAD</td><td>10570</td></tr><tr><td>TriviaQA</td><td>11313</td></tr></table>",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2025.acl-long.527::appendix::C",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "A100 80G",
+      "cleaned_hardware_name": "a100 80gb",
+      "normalized_hardware_name": "NVIDIA A100 80GB",
+      "benchmark_hardware_name": "NVIDIA A100 80GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "C",
+      "section_title": "training details",
+      "normalized_section_title": "training details",
+      "evidence": "We use LLama3-8b as our generator for generating preference values and BGE-eranker-base (Xiao et al., 2024) for initializing the selector. We train selection for 2 epochs. During fine-tuning, we set train-group-size to 16 and batch-size to 8. In addition, during training, we randomly select 16 out of 21 passages to ensure generalization. The rest of the settings follow the official fine-tuning script (Xiao et al., 2024). Regarding the training data, we randomly selected 20,000 samples from the Hotpot training set and all 3,778 samples from the WebQuestion training set. After filtering, we finally obtained 14,084 training data. All experiments are conducted on a single A100 with 80G memory.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA accelerator rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "4.1",
+      "C"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 1
+      },
+      {
+        "name": "NVIDIA A100 80GB",
+        "num": 1
+      }
+    ]
+  }
+}

@@ -1,0 +1,213 @@
+{
+  "paper_id": "2023.acl-long.200",
+  "candidate_windows": [
+    {
+      "window_id": "2023.acl-long.200::sections::3.4",
+      "paper_id": "2023.acl-long.200",
+      "section_number": "3.4",
+      "section_title": "pre-training task",
+      "normalized_section_title": "pre-training task",
+      "window_text": "Following the practice of BERT, we pre-train our model on English Wikipedia and BookCorpus dataset (19G) (Zhu et al., 2015). We pre-train the model for 3 epochs (3.9M steps with batch size set as 16) on a server with 8 NVIDIA Tesla V100 GPUs, and each epoch takes 137 hours. We adopt whole-word masked language modeling as pre-training task. In detail, we randomly select $15\\%$ of words from the input sequence, and mask every character in the selected word. We replace the character tokens in $80\\%$ of the selected masked word with the [MASK] token. For $10\\%$ of the selected masked words, we replace their characters with randomly selected characters drawn from our character vocabulary. The remaining $10\\%$ words are unchanged. The three main components of our model are jointly trained in end-to-end fashion.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.200::sections::3.5",
+      "paper_id": "2023.acl-long.200",
+      "section_number": "3.5",
+      "section_title": "implementation details",
+      "normalized_section_title": "implementation details",
+      "window_text": "We use spaCy (Honnibal et al., 2020) to split sentences into words, which is rule-based using space, punctuation and special rules (e.g. splitting don't into do and n't). We use a case-sensitive character vocabulary of size 1024, which consists of letters, digits and symbols. The maximum sequence length is set to 20 characters for the intra-word module and 512 words for the inter-word module. A [CLS] and a [SEP] token are inserted at the beginning and end of each sequence respectively. The hidden size is set to 768, the number of attention heads is set to 12, the feed-forward dimension in the Transformer encoder is set as 1536 and 3072 for intra-word and inter-word modules respectively. We leverage relative position (He\n\net al., 2021) in our model, and we do not use token type embedding. GELU (Hendrycks and Gimpel, 2016) is used as activation function. Our model contains 125M parameters. We use the AdamW optimizer (Loshchilov and Hutter, 2018) for model pre-training and fine-tuning. For the pre-training, the weight decay is set to 0.01 and the number of warmup steps is set to 10,000. A linear learning rate decay schedule is used, starting at 5e-5. The dropout rate is set to 0.1. More algorithm details can be found in Appendix A.3.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.200::sections::4",
+      "paper_id": "2023.acl-long.200",
+      "section_number": "4",
+      "section_title": "experiments",
+      "normalized_section_title": "experiments",
+      "window_text": "We evaluate the performance of our pre-trained model on a wide range of downstream tasks. We compare the performance of our pre-trained hierarchical language model (HLM) with various baseline methods, including the popular sub-word based BERT model, three recent byte/character-level models, as well as a hybrid model referred to as CharacterBERT. For BERT, we use the cased BERT<sub>Base</sub> model (108M parameters) to match our inter-word Transformers module setup. For CANINE, we adopt CANINE-C (132M) which also uses a character-level pre-training task. For CharacterBERT, we use the general version (105M) which is pre-trained on English Wikipedia and OpenWebText. For those baseline models, we use the pretrained weights hosted on Huggingface<sup>†</sup> or released by the authors. For Charformer (203M) and Byte-level T5 (200M), we use results of the base version from the original paper as pre-trained weight is not available.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.200::sections::4.5",
+      "paper_id": "2023.acl-long.200",
+      "section_number": "4.5",
+      "section_title": "computational efficiency",
+      "normalized_section_title": "computational efficiency",
+      "window_text": "In this section, we benchmark the computational efficiency of the proposed model. Specifically, we measure the inference throughput (number of processed samples per second) on the test set of the MRPC dataset, a sub-task of the GLUE benchmark.\n\nWe evaluate different models on the same server with one NVIDIA Tesla V100 GPU. The batch size is set to 32 and we use single precision. The evaluation results are shown in Table 7. While BERT is the most computationally efficient, our HLM also performs competitively, the performance gap being smaller compared to other character-level baseline models. We speculate that this performance gain comes from our hierarchical architecture. By aggregating character tokens into word-level tokens, the sequence length is drastically reduced for the inter-word module which has the deepest Transformer stack. We provide more analysis on the computational complexity in Appendix A.1.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.200::appendix::A",
+      "paper_id": "2023.acl-long.200",
+      "section_number": "A",
+      "section_title": "appendix",
+      "normalized_section_title": "appendix",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.acl-long.200::appendix::A.3",
+      "paper_id": "2023.acl-long.200",
+      "section_number": "A.3",
+      "section_title": "algorithm details",
+      "normalized_section_title": "algorithm details",
+      "window_text": "In this section, we provide algorithm details for our input pre-processing and model algorithm. Our pre-processing consists the following steps. First, we split each sentence into a list of words. Next, we map characters to codepoint indexes using a character-level vocabulary, and insert [WORD_CLS] token at the start of each word. Next, we insert a [CLS] token at the start, and a [SEP] token at the end for each sequence. Then we truncate the token sequence based on both character-level (20 characters for each word) and word-level (512 words per sentence) limits. Next, we compute the maximum number of characters for words in the batch, and pad all words to this length. We also determine the maximum number of words in the sequence batch, and pad all sequences to this length. The pre-processed batch can then be represented as a matrix of shape [batch_size, max_num_word, max_num_char]. Our unique representation of text batch enables us to efficiently switch between performing intraword self-attention and inter-word self-attention by simply reshaping, which is shown in Algorithm 1.\n\nWe provide pseudocode for pre-training of our HLM in Algorithm 1. For better readability, we\n\nomit implementation details including utilizing attention mask which avoids performing attention on the [PAD] tokens and handling for padding words. We recommend padding the input matrix to multiples of 8 for better acceleration on GPU. We also found a residual connection between initial word embedding $\\mathbf{r}^i$ and contextualized word embedding $\\mathbf{w}^i$ improves the performance in a subsequent study.",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": false,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.acl-long.200::sections::3.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100",
+      "count": 8,
+      "count_text": "8",
+      "evidence": "Following the practice of BERT, we pre-train our model on English Wikipedia and BookCorpus dataset (19G) (Zhu et al., 2015). We pre-train the model for 3 epochs (3.9M steps with batch size set as 16) on a server with 8 NVIDIA Tesla V100 GPUs, and each epoch takes 137 hours. We adopt whole-word masked language modeling as pre-training task. In detail, we randomly select $15\\%$ of words from the input sequence, and mask every character in the selected word. We replace the character tokens in $80\\%$ of the selected masked word with the [MASK] token. For $10\\%$ of the selected masked words, we replace their characters with randomly selected characters drawn from our character vocabulary. The remaining $10\\%$ words are unchanged. The three main components of our model are jointly trained in end-to-end fashion.",
+      "section_number": "3.4",
+      "section_title": "pre-training task",
+      "normalized_section_title": "pre-training task"
+    },
+    {
+      "window_id": "2023.acl-long.200::sections::4.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "In this section, we benchmark the computational efficiency of the proposed model. Specifically, we measure the inference throughput (number of processed samples per second) on the test set of the MRPC dataset, a sub-task of the GLUE benchmark.\n\nWe evaluate different models on the same server with one NVIDIA Tesla V100 GPU. The batch size is set to 32 and we use single precision. The evaluation results are shown in Table 7. While BERT is the most computationally efficient, our HLM also performs competitively, the performance gap being smaller compared to other character-level baseline models. We speculate that this performance gain comes from our hierarchical architecture. By aggregating character tokens into word-level tokens, the sequence length is drastically reduced for the inter-word module which has the deepest Transformer stack. We provide more analysis on the computational complexity in Appendix A.1.",
+      "section_number": "4.5",
+      "section_title": "computational efficiency",
+      "normalized_section_title": "computational efficiency"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.acl-long.200::sections::3.4",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100",
+      "cleaned_hardware_name": "nvidia tesla v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 8,
+      "count_text": "8",
+      "section_number": "3.4",
+      "section_title": "pre-training task",
+      "normalized_section_title": "pre-training task",
+      "evidence": "Following the practice of BERT, we pre-train our model on English Wikipedia and BookCorpus dataset (19G) (Zhu et al., 2015). We pre-train the model for 3 epochs (3.9M steps with batch size set as 16) on a server with 8 NVIDIA Tesla V100 GPUs, and each epoch takes 137 hours. We adopt whole-word masked language modeling as pre-training task. In detail, we randomly select $15\\%$ of words from the input sequence, and mask every character in the selected word. We replace the character tokens in $80\\%$ of the selected masked word with the [MASK] token. For $10\\%$ of the selected masked words, we replace their characters with randomly selected characters drawn from our character vocabulary. The remaining $10\\%$ words are unchanged. The three main components of our model are jointly trained in end-to-end fashion.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    },
+    {
+      "window_id": "2023.acl-long.200::sections::4.5",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "NVIDIA Tesla V100",
+      "cleaned_hardware_name": "nvidia tesla v100",
+      "normalized_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "benchmark_hardware_name": "NVIDIA Tesla V100 PCIe 16 GB",
+      "count": 1,
+      "count_text": "1",
+      "section_number": "4.5",
+      "section_title": "computational efficiency",
+      "normalized_section_title": "computational efficiency",
+      "evidence": "In this section, we benchmark the computational efficiency of the proposed model. Specifically, we measure the inference throughput (number of processed samples per second) on the test set of the MRPC dataset, a sub-task of the GLUE benchmark.\n\nWe evaluate different models on the same server with one NVIDIA Tesla V100 GPU. The batch size is set to 32 and we use single precision. The evaluation results are shown in Table 7. While BERT is the most computationally efficient, our HLM also performs competitively, the performance gap being smaller compared to other character-level baseline models. We speculate that this performance gain comes from our hierarchical architecture. By aggregating character tokens into word-level tokens, the sequence length is drastically reduced for the inter-word module which has the deepest Transformer stack. We provide more analysis on the computational complexity in Appendix A.1.",
+      "match_status": "rule_match",
+      "match_method": "rule",
+      "match_confidence": "high",
+      "normalization_reason": "normalized NVIDIA special-case rule",
+      "catalog_candidate_count": 1,
+      "review_required": false,
+      "review_reason": "",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.acl-long.200::sections::3.5",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "3.5",
+      "section_title": "implementation details",
+      "evidence": "We use spaCy (Honnibal et al., 2020) to split sentences into words, which is rule-based using space, punctuation and special rules (e.g. splitting don't into do and n't). We use a case-sensitive character vocabulary of size 1024, which consists of letters, digits and symbols. The maximum sequence length is set to 20 characters for the intra-word module and 512 words for the inter-word module. A [CLS] and a [SEP] token are inserted at the beginning and end of each sequence respectively. The hidden size is set to 768, the number of attention heads is set to 12, the feed-forward dimension in the Transformer encoder is set as 1536 and 3072 for intra-word and inter-word modules respectively. We leverage relative position (He\n\net al., 2021) in our model, and we do not use token type embedding. GELU (Hendrycks and Gimpel, 2016) is used as activation function. Our model contains 125M parameters. We use the AdamW optimizer (Loshchilov and Hutter, 2018) for model pre-training and fine-tuning. For the pre-training, the weight decay is set to 0.01 and the number of warmup steps is set to 10,000. A linear learning rate decay schedule is used, starting at 5e-5. The dropout rate is set to 0.1. More algorithm details can be found in Appendix A.3."
+    },
+    {
+      "source_window_id": "2023.acl-long.200::sections::4",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4",
+      "section_title": "experiments",
+      "evidence": "We evaluate the performance of our pre-trained model on a wide range of downstream tasks. We compare the performance of our pre-trained hierarchical language model (HLM) with various baseline methods, including the popular sub-word based BERT model, three recent byte/character-level models, as well as a hybrid model referred to as CharacterBERT. For BERT, we use the cased BERT<sub>Base</sub> model (108M parameters) to match our inter-word Transformers module setup. For CANINE, we adopt CANINE-C (132M) which also uses a character-level pre-training task. For CharacterBERT, we use the general version (105M) which is pre-trained on English Wikipedia and OpenWebText. For those baseline models, we use the pretrained weights hosted on Huggingface<sup>†</sup> or released by the authors. For Charformer (203M) and Byte-level T5 (200M), we use results of the base version from the original paper as pre-trained weight is not available."
+    },
+    {
+      "source_window_id": "2023.acl-long.200::appendix::A",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A",
+      "section_title": "appendix",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.acl-long.200::appendix::A.3",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "A.3",
+      "section_title": "algorithm details",
+      "evidence": "In this section, we provide algorithm details for our input pre-processing and model algorithm. Our pre-processing consists the following steps. First, we split each sentence into a list of words. Next, we map characters to codepoint indexes using a character-level vocabulary, and insert [WORD_CLS] token at the start of each word. Next, we insert a [CLS] token at the start, and a [SEP] token at the end for each sequence. Then we truncate the token sequence based on both character-level (20 characters for each word) and word-level (512 words per sentence) limits. Next, we compute the maximum number of characters for words in the batch, and pad all words to this length. We also determine the maximum number of words in the sequence batch, and pad all sequences to this length. The pre-processed batch can then be represented as a matrix of shape [batch_size, max_num_word, max_num_char]. Our unique representation of text batch enables us to efficiently switch between performing intraword self-attention and inter-word self-attention by simply reshaping, which is shown in Algorithm 1.\n\nWe provide pseudocode for pre-training of our HLM in Algorithm 1. For better readability, we\n\nomit implementation details including utilizing attention mask which avoids performing attention on the [PAD] tokens and handling for padding words. We recommend padding the input matrix to multiples of 8 for better acceleration on GPU. We also found a residual connection between initial word embedding $\\mathbf{r}^i$ and contextualized word embedding $\\mathbf{w}^i$ improves the performance in a subsequent study."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "3.4",
+      "4.5"
+    ],
+    "pred": [
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 8
+      },
+      {
+        "name": "NVIDIA Tesla V100 PCIe 16 GB",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\acl2023\\2023.acl-long.200\\auto\\full.md",
+    "source_md_sha256": "316e8bb0d90da72ead151cf938288c0baa4bce9fa85ec3f4fcd45ca02295f363",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "5664a2785ae8bc68fd82205d17bfae3a801d8a6462b5be7870ee077fa54358d8"
+  }
+}

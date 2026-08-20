@@ -1,0 +1,183 @@
+{
+  "paper_id": "2023.emnlp-main.172",
+  "candidate_windows": [
+    {
+      "window_id": "2023.emnlp-main.172::sections::4.1",
+      "paper_id": "2023.emnlp-main.172",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "normalized_section_title": "experimental setup",
+      "window_text": "We performed most experiments on the WebNLG benchmark (Gardent et al., 2017) containing data expressed as RDF triples and corresponding text references, which is prominent in many previous works tackling hallucination. We also evaluate our approach on the OpenDialKG dataset (Moon et al., 2019), which contains dialogues annotated with RDF triples representing the information expressed in each utterance. We use it in a similar way as WebNLG, treating the utterances as textualisations of the data, i.e. without taking dialogue history into account. The BART-base encoder-decoder model (Lewis et al., 2020), finetuned on WebNLG, is used as the base NLG system (see Appendix C for training details).\n\nFive different critic models were trained as discussed in Sec. 3 with classification heads on top of a XLM-RoBERTa-base model (Conneau et al., 2019), see Appendix D for details. The vanilla LM critic uses BART-base without any fine-tuning, the fine-tuned LM variants (4 & 5) use the base LM to generate training data. The critics' classification performance is given in Table 1. This shows that the critics are able to learn the synthetic data well, which is, however, not necessarily reflected in performance when used during generation.\n\nWe use greedy decoding by default. To speed up computation of critic-driven decoding, we first evaluate the second term of Eq. 3, i.e. the conditional LM, and we run the critic model only for $k = 5$ most probable tokens, modifying its probabilities accordingly. The critic weight $\\lambda = 0.25$ (see Eq. 4) was used for all the models for WebNLG and $\\lambda = 1$ for OpenDialKG. We found that the output of the critic can be noisy when evaluating the match between the data and only a few initial tokens of the text. Therefore, we add a simple linear warmup for $\\lambda$ for the first five tokens: while decoding the $i$ -th token, $\\lambda_{i} = \\min \\left(\\frac{i}{5}, 1\\right) \\cdot \\lambda$ (cf. Appendix B for choice of $k$ and warmup).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.172::sections::4.2",
+      "paper_id": "2023.emnlp-main.172",
+      "section_number": "4.2",
+      "section_title": "analysis of decoding performance with automatic measures",
+      "normalized_section_title": "analysis of decoding performance with automatic measures",
+      "window_text": "The system outputs were evaluated using standard automatic metrics - BLEU (Papineni et al.,\n\nTable 1: The classification performance of different critic models as measured on the validation test.   \n\n<table><tr><td>critic model</td><td>accuracy</td><td>F1</td></tr><tr><td>1. base</td><td>0.969</td><td>0.970</td></tr><tr><td>2. base w/full sent.</td><td>0.984</td><td>0.975</td></tr><tr><td>3. vanilla. LM</td><td>0.931</td><td>0.798</td></tr><tr><td>4. fine-tuned LM</td><td>0.920</td><td>0.718</td></tr><tr><td>5. fine-tuned LM w/full sent.</td><td>0.929</td><td>0.714</td></tr></table>\n\n2002), METEOR (Banerjee and Lavie, 2005) and BERTScore (Zhang et al., 2020) – as well as measures particularly targeting hallucinations: BLEURT (Sellam et al., 2020) and the NLI-based metric proposed by Dusek and Kasner (2020).\n\nOverall results on WebNLG are presented in Table 2. Except for the critic trained on full LM-generated sentences (var. 5), all the other variants of critic-driven decoding slightly improve performance according to BLEU, METEOR, and BERTScore. Higher gains, up to $2.5\\%$ absolute on the whole test set, can be observed on measures targeting hallucinations, i.e. NLI and BLEURT. Note that our approach achieves this without modifying the original LM. The base critic achieves the highest scores across most evaluation metrics.\n\nInterestingly, both critics trained on data generated with the fine-tuned LM (i.e. the same system as used for decoding) failed to improve the NLI measure and only one improved BLEURT. This shows that an effective critic can be trained separately from the NLG system.\n\nAnalysis of introduced changes We also measured to what extent the critic-based approaches change the outputs compared to the baseline, i.e. the percentage of modified outputs as well as the number of added and removed words. Results in Tab. 4 show that critic-based approaches preserve many outputs (30-70%) and generally only change a few words, while keeping the output lengths similar. This suggests that our critics make small changes and only where necessary.\n\nOut of domain generalization The test data of the WebNLG dataset contains about $46\\%$ of instances from categories not present in the training data. Therefore, we also provide the fine-grained results for both in-domain and out-domain part of the test set in Table 2. The in-domain results are naturally better, but we can observe consistent im\n\n<table><tr><td>decoding approach</td><td>BLEU</td><td>MET EOR</td><td>BERT Score</td><td>all</td><td>NLI ood</td><td>ind</td><td>BLEURT ood</td><td>ind</td></tr><tr><td>baseline</td><td>45.09</td><td>0.373</td><td>0.911</td><td>0.841</td><td>0.783</td><td>0.889</td><td>0.128</td><td>-0.026</td></tr><tr><td>1. critic (base)</td><td>45.48</td><td>0.377</td><td>0.913</td><td>0.855</td><td>0.801</td><td>0.901</td><td>0.155*</td><td>0.010*</td></tr><tr><td>2. critic (base with full sentences)</td><td>44.90</td><td>0.371</td><td>0.913</td><td>0.868*</td><td>0.820*</td><td>0.909</td><td>0.153*</td><td>0.007*</td></tr><tr><td>3. critic (vanilla LM)</td><td>45.44</td><td>0.377</td><td>0.913</td><td>0.859*</td><td>0.811</td><td>0.900</td><td>0.139</td><td>-0.002</td></tr><tr><td>4. critic (fine-tuned LM)</td><td>45.41</td><td>0.373</td><td>0.911</td><td>0.834</td><td>0.772</td><td>0.886</td><td>0.128</td><td>-0.021</td></tr><tr><td>5. critic (fine-tuned LM w. full sentences)</td><td>45.59</td><td>0.374</td><td>0.912</td><td>0.839</td><td>0.779</td><td>0.889</td><td>0.136</td><td>-0.013</td></tr></table>\n\nTable 2: Results of automatic evaluation on the WebNLG test set. NLI and BLEURT are reported for the whole test set (all) as well as separately for its out-of-domain (ood) and in-domain (ind) parts. “*” marks statistical significance at $\\alpha = 0.05$ level (NLI: exact test for proportions, BLEURT: unpaired t-test).   \nTable 3: Results of automatic evaluation on the OpenDialKG test set.   \n\n<table><tr><td></td><td>BLEU</td><td>METEOR</td><td>BERTScore</td><td>NLI</td><td>BLEURT</td></tr><tr><td>baseline</td><td>11.74</td><td>0.149</td><td>0.775</td><td>0.748</td><td>-0.933</td></tr><tr><td>1. critic (base)</td><td>9.67</td><td>0.137</td><td>0.771</td><td>0.796</td><td>-0.905</td></tr><tr><td>2. critic (base with full sentences)</td><td>11.88</td><td>0.151</td><td>0.776</td><td>0.754</td><td>-0.920</td></tr><tr><td>3. critic (vanilla LM)</td><td>10.37</td><td>0.139</td><td>0.763</td><td>0.713</td><td>-0.980</td></tr><tr><td>4. critic (fine-tuned LM)</td><td>10.76</td><td>0.143</td><td>0.768</td><td>0.739</td><td>-0.964</td></tr><tr><td>5. critic (fine-tuned LM with full sentences)</td><td>11.41</td><td>0.149</td><td>0.771</td><td>0.712</td><td>-0.956</td></tr></table>\n\nprovements of our critic-aware approach on both in-domain and out-of-domain data.\n\nStatistical analysis We performed statistical hypothesis testing to compare the results of the baseline with our approach with critic (base with full sentences). As expected, the differences on text quality measures (BLEU, METEOR, BERTScore) are not statistically significant, in contrast to the differences on measures targeting hallucinations, which are statistically significant at the $\\alpha = 0.05$ significance level (cf. Table 2).\n\nBeam search experiment To verify the consistency of our critic's improvements, we run additional experiments with a stronger baseline, i.e. beam search decoding. The results, confirming greedy decoding results, are in Appendix F.\n\nResults on OpenDialKG are presented in Table 3 and are mostly in line with those obtained for WebNLG. The base critic approach (var. 1) obtained a gain of 5 percentage points on NLI and of 3 points on BLEURT over the baseline. The values of basic word-overlap metrics are lower, but our qualitative assessment did not confirm any quality drop. The second critic variant (base with full sentences), which offered high performance of WebNLG, also performed well on OpenDialKG. It scored best on standard text quality metrics while offering improvements over the baseline on hallucination-focused metrics (NLI, BLEURT).\n\nTable 4: Percentage of modified outputs and average number of words added/removed by different critics compared to standard decoding on WebNLG.   \n\n<table><tr><td>critic model</td><td>mod [%]</td><td>add.</td><td>rem.</td></tr><tr><td>base</td><td>66.3</td><td>4.54</td><td>4.58</td></tr><tr><td>base w/full sent.</td><td>72.8</td><td>5.42</td><td>4.72</td></tr><tr><td>vanilla LM</td><td>72.8</td><td>5.03</td><td>5.39</td></tr><tr><td>fine-tuned LM</td><td>48.5</td><td>2.52</td><td>2.71</td></tr><tr><td>fine-tuned LM w/full sent.</td><td>31.9</td><td>1.63</td><td>1.76</td></tr></table>",
+      "rule_tier": "conditional_keep",
+      "matched_by_rule": false,
+      "matched_by_alias": true,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.172::appendix::B",
+      "paper_id": "2023.emnlp-main.172",
+      "section_number": "B",
+      "section_title": "sensitivity analysis of the hyperparameters of critic-aware decoding",
+      "normalized_section_title": "sensitivity analysis of the hyperparameters of critic-aware decoding",
+      "window_text": "",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.172::appendix::C",
+      "paper_id": "2023.emnlp-main.172",
+      "section_number": "C",
+      "section_title": "hyperparameters of bart fine-tuning",
+      "normalized_section_title": "hyperparameters of bart fine-tuning",
+      "window_text": "As a conditional language model, we used BART-base model (Lewis et al., 2020) fine-tuned with default architecture provided by HuggingFace library. AdamW with learning rate $\\eta = 2\\cdot 10^{-5}$ and parameters $\\beta = (0.9,0.997)$ , $\\epsilon = 10^{-9}$ was used\n\n![](images/f719bd7e68b2c99012ed18f9e0012f207c0e89d0c01bae5c3a377305835e8c12.jpg)  \nFigure 2: BLEU as a function of $\\lambda$ parameter for system outputs generated with different critic variants and with/without warm-up of $\\lambda$ .\n\n![](images/1c1cb1d4b5cd3356e9f02627511e34a9e0097bb9c03a082ca3c3884f6e041926.jpg)  \nFigure 3: BLEURT as a function of $\\lambda$ parameter for system outputs generated with different critic variants and with/without warm-up of $\\lambda$ .\n\nas optimizer. Additionally, we applied polynomial scheduler of $\\eta$ with a warmup equal to $10\\%$ of optimization steps. The training was scheduled for 20 epochs with early stopping on validation loss (patience of 10 epochs). We used batch size equal to 8 and label smoothing with 0.1 smoothing factor.",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.172::appendix::D",
+      "paper_id": "2023.emnlp-main.172",
+      "section_number": "D",
+      "section_title": "details on critic model training",
+      "normalized_section_title": "details on critic model training",
+      "window_text": "The architecture of the critic model consisted of a pretrained XLM-RoBERTa-base model (Conneau et al., 2019) and a classification head on top of the representation of the first token. The classification head contained a fully connected layer with SELU activation function (Klambauer et al., 2017) and one additional classification layer with sigmoid activation. The number of neurons in the first layer was set to the dimensionality of the output embedding.\n\nThe critic models were trained as discussed in Sec. 3 by optimizing the cross-entropy loss. AdamW was used as an optimizer with a learning rate of $\\eta = 10^{-5}$ . The training was continued until the convergence, i.e. lack of the improvement on validation loss.\n\nAll the experiments with the critics (both critic training and decoding) were performed on one GPU: nVidia Quadro P5000 16 GB. During decoding the BART-based language model was loaded with bitsandbytes library (8-bit mode).",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": true,
+      "matched_by_keyword": true,
+      "matched_by_count_pattern": false
+    },
+    {
+      "window_id": "2023.emnlp-main.172::appendix::G",
+      "paper_id": "2023.emnlp-main.172",
+      "section_number": "G",
+      "section_title": "examples of negative instances generated by different approaches for critic training set construction",
+      "normalized_section_title": "examples of negative instances generated by different approaches for critic training set construction",
+      "window_text": "Let us consider the following data representation:\n\n(A-Rosa Luna | length | 125800.0 (millimetres));\n\n(A-Rosa Luna | power type | MTU Friedrichshafen)\n\nand the reference:\n\nThe A-Rosa Luna is powered by a MTU Friedrichshafen engine and is 125.8 metres in length.\n\nThe positive examples for the critic consist on all the possible prefixes generated from the reference, i.e. \"The\", \"The A-Rosa\", \"The A-Rosa Luna\", etc. The negative examples generated by different approaches are as follows:\n\n1. base - the negative examples are generated with random words\n\n\"The Cruises\", \"The A-Rosa operated\", \"The A-Rosa Luna located\", ...\n\n2. base with full sentences - a sentence or a token from the reference is replaced with random sentence-token and all possible negative examples are generated\n\n\"The Cruises\", \"The Cruises Luna\", \"The Cruises Luna is\", ..., \"The A-Rosa operated\", \"The A-Rosa operated is\", ...\n\n3. vanilla LM – the incorrect next words are sampled from the five most probable tokens according to (unconditioned) LM\n\n\"The United\", \"The A-Rosa is\", \"The A-Rosa Luna powers\", ...\n\n4. fine-tuned LM with full sentences - for a given data the NLG system generated the following output: \"The A-Rosa Luna is 125.8m long and is powered by MTU Friedrichsburger\", which is used to generate negative examples by comparing it against the reference\n\n\"The A-Rosa Luna is $125.8\\mathrm{m}$ \", \"The A-Rosa Luna is $125.8\\mathrm{m}$ long\", \"The A-Rosa Luna is $125.8\\mathrm{m}$ and\", \"The A-Rosa Luna is $125.8\\mathrm{m}$ and is\", ...\n\nTable 7: Results of automatic evaluation on the WebNLG test set while using beam search (beam size equal to 5).   \n\n<table><tr><td></td><td>BLEU</td><td>METEOR</td><td>BERTScore</td><td>NLI</td><td>BLEURT</td></tr><tr><td>baseline</td><td>47.57</td><td>0.380</td><td>0.916</td><td>0.852</td><td>0.176</td></tr><tr><td>1. critic (base)</td><td>47.75</td><td>0.387</td><td>0.918</td><td>0.886</td><td>0.202</td></tr><tr><td>2. critic (base with full sentences)</td><td>46.06</td><td>0.376</td><td>0.917</td><td>0.898</td><td>0.212</td></tr><tr><td>3. critic (vanilla LM)</td><td>46.56</td><td>0.379</td><td>0.913</td><td>0.881</td><td>0.161</td></tr><tr><td>4. critic (fine-tuned LM)</td><td>49.04</td><td>0.385</td><td>0.919</td><td>0.866</td><td>0.196</td></tr><tr><td>5. critic (fine-tuned LM with full sentences)</td><td>43.74</td><td>0.372</td><td>0.909</td><td>0.861</td><td>0.123</td></tr></table>\n\n5. fine-tuned LM – the incorrect next words are sampled from the five most probable tokens according to data-conditioned LM\n\n\"The A-Rosa Luna is $125.8\\mathrm{m}$ \", \"The A-Rosa Luna is supplied\", \"The A-Rosa Luna is powered with\", ...",
+      "rule_tier": "strong_keep",
+      "matched_by_rule": true,
+      "matched_by_alias": false,
+      "matched_by_keyword": false,
+      "matched_by_count_pattern": false
+    }
+  ],
+  "raw_extractions": [
+    {
+      "window_id": "2023.emnlp-main.172::appendix::D",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "nVidia Quadro P5000 16GB",
+      "count": 1,
+      "count_text": "1",
+      "evidence": "The architecture of the critic model consisted of a pretrained XLM-RoBERTa-base model (Conneau et al., 2019) and a classification head on top of the representation of the first token. The classification head contained a fully connected layer with SELU activation function (Klambauer et al., 2017) and one additional classification layer with sigmoid activation. The number of neurons in the first layer was set to the dimensionality of the output embedding.\n\nThe critic models were trained as discussed in Sec. 3 by optimizing the cross-entropy loss. AdamW was used as an optimizer with a learning rate of $\\eta = 10^{-5}$ . The training was continued until the convergence, i.e. lack of the improvement on validation loss.\n\nAll the experiments with the critics (both critic training and decoding) were performed on one GPU: nVidia Quadro P5000 16 GB. During decoding the BART-based language model was loaded with bitsandbytes library (8-bit mode).",
+      "section_number": "D",
+      "section_title": "details on critic model training",
+      "normalized_section_title": "details on critic model training"
+    }
+  ],
+  "normalized_extractions": [
+    {
+      "window_id": "2023.emnlp-main.172::appendix::D",
+      "hardware_type": "GPU",
+      "raw_hardware_name": "nVidia Quadro P5000 16GB",
+      "cleaned_hardware_name": "nvidia quadro p5000 16gb",
+      "normalized_hardware_name": "nVidia Quadro P5000 16GB",
+      "benchmark_hardware_name": null,
+      "count": 1,
+      "count_text": "1",
+      "section_number": "D",
+      "section_title": "details on critic model training",
+      "normalized_section_title": "details on critic model training",
+      "evidence": "The architecture of the critic model consisted of a pretrained XLM-RoBERTa-base model (Conneau et al., 2019) and a classification head on top of the representation of the first token. The classification head contained a fully connected layer with SELU activation function (Klambauer et al., 2017) and one additional classification layer with sigmoid activation. The number of neurons in the first layer was set to the dimensionality of the output embedding.\n\nThe critic models were trained as discussed in Sec. 3 by optimizing the cross-entropy loss. AdamW was used as an optimizer with a learning rate of $\\eta = 10^{-5}$ . The training was continued until the convergence, i.e. lack of the improvement on validation loss.\n\nAll the experiments with the critics (both critic training and decoding) were performed on one GPU: nVidia Quadro P5000 16 GB. During decoding the BART-based language model was loaded with bitsandbytes library (8-bit mode).",
+      "match_status": "unmatched",
+      "match_method": "unmatched",
+      "match_confidence": "low",
+      "normalization_reason": "no normalization rule matched",
+      "catalog_candidate_count": 0,
+      "review_required": true,
+      "review_reason": "catalog_unmatched",
+      "extraction_source": "section_primary"
+    }
+  ],
+  "review_flags": [
+    {
+      "source_window_id": "2023.emnlp-main.172::sections::4.1",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.1",
+      "section_title": "experimental setup",
+      "evidence": "We performed most experiments on the WebNLG benchmark (Gardent et al., 2017) containing data expressed as RDF triples and corresponding text references, which is prominent in many previous works tackling hallucination. We also evaluate our approach on the OpenDialKG dataset (Moon et al., 2019), which contains dialogues annotated with RDF triples representing the information expressed in each utterance. We use it in a similar way as WebNLG, treating the utterances as textualisations of the data, i.e. without taking dialogue history into account. The BART-base encoder-decoder model (Lewis et al., 2020), finetuned on WebNLG, is used as the base NLG system (see Appendix C for training details).\n\nFive different critic models were trained as discussed in Sec. 3 with classification heads on top of a XLM-RoBERTa-base model (Conneau et al., 2019), see Appendix D for details. The vanilla LM critic uses BART-base without any fine-tuning, the fine-tuned LM variants (4 & 5) use the base LM to generate training data. The critics' classification performance is given in Table 1. This shows that the critics are able to learn the synthetic data well, which is, however, not necessarily reflected in performance when used during generation.\n\nWe use greedy decoding by default. To speed up computation of critic-driven decoding, we first evaluate the second term of Eq. 3, i.e. the conditional LM, and we run the critic model only for $k = 5$ most probable tokens, modifying its probabilities accordingly. The critic weight $\\lambda = 0.25$ (see Eq. 4) was used for all the models for WebNLG and $\\lambda = 1$ for OpenDialKG. We found that the output of the critic can be noisy when evaluating the match between the data and only a few initial tokens of the text. Therefore, we add a simple linear warmup for $\\lambda$ for the first five tokens: while decoding the $i$ -th token, $\\lambda_{i} = \\min \\left(\\frac{i}{5}, 1\\right) \\cdot \\lambda$ (cf. Appendix B for choice of $k$ and warmup)."
+    },
+    {
+      "source_window_id": "2023.emnlp-main.172::sections::4.2",
+      "audit_reason": "keyword_hit_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "4.2",
+      "section_title": "analysis of decoding performance with automatic measures",
+      "evidence": "The system outputs were evaluated using standard automatic metrics - BLEU (Papineni et al.,\n\nTable 1: The classification performance of different critic models as measured on the validation test.   \n\n<table><tr><td>critic model</td><td>accuracy</td><td>F1</td></tr><tr><td>1. base</td><td>0.969</td><td>0.970</td></tr><tr><td>2. base w/full sent.</td><td>0.984</td><td>0.975</td></tr><tr><td>3. vanilla. LM</td><td>0.931</td><td>0.798</td></tr><tr><td>4. fine-tuned LM</td><td>0.920</td><td>0.718</td></tr><tr><td>5. fine-tuned LM w/full sent.</td><td>0.929</td><td>0.714</td></tr></table>\n\n2002), METEOR (Banerjee and Lavie, 2005) and BERTScore (Zhang et al., 2020) – as well as measures particularly targeting hallucinations: BLEURT (Sellam et al., 2020) and the NLI-based metric proposed by Dusek and Kasner (2020).\n\nOverall results on WebNLG are presented in Table 2. Except for the critic trained on full LM-generated sentences (var. 5), all the other variants of critic-driven decoding slightly improve performance according to BLEU, METEOR, and BERTScore. Higher gains, up to $2.5\\%$ absolute on the whole test set, can be observed on measures targeting hallucinations, i.e. NLI and BLEURT. Note that our approach achieves this without modifying the original LM. The base critic achieves the highest scores across most evaluation metrics.\n\nInterestingly, both critics trained on data generated with the fine-tuned LM (i.e. the same system as used for decoding) failed to improve the NLI measure and only one improved BLEURT. This shows that an effective critic can be trained separately from the NLG system.\n\nAnalysis of introduced changes We also measured to what extent the critic-based approaches change the outputs compared to the baseline, i.e. the percentage of modified outputs as well as the number of added and removed words. Results in Tab. 4 show that critic-based approaches preserve many outputs (30-70%) and generally only change a few words, while keeping the output lengths similar. This suggests that our critics make small changes and only where necessary.\n\nOut of domain generalization The test data of the WebNLG dataset contains about $46\\%$ of instances from categories not present in the training data. Therefore, we also provide the fine-grained results for both in-domain and out-domain part of the test set in Table 2. The in-domain results are naturally better, but we can observe consistent im\n\n<table><tr><td>decoding approach</td><td>BLEU</td><td>MET EOR</td><td>BERT Score</td><td>all</td><td>NLI ood</td><td>ind</td><td>BLEURT ood</td><td>ind</td></tr><tr><td>baseline</td><td>45.09</td><td>0.373</td><td>0.911</td><td>0.841</td><td>0.783</td><td>0.889</td><td>0.128</td><td>-0.026</td></tr><tr><td>1. critic (base)</td><td>45.48</td><td>0.377</td><td>0.913</td><td>0.855</td><td>0.801</td><td>0.901</td><td>0.155*</td><td>0.010*</td></tr><tr><td>2. critic (base with full sentences)</td><td>44.90</td><td>0.371</td><td>0.913</td><td>0.868*</td><td>0.820*</td><td>0.909</td><td>0.153*</td><td>0.007*</td></tr><tr><td>3. critic (vanilla LM)</td><td>45.44</td><td>0.377</td><td>0.913</td><td>0.859*</td><td>0.811</td><td>0.900</td><td>0.139</td><td>-0.002</td></tr><tr><td>4. critic (fine-tuned LM)</td><td>45.41</td><td>0.373</td><td>0.911</td><td>0.834</td><td>0.772</td><td>0.886</td><td>0.128</td><td>-0.021</td></tr><tr><td>5. critic (fine-tuned LM w. full sentences)</td><td>45.59</td><td>0.374</td><td>0.912</td><td>0.839</td><td>0.779</td><td>0.889</td><td>0.136</td><td>-0.013</td></tr></table>\n\nTable 2: Results of automatic evaluation on the WebNLG test set. NLI and BLEURT are reported for the whole test set (all) as well as separately for its out-of-domain (ood) and in-domain (ind) parts. “*” marks statistical significance at $\\alpha = 0.05$ level (NLI: exact test for proportions, BLEURT: unpaired t-test).   \nTable 3: Results of automatic evaluation on the OpenDialKG test set.   \n\n<table><tr><td></td><td>BLEU</td><td>METEOR</td><td>BERTScore</td><td>NLI</td><td>BLEURT</td></tr><tr><td>baseline</td><td>11.74</td><td>0.149</td><td>0.775</td><td>0.748</td><td>-0.933</td></tr><tr><td>1. critic (base)</td><td>9.67</td><td>0.137</td><td>0.771</td><td>0.796</td><td>-0.905</td></tr><tr><td>2. critic (base with full sentences)</td><td>11.88</td><td>0.151</td><td>0.776</td><td>0.754</td><td>-0.920</td></tr><tr><td>3. critic (vanilla LM)</td><td>10.37</td><td>0.139</td><td>0.763</td><td>0.713</td><td>-0.980</td></tr><tr><td>4. critic (fine-tuned LM)</td><td>10.76</td><td>0.143</td><td>0.768</td><td>0.739</td><td>-0.964</td></tr><tr><td>5. critic (fine-tuned LM with full sentences)</td><td>11.41</td><td>0.149</td><td>0.771</td><td>0.712</td><td>-0.956</td></tr></table>\n\nprovements of our critic-aware approach on both in-domain and out-of-domain data.\n\nStatistical analysis We performed statistical hypothesis testing to compare the results of the baseline with our approach with critic (base with full sentences). As expected, the differences on text quality measures (BLEU, METEOR, BERTScore) are not statistically significant, in contrast to the differences on measures targeting hallucinations, which are statistically significant at the $\\alpha = 0.05$ significance level (cf. Table 2).\n\nBeam search experiment To verify the consistency of our critic's improvements, we run additional experiments with a stronger baseline, i.e. beam search decoding. The results, confirming greedy decoding results, are in Appendix F.\n\nResults on OpenDialKG are presented in Table 3 and are mostly in line with those obtained for WebNLG. The base critic approach (var. 1) obtained a gain of 5 percentage points on NLI and of 3 points on BLEURT over the baseline. The values of basic word-overlap metrics are lower, but our qualitative assessment did not confirm any quality drop. The second critic variant (base with full sentences), which offered high performance of WebNLG, also performed well on OpenDialKG. It scored best on standard text quality metrics while offering improvements over the baseline on hallucination-focused metrics (NLI, BLEURT).\n\nTable 4: Percentage of modified outputs and average number of words added/removed by different critics compared to standard decoding on WebNLG.   \n\n<table><tr><td>critic model</td><td>mod [%]</td><td>add.</td><td>rem.</td></tr><tr><td>base</td><td>66.3</td><td>4.54</td><td>4.58</td></tr><tr><td>base w/full sent.</td><td>72.8</td><td>5.42</td><td>4.72</td></tr><tr><td>vanilla LM</td><td>72.8</td><td>5.03</td><td>5.39</td></tr><tr><td>fine-tuned LM</td><td>48.5</td><td>2.52</td><td>2.71</td></tr><tr><td>fine-tuned LM w/full sent.</td><td>31.9</td><td>1.63</td><td>1.76</td></tr></table>"
+    },
+    {
+      "source_window_id": "2023.emnlp-main.172::appendix::B",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "B",
+      "section_title": "sensitivity analysis of the hyperparameters of critic-aware decoding",
+      "evidence": ""
+    },
+    {
+      "source_window_id": "2023.emnlp-main.172::appendix::C",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "C",
+      "section_title": "hyperparameters of bart fine-tuning",
+      "evidence": "As a conditional language model, we used BART-base model (Lewis et al., 2020) fine-tuned with default architecture provided by HuggingFace library. AdamW with learning rate $\\eta = 2\\cdot 10^{-5}$ and parameters $\\beta = (0.9,0.997)$ , $\\epsilon = 10^{-9}$ was used\n\n![](images/f719bd7e68b2c99012ed18f9e0012f207c0e89d0c01bae5c3a377305835e8c12.jpg)  \nFigure 2: BLEU as a function of $\\lambda$ parameter for system outputs generated with different critic variants and with/without warm-up of $\\lambda$ .\n\n![](images/1c1cb1d4b5cd3356e9f02627511e34a9e0097bb9c03a082ca3c3884f6e041926.jpg)  \nFigure 3: BLEURT as a function of $\\lambda$ parameter for system outputs generated with different critic variants and with/without warm-up of $\\lambda$ .\n\nas optimizer. Additionally, we applied polynomial scheduler of $\\eta$ with a warmup equal to $10\\%$ of optimization steps. The training was scheduled for 20 epochs with early stopping on validation loss (patience of 10 epochs). We used batch size equal to 8 and label smoothing with 0.1 smoothing factor."
+    },
+    {
+      "source_window_id": "2023.emnlp-main.172::appendix::G",
+      "audit_reason": "rule_window_without_extraction",
+      "audit_method": "rule_audit",
+      "section_number": "G",
+      "section_title": "examples of negative instances generated by different approaches for critic training set construction",
+      "evidence": "Let us consider the following data representation:\n\n(A-Rosa Luna | length | 125800.0 (millimetres));\n\n(A-Rosa Luna | power type | MTU Friedrichshafen)\n\nand the reference:\n\nThe A-Rosa Luna is powered by a MTU Friedrichshafen engine and is 125.8 metres in length.\n\nThe positive examples for the critic consist on all the possible prefixes generated from the reference, i.e. \"The\", \"The A-Rosa\", \"The A-Rosa Luna\", etc. The negative examples generated by different approaches are as follows:\n\n1. base - the negative examples are generated with random words\n\n\"The Cruises\", \"The A-Rosa operated\", \"The A-Rosa Luna located\", ...\n\n2. base with full sentences - a sentence or a token from the reference is replaced with random sentence-token and all possible negative examples are generated\n\n\"The Cruises\", \"The Cruises Luna\", \"The Cruises Luna is\", ..., \"The A-Rosa operated\", \"The A-Rosa operated is\", ...\n\n3. vanilla LM – the incorrect next words are sampled from the five most probable tokens according to (unconditioned) LM\n\n\"The United\", \"The A-Rosa is\", \"The A-Rosa Luna powers\", ...\n\n4. fine-tuned LM with full sentences - for a given data the NLG system generated the following output: \"The A-Rosa Luna is 125.8m long and is powered by MTU Friedrichsburger\", which is used to generate negative examples by comparing it against the reference\n\n\"The A-Rosa Luna is $125.8\\mathrm{m}$ \", \"The A-Rosa Luna is $125.8\\mathrm{m}$ long\", \"The A-Rosa Luna is $125.8\\mathrm{m}$ and\", \"The A-Rosa Luna is $125.8\\mathrm{m}$ and is\", ...\n\nTable 7: Results of automatic evaluation on the WebNLG test set while using beam search (beam size equal to 5).   \n\n<table><tr><td></td><td>BLEU</td><td>METEOR</td><td>BERTScore</td><td>NLI</td><td>BLEURT</td></tr><tr><td>baseline</td><td>47.57</td><td>0.380</td><td>0.916</td><td>0.852</td><td>0.176</td></tr><tr><td>1. critic (base)</td><td>47.75</td><td>0.387</td><td>0.918</td><td>0.886</td><td>0.202</td></tr><tr><td>2. critic (base with full sentences)</td><td>46.06</td><td>0.376</td><td>0.917</td><td>0.898</td><td>0.212</td></tr><tr><td>3. critic (vanilla LM)</td><td>46.56</td><td>0.379</td><td>0.913</td><td>0.881</td><td>0.161</td></tr><tr><td>4. critic (fine-tuned LM)</td><td>49.04</td><td>0.385</td><td>0.919</td><td>0.866</td><td>0.196</td></tr><tr><td>5. critic (fine-tuned LM with full sentences)</td><td>43.74</td><td>0.372</td><td>0.909</td><td>0.861</td><td>0.123</td></tr></table>\n\n5. fine-tuned LM – the incorrect next words are sampled from the five most probable tokens according to data-conditioned LM\n\n\"The A-Rosa Luna is $125.8\\mathrm{m}$ \", \"The A-Rosa Luna is supplied\", \"The A-Rosa Luna is powered with\", ..."
+    }
+  ],
+  "fulltext_fallback_triggered": false,
+  "fulltext_fallback_windows": [],
+  "fulltext_fallback_extractions": [],
+  "pred_result": {
+    "sec": [
+      "D"
+    ],
+    "pred": [
+      {
+        "name": "nVidia Quadro P5000 16GB",
+        "num": 1
+      }
+    ]
+  },
+  "extraction_meta": {
+    "schema_version": 1,
+    "source_md_path": "data\\interim\\parses\\emnlp2023\\2023.emnlp-main.172\\auto\\full.md",
+    "source_md_sha256": "4775354a0ac133c56350e348b1c37724b96e6f9780da382caa7bbe8fefa85267",
+    "rules_sha256": "c17730f5c01335ced0e129664dacac0b451ecbd96494ffb22021d05487c105fd",
+    "catalog_sha256": "44ecc0af216a9e5fe6ff4e8a000ce2b17b722bcc41b386c829c53021783d2d05"
+  }
+}
