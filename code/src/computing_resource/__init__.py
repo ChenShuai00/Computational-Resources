@@ -1,1 +1,0 @@
-"""Computing resource project package."""

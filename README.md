@@ -1,17 +1,63 @@
-# Do More Computational Resources Translate into Greater Scholarly Recognition? Evidence from 13,921 NLP Conference Papers
+# More Computational Resources Do Not Ensure Higher Scholarly Impact: Evidence from Leading NLP Conference Papers
 
+![](./assets/framework.png)
 
-![Project overview](./assets/framework.png)
+Official result-reproduction repository for:
 
-This repository accompanies the paper **"Do More Computational Resources Translate into Greater Scholarly Recognition? Evidence from 13,921 NLP Conference Papers."** It contains the released analysis data, figure-generation scripts, and processing code used in the study.
+> **More Computational Resources Do Not Ensure Higher Scholarly Impact: Evidence from Leading NLP Conference Papers**  
+> Shuai Chen, Tong Bao, Jitong Peng, and Chengzhi Zhang
 
-## Contents
+------
 
-- `analysis/`: paper-level datasets, analysis scripts, figures, and report notes.
-- `code/`: metadata, PDF parsing, affiliation extraction, and compute-resource extraction pipeline. See `code/README.md` for details.
-- `data/`: released extracted data for compute-resource mentions, classified research topics, and paper affiliation institutions. See `data/README.md` for details.
-- `assets/`: README and repository media.
+## Results at a glance
 
-## Reproduction
+| Result | Paper value |
+|---|---:|
+| Full paper corpus | 13,921 |
+| Papers reporting a GPU model | 6,900 (49.6%) |
+| Strict model-and-count sample | 5,360 (38.5%) |
+| Primary adjusted citation-percentile association per 10x capacity | +3.52 pp |
+| Incremental model fit for the primary capacity specification | ΔR² = 0.0042 |
+| Citation / award model samples | 2,194 / 5,357 |
 
-Use `analysis/data/` for the analysis-ready paper-level datasets and `data/` for the released extraction outputs. Manuscript analyses are organized by section under `analysis/`, with scripts and outputs kept together in each subfolder. For raw PDF/metadata processing and GPU extraction workflows, see `code/README.md`.
+## Repository structure
+
+```text
+data/analysis_ready/   
+code/                  One-command runner, verifier, and result contracts
+results/               Paper-first sections with scripts and frozen references
+  01_sample/
+  02_reporting/
+  03_gpu_scale/
+  04_contexts/
+  05_scholarly_impact/
+```
+
+## Reproduce all results
+
+Install [uv](https://docs.astral.sh/uv/), then run from the repository root:
+
+```bash
+uv sync
+uv run python code/run_all.py
+uv run python code/verify.py
+```
+
+For a fast smoke run:
+
+```bash
+uv run python code/run_all.py --quick
+uv run python code/verify.py --quick
+```
+
+## License
+
+Code is released under the Apache License 2.0; see [`LICENSE`](LICENSE).
+Original result tables, figures, and documentation are released under CC BY 4.0;
+see [`LICENSE-DATA.md`](LICENSE-DATA.md). Third-party source records retain their
+original terms and are not relicensed by this repository.
+
+## Citation
+
+Please cite the paper and this release. Machine-readable metadata is provided in
+[`CITATION.cff`](CITATION.cff).
