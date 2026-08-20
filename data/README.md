@@ -1,9 +1,5 @@
 # Analysis-ready data
 
-This directory is the public source of record for paper-result reproduction.
-Every analysis reads UTF-8 CSV from `analysis_ready/`; no Excel workbook, PDF,
-API, or LLM call is required.
-
 Key tables include:
 
 - `paper_sample_membership.csv`: one row per corpus paper with model-reported
