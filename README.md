@@ -58,5 +58,4 @@ this repository.
 
 ## Citation
 
-Please cite the paper and this release. Machine-readable metadata is provided in
-[`CITATION.cff`](CITATION.cff).
+Please cite the paper and this release.
