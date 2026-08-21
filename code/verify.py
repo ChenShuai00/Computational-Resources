@@ -25,6 +25,7 @@ MODULES = {
     "institution": "results/04_contexts/analyses/institution",
     "topics": "results/04_contexts/analyses/topics",
     "impact": "results/05_scholarly_impact/analyses/impact",
+    "track_extension": "results/05_scholarly_impact/analyses/track_extension",
 }
 QUICK_MODULES = {"sample_audit", "reporting"}
 
@@ -61,6 +62,38 @@ def verify_inputs(root: Path) -> int:
         raise AssertionError(f"Frozen sample counts changed: {counts}")
     if membership.paper_id.nunique() != len(membership):
         raise AssertionError("paper_sample_membership.csv contains duplicate paper IDs")
+
+    extension_dir = root / "data" / "analysis_ready" / "track_extension"
+    extension_manifest = pd.read_csv(extension_dir / "manifest.csv")
+    for row in extension_manifest.itertuples(index=False):
+        path = extension_dir / row.file
+        if not path.is_file():
+            raise AssertionError(f"Missing track-extension input: {path}")
+        if sha256(path) != row.sha256:
+            raise AssertionError(f"Track-extension SHA-256 mismatch: {path}")
+        frame = pd.read_csv(path)
+        if (len(frame), len(frame.columns)) != (int(row.rows), int(row.columns)):
+            raise AssertionError(f"Track-extension shape mismatch: {path}")
+        checked += 1
+
+    extension_membership = pd.read_csv(extension_dir / "track_extension_membership.csv")
+    extension_papers = pd.read_csv(extension_dir / "track_extension_papers.csv")
+    extension_counts = (
+        len(extension_membership),
+        int(extension_membership.model_reported.sum()),
+        int(extension_membership.strict_reported.sum()),
+        int(extension_membership.track.eq("main").sum()),
+        int(extension_membership.track.eq("findings").sum()),
+    )
+    if extension_counts != (23_838, 12_724, 9_546, 13_921, 9_917):
+        raise AssertionError(f"Frozen track-extension counts changed: {extension_counts}")
+    if extension_membership.paper_id.nunique() != len(extension_membership):
+        raise AssertionError("track_extension_membership.csv contains duplicate paper IDs")
+    if extension_papers.paper_id.nunique() != len(extension_papers):
+        raise AssertionError("track_extension_papers.csv contains duplicate paper IDs")
+    model_ids = set(extension_membership.loc[extension_membership.model_reported.eq(1), "paper_id"])
+    if set(extension_papers.paper_id) != model_ids:
+        raise AssertionError("Track-extension paper table does not equal the model-reported membership set")
     return checked
 
 
@@ -149,6 +182,43 @@ def verify_paper_claims(root: Path, output_root: Path) -> None:
             raise AssertionError("Primary adjusted-impact claim changed")
         if set(effects.N.astype(int)) != {2_194, 5_357}:
             raise AssertionError("Citation/award model sample sizes changed")
+
+    extension_tables = output_root / "track_extension" / "tables"
+    if extension_tables.is_dir():
+        sample = pd.read_csv(extension_tables / "track_sample_comparison.csv").set_index("characteristic_id")
+        expected_sample = {
+            "total_papers": (13_921, 9_917, 23_838),
+            "standardized_gpu_model": (6_900, 5_824, 12_724),
+            "gpu_model_plus_count": (5_360, 4_186, 9_546),
+            "citation_analysis_sample": (2_194, 1_620, 3_814),
+        }
+        for characteristic, expected_values in expected_sample.items():
+            observed = tuple(
+                int(sample.loc[characteristic, column])
+                for column in ("main_conference", "findings", "main_plus_findings")
+            )
+            if observed != expected_values:
+                raise AssertionError(f"Track-extension sample claim changed: {characteristic}={observed}")
+
+        models = pd.read_csv(extension_tables / "track_core_citation_regressions.csv").set_index("outcome_id")
+        primary = models.loc["topic_year_percentile"]
+        if not np.isclose(primary.pooled_beta, 0.03895187354284886):
+            raise AssertionError("Pooled primary citation coefficient changed")
+        if not np.isclose(primary.pooled_delta_r2, 0.0051336155787268245):
+            raise AssertionError("Pooled primary citation delta R-squared changed")
+        if tuple(models[["main_n", "findings_n", "pooled_n"]].nunique()) != (1, 1, 1):
+            raise AssertionError("Track-extension citation sample sizes vary across outcomes")
+        if tuple(models[["main_n", "findings_n", "pooled_n"]].iloc[0].astype(int)) != (2_194, 1_620, 3_814):
+            raise AssertionError("Track-extension citation sample sizes changed")
+        if not models.difference_p.gt(0.05).all():
+            raise AssertionError("A Main-versus-Findings coefficient difference crossed p=0.05")
+
+        concentration = pd.read_csv(extension_tables / "track_high_capability_impact.csv").set_index("track")
+        findings = concentration.loc["findings"]
+        if not np.isclose(findings.risk_ratio, 1.7527720739219714):
+            raise AssertionError("Findings high-capability risk ratio changed")
+        if not np.isclose(findings.high_capability_not_high_impact, 0.8418891170431211):
+            raise AssertionError("Findings high-capability non-high-impact share changed")
 
 
 def main() -> int:

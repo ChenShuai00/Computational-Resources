@@ -19,6 +19,9 @@ Official result-reproduction repository for:
 | Primary adjusted citation-percentile association per 10x capacity | +3.52 pp |
 | Incremental model fit for the primary capacity specification | ΔR² = 0.0042 |
 | Citation / award model samples | 2,194 / 5,357 |
+| Main + Findings corpus | 23,838 |
+| Main + Findings citation sample | 3,814 |
+| Pooled adjusted citation-percentile association per 10x capacity | +3.90 pp (ΔR² = 0.0051) |
 
 ## Repository structure
 
@@ -33,6 +36,11 @@ results/               Paper-first sections with scripts and frozen references
   04_contexts/
   05_scholarly_impact/
 ```
+
+The appendix robustness extension reproduces the Main Conference, Findings,
+and pooled sample comparison, five core citation specifications, and the
+high-capability/high-impact concentration matrix. See
+[`results/05_scholarly_impact/analyses/track_extension/`](results/05_scholarly_impact/analyses/track_extension/README.md).
 
 ## Reproduce all results
 

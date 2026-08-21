@@ -35,6 +35,11 @@ WORKFLOWS = (
         "results/05_scholarly_impact/analyses/impact/scripts/analyze_gpu_only_citation_modeling.py",
         arguments=("--quiet",),
     ),
+    Workflow(
+        "track_extension",
+        "results/05_scholarly_impact/analyses/track_extension/scripts/analyze_track_extension.py",
+        arguments=("--quiet",),
+    ),
 )
 
 
@@ -69,6 +74,15 @@ def main() -> int:
         command = [sys.executable, str(script), *workflow.arguments]
         if workflow.workflow_id == "impact":
             command.extend(["--input-data-dir", str(root / "data" / "analysis_ready"), "--output-dir", str(output)])
+        elif workflow.workflow_id == "track_extension":
+            command.extend(
+                [
+                    "--input-data-dir",
+                    str(root / "data" / "analysis_ready" / "track_extension"),
+                    "--output-dir",
+                    str(output),
+                ]
+            )
         print(f"[{index}/{len(selected)}] {workflow.workflow_id}")
         subprocess.run(command, cwd=root, env=env, check=True)
 

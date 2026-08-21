@@ -14,3 +14,7 @@ Key tables include:
   models.
 - `consumption_audit_labels.csv`: minimized frozen labels for the 240-paper
   consumption-visibility audit.
+- `track_extension/`: minimized Main Conference + Findings inputs for the
+  appendix sample comparison, citation regressions, and high-impact
+  concentration table. Its nested manifest and provenance file make this
+  extension independently auditable.
