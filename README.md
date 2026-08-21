@@ -37,11 +37,6 @@ results/               Paper-first sections with scripts and frozen references
   05_scholarly_impact/
 ```
 
-The appendix robustness extension reproduces the Main Conference, Findings,
-and pooled sample comparison, five core citation specifications, and the
-high-capability/high-impact concentration matrix. See
-[`results/05_scholarly_impact/analyses/track_extension/`](results/05_scholarly_impact/analyses/track_extension/README.md).
-
 ## Reproduce all results
 
 Install [uv](https://docs.astral.sh/uv/), then run from the repository root:
