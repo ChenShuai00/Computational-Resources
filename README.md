@@ -59,7 +59,3 @@ uv run python code/verify.py --quick
 Code is released under the Apache License 2.0; see [`LICENSE`](LICENSE).
 Third-party source records retain their original terms and are not relicensed by
 this repository.
-
-## Citation
-
-Please cite the paper and this release.
