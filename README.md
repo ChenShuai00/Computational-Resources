@@ -5,7 +5,6 @@
 Official result-reproduction repository for:
 
 > **More Computational Resources Do Not Ensure Higher Scholarly Impact: Evidence from Leading NLP Conference Papers**  
-> Shuai Chen, Tong Bao, Jitong Peng, and Chengzhi Zhang
 
 ------
 
