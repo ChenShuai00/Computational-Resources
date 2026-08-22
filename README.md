@@ -59,3 +59,8 @@ uv run python code/verify.py --quick
 Code is released under the Apache License 2.0; see [`LICENSE`](LICENSE).
 Third-party source records retain their original terms and are not relicensed by
 this repository.
+
+## Citation
+Please cite the following paper if you use this code and dataset in your work.
+
+>Shuai Chen, Tong Bao, Jitong Peng, Chengzhi Zhang\*.  More Computational Resources Do Not Ensure Higher Scholarly Impact: Evidence from Leading NLP Conference Papers. In: ***Proceedings of the 2026 Conference on Empirical Methods in Natural Language Processing (EMNLP2026)***, Budapest, Hungary, 2026. [[doi]]()  [[arXiv]]()  [[Dataset & Source Code]](https://github.com/ChenShuai00/Computational-Resources)
